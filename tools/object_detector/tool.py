@@ -20,7 +20,6 @@ import sys
 sys.stderr = open(os.devnull, 'w')
 
 import warnings
-warnings.filterwarnings("ignore")
 
 
 class Object_Detector_Tool(BaseTool):
@@ -36,7 +35,7 @@ class Object_Detector_Tool(BaseTool):
                 "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
                 "padding": "int - The number of pixels to add as empty padding around detected objects (default: 20)."
             },
-            output_type="list - A list of detected objects with their scores, bounding boxes, and saved image paths.",
+            output_type="list - A list of detected objects dictionaries with keys('label';'confidence score';'box';'saved_image_path') and their values",
             demo_commands=[
                 {
                     "command": 'execution = tool.execute(image="path/to/image.png", labels=["baseball", "basket"])',
@@ -51,6 +50,7 @@ class Object_Detector_Tool(BaseTool):
                 "limitation": "The model may not always detect objects accurately, and its performance can vary depending on the input image and the associated labels. It typically struggles with detecting small objects, objects that are uncommon, or objects with limited or specific attributes. For improved accuracy or better detection in certain situations, consider using supplementary tools or image processing techniques to provide additional information for verification."
             }
         )
+        self.output_dir = os.path.join(root_dir,"tools","object_detector","detected_objects")
 
     def preprocess_caption(self, caption):
         result = caption.lower().strip()
@@ -89,10 +89,11 @@ class Object_Detector_Tool(BaseTool):
                     raise ValueError("Failed to build the Object Detection tool.")
                 
                 preprocessed_labels = [self.preprocess_caption(label) for label in labels]
-                results = pipe(image, candidate_labels=preprocessed_labels, threshold=threshold)
+                original_image = Image.open(image)
+                results = pipe(original_image, candidate_labels=preprocessed_labels, threshold=threshold)
                 
                 formatted_results = []
-                original_image = Image.open(image)
+                
                 image_name = os.path.splitext(os.path.basename(image))[0]
                 
                 object_counts = {}

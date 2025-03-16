@@ -102,7 +102,7 @@ def accuracy_reward(completions, solution, **kwargs):
 
             except Exception:
                 pass  # Keep reward as 0.0 if both methods fail
-                
+
         rewards.append(reward)
         if os.getenv("DEBUG_MODE") == "true":
             log_path = os.getenv("LOG_PATH")
