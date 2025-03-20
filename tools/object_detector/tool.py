@@ -13,11 +13,11 @@ from PIL import Image, ImageOps
 
 import os
 # If CUDA_HOME is set, print the value
-print(os.environ.get('CUDA_HOME', 'CUDA_HOME is not set'))
+# print(os.environ.get('CUDA_HOME', 'CUDA_HOME is not set'))
 
 # Suppress stderr by redirecting it to /dev/null
 import sys
-sys.stderr = open(os.devnull, 'w')
+# sys.stderr = open(os.devnull, 'w')
 
 import warnings
 

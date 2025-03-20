@@ -7,9 +7,13 @@ import transformers
 from transformers import pipeline
 import torch.utils.data
 from datasets import Dataset, IterableDataset
-
+import signal
+import runpy
+import asyncio
+import subprocess
 from PIL import Image, ImageOps
-
+from math_verify import parse, verify
+from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))))
 sys.path.insert(0, root_dir)
@@ -64,29 +68,28 @@ available_tools= ["Object_Detector_Tool"]
 
 
 PROMPT_TEMPLATE= """
-\n Question: {question}. Answer question through writing valid python command
-Output the thinking process in <think> </think>, code in <command> </command> and result variable's name in <result> </result>, 
-i.e., <think> tools selection reasoning and coding reasoning here </think>, <command> python code here </command> and <result> the name of result variable in code </result>.
-
+\n Write a Python program to answer the question related to images : {question}.
+Enclose the generated code and comments in <command> </command> tags, 
+i.e. <command> generated python code </command>.
+You need to use the following available tools, which are very helpful for you.
 \n Available Tools: {available_tools}
-
 \n Tools Metadata: {toolbox_metadata}
-
 \n Rules:
-1. The command MUST be valid Python code and include at least one call to `tool.execute()`(here tool can be instance of any available Tools' Class).
+1. The command MUST be valid Python code.
 2. If listed available tools are insufficient to obtain the answer, you can use functions from Python's standard library as needed.
 3. Use the exact parameter names as specified in the tool's input_types.
 4. If you need, please directly use the PATHs of images: {image_paths}, which are related to Question
-5. Do not import modules for tool classes in the header, use these modules and their functions directly by default.
-6. Always make sure to define variables and functions before using them to keep your Python code syntactically correct
-7. Code's result must be exactly the final answer to the question.
+5. Always make sure to define variables and functions before using them to keep your Python code syntactically correct
+6. Ensure that the code execution yields a result that directly answers the question.
 
-\n Remember:In <think> </think> filed is your entire reasoning and thinking process. 
+\n Remember:
+You must output the tag <command> </command>. You can include your thoughts on the code and your step-by-step understanding and analysis of the problem as comments between code blocks.
 In <command> </command> field MUST be valid Python code including all necessary data preparation steps.
-The <result> </result> field is where you should place the name of final result variable from your code.
-You must Output three types of tags <think> </think>, <command> </command> and <result> </result>.
-The Code's result variable must be exactly the final answer to the question.
-Again!!! The Code's result variable must be exactly the final answer to the question.
+Do not import any the available tool from module in the code, Again! Do not import any the available tool from module!!. 
+Your code must return a final result that serves as the answer to the question. 
+Please assign the final answer to a variable named "final_result".
+Again! The code must return a final result that directly serves as the answer to the question. 
+Please assign the final answer to a variable named "final_result".
 """
 
 ##############################################################################################################################
@@ -135,39 +138,179 @@ generated_ids_trimmed = [
 completions = processor.batch_decode(
     generated_ids_trimmed, skip_special_tokens=True
 )
-print(type(completions),type(completions[0]))
+
+############################################################################
+#################################DEBUG######################################
+completions_path = os.path.join(root_dir,"debug","completions_debug.txt")
+os.makedirs(os.path.dirname(completions_path), exist_ok=True)
+with open(completions_path, "w") as f:
+    for completion in completions:
+        f.write(f"{completion} \n")
+############################################################################        
+    
+############################################################################
+def extract_code(completion):
+    match = re.search(r"<command>(.*?)</command>", completion , re.DOTALL)
+    if match:
+        extracted_code = match.group(1).strip()  
+        return extracted_code
+    else:
+        raise ValueError("no command tag found!!")
+
+# waiting to be extended
+api_methods = {
+    "object_detector": 
+"""
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "{root_dir}")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+"""
+}
+#####################
+generated_code = extract_code(completions[0])
+
+generated_code = """
+tool = Object_Detector_Tool()
+metadata = tool.get_metadata()
+# tool.set_custom_output_dir("detected_objects")
 
 
+# print(metadata)
 
-# def format_reward(completions, **kwargs):
-#     """Reward function that checks if the completion has a specific format."""
-#     pattern = r"<think>.*?</think>\s*<command>.*?</command>\s*<result>.*?</result>"
-#     if isinstance(completions[0],str):
-#         completion_contents = completions
-#     else:
-#         completion_contents = [completion[0]["content"] for completion in completions]
-#     matches = [re.fullmatch(pattern, content, re.DOTALL) for content in completion_contents]
-#     result = [1.0 if match else 0.0 for match in matches]
-#     print(result)
+relative_image_path = "examples/baseball.png"
+image_path = os.path.join("/home/stud/wxie/Tools_Thinker","tools","object_detector", relative_image_path)
 
-# def thinking_length_reward(completions, **kwargs):
-#     """ We encourage model to have a longer reasoning and thinking """
-#     pattern = re.compile(r"<think>(.*?)</think>", re.DOTALL)
-#     rewards = []
-#     if isinstance(completions[0],str):
-#         for completion in completions:
-#             match = pattern.search(completion)
-#             if match:
-#                 thinking_content = match.group(1)
-#                 rewards.append(len(thinking_content) * 0.001)
-#             else:
-#                 rewards.append(0)
-#     else:
-#         for completion in completions:
-#             match = pattern.searce(completion[0]["content"])
-#             if match:
-#                 thinking_content = match.group(1)
-#                 rewards.append(len(thinking_content) * 0.001)
-#             else:
-#                 rewards.append(0)
-#     return rewards
+# Execute the tool
+try:
+    execution = tool.execute(image=image_path, labels=["baseball"], padding=20)
+    print("Detected Objects:")
+    for obj in execution:
+        print(f"Detected {obj['label']} with confidence {obj['confidence score']}")
+        print(f"Bounding box: {obj['box']}")
+        print(f"Saved image (with padding): {obj['saved_image_path']}")
+        print()
+except ValueError as e: 
+    print(f"Execution failed: {e}")
+    
+final_result = len(execution)
+
+print("Done!")
+"""
+
+full_code = [api_methods["object_detector"].format(root_dir = root_dir) + "\n" + generated_code + "\n"+"print('<final_result>', final_result)"]
+
+# print(full_code)
+solutions = ["20"]
+
+def code_exec_acc_reward(completions, solutions):
+    """
+    running code snippets in completions and return the results.
+    If an error occurs during execution, return "0".
+    Use asyncio.run to automatically create and manage event loops.
+    """
+    async def run_all_codes(codes: list[str], solutions: list[str]) -> list[float]:
+        """
+        Asynchronously run multiple code snippets.
+        """
+        tasks = [run_code_async(code, sol, 60) for code, sol in zip(codes, solutions)]
+        rewards = await asyncio.gather(*tasks)
+        return rewards
+    
+    async def run_code_async(code: str, solution: str, exec_timeout: int = 10) -> float:
+        """
+        Run a code snippet asynchronously and evaluate the result.
+        """
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                'python3', '-c', code,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=exec_timeout)
+            if proc.returncode != 0:
+                log_path = os.path.join(root_dir, "logs", "evaluation.log")
+                os.makedirs(os.path.dirname(log_path), exist_ok=True)
+                current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+                with open(log_path, "w") as f:
+                    f.write(f"------------- {current_time} Process Error: {proc.returncode} -------------\n")
+                    f.write(f"Error in code execution: \n{stderr.decode().strip()}\n")
+                    f.write(f"Code: {code}\n\n")
+                    f.write(f"Solution: {solution}\n")
+                return 0.0
+            output_raw = stdout.decode().strip()
+        except Exception as e:
+            log_path = os.path.join(root_dir, "logs", "evaluation.log")
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+            with open(log_path, "w") as f:
+                f.write(f"------------- {current_time} Exception in run_code_async -------------\n")
+                f.write(f"Exception: in create subproess \n{str(e)}\n")
+                f.write(f"Code: {code}\n\n")
+                f.write(f"Solution: {solution}\n")
+            return 0.0
+        
+        output = None
+        
+        try:
+            for line in output_raw.splitlines():
+                if line.startswith("<final_result>"):
+                    output = line[len("<final_result>"):].strip()
+                    break
+        except Exception as e:
+            log_path = os.path.join(root_dir, "logs", "evaluation.log")
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+            with open(log_path, "w") as f:
+                f.write(f"------------- {current_time} Exception in run_code_async -------------\n")
+                f.write(f"Exception in extract final result: \n{str(e)}\n")
+                f.write(f"Code: {code}\n\n")
+                f.write(f"Solution: {solution}\n")
+            return 0.0
+            
+        reward = 0.0
+        # try to parse the output and solution to do symbolic verification
+        try:
+            answer = parse(output)
+            sol_parsed = parse(solution)
+            if float(verify(answer, sol_parsed)) > 0:
+                reward = 1.0
+        except Exception:
+            pass
+
+        # 
+        if reward == 0.0:
+            try:
+                # get Ground Truth from solution
+                ground_truth = solution
+                student_answer = output
+                if student_answer == ground_truth:
+                    reward = 1.0
+            except Exception:
+                raise Exception("Error in comparison for ground truth!")
+
+        log_path = os.path.join(root_dir, "logs", "evaluation.log")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+        with open(log_path, "w") as f:
+            f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
+            f.write(f"Code: {code}\n\n")
+            f.write(f"Final Result: {output}\n\n")
+            f.write(f"Solution: {solution}\n")
+        return reward
+        
+    return asyncio.run(run_all_codes(completions,solutions=solutions))
+
+    
+results = code_exec_acc_reward(full_code,solutions=solutions)
+
+for idx, result in enumerate(results):
+    print(f"code snippet {idx} result: {result}")
