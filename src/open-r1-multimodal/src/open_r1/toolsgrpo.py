@@ -29,7 +29,7 @@ from datetime import datetime
 import asyncio
 import subprocess
 from PIL import Image, ImageOps
-
+import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))))
 sys.path.insert(0, root_dir)
@@ -54,7 +54,7 @@ class GRPOScriptArguments(ScriptArguments):
     """
     reward_funcs: list[str] = field(
         default_factory=lambda: ["code", "format"],
-        metadata={"help": "List of reward functions. Possible values: 'accuracy', 'format'"},
+        metadata={"help": "List of reward functions. Possible values: 'code', 'format'"},
     )
     max_pixels: Optional[int] = field(
         default=12845056,
@@ -75,7 +75,7 @@ class GRPOScriptArguments(ScriptArguments):
     
 ####################################################################
 ##################CODE ACCURACY and EXECUTION REWARD################
-def code_exec_acc_reward(completions: list[str], solutions: list[str]) -> list[str]:
+def code_exec_acc_reward(completions, solution, **kwargs):
     """
     running code snippets in completions and if result is correct return the rewards.
     If an error occurs during execution, return "0".
@@ -95,7 +95,7 @@ def code_exec_acc_reward(completions: list[str], solutions: list[str]) -> list[s
         else:
             raise ValueError("No command tag found!!")
     api_methods = {
-    "object_detector": 
+    "object_detector":
 """
 import sys
 import os
@@ -111,57 +111,59 @@ import warnings
 from tools.object_detector.tool import Object_Detector_Tool 
 """
 }
-    # waiting to be extended
-    api_methods = {
-    "object_detector": 
-"""
-import sys
-import os
-import time
-import torch
-from transformers import pipeline
-sys.path.insert(0, "{root_dir}")
-from tools.base import BaseTool
-from PIL import Image, ImageOps
-import os
-import sys
-import warnings
-from tools.object_detector.tool import Object_Detector_Tool 
-"""
-}
-    async def run_all_codes(codes: list[str], solutions: list[str]) -> list[float]:
+    async def run_all_codes(contents, solutions) :
         """
         Asynchronously run multiple code snippets.
         """
-        tasks = [
-        run_code_async(
-            [
-                f"{api_methods['object_detector'].format(root_dir=root_dir)}\n"
-                f"{extract_code(content)}\n"
-                "print('<final_result>', final_result)"
-            ],
-            sol,
-            60
-            )
-                for content, sol in zip(contents, solutions)
-            ]
+        print("\n[DEBUG] contents type:", type(contents))
+        print("[DEBUG] solutions type:", type(solutions))
+    
+        if len(contents) > 0:
+            print("[DEBUG] type of contents[0]:", type(contents[0]))
+            print("[DEBUG] sample contents[0]:", contents[0])
+        
+        if len(solutions) > 0:
+            print("[DEBUG] type of solutions[0]:", type(solutions[0]))
+            print("[DEBUG] sample solutions[0]:", solutions[0])
+        tasks = []
+        for content, sol in zip(contents, solutions):
+            try:
+                extracted_code = extract_code(content)
+                code_to_run = (
+                    f"{api_methods['object_detector'].format(root_dir=root_dir)}\n"
+                    f"{extracted_code}\n"
+                    "print('<final_result>', final_result)"
+                )
+                task = run_code_async(code_to_run, sol, 60)
+            except Exception as e:
+                print(f"[ERROR] extract_code failed: {e}")
+                async def return_zero():
+                    return 0.0
+                task = return_zero()
+            tasks.append(task)
         return await asyncio.gather(*tasks)
     
-    async def run_code_async(code: str, solution, exec_timeout: int = 10) -> float:
+    async def run_code_async(code, solution, exec_timeout: int = 10) -> float:
         """
         Run a code snippet asynchronously and evaluate the result.
         """
         try:
+            # proc = await asyncio.create_subprocess_exec(
+            #     'python3', '-c', code,
+            #     stdout=asyncio.subprocess.PIPE,
+            #     stderr=asyncio.subprocess.PIPE,
+            # )
+            python_exec = sys.executable
             proc = await asyncio.create_subprocess_exec(
-                'python3', '-c', code,
+                python_exec, '-c', code,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
             stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=exec_timeout)
             if proc.returncode != 0:
-                log_path = os.path.join(root_dir, "logs", "evaluation.log")
-                os.makedirs(os.path.dirname(log_path), exist_ok=True)
                 current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+                log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
+                os.makedirs(os.path.dirname(log_path), exist_ok=True)
                 with open(log_path, "w") as f:
                     f.write(f"------------- {current_time} Process Error: {proc.returncode} -------------\n")
                     f.write(f"Error in code execution: \n{stderr.decode().strip()}\n")
@@ -170,9 +172,9 @@ from tools.object_detector.tool import Object_Detector_Tool
                 return 0.0
             output_raw = stdout.decode().strip()
         except Exception as e:
-            log_path = os.path.join(root_dir, "logs", "evaluation.log")
-            os.makedirs(os.path.dirname(log_path), exist_ok=True)
             current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+            log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
             with open(log_path, "w") as f:
                 f.write(f"------------- {current_time} Exception in run_code_async -------------\n")
                 f.write(f"Exception: in create subproess \n{str(e)}\n")
@@ -188,9 +190,9 @@ from tools.object_detector.tool import Object_Detector_Tool
                     output = line[len("<final_result>"):].strip()
                     break
         except Exception as e:
-            log_path = os.path.join(root_dir, "logs", "evaluation.log")
-            os.makedirs(os.path.dirname(log_path), exist_ok=True)
             current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+            log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
             with open(log_path, "w") as f:
                 f.write(f"------------- {current_time} Exception in run_code_async -------------\n")
                 f.write(f"Exception in extract final result: \n{str(e)}\n")
@@ -218,11 +220,10 @@ from tools.object_detector.tool import Object_Detector_Tool
                     reward = 1.0
             except Exception:
                 raise Exception("Error in comparison for ground truth!")
-
-        log_path = os.path.join(root_dir, "logs", "evaluation.log")
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
         current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-        with open(log_path, "w") as f:
+        log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        with open(log_path, "a") as f:
             f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
             f.write(f"Code: {code}\n\n")
             f.write(f"Final Result: {output}\n\n")
@@ -230,7 +231,7 @@ from tools.object_detector.tool import Object_Detector_Tool
         return reward
     
   
-    return asyncio.run(run_all_codes(completions,solutions=solutions))
+    return asyncio.run(run_all_codes(contents=contents,solutions=solution))
 
 ####################################################################
 #############################FORMAT REWARD##########################
@@ -322,7 +323,8 @@ Please assign the final answer to a variable named "final_result".
         index_map = {chr(65 + i): i for i in range(len(example["choices"]))} 
         answer = example["choices"][index_map[answer_key]]
         if base_model_prompt:
-            image = Image.open(dataset_prefix + example["image_paths"][0])            
+            
+            image = [Image.open(dataset_prefix + img_path)  for img_path in example["image_paths"]]          
             prompt = f"""A conversation between User and Assistant. The user asks a question about the image, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer.
             \nUser: {PROMPT_TEMPLATE.format(question=example["question"],
                                             image_paths = dataset_prefix + example["image_paths"][0],
@@ -337,7 +339,7 @@ Please assign the final answer to a variable named "final_result".
                 "solution":  answer,  ###
             }
         else:
-            image = Image.open(dataset_prefix + example["image_paths"][0])
+            image = [Image.open(dataset_prefix + img_path)  for img_path in example["image_paths"]]  
             return {"image": image,
                 "image_path": dataset_prefix + example["image_paths"][0],
                 "prompt": [
@@ -359,14 +361,19 @@ Please assign the final answer to a variable named "final_result".
     dataset_prefix = "/home/stud/wxie/"
     dataset_path = "BLINK_Dataset/Counting/val/Counting_val.json"
     
-    import json
     # load json file 
     with open(dataset_prefix + dataset_path, 'r') as f:
-        sat_dataset = json.load(f)
+        dataset = json.load(f)
 
-    dataset = [make_conversation_sat(sample, base_model_prompt) for sample in sat_dataset]
+    dataset = [make_conversation_sat(sample, base_model_prompt) for sample in dataset]
     dataset = {'train': dataset} #####
 
+    
+    # save_path = "processed_dataset.json"
+
+    # with open(save_path, "w") as f:
+    #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
+        
     trainer_cls = Qwen2VLGRPOTrainer
 
     # Initialize the GRPO trainer
