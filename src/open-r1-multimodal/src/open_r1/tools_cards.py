@@ -7,13 +7,16 @@ import transformers
 from transformers import pipeline
 import torch.utils.data
 from datasets import Dataset, IterableDataset
+
 import signal
 import runpy
-import asyncio
-import subprocess
-from PIL import Image, ImageOps
 from math_verify import parse, verify
 from datetime import datetime
+import asyncio
+import subprocess
+
+from PIL import Image, ImageOps
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))))
 sys.path.insert(0, root_dir)
@@ -211,7 +214,7 @@ full_code = [api_methods["object_detector"].format(root_dir = root_dir) + "\n" +
 # print(full_code)
 solutions = ["20"]
 
-def code_exec_acc_reward(completions, solutions):
+def code_exec_acc_reward(completions: list[str], solutions: list[str]) -> list[str]:
     """
     running code snippets in completions and return the results.
     If an error occurs during execution, return "0".

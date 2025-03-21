@@ -1,4 +1,4 @@
-export DEBUG_MODE="true"
+export DEBUG_MODE="true" 
 export LOG_PATH="./debug_log_2b.txt"
 
 
