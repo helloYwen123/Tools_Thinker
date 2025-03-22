@@ -1,0 +1,46 @@
+------------- 22-07-51-57-859002 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 25
+    objects.append({'label': det["label"], 'confidence': det["confidence"], 'box': det["bbox"], 'message': f"{letter} present in {label} detected ({det['bbox'][0]}-{det['bbox'][1]} {det['bbox'][2]}-{det['bbox'][3])}"})
+                                                                                                                                                                                                                        ^
+SyntaxError: f-string: unmatched ')'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_black_letters(image_path, labels=['baseball', 'basket']):
+    objects = []
+    with Image.open(image_path) as img:
+        for label in labels:
+            detection = detect_objects(img, label)
+            for det in detection:
+                for letter in ["t", "r"]:
+                    if letter in det["label"]:
+                        objects.append({'label': det["label"], 'confidence': det["confidence"], 'box': det["bbox"], 'message': f"{letter} present in {label} detected ({det['bbox'][0]}-{det['bbox'][1]} {det['bbox'][2]}-{det['bbox'][3])}"})
+                break
+    return objects
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg"
+
+# Call the function to detect and count black letters
+black_letters = count_black_letters(image_path)
+
+# Print the results
+for obj in black_letters:
+    print(obj)
+print('<final_result>', final_result)
+
+Solution: 2

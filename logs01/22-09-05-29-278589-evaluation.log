@@ -1,0 +1,49 @@
+------------- 22-09-05-29-278589 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from PIL import Image
+
+def count_purple_planes(image_path, *labels, threshold=0.35, model_size='tiny', padding=20):
+    image = Image.open(image_path)
+    if 'baseball' in labels:
+        # Detect baseball and basket in an image
+        detection = tool.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    else:
+        # Detect car and person in an image
+        detection = tool.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    purple_planes = []
+    for _, confidence, x, y in detection:
+        if 'basket' in labels or 'baseball' in labels:
+            if confidence > threshold:
+                plane = {"label": "Basketball", "confidence score": confidence, "box": [x, y, 20 + x, 20 + y]}
+                purple_planes.append(plane)
+    return purple_planes
+
+# Sample image path for demonstration
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+
+purple_planes_result = count_purple_planes(image_path)
+
+final_result = "There are 10 purple planes detected."
+
+if purple_planes_result:
+    final_result += f" - {len(purple_planes_result)} purple plane"
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

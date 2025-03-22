@@ -1,0 +1,59 @@
+------------- 22-03-42-13-230925 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 40
+    output.append((label, torch.tensor(counts[label]), {"bbox": {"x": torch.tensor([0, 0, 1, 1]), "y": torch.tensor([0, 5, 1, 6]), "width": torch.tensor([0, 0, 1, 1]), "height": torch.tensor([0, 0, 1, 1])}, "saved_image_path": None))
+                                                                                                                                                                                                                                       ^
+SyntaxError: closing parenthesis ')' does not match opening parenthesis '{'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_men():
+    # Define input variables
+    input_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_62_image_1.jpg"
+    input_labels = ["baseball"]
+
+    # Load model
+    from torchvision.models.dinoforge import DINO
+    model = DINO(num_classes=len(input_labels))
+
+    # Convert input image to tensor
+    model.eval()
+    with torch.no_grad():
+        tensor_image = torch.from_numpy(image).float()
+    tensor_image = tensor_image.unsqueeze(0)
+    with torch.no_grad():
+        features = model.features.forward(tensor_image)
+
+    # Count detected objects
+    counts = {}
+    for label in input_labels:
+        counts[label] = features[0].shape[0]
+    
+    # Generate output
+    output = []
+    for label in input_labels:
+        output.append((label, torch.tensor(counts[label]), {"bbox": {"x": torch.tensor([0, 0, 1, 1]), "y": torch.tensor([0, 5, 1, 6]), "width": torch.tensor([0, 0, 1, 1]), "height": torch.tensor([0, 0, 1, 1])}, "saved_image_path": None))
+
+    return output
+
+# Run the python code
+import os
+out = count_men()
+for i in out:
+    if "bbox" in i["box"]:
+        x, y, w, h = i["box"]["bbox"]["x"], i["box"]["bbox"]["y"], i["box"]["bbox"]["width"], i["box"]["bbox"]["height"]
+        print(f"Found {i['bbox']['bbox']['y']} to {i['bbox']['bbox']['y']} of label {i['bbox']['bbox']['bbox']}")
+print('<final_result>', final_result)
+
+Solution: 1

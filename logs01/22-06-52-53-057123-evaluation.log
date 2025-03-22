@@ -1,0 +1,57 @@
+------------- 22-06-52-53-057123 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Image to detect in
+training_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_65_image_1.jpg"
+
+# Labels to detect
+labels = ['baseball', 'basket', 'car', 'person']
+
+# Confidence threshold
+confidence_threshold = 0.35
+
+# Model size
+model_size = 'base'
+
+# Number of pixels to add as empty padding
+padding = 15
+
+# Detect objects and add empty padding
+boxes, saved_image_paths = detect_object_in_image(training_image, labels=labels, confidence_threshold=confidence_threshold, model_size=model_size, padding=padding)
+
+# Count red letters
+red_letters = ["letterA", "letterB", "letterC", "letterD", "letterE", "letterF", "letterG", "letterH", "letterI", "letterJ", "letterK", "letterL", "letterM", "letterN", "letterO", "letterP", "letterQ", "letterR", "letterS", "letterT", "letterU", "letterV", "letterW", "letterX", "letterY", "letterZ"]
+
+# Initialize counter for red letters
+counter = 0
+
+# Loop through the detected objects
+for box in boxes:
+  # Get the bounding box coordinates
+  left, right, top, bottom = box
+  
+  # Check if the bounding box of the red letter is intersected with the detected object
+  if intersecting_bbox(box, {"center": (left), "width": right - left, "height": top - bottom}, object_points=red_letters):
+    counter += 1
+
+# Return the final result
+final_result = counter
+print('<final_result>', final_result)
+
+Solution: 5

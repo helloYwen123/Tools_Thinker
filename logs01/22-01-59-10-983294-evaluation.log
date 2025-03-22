@@ -1,0 +1,55 @@
+------------- 22-01-59-10-983294 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import numpy as np
+from object_detector_tool import *
+
+def detect_objects(image_path, labels, threshold, model_size, padding):
+    detection_output = detection(
+        input=image_path,
+        labels=labels,
+        threshold=threshold,
+        model_size=model_size,
+        padding=padding
+    )
+    detected_objects = detection_output[1]
+    return detected_objects
+
+def count_vowels(objs, vowels):
+    count = 0
+    for obj in objs:
+        for letter in obj['label']:
+            if letter in vowels:
+                count += 1
+    return count
+
+def generate_query(image_path, objects, vowels):
+    detected_labels = np.delete(objects, 1, axis=0).tolist()
+    vowels_list = 'aeiouAEIOU'
+    count = count_vowels(detected_labels, vowels_list)
+    query = f"How many of the glowing letters in the image are common vowels? ({count})"
+    return query
+
+path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg"
+obj_detection = detect_objects(path, ["Block", "Keystone", "XL"], 0.37, "tiny", 15)
+vowels = "aeiouAEIOU"
+
+final_result = generate_query(path, obj_detection, vowels)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 4

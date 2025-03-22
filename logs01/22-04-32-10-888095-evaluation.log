@@ -1,0 +1,52 @@
+------------- 22-04-32-10-888095 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import execute
+
+def count_black_suitcases(image_path, labels=None, threshold=None, model_size='tiny', padding=20):
+    # Load the bounding box model
+    model_info = execute(image=image_path, labels=labels)
+
+    # Get bounding box confidence scores
+    labels_info = execute(image=model_info[0]['image'], labels=model_info[0]['labels'], threshold=threshold, model_size=model_info[0]['model_size'])
+    
+    # Filter bounding boxes by category and confidence score
+    black_suitcases = [bbox for _, conf, box, saved_image_path in labels_info['box'] if label in labels and conf > 0.8]
+    
+    # Add empty padding to suitcases
+    black_suitcases.append({"bbox": [x + (y * 20) for y, x in [box] + [x + 20 for x in box]], "saved_image_path": saved_image_path})
+
+    return black_suitcases
+
+# Example usage
+import glob
+def get_image_paths():
+    global global_image_paths
+    image_paths = glob.glob('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg')
+    global global_image_paths
+    global_image_paths = list(image_paths)
+
+black_suitcases = []
+print("Detecting black suitcases...")
+for image_path in global_image_paths:
+    black_suitcases += get_image_paths(image_path=image_path)
+
+final_result = get_black_suitcases(black_suitcases)
+print(f"Total black suitcases detected: {len(final_result)}")
+print('<final_result>', final_result)
+
+Solution: 2

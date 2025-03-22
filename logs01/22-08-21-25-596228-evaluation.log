@@ -1,0 +1,55 @@
+------------- 22-08-21-25-596228 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *  # Import the Object_Detector_Tool
+
+# Function to detect objects in an image
+def detect_objects(image_path):
+    # Load the image
+    image = Image.open(image_path)
+    # Call the tool
+    execution = tool.execute(image_path=image_path, labels=["baseball", "basket"])
+    # Convert the detection result to a list of dictionaries
+    detected_objects = [{"label": label, "confidence": score, "bbox": box} for label, score, box in execution]
+    detected_objects = sorted(detected_objects, key=lambda x: x["bbox"][0])
+    return detected_objects
+
+# Define the labels and parameters for the tool
+labels = ["baseball", "basket"]
+threshold = 0.5
+model_size = "base"
+padding = 20
+
+try:
+    # Call the tool with the image path
+    detected_objects = detect_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_87/image_105.jpg")
+    # Filter out the detected objects by threshold, bounding box area, and model sizes
+    detected_objects = [obj for obj in detected_objects if obj["confidence"] > 0 and obj["bbox"][0] > 0 and obj["bbox"][2] > padding]
+    
+    # Print the detected objects
+    print("Detected Baseballs and Baskets:")
+    for obj in detected_objects:
+        print(f" - {obj['label']}: {obj['bbox'][0]} -> {obj['bbox'][1]} -> {obj['bbox'][2]} -> {obj['bbox'][3]}")
+
+    # Print the total number of detected objects
+    print(f"Total: {len(detected_objects)}")
+except:
+    print("Could not detect objects in the image.")
+    final_result = "No objects detected"
+print('<final_result>', final_result)
+
+Solution: 0

@@ -1,0 +1,61 @@
+------------- 22-09-05-29-332895 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from os import listdir
+import numpy as np
+from object_detector_tool import *
+
+# Check if the 'counting_1_2' directory is present and contains an image
+if "<path_to_directory>".find("/counting_1_2/") != -1:
+    # Check if the image file name ends with '.jpg'
+    if "val_Counting_16_image_" in listdir("/counting_1_2"):
+        # Load the image
+        image_path = "/counting_1_2" + "/" + "val_Counting_16_image_" + ".jpg"
+        image = Image.open(image_path)
+
+        label_list = []
+        print(f"Checking labels {label_list}")
+
+        # Create a dictionary to store the detected objects and their confidence scores
+        detection_dict = {}
+
+        # Use the object detection function to detect objects
+        detection_dict = object_detector_tool(image=image, labels=label_list, threshold=0.35, model_size="tiny", padding=20)
+
+        # Loop through the detected objects and their confidence scores
+        for label, confidence_score, box, saved_image_path in detection_dict:
+            print(f"Detected {label}: {confidence_score}")
+
+            # This should be the process for processing each detected object as required by your analysis
+            # In this example, we simply assign the object to 'label' and its confidence score to the dictionary
+            detection_dict[label] = {'confidence score': confidence_score, 'box': box}
+
+        print("Object Detection Result")
+
+        # Process the detected objects that have been stored in the dictionary
+        processed_result = []
+        for label, confidence_score, box in detection_dict.values():
+            processed_result.append({"label": label, "confidence score": confidence_score, "box": box})
+
+        print(f"Processed Objects")
+    else:
+        print("Image file name could not be detected in 'counting_1_2'. Please verify the file format.")
+else:
+    print("No existence of the 'counting_1_2' directory.")
+print('<final_result>', final_result)
+
+Solution: 4

@@ -1,0 +1,46 @@
+------------- 22-05-16-28-612369 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_non_blue_hats(image_path):
+    # Load the object detector model
+    object_detector_tool = Object_Detector_Tool()
+    executed = object_detector_tool.execute(image=image_path, labels=["baseball", "basket"], threshold=0.35, model_size="tiny", padding=20)
+
+    # Check the success of the detection
+    if executed[0] == "baseball":
+        print("Baseball detected")
+    elif executed[0] == "basket":
+        print("Basketball detected")
+    else:
+        print("No baseball detected")
+        print("No basketball detected")
+        # Additional code to detect non-baseball, non-basketball objects if needed
+
+    # Process and summarize the detected objects
+    non_blue_hats = sum([obj['label'] == "baseball" for obj in executed[1] if obj['label'] != "baseball"])
+    return non_blue_hats
+
+# Given image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg"
+
+# Count non-blue hats
+final_result = count_non_blue_hats(image_path=image_path)
+
+print("Number of people not wearing a blue hat:", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

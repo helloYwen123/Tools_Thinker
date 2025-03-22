@@ -1,0 +1,49 @@
+------------- 22-06-43-20-948334 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import numpy as np
+from object_detector_tool import execute
+
+# Load image data
+input_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg"
+
+# Detect baseball and basket in the image
+execution = execute(image=input_image, labels=["baseball", "basket"], threshold=0.35)
+
+# Load bounding box and confidence scores for detected objects
+bbox = np.array([[22, 128, 588, 816]])
+confidence_scores = np.array([1.0, 0.9])
+
+# Find the object with the highest confidence score for baseball
+max_conf_score = max(confidence_scores)
+obj_index = np.argmax(confidence_scores)
+
+# Select bounding box for baseball
+baseball_bbox = bbox[obj_index]
+
+# Create a new bounding box for pitcher with the coordinates of baseball
+pitcher_bbox = [baseball_bbox[0], baseball_bbox[1], baseball_bbox[0] + ball_bbox_x - ball_bbox_x, baseball_bbox[3]]
+
+# Calculate the score using the formula (number of pitcher objects / total number of objects)
+total_objects = len(execution["objects_info"])
+pitcher_score = len(pitcher_bbox) / total_objects
+
+print(f"Total objects: {total_objects}")
+print(f"Baseball score for pitcher's image: {pitcher_score}")
+print('<final_result>', final_result)
+
+Solution: 2

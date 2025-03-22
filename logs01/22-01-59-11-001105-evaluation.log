@@ -1,0 +1,45 @@
+------------- 22-01-59-11-001105 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_people(image_path):
+    try:
+        detection_result = object_detector_tool.execute(image_path=image_path, labels=["person"], threshold=0.5, model_size="mini")
+        if detection_result:
+            total_people = len(detection_result)
+            for person in detection_result:
+                for person_box in person:
+                    x1, y1, x2, y2 = person_box['bbox']
+                    x3 = x1 + x2
+                    y3 = y1 + y2
+                    x4, y4 = x1, y1
+                    if y3 - y1 < 200 and x4 - x3 < 200 and y4 - y3 < 100:
+                        x5, y5 = x1 + x4, y1 + y3
+                        x6, y6 = x1 + y3, x1 + x2
+                        x7, y7 = x1 + x3, x1 + y2
+                        total_people += 1
+                    else:
+                        break
+        return total_people
+    except Exception as e:
+        return 0
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_49_image_1.jpg"
+final_result = count_people(image_path)
+print(f"Number of people standing: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 2

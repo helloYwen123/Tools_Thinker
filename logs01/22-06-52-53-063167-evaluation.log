@@ -1,0 +1,43 @@
+------------- 22-06-52-53-063167 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Load the image and detect its objects
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_4_image_1.jpg"
+execution = tool.execute(image=image_path)
+
+# Get the bounding box and confidence score for detected objects
+boxes = [bbox['bbox'] for bbox in execution]
+confidence_scores = [bbox['confidence_score'] for bbox in execution]
+
+# Filter out any objects with confidence score less than 1 (i.e., not fully detected)
+partial_detected_objects = [bbox for bbox in boxes if bbox['confidence_score'] >= 1]
+
+# Extract the labels of the detected objects
+labels = []
+for object in partial_detected_objects:
+    labels.extend(object['label'])
+
+# Count the number of people in purple
+number_of_people_purple = len([label for label in labels if 'purple' in label])
+
+# Print the final result
+final_result = {"number of people in purple": number_of_people_purple}
+print('<final_result>', final_result)
+
+Solution: 1

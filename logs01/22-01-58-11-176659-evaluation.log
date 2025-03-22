@@ -1,0 +1,68 @@
+------------- 22-01-58-11-176659 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 50
+    output_image_path = generate_output_path(image_path, f'{image_path}_{confidence_scores}_{y}{' '}{w}', area_percentage)
+                                                                                                        ^
+SyntaxError: f-string: expecting '}'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+output_image_paths = []
+output_labels = []
+
+def generate_output_path(image_path, box, confidence_scores):
+    output_path = image_path
+    y = [int(x) for x in box.split(',')]
+    w = (int(x) + int(y[1])) * 100
+    h = (int(x) + int(y[0])) * 100
+    padding = int((w - h) / 2) * 100
+    output_width = int((w - padding) // 2) * 100
+    output_height = int((h - padding) // 2) * 100
+    x1 = int((w - output_width) / 2) * 100
+    y1 = int((h - output_height) / 2) * 100
+    output_list = [output_path, f"{image_path}({confidence_scores})", f"{output_path}({confidence_scores},{padding})"]
+    return output_list
+
+def check_image(image_path, confidence_scores):
+    object_results = object_detector(image_path=image_path, confidence=confidence_scores, threshold=0.75).data
+    if object_results:
+        detections = object_results[0:10]
+        for i in range(10):
+            x = round(detections[1][0][1])
+            y = round(detections[1][0][2])
+            w = detections[1][1][1 - detections[1][1][2]] * 20
+            h = detections[1][1][1] * 20
+            padding_x = y * 20
+            padding_y = x * 20
+            y1 = round(detections[1][0][2] + h)
+            w1 = round(detections[1][1][1 - detections[1][1][2]])
+
+            # Calculate the area percentage of the object
+            box_area = detections[1][1][0] * detections[1][1][1]
+            area_percentage = (box_area / object_results[0][1][2] * 100)
+
+            output_image_path = generate_output_path(image_path, f'{image_path}_{confidence_scores}_{y}{' '}{w}', area_percentage)
+            output_labels.append(f'{image_path}_{confidence_scores}_{y}{' '}{w}')
+
+    return (output_path, output_labels)
+file = open('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_49_image_1.jpg', 'rb')
+output_image, output_labels = check_image(file.read().decode(), 0.5)
+file.close()
+
+print(output_image)
+print(output_labels)
+print('<final_result>', final_result)
+
+Solution: 2

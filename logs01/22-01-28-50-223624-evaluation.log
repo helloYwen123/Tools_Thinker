@@ -1,0 +1,65 @@
+------------- 22-01-28-50-223624 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def classify_people(image_path, labels=['car', 'person'], threshold=0.5, model_size="base", padding=20):
+    import numpy as np
+    import cv2
+    class_dict = {'person': 0, 'car': 1}
+    image = cv2.imread(image_path)
+    label_result = np.zeros(image.shape[:2], dtype=np.int32)
+    if labels:
+        prediction = np.zeros(label_result.shape[:2], dtype=np.float)
+        for label in labels:
+            model_path = f"counting/models/{model_size}/{label}.ckpt" if model_size else f"counting/models/{model_size}/base.ckpt"
+            result = cv2.dnn.readNetFromDrawFile(model_path)
+            layer = 'fc14'
+            blob = cv2.dnn.blobFromImage(image, 1.0/255, (224, 224), (0, 0, 0), swapRB=False)
+            result.setInput(blob)
+            prediction = result.output
+            try:
+                prediction = [class_dict[x] for x, y in zip(class_dict.keys(), prediction) if y > threshold]
+            except Exception:
+                pass
+            for label in prediction:
+                label_result[label] = label_result[label] + 1
+    return label_result, class_dict
+
+# Load pre-trained model
+model_path = r'counting/models/tiny-tiny_16_24_epochs-std-0.0_52.bin'
+
+def detect_objects(image_path, labels=["car", "person"], threshold=0.5):
+    import numpy as np
+    import cv2
+    model = cv2.dnn.readNetFromDHArcosinh(model_path)
+    blob = cv2.dnn.blobFromImage(image_path, 1.0, (300, 300), (0, 0, 0), True)
+    model.setInput(blob)
+    net = model[0]
+    out = net.forward()
+    results = []
+    for label in labels:
+        results.append([1 for x in out[0][int(label)][0] if x < threshold])
+        results.append([0 for x in out[0][int(label) - 1][0] if x > threshold])
+    return results
+
+def count_cars(image_path):
+    results = detect_objects(image_path, labels=['car'])
+    return results[1][0]
+
+print(count_cars("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_113_image_1.jpg"))
+print('<final_result>', final_result)
+
+Solution: 1

@@ -1,0 +1,49 @@
+------------- 22-02-21-19-967379 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+import pandas as pd
+
+def count_empty_blue_seats(image_path):
+    # Load the object detector model
+    model = get_model("tiny")
+
+    # Execute the object detection algorithm
+    detection_results = model.execute(image_path,
+                                      labels=("blue"),
+                                      threshold=0.35,
+                                      model_size="tiny")
+
+    # Filter detections based on bounding boxes
+    blue_detections = [det for det in detection_results if det['label'] == "blue"]
+
+    # Check if any blue detection exists
+    if not blue_detections:
+        return 0
+    else:
+        # Get the bounding box coordinates of each blue detection
+        box_coordinates = [tuple(coord['box']) for det in blue_detections for coord in det['bbox']]
+
+        # Create a DataFrame with features
+        feature_df = pd.DataFrame(box_coordinates, columns=['x1', 'y1', 'x2', 'y2'])
+
+        # Calculate the percentage of empty detections
+        empty_percentage = ((feature_df['x2'] - feature_df['x1']) * 100).sum() / len(feature_df) * 100
+        return empty_percentage
+print('<final_result>', final_result)
+
+Solution: 3

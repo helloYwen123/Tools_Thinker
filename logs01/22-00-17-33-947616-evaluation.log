@@ -1,0 +1,49 @@
+------------- 22-00-17-33-947616 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+input_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_37_image_1.jpg"
+
+output_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/pred.jpg"
+
+result = execute_with_threshold(input_path=input_path, labels=["baseball", "basket"], output_shape=500, model_size="tiny")
+
+if result:
+    baseball_box = [bbox for bbox in result if "baseball" in bbox["label"]][0]
+    basket_box = [bbox for bbox in result if "basket" in bbox["label"] and bbox["box"]['y'] < 0.55][0]
+
+    baseball_coordinates = [baseball_box["bbox"]]
+    basket_coordinates = [basket_box["bbox"]]
+    
+    count_basket = 0
+    count_baseball = 0
+    for box in basketball_coordinates + baseball_coordinates:
+        if "bbox" in box:
+            count_basket += 1
+        else:
+            count_basket += 1
+    count_image = len(result)
+
+    output = f"{count_image}", count_baseball, max(count_baseball, count_image), 20
+
+    with open(output_image_path, 'w') as f:
+        f.write(str(output))
+    print(f"Image with identified objects saved: {output_image_path}")
+print('<final_result>', final_result)
+
+Solution: 1

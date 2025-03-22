@@ -1,0 +1,38 @@
+------------- 22-04-40-41-512860 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_74_image_1.jpg"
+labels = ["baseball"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+extraction = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+labels_dict = [{
+    "label": "baseball", "confidence score": 0.8, "box": {"x": 0.45, "y": 0.45, "w": 0.08, "h": 0.08}, "saved_image_path": "baseball.png"}]
+
+empty_glasses = []
+for empty_object in extraction:
+    if empty_object["label"] != "baseball" and "wine glass" in empty_object["label"]:
+        empty_glasses.append(empty_object)
+
+empty_glasses_count = len(empty_glasses)
+final_result = { "empty glasses": empty_glasses_count }
+print(f"Number of empty glasses: {final_result['empty glasses']}")
+print('<final_result>', final_result)
+
+Solution: 1

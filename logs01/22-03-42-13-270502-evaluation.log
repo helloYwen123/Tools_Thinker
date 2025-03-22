@@ -1,0 +1,68 @@
+------------- 22-03-42-13-270502 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 42
+SyntaxError: keyword argument repeated: threshold
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from PIL import Image
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_17_image_1.jpg"
+image = Image.open(image_path)
+
+# Define the object list and empty padding value
+objects = ['baseball', 'basket']
+padding = 20
+
+# Detect the objects in the image using the Object_Detector_Tool
+detection = {
+    'confidence score': None,
+    'box': None,
+    'label': None,
+    'image path': None
+}
+
+# Iterate over the available object labels and perform detection
+for label in objects:
+    # Define the model size to use
+    model_size = 'tiny'
+    
+    # Define the empty padding value
+    padding_value = 20
+
+    # Detect the object using the object_Detection tool
+    detection = tool.execute(model_size=model_size, labels=[label], threshold=0.35, threshold=True, threshold_threshold=True, threshold_padding=0.8, model=padding_value)
+    detection['box'] = detection['box'].tolist()
+
+    # Extract object information from the detected object
+    object = detection['object']
+    bounding_box = [object[0]['bbox'][0] + padding, object[0]['bbox'][1] + padding, object[0]['bbox'][2] + 2 * padding, object[0]['bbox'][3] + 2 * padding]
+    confidence_score = object[0]['confidence'] * 100
+    label = label
+
+    if object[0]['object'] == label and bounding_box[2] <= (padding * 2) - 1 and bounding_box[3] >= padding:
+        detection['label'] = label
+        detection['box'] = bounding_box
+        detection['confidence score'] = confidence_score
+
+# Convert the detection to a list
+final_detection = [detection]
+
+# Output the final detection results
+final_result = ['Number of people wearing a red coat:', len(final_detection)]
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

@@ -1,0 +1,63 @@
+------------- 22-02-10-31-735961 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import matplotlib.pyplot as plt
+from PIL import Image
+
+# Load the image for detection
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_106_image_1.png"
+label_detection = [ "w_1", "w_5", "w_6", "w_2", "w_3", "w_4", "w_7", "w_8", "w_9",
+                          "w_10", "w_11", "w_12", "w_13", "w_14", "w_15", "w_16", "w_17",
+                          "w_18", "w_19", "w_20", "w_21", "w_22", "w_23", "w_24", "w_25",
+                          "w_26", "w_27", "w_28", "w_29", "w_30", "w_33"] 
+
+# Define the model size to use ('tiny' or 'base')
+model_size = 'base'
+
+# Use the objectDetector_Tool function to extract the object dictionary from the image
+try:
+    detection_result = tool.execute(image=image_path, labels=label_detection, threshold=0.2, model_size=model_size)
+except Exception as e:
+    print(f'An error occurred while executing the tool: {e}')
+
+# Extract the object labels
+if len(detection_result) > 1:
+    # Split the labels
+    labels = [label.split("_")[4] for label in detection_result[0].keys()]
+    
+    # Filter out the 'w' label
+    labels = [label for label in labels if label != "w"]
+    
+    # Print the extracted labels
+    print(f'Extracted labels: {labels}')
+else:
+    print("An error occurred while executing the tool, and all detected objects were labeled as 'w_1'-___. Please check the output.")
+
+# Convert the labels into a single string for plotting
+labels_str = ' '.join(labels)
+
+# Use matplotlib to plot the vertical lines on the ground
+fig, ax = plt.subplots()
+ax.plot(labels_str)
+
+plt.show()
+
+final_result = len(detection_result[0].keys())
+print(f'Number of white vertical lines on the ground: {final_result}')
+print('<final_result>', final_result)
+
+Solution: 5

@@ -1,0 +1,50 @@
+------------- 22-06-03-16-492679 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 38
+    object_dict = {"label": "cow", "confidence score": confidence, "box": box, "saved_image_path": "./detected_cows/detected_cow_" + labels[name] + "_" + object_dict['label'] + "_" + str(int(confidence * 100)) + "_" + str(box[0]) + "_" + str(box[1]) + "_" + str(box[2]) + "_" + str(box[3]))
+                                                                                                                                                                                                                                                                                                 ^
+SyntaxError: closing parenthesis ')' does not match opening parenthesis '{'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_63_image_1.jpg"
+image = cv2.imread(image_path)
+
+# Detect the base model and obtain detections
+execution = tool.execute(image=image, labels=["cow"], threshold=0.5, model_size="base", padding=15)
+
+# Create a dictionary to store the detected cow objects
+cow_objects = []
+
+# Initialize empty list to store object paths
+obj_paths = []
+
+# Iterate over the predicted detections
+for detection in execute_output(execution):
+    label = detection[1]
+    confidence = detection[2]
+    box = detection[3]
+    box = [int(x) for x in box]
+    name, points = get_object_label(label)
+    if name == "cow":
+        object_dict = {"label": "cow", "confidence score": confidence, "box": box, "saved_image_path": "./detected_cows/detected_cow_" + labels[name] + "_" + object_dict['label'] + "_" + str(int(confidence * 100)) + "_" + str(box[0]) + "_" + str(box[1]) + "_" + str(box[2]) + "_" + str(box[3]))
+        obj_paths.append("./detected_cows/detected_cow_" + labels[name] + "_" + object_dict['label'] + "_" + str(int(confidence * 100)) + "_" + str(box[0]) + "_" + str(box[1]) + "_" + str(box[2]) + "_" + str(box[3])) 
+        cow_objects.append(object_dict)
+print(cow_objects)
+print('<final_result>', final_result)
+
+Solution: 0

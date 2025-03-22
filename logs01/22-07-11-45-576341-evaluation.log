@@ -1,0 +1,42 @@
+------------- 22-07-11-45-576341 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_people_with_green_jacket(image_path):
+    from object_detector_tool import ObjectDetectorTool
+
+    detection_tool = ObjectDetectorTool(
+        image_path,
+        labels=["green jacket"],
+        threshold=0.5,
+        model_size="tiny"
+    )
+
+    image_output_path = detection_tool.execute()
+    
+    # Load bounding box and image paths from output path
+    with open(image_output_path) as f:
+        lines = f.read().splitlines()
+        for i, line in enumerate(lines):
+            objects = [x.split(" ") for x in line.split(",")]
+            if "green jacket" in objects:
+                return i + 1  # return number and add 1 to account for the detected object in front
+
+final_result = count_people_with_green_jacket("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_30_image_1.jpg")
+print("Number of people wearing a green jacket:", final_result)
+print('<final_result>', final_result)
+
+Solution: 0

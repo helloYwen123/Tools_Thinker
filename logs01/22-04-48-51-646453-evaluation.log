@@ -1,0 +1,44 @@
+------------- 22-04-48-51-646453 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from PIL import Image
+
+def count_blue_buses(image_path):
+    # Load the image
+    image = Image.open(image_path)
+    
+    # Get the labels from the tool metadata
+    labels = ["blue"]
+
+    # Apply the label detector and extract bounding boxes
+    detection = tool.execute(image=image, labels=labels, threshold=0.35, model_size="tiny")
+    boxes = [d['bbox'] for d in detection if 'label' in d and 'confidence score' in d and 'blue' in d['label']]
+
+    # Count the blue buses
+    if boxes:
+        count = sum(1 for box in boxes if box[1][1] == 255)
+        return count
+    else:
+        return 0
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_39_image_1.jpg"
+blue_buses_count = count_blue_buses(image_path)
+final_result = str(blue_buses_count)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

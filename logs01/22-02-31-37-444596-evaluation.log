@@ -1,0 +1,52 @@
+------------- 22-02-31-37-444596 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_cows(image_path):
+    import requests
+    import os
+    from PIL import Image
+    import numpy as np
+
+    # Load the image and convert it to grayscale
+    image = Image.open(requests.get(image_path, stream=True).raw['content']).convert('L')
+    np_image = np.array(image)
+    gray_image = np_image.reshape(len(np_image), -1)
+
+    # Define a dictionary to store the detected objects
+    objects_dict = {}
+
+    # Apply the object detection model to the image
+    detection_results = tool.execute(image=image_path, labels=[{'bbox': {'boxes': [400, 120, 900, 880], 'text': 'Cows'}}, {'bbox': {'boxes': [100, 100, 600, 800], 'text': 'Man'}}, {'bbox': {'boxes': [130, 480, 670, 760], 'text': 'Train'}}, {}])
+
+    if 'object_names' in detection_results[0][0]:
+        for detection in detection_results[0][0]:
+            if 'text' in detection['bbox']:
+                objects_dict[detection['bbox'][0][0]] = {'confidence': detection['bbox'][1][0], 'category': detection['bbox'][0][2][0]}
+            else:
+                objects_dict[detection['bbox'][0][0]] = {'category': 'Unknown'}
+
+    # Count the detected objects
+    count = sum([1 for objects in objects_dict.values() if 'category' in objects.keys() and 'Cows' in objects['category']])
+
+    return count
+
+# Call the function with the test image path
+final_result = count_cows("path/to/test_image.jpg")
+print(f"The number of cows detected in the image is: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 0

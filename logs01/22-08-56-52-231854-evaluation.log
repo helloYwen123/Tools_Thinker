@@ -1,0 +1,61 @@
+------------- 22-08-56-52-231854 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+import datetime as dt
+
+def calculate_number_of_people_wearing_yellow_jackets(images_path):
+    # Load the image
+    image = tool.execute(image=images_path)
+    
+    # Initialize a dictionary to store the predicted labels
+    prediction_labels = {}
+    
+    # Create a list to store the labels that are expected to appear in the image
+    expected_labels = ["yellow jacket"]
+    
+    # Function to check if a label is expected
+    def is_excluded_label(label):
+        if label in expected_labels:
+            return True
+        return False
+    
+    # Iterate through the image and check the predicted labels
+    for label in image:
+        if is_excluded_label(label):
+            continue
+        if label not in prediction_labels or prediction_labels[label] < label:
+            # Update the prediction.labels dictionary if a new label is detected
+            prediction_labels[label] = label
+    
+    # Calculate number of people wearing yellow jackets
+    total_people = len(prediction_labels) - prediction_labels["baseball"]
+    if "basket" in prediction_labels:
+        total_people -= 1
+    return total_people
+
+# List of image paths
+image_paths = [
+    "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_103_image_1.jpg"
+]
+
+# Calculate number of people wearing yellow jackets
+number_of_people = calculate_number_of_people_wearing_yellow_jackets(image_paths)
+print(f"How many people are wearing yellow jackets? {number_of_people}")
+print('<final_result>', final_result)
+
+Solution: 1

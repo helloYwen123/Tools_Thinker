@@ -1,0 +1,57 @@
+------------- 22-11-57-11-576450 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_people(image_path, labels=['person']):
+    detect_obj = []
+    image = cv2.imread(image_path)
+    objects_info = []
+
+    for label in labels:
+        detection = detect_objects(image, labels, model_size="tiny")
+        detected_objects = []
+        # Add empty padding and save the detected objects.
+        detected_objects.extend([i for i in detection if (i['bbox'][4] > 10 and i['bbox'][4] < 150 and i['bbox'][6] > 10 and i['bbox'][6] < 150) and (i['bbox'][7] > 10 if label == 'person' else 0)] )
+        for obj in detected_objects:
+            if obj['bbox'][4] > 100 and obj['bbox'][4] < 150 and obj['bbox'][6] > 10 and obj['bbox'][6] < 150 and obj['bbox'][7] > 10:
+                objects_info.append([label, obj['bbox'][4], obj['bbox'][6], round(obj['bbox'][7], 2)])
+    return objects_info
+
+# Execute the command with the provided path.
+execution = tool.execute(
+    image="val_Counting_99_image_1.jpg",
+    labels=["car", "person"],
+    threshold=0.5,
+    model_size="base",
+    padding=15)
+# Extract and store the detected objects from the JSON
+boxes = [bbox[0] for bbox in execution]
+
+# Check if the car is in a valid position
+valid_box = boxes[5]
+
+# Calculate and return the number of people in front of the car
+if valid_box > 15:
+    number_of_people = boxes[5][3] - boxes[3][3]
+else:
+    number_of_people = 0
+final_result = {"count_people": number_of_people}
+print(f"Number of people in front of the car: {final_result['count_people']}")
+print('<final_result>', final_result)
+
+Solution: 0

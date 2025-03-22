@@ -1,0 +1,50 @@
+------------- 22-02-41-16-404694 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_nuts(bowl_image_path):
+    import numpy as np
+    
+    # Load and preprocess the image
+    image = np.load(bowl_image_path)
+    image = image[np.newaxis, ...]
+    
+    try:
+        # Detect and save detected objects with padding
+        detection = tool.execute(image=image, labels=["nut"], threshold=0.35)
+        detection = detection[0]
+        
+        # Count the number of detected nuts
+        nuts = []
+        for obj in detection:
+            if obj['label'] == "nut":
+                nuts.append(float(obj['confidence score']))
+        
+        return int(sum(nuts))
+    
+    except Exception as e:
+        print("Error:", str(e))
+        return 0
+
+# Load and preprocess the image
+bowl_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_6_image_1.jpg"
+bowl_image = np.load(bowl_path)
+bowl_image = bowl_image[np.newaxis, ...]
+final_result = count_nuts(bowl_path)
+print("The number of big nuts is:", final_result)
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,46 @@
+------------- 22-06-24-29-754822 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_people_in_image(image_path, labels=["person"], threshold=0.5, model_size="base", padding=15):
+    execution = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    if len(execution) > 1:
+        return [obj for obj in execution[1] if obj["label"] in labels]
+    else:
+        return []
+
+def count_people_in_binder(python_path_to_binder, labels=["person"], threshold=0.5, model_size="base", padding=15):
+    execution = tool.execute(image=python_path_to_binder, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    if len(execution) > 1:
+        return [obj for obj in execution[1] if obj["label"] in labels]
+    else:
+        return []
+
+result = count_people_in_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_8_image_1.jpg", labels=["red shirt"], threshold=0.5, model_size="base", padding=20)
+if len(result) > 0:
+    print(f"There are {len(result)} people wearing red shirts in the image.")
+else:
+    print("No people with red shirts detected.")
+result = count_people_in_binder("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_8_image_2.jpg", labels=["red shirt", "black cat"], threshold=0.5, model_size="base", padding=10)
+if len(result) > 0:
+    print(f"There are {len(result)} people and a black cat with red shirts in the image.")
+else:
+    print("No people or black cat with red shirts detected.")
+print('<final_result>', final_result)
+
+Solution: 1

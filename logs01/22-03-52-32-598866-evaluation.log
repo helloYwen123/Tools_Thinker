@@ -1,0 +1,51 @@
+------------- 22-03-52-32-598866 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 41
+SyntaxError: 'return' outside function
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+try:
+    import image
+    import numpy as np
+
+    # Load the image file and convert it to grayscale
+    image = image.Image(path="path/to/image.png")
+    gray = np.array(image.get_image())
+
+    # Detect objects in the grayscale image
+    detection = tool.execute(image=image, labels=["baseball", "basket"], threshold=0.5, model_size="tiny")
+
+    # Extract the bounding boxes of detected objects
+    boxes = [detection[0]['bbox'] for detection in detection]
+    
+    # Count the number of people sitting on the bed
+    people_on_bed = 0
+    for box in boxes:
+        if box[0][2] <= 0 or box[1][1] <= 0:
+            continue
+        if box[0][0] + box[2][0] < 0 or box[1][0] + box[2][1] < 0:
+            continue
+        person_coordinates = [box[0][0], box[0][2][0], box[1][0], box[1][1]]  # Convert [x, y, w, h] coordinates to [x, y, width, height]
+        bed_coordinates = [0, 0, 1, 1]  # Define bounding box for the couch (1, 1)
+        if np.all(person_coordinates - bed_coordinates < gray) :
+            people_on_bed += 1
+
+    return people_on_bed
+except Exception as e:
+    final_result = "Error occurred: " + str(e)
+    return final_result
+print('<final_result>', final_result)
+
+Solution: 1

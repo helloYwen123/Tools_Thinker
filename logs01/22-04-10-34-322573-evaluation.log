@@ -1,0 +1,58 @@
+------------- 22-04-10-34-322573 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_buses(image):
+    """
+    Detects buses in an image using the Object_Detector_Tool tool.
+    :param image: A path to the image file with the bus locations.
+    :return: List of bus locations.
+    """
+    # Load the object detection model
+    import dino_toolkit as dtk
+    model = dtk.load_dino_toolkit()
+
+    # Load the image
+    import matplotlib.pyplot as plt
+    import numpy as np
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(111)
+    ax.imshow(image)
+    ax.scatter(*np.where(model[0][1]))
+
+    detections = model.find_objects(image)
+    bounding_boxes = np.column_stack((detections[0], detections[1]).transpose())
+
+    return bounding_boxes
+
+def answer():
+    import numpy as np
+
+    detection_outputs = dtk.detect_object_with_threshold(image_path, labels="red buses", threshold=0.35)
+    if len(detection_outputs) >= 1:
+        red_buses_pos = [d['bbox'] for d in detection_outputs if d['label'] == "red buses"][0]
+        return red_buses_pos.tolist()
+    else:
+        return -1
+
+final_result = answer()
+if final_result > 0:
+    print(f"The buses are located at {final_result}.")
+else:
+    print("No buses detected.")
+print('<final_result>', final_result)
+
+Solution: 1

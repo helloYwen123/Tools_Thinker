@@ -1,0 +1,78 @@
+------------- 22-08-30-27-201835 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Load the image and define the model parameters
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.jpg"
+model_size = "base"
+
+# Define the labels and threshold variables
+labels = "baseball, basketball".split(',')
+threshold = 0.35
+
+# Execute the object detection
+execution = tool.execute(image_path, labels=labels, threshold=threshold, model_size=model_size)
+
+# Check if any boxes are detected
+if execution[0]:
+    boxes = [box for box, _, _, _ in execution]
+    boxes = [box for box in boxes if box[1] > 0.3]  # Filter boxes with confidence score > 0.3
+
+    # Calculate the frequency of detected objects
+    frequency = len(boxes)
+    
+    # Calculate the total number of red buildings
+    total_red_buildings = 0
+
+    # Count the frequency of red buildings
+    for box in boxes:
+        x, y, width, height = [int(i) for i in box[3:5]]
+        area = width * height
+        if area == 0:
+            continue  # Skip boxes with empty area
+
+        x, y = abs(x), abs(y)  # Convert to x-y coordinates
+        x1, y1 = x + width, y + height  # Convert back to original coordinates
+
+        if ground_truth["label"] == "Red building":
+            total_red_buildings += 1
+
+    # Calculate the percentage of red buildings
+    if frequency:
+        percentage = (total_red_buildings / (len(boxes) or 1) * 100) if frequency else 0.00
+
+    else:
+
+        # If no boxes are detected, set the result to 0.00
+        percentage = 0.00
+
+    final_result = {
+        "total_red_buildings": total_red_buildings, 
+        "percentage": (percentage / 100) if percentage else 0.00
+    }
+
+else:
+
+    # If no boxes are detected, set the result to 1.00 and no_percentage
+    final_result = {
+        "total_red_buildings": 1.00, 
+        "percentage": 1.00
+    }
+print('<final_result>', final_result)
+
+Solution: 0

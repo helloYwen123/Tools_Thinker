@@ -1,0 +1,52 @@
+------------- 22-06-24-29-788341 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import os
+from PIL import Image
+
+def count_beams(path: str, model_size: str = "base", threshold: float = 0.5, padding: int = 20):
+    image = Image.open(path)
+    detector = Object_Detector_Tool()
+    detection = detector.detect_objects(image, labels=["beam"], threshold=threshold, model_size=model_size, padding=padding)
+
+    beams = []
+    for obj in detection:
+        if obj['label'] == "beam":
+            beam = [obj['box'], obj['confidence'] * obj['box']]
+            beams.append(beam)
+
+    return beams
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_36_image_1.jpg"
+
+# Parameters for the tool
+model_size = "base"
+threshold = 0.5
+padding = 20
+
+beams = count_beams(image_path, model_size, threshold, padding)
+
+# For verification, print the beams and their counts
+for beam in beams:
+    print(f"Beam: {(beam[0][0], beam[0][1])}, Confidence: {beam[1]:.2f}")
+
+final_result = len(beams)
+print("Total beams in the image: ", final_result)
+print('<final_result>', final_result)
+
+Solution: 5

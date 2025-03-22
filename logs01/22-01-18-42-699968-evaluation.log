@@ -1,0 +1,58 @@
+------------- 22-01-18-42-699968 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_objects(img_data, labels, threshold=0.35, model_size='tiny', padding=20):
+    # Load the object detector model
+    detector_model = "Object_Detector_Tool"  # Replace with the path to the detector model
+    
+    # Detect objects in the image
+    execution = tool.execute(image=img_data, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    
+    # Return the detected objects paths
+    return execution
+
+# Load an image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_81_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Detect objects in the image
+execution = detect_objects(image_path, labels, threshold, model_size, padding)
+
+# Check if there were any objects detected
+if not execution:
+    final_result = "No objects detected in the image."
+else:
+    # Process detected objects
+    for obj_data in execution:
+        if "baseball" in obj_data["label"]:
+            ball_image_path = obj_data["saved_image_path"]
+        else:
+            basket_image_path = obj_data["saved_image_path"]
+    
+    # Calculate the number of balls
+    balls_count = len(obj_data["label_images"])
+
+    final_result = f"The image contains {balls_count} balls."
+
+# Print the final result
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

@@ -1,0 +1,53 @@
+------------- 22-03-13-20-500462 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_76_image_1.jpg"
+labels_to_detect = []
+threshold = None
+model_size = "base"
+padding = 20
+output_type = "list"
+
+execution = execute_image(
+    image=image_path, labels=labels_to_detect, threshold=threshold, model_size=model_size, padding=padding)
+
+print("Detected objects:", execution)
+
+if event("progress"):
+    import time
+    time.sleep(1)
+
+if "found_objects" in execution[0]:
+    objects = execution[0]["found_objects"]
+    print(f"Detected objects with confidence >= {threshold}:")
+    print(objects)
+
+if "created_objects" in execution[0]:
+    print("\nCreated objects:")
+else:
+    print("\nNo detected objects found.")
+
+with open("counting_example.txt", "w") as f:
+    f.write(f"Number of people skiing:\t{len(objects)}")
+
+final_result = len(objects)
+print("Number of people skiing:", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

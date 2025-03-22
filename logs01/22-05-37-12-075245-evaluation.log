@@ -1,0 +1,42 @@
+------------- 22-05-37-12-075245 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_44_image_1.jpg"
+image = preprocess_image(image_path)
+labels = ["skier"] # Only detect skier: https://arxiv.org/abs/1912.02176
+
+# Detect skier
+skier = detect_objects(image, labels=labels, threshold=0.35)
+skier_path = f"result_for_image_{image_path}"
+
+# Get detection score and bounding box for skier in the image
+for detection in skier:
+    skier_score, skier_bbox = detection["bbox"]
+
+# Check if the skier is doing a flip
+flip_detection = detect_objects(image, labels=["flip"], threshold=0.35)[0]
+flip_area = flip_detection["bbox"][2]
+if flip_area >= 0.15 and flip_area <= 0.25:  # Adjust these thresholds as needed
+    print("The skier is doing a flip.")
+else:
+    print("The skier is not doing a flip.")
+print('<final_result>', final_result)
+
+Solution: 0

@@ -1,0 +1,62 @@
+------------- 22-08-30-27-114605 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Step 1: Extracting the labels and image file path from the question
+labels = ["baseball", "basket"]
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_56_image_1.jpg"
+
+# Step 2: Setting the parameters for the image
+params = {
+    'threshold': .35,
+    'model_size': 'tiny',
+    'padding': 20
+}
+
+# Step 3: Executing the objects detection tool
+execution = tool.execute(image=image_path, labels=labels, params=params)
+
+# Step 4: Extracting the bounding box coordinates of the detected object
+bbox_list = [elem[2:] for elem in execution]
+
+# Step 5: Filtering non-object bounding boxes (assuming object bounding boxes are in the first index)
+bbox_list = [elem for elem in bbox_list if len(elem) > 1]
+
+bbox_list, _ = filter_true_bbox(bbox_list, lambda d: all([d[0] > bbox[0] - 50 and d[0] < bbox[0] + 50 for bbox in box_list] for box_list, _ in bbox_list))
+bbox_list, _ = box_listify_boxes(bbox_list, bbox_count=5)
+
+# Step 6: Calculating the distance from the current location of the television (bbox[0],bbox[1],bbox[2],bbox[3]) to the rightmost bounding box
+distance = distance_bbox(bbox_list[0][bbox[0]:bbox[0]+bbox[3]], bbox_list[1][bbox[1]:bbox[1]+bbox[3]])
+
+# Step 7: Extracting the information about the rightmost bounding box from the given bbox list
+right_bbox = bbox_list[0][bbox[0]:bbox[0]+bbox[3]]
+
+# Step 8: Extracting the distance from the current point to the television using the rightmost bounding box location
+right_location = (right_bbox[0], right_bbox[1])
+distance_right_location = distance_bbox(right_location, bbox_list[0])
+
+# Step 9: Calculate the difference in location between the two points
+bbox_right_to_tv = bbox_right_location - bbox_list[0]
+distance_right_location = bbox_location_to_location_distance(bbox_right_to_tv[0], bbox_right_to_tv[1], bbox_list[0][bbox[0]:bbox[0]+bbox[3]], bbox_list[1][bbox[1]:bbox[1]+bbox[3]]) 
+
+final_result = round(distance_right_location * 1000, 2)
+
+final_result
+print('<final_result>', final_result)
+
+Solution: 3

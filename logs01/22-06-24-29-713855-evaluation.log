@@ -1,0 +1,77 @@
+------------- 22-06-24-29-713855 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def get_max_length(labels):
+    max_length = 0
+    for label in labels:
+        max_length = max(max_length, len(label.split()))
+    return max_length
+    
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_94_image_1.jpg"
+labels = ["baseball", "basket"]
+model_size = "base"
+padding = 20
+
+generated_output = tool.execute(image_path, labels=labels, model_size=model_size, threshold=0.35, padding=padding)
+
+output_images = generated_output[0]["saved_image_path"]
+image_id = generated_output[0]["label"]
+
+output_labels = []
+bbox = []
+confidence = []
+padding_count = 0
+
+for img_label in output_images:
+    img_info = tool.get_info(image_id, img_label)
+    for object_name in img_info.keys():
+        object_box = (round(int(img_info[object_name]["bbox"][0]), 2),
+                      int(img_info[object_name]["bbox"][1]), 
+                      round(int(img_info[object_name]["bbox"][2]), 2),
+                      int(img_info[object_name]["bbox"][3]))
+        output_labels.append(object_name)
+        bbox.extend(object_box)
+        confidence.extend([img_info[object_name]["confidence"] for _ in range(len(object_box))])
+        if abs(img_info[object_name]["confidence"]) > 0.35 - 0.04:
+            padding_count += 1
+        else:
+            padding_count = max(padding_count, 0)
+            print("Padding count for", img_label, "is", padding_count)
+    if abs(img_info[object_name]["confidence"]) > 0.35 - 0.04: # For more robustness
+        output_labels.append(object_name)
+        bbox.extend(object_box)
+        confidence.extend([img_info[object_name]["confidence"] for _ in range(len(object_box))])
+
+bbox_count = len(bbox)
+confidence_count = len(output_labels)
+max_length = get_max_length(output_labels)
+model_size = 1000
+
+total = bbox_count + confidence_count - 1
+
+print("Padding count for", image_id, "is", padding_count)
+print(bbox_count)
+print(confidence_count)
+print(max_length)
+print(max(length * model_size * total for _, length in enumerate(output_labels)))
+print(max_length)
+print("max_length of", output_labels, "is", max_length)
+print("Model size:", model_size)
+print("Total size:", total * model_size * (total - max_length))
+print('<final_result>', final_result)
+
+Solution: 0

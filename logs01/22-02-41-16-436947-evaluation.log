@@ -1,0 +1,79 @@
+------------- 22-02-41-16-436947 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import numpy as np
+
+def detect_objects(image_path, labels=[['baseball', 'basket'], ['car', 'person'], ['frisbee', 'baseball']]):
+    # Preparing the tool parameters
+    model_size = 'base'
+    threshold = 0.35
+    padding = 20
+    labels_to_filter = []
+
+    # Reading the image file with the tool
+    detection_tool = Object_Detector_Tool()
+    detection_tool.input_types = {'image': image_path}
+    detection_tool.labels = labels_to_filter
+    detection_tool.threshold = threshold
+    detection_tool.model_size = model_size
+    detection_tool.padding = padding
+    detection_tool.execute()
+
+    # Extracting the bounding boxes and confidence scores of the detected objects
+    detections = detection_tool.output_type
+
+    # Filtering the detections based on the expected categories
+    filtering_tool = Object_Detector_Tool()
+    filtering_tool.input_types = {'image': image_path}
+    filtering_tool.labels = labels_to_filter
+    filtering_tool.threshold = threshold
+    filtering_tool.model_size = model_size
+    filtering_tool.padding = padding
+    filtering_tool.execute()
+
+    # Getting the detection IDs of all objects
+    ids = [d[0] for d in detections]
+
+    filtered_objects = []
+
+    for id in ids:
+        for idx, label in enumerate(labels_to_filter):
+            if id == label[0]:
+                filtered_object = (
+                    label[1],
+                    detections[idx][2],
+                    f'diagonally filtered_{label[0]}_{id}',
+                    f'diagonally_filtered_{label[0]}_{id}.png',
+                )
+                filtered_objects.append(filtered_object)
+
+    return filtered_objects
+
+# Reading the image file with the tool
+counting_image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_97_image_1.jpg'
+counting_objects = detect_objects(counting_image_path)
+
+counting_num_hole_eyes_objects = sum(1 for _, score, name, _ in counting_objects
+                                    if name.lower() == 'hole eye')
+
+counting_num_person_object = len(counting_objects)
+counting_num_hole_eyes_object_idx = 0
+
+print(f'How many people in this image are wearing solid red shirts? {counting_num_hole_eyes_object_idx}')
+print('<final_result>', final_result)
+
+Solution: 3

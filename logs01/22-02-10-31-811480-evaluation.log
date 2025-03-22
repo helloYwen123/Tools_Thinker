@@ -1,0 +1,78 @@
+------------- 22-02-10-31-811480 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from PIL import Image
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_106_image_1.jpg"
+image = Image.open(image_path)
+
+# Preprocess image
+resize_width = 640
+margin = 20
+padding = 15
+image = image.resize((resize_width, resize_width))
+new_image = Image.new('RGB', (resize_width, resize_width), 'white')
+
+# Generate labels
+labels = ['tennis', 'nets']  # Replace with actual labels
+
+# Detect objects
+execution = tool.execute(image=image, labels=labels, threshold=0.35, model_size="tiny", padding=padding)
+
+# Check if labels exists
+if execution['label'] == 'tennis':
+    tennis_x = execution['box'][1][0]  # x-coordinate of tennis object (may not be fully within original image)
+    tennis_label = labels[0]  # default tennis label
+
+    # Count tennis_x lines in new_image
+    tennis_count = new_image.load('whitetrace.png', 'RGB')
+    tennis_lines = new_image.load('whitelines.png', 'RGB')
+
+    tennis_lines = tennis_lines[:, tennis_x + margin:].reshape((-1, 1))  # Get tennis_lines within the tennis_x bounds
+    tennis_lines = tennis_lines[:, :tennis_line_count]  # Select the top x and y coordinates
+
+    tennis_count_lines_count = len(tennis_lines)
+    tennis_count = tennis_count_lines_count <= 10  # Set count threshold based on tennis_count_lines_count (may need adjustment)
+    
+    if tennis_count:
+        final_result = "How many white vertical lines are drawn on the ground? {0:,}".format(tennis_count_lines_count)
+    else:
+        final_result = ""
+        
+elif execution['label'] == 'nets':
+    nets_x = execution['box'][2][0]  # x-coordinate of nets object
+    nets_label = labels[1]
+
+    # Count nets_x lines in new_image
+    nets_lines = new_image.load('whitetrace.png', 'RGB')
+    nets_lines = nets_lines[nets_x + margin:].reshape((-1, 1))
+    nets_line_count = len(nets_lines)
+
+    nets_count = nets_line_count <= 10  # Set count threshold based on nets_line_count (may need adjustment)
+    if nets_count:
+        final_result = "How many white vertical lines are drawn on the ground? {0:,}".format(nets_count)
+    else:
+        final_result = ""
+else:
+    final_result = ""
+
+# Print final_result
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 5

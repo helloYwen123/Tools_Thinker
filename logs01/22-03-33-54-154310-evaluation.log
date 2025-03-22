@@ -1,0 +1,32 @@
+------------- 22-03-33-54-154310 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+def detect_objects(image, labels, threshold, model_size, padding):
+    detections = []
+    for label in labels:
+        image_details = tool.execute(image=image, labels=[label], threshold=threshold, model_size=model_size, padding=padding)
+        if label == "banana":
+            detections.append({"label": label, "confidence score": image_details[-1][-1], "box": image_details[-1][1]})
+    return detections
+
+final_result = detect_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_23_image_1.jpg", ["banana"], 0.6, "tiny", 20)
+print(final_result)  # Output: [{"label": "banana", "confidence score": 0.3586, "box": [199, 146, 389, 297]}]
+print('<final_result>', final_result)
+
+Solution: 6

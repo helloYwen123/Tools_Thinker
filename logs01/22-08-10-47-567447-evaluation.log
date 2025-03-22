@@ -1,0 +1,61 @@
+------------- 22-08-10-47-567447 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from PIL import Image
+import numpy as np
+from object_detector_tool import *
+
+# Read the first image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_96_image_1.jpg"
+image = Image.open(image_path)
+labels = ["baseball", "basket"]  # Replace with your labels
+threshold = 0.35  # Default threshold value
+model_size = "tiny"  # Default model size
+padding = 20  # Default empty padding value
+
+# Get the predicted objects
+det_dict = tool.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+# Create a list to store the bounding boxes for each detected object
+bbox_list = []
+
+# Iterate through each object detected
+for obj in det_dict["output_type"]:
+    x = int(obj["bbox"][0])  # Width of the bounding box
+    y = int(obj["bbox"][1])  # Height of the bounding box
+    w = int(obj["bbox"][2])
+    h = int(obj["bbox"][3])
+
+    # Add the bounding box to the list
+    bbox_list.append([x, y, w, h])
+
+# Convert the list of bounding boxes into a single numpy array
+bbox_array = np.array(bbox_list)
+
+# Convert the bounding box array into numpy shape
+bbox_array = np.array([bbox_array.tolist()])
+
+# Extract the bounding box of the sailing boat from the bounding box array
+sailing_boat_bbox = bbox_array.tolist()[:-1]
+
+# Get the bounding box of the sailing boat
+sailing_boat_bbox[0:4]
+
+(0, 0), (40, 55), (50, 54), (122, 54)
+print('<final_result>', final_result)
+
+Solution: 0

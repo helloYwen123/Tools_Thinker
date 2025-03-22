@@ -1,0 +1,66 @@
+------------- 22-07-10-45-783316 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 33
+    print(f"Detected objects with labels {'',}'.join([' '.join(detection_result['label']) for detection in filtered_objects]), "with confidence score >= 0.2, box coordinates (x0, y0), width (w), and height (h):")
+                                                                                                                                                                                                                  ^
+SyntaxError: unterminated string literal (detected at line 33)
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+import matplotlib.pyplot as plt
+
+def detect_objects(image_path, labels, threshold=0.35, model_size="tiny", padding=20):
+    # Load object detector model
+    detection_tool = Object_Detector_Tool(image_path, labels, threshold, model_size, padding)
+    detection_result = detection_tool.execute()
+
+    # Filter objects
+    def filter_objects(object):
+        x0, y0, w, h = object[3:7]
+        score = object[0]
+        return (h >= 20) and (w >= 20) and (score >= 0.2)
+
+    filtered_objects = [i for i in detection_result['output'] if filter_objects(i)]
+
+    # Print detected objects information
+    if filtered_objects:
+        print(f"Detected objects with labels {'',}'.join([' '.join(detection_result['label']) for detection in filtered_objects]), "with confidence score >= 0.2, box coordinates (x0, y0), width (w), and height (h):")
+        print(filtered_objects)
+
+    # Display detected objects with empty padding
+    plt.figure(figsize=(10, 7))
+    plt.imshow(detector_tool.image, cmap='gray')
+    for i, detection in enumerate(filtered_objects):
+        x0, y0, w, h = detection
+        plt.gca().axes.set_yticklabels([])
+        plt.gca().axes.set_xticks([])
+        plt.gca().text(x0, y0, f"label {labels[i]} with confidence {score[i]:.1f}.", va="center", ha="center", horizontalalignment="center", verticalalignment="center")
+        plt.gca().add_patch(image.Rectangle((x0, y0), w, h, fill=False))
+
+    plt.show()
+
+# Example usages
+if __name__ == "__main__":
+    # Your image path
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_64_image_1.jpg"
+
+    # Assume labels=['cereal', 'pot', 'microwave', 'sink', 'sink', 'sink'] and you want to use the tiny model.
+    labels = ['cereal', 'pot', 'microwave', 'sink', 'sink', 'sink']
+    detection_result = detection_objects(image_path, labels)
+    # For demonstration, only print the filtered and unfiltered objects' information
+    filter_objects(detection_result)
+print('<final_result>', final_result)
+
+Solution: 4

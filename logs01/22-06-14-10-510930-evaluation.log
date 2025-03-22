@@ -1,0 +1,48 @@
+------------- 22-06-14-10-510930 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_buses(image_path, threshold=0.5, model_size="base", padding=20):
+    from object_detector_tool import execute
+    execution = execute(image_path, labels=["car", "person"], threshold=threshold, model_size=model_size, padding=padding)
+    if len(execution['output_type']) > 0:
+        if "box" in execution:
+            for bus in execution['output_type']:
+                if "box" in bus:
+                    x_values = [item['left'] for item in bus['box']]
+                    y_values = [item['top'] for item in bus['box']]
+                    x_values.extend([padding for _ in range(len(x_values) - len(x_values)//2)])
+                    y_values.extend([padding for _ in range(len(y_values) - len(y_values)//2)])
+                    bus_label = bus['label']
+                    bus_width = max(x_values) - min(x_values) + 1
+                    bus_height = max(y_values) - min(y_values) + 1
+                    new_box = [bus_label, bus_width, bus_height, [x, y] + [x + bus_width + padding, y + bus_height + padding], True]
+                    return new_box
+    return None
+
+# Load image
+image = "path/to/image.jpg"
+threshold = 0.5
+model_size = "tiny"
+
+# Call the function
+bus_count = count_buses(image, threshold, model_size)
+
+final_result = len([x for x in bus_count if "box" in x])
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

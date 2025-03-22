@@ -1,0 +1,90 @@
+------------- 22-03-13-20-570566 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import detection
+
+def count_skiers(image, labels, threshold, model_size, padding):
+    detections = []
+    
+    # Load labels and threshold for detection
+    labels_d, threshold_d = get_labels_and_threshold(image, labels, threshold)  
+    model = get_model(model_size)
+    
+    # Detect skiers in the image using the labels and threshold 
+    detection_graph, probability_map, classes, _ = model.detect_objects_in_image(image, labels_d, threshold_d)
+    
+    _, _, box, _ = detection_graph
+    
+    # Count the number of pixels that fall within the skiers' bounding boxes
+    for box in box:
+        # Check if the skier's bounding box is within the skier's bounding box and if the probability is above 0.35
+        if isinstance(box[0], list):
+            if len(box[0]) == 4:
+                skier_box = [box[1], box[2],[box[3]-box[1], box[2]-box[1]]]
+                skier_probability = probability_map[box[0]][box[1]] >= 0.35
+                if skier_probability:
+                    skier_id = classes[box[2]]
+                    if skier_id == 1:  # This is just an example, actual labels can vary
+                        detections.append({'label': skier_id, 'confidence': skier_probability})
+    
+    # Return the list of detected skiers and bounding boxes
+    return detections
+
+# Function to get labels and threshold for detection
+def get_labels_and_threshold(image, labels, threshold):
+    labels_d = dict()
+    threshold_d = dict()
+    
+    # Load the image using the given path
+    detected_objects = detection(image)
+    
+    # Loop through each object in the image
+    for obj in detected_objects:
+        labels_d[obj], threshold_d[obj] = obj_labels_extraction(image, obj['bbox'], detected_objects)
+    
+    return labels_d, threshold_d
+
+# Function to extract object labels from the image
+def obj_labels_extraction(image, obj, det_objects):
+    label = None
+    probability = None
+    
+    # Loop through each object in det_objects
+    for obj in det_objects:
+        # Check if the object's bbox covers the image
+        if obj['bbox'][0] <= len(image) and obj['bbox'][1] <= len(image[0]):
+            label = obj['label']
+            probability = obj['confidence'] if obj['label'] in labels_d else None
+            
+            # Handle the detection if the object matches the threshold and the label
+            if probability < threshold:
+                label = None
+                probability = None
+                break
+    return label, probability
+
+# Load and preprocess the image
+image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_44_image_1.jpg"
+
+# Detect skiers and their bounding boxes
+detections = detection(image=image, labels=["sky", "skier"], threshold=0.35, model_size="base", padding=20)
+
+# Print the list of detected skiers and their bounding box confidence
+print(detections)
+print('<final_result>', final_result)
+
+Solution: 0

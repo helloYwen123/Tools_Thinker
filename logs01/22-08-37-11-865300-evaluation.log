@@ -1,0 +1,45 @@
+------------- 22-08-37-11-865300 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+import numpy as np
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_31_image_1.jpg"
+
+label_list = ["baseball", "basket"]
+
+threshold = 0.35
+model_size = "base"
+
+padding = 15
+
+# Load the image and label information
+image = load_image(image_path, label_list)
+label_info = load_label_image(image, label_list, threshold, model_size, padding)
+
+# Detect objects in the image using ground-dino 
+executions = []
+for execution in label_info:
+    predictions = detection(image, label_info, threshold)
+    executions.append(prepare_executions(execution, predictions))
+
+# The number of detected baseball carts in the image
+total_carts = sum(executions)
+print("Total carts:", total_carts)
+print('<final_result>', final_result)
+
+Solution: 1

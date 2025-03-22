@@ -1,0 +1,50 @@
+------------- 22-09-04-29-449798 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 30
+    detected_objects = detections[object_detection_helper.output_type][columns={'label', 'confidence', 'box', 'saved_image_path'}]
+                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: invalid syntax. Maybe you meant '==' or ':=' instead of '='?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_empty_blue_seats(image_path, labels, threshold, model_size="tiny", padding=20):
+    import os
+    import cv2
+    from object_detector_tool import detection_helper
+    import pandas as pd
+
+    # Load the image
+    image = cv2.imread(image_path)
+
+    # Detect objects
+    labels_to_identify = pd.read_csv("labels.csv")["label"].tolist()
+    object_detection_helper = detection_helper(image=image, labels=labels_to_identify, threshold=threshold, model_size=model_size, padding=padding)
+    detections = object_detection_helper.run(image=image)
+
+    # Get bounding boxes and save path
+    detected_objects = detections[object_detection_helper.output_type][columns={'label', 'confidence', 'box', 'saved_image_path'}]
+
+    # Filter down by blue seats
+    blue_seats = detected_objects[detected_objects["box"]["xmin"] >= 50 and detected_objects["box"]["ymin"] >= 50 and detected_objects["box"]["xmax"] < 150 and detected_objects["box"]["ymax"] < 150]
+
+    # Filter down by empty padding
+    empty_seats = blue_seats[blue_seats["confidence"] == 1]
+    
+    # Count the empty seats
+    empty_seats_count = len(empty_seats)
+    
+    return empty_seats_count
+print('<final_result>', final_result)
+
+Solution: 3

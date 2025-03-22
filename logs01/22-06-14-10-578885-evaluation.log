@@ -1,0 +1,47 @@
+------------- 22-06-14-10-578885 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+# Convert string to numpy array
+image = imread('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg')
+# Prepare labels
+labels = np.array(["grass","fence","sky","bridge","trees","lights"])
+# Adjust threshold and model size as required by the problem
+model_size = 'base'
+threshold = 0.35
+padding = 10
+# Run object detection
+execution = detect_objects(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+# Observe detected objects
+for obj in execution:
+    
+    # Retrieve box information from object dictionary
+    box = obj['bbox']
+    
+    # Compute bounding box size
+    bbox = [boxes[0]+padding for boxes in box]
+    bbox = [bbox[2]+bbox[0]+padding, bbox[3]+bbox[1]+padding]
+    
+    # Display bounding box information
+    print(f"Object: {obj['label']}\n")
+    print(f"Bounding Box: {bbox}:\n")
+    print(f"X: {bbox[0]}, Y: {bbox[1]}, Width: {bbox[2] - bbox[0]}, Height: {bbox[3] - bbox[1]}\n")
+    print(f"Saved Image Path: {obj['saved_image_path']}")
+    print("\n")
+print('<final_result>', final_result)
+
+Solution: 4

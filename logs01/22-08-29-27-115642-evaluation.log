@@ -1,0 +1,33 @@
+------------- 22-08-29-27-115642 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 18
+    detection.extend(tool.execute(image=image_path, labels=['red'], threshold, model_size, padding))
+                                                                                                  ^
+SyntaxError: positional argument follows keyword argument
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_red_buildings(image_path, labels=None, threshold=0.35, model_size="tiny", padding=20):
+    detection = []
+    with open(image_path, 'r') as f:
+        detection.extend(tool.execute(image=image_path, labels=['red'], threshold, model_size, padding))
+        detection.extend(tool.execute(image=image_path, labels=['red'], threshold, model_size, padding, threshold=1.0))
+    return [d for d in detection if d['label'] in ['building', 'tower'] and 'red' in d[f'{d["label"]}Color']]
+
+# Example usage
+final_result = count_red_buildings("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.jpg")
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

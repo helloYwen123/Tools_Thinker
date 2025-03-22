@@ -1,0 +1,72 @@
+------------- 22-07-02-28-150676 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def load_image(image_path):
+    # Load the image
+    img = Image.open(image_path)
+    # Convert to grayscale and apply median blur
+    img = img.convert('L'). MedianBlur(5)
+    # Resize to maintain orientation and size
+    img = img.resize((64, 64))
+    # Return the processed image
+    return img
+
+def detect_objects(img_path, labels, threshold=0.35, model_size='tiny', padding=20):
+    # Open the image and convert to grayscale
+    img = Image.open(img_path)
+    img = img.convert('L')
+    # Load the model and get predictions
+    detector = Object_Detector_Tool()
+    prediction = detector.predict(
+        img_path,
+        labels=labels,
+        threshold=threshold,
+        model_name=model_size
+    )
+    # Convert to a list of bounding boxes, labels, and confidence scores
+    if prediction:
+        _, max_conf = max(prediction, key=lambda x: x[1])
+        labels = [l.split(':')[-1] for l in prediction if l[1] > max_conf]
+        img = img.resize((64, 64))
+        return img, max(labels)
+    else:
+        return None
+
+def count_white_uniforms(image_path):
+    # Load the image
+    img = load_image(image_path)
+    # Check if the predicted labels contain a single element
+    if len(detected_objects) == 1:
+        return detected_objects[0]['label'] in ['batter', 'catcher', 'umpire']
+    else:
+        return False
+
+# Specify the paths to the image for counting baseballs and baskets
+image_path_bats = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_37_image_1.jpg'
+image_path_baskets = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_37_image_3.jpg'
+
+# Count the white uniform
+count_bats = count_white_uniforms(image_path_bats)
+count_baskets = count_white_uniforms(image_path_baskets)
+final_result = f"Count of white uniforms: {count_bats} for bats and {count_baskets} for baskets."
+
+# Print the count of white uniforms
+print(final_result)
+#
+print('<final_result>', final_result)
+
+Solution: 1

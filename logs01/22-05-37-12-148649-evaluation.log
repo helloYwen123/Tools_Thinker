@@ -1,0 +1,52 @@
+------------- 22-05-37-12-148649 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_chicken_nuggets(image_path):
+    try:
+        from Object_Detector_Tool import object_detector
+        from PIL import Image
+
+        # Load the image and transform it into a grayscale image
+        image = Image.open(image_path)
+        im = image.convert('L')
+
+        # Convert the image data back to bytes
+        byte_array = im.tobytes()
+
+        # Load the detection model
+        object_detector.load()
+
+        # Detect and store the bounding boxes of objects in the image
+        detection = object_detector.execute(labels=["chicken nugget"], model_size="base", threshold=0.25, byte_array=byte_array)
+        
+        # Check for and count the chicken nuggets in the detection list
+        chicken_count = sum(1 for detection["bbox"] in detection['output'] if detection["bbox"][4] in range(len(x["bbox"]) for x in detection["output"])
+                            or detection["bbox"][4] == len(x["bbox"]) and detection["bbox"][5] in range(len(x["bbox"]), len(x["bbox"]) + len(x["bbox"])))
+        
+        # Convert the object detection results dictionary to a list of bounding box dictionaries
+        detection_dict_list = [[item for item in detection["output"] if item[0] == "chicken nugget"][0].keys()]
+        return chicken_count
+
+    except Exception as e:
+        return 0
+
+# Sample usage
+final_result = count_chicken_nuggets("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg")
+print("Count of chicken nuggets:", final_result)
+print('<final_result>', final_result)
+
+Solution: 4

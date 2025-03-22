@@ -1,0 +1,55 @@
+------------- 22-04-32-10-900095 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Define image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg"
+
+# Detect objects and their bounding boxes
+execution = Detection_Tool(detector="Grounding DINO")
+label, bounding_box, saved_image_path = execution.execute(image=image_path, labels=("baseball", "basket"), threshold=0.35, model_size="tiny", padding=20)
+
+# Initialize dictionary for tracking objects and their bounding boxes
+objects_dict = {}
+
+# Loop through bounding boxes and add to dictionary
+for bbox in bounding_box:
+    label_str, bbox_str = str(bbox), str(bbox)
+    object_string = f"{bbox_str} {label_str}"  # Join bounding box string and label string
+    objects_dict[object_string] = {"confidence": 0.25}  # Set all objects to have a low chance score (0.25)
+
+# Find bounding box with predicted score (confidence) above threshold
+top_label = max(objects_dict, key=lambda k: objects_dict[k]["confidence"] >= 0.35)  # Get the object with confidence score above threshold
+objects_dict[top_label]["confidence"] = 1.00  # Set confidence score to 1.00 as the detected object appears confident enough
+
+# Check if baseball and person are present and add to bounding box(s) if they are
+top_label, bbox = top_label, objects_dict[top_label]
+
+if "baseball" in top_label and "person" in top_label:
+    objects_dict[top_label]["box"] = [bbox[0], bbox[1], bbox[2], bbox[3]]  # Update bounding box
+
+if objects_dict[top_label]["box"] is not None:
+    # Print bounding box
+    print(f"Bounding Box of {top_label}: {bbox}")
+
+# Print number of black suitcases
+black_suitcases = sum(1 for obj, _ in objects_dict if "suitcase" in obj)
+print(f"Number of black suitcases: {black_suitcases}")
+print('<final_result>', final_result)
+
+Solution: 2

@@ -1,0 +1,66 @@
+------------- 22-04-32-10-875973 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_people(image_path, labels=['baseball', 'basket'], threshold=0.35, model_size="tiny", padding=20):
+    import cv2
+    import numpy as np
+    
+    # Initialize the object detector
+    object_detector = cv2.CascadeClassifier("/home/stud/wxie/BLINK_Dataset/Counting/classifier.xml")
+    
+    # Read the image
+    image = cv2.imread(image_path)
+    
+    # Convert the image to grayscale
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Detect the baseball and basket
+    baseball_boxes = object_detector.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=5, minSize=(10, 15), flags=cv2.CASCADE_SCALE_IMAGE)
+    basket_boxes = object_detector.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=5, minSize=(15, 15), flags=cv2.CASCADE_SCALE_IMAGE)
+    
+    # If there are any baseball or basket boxes,
+    for box in baseball_boxes + basket_boxes:
+        x, y, w, h = box
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness=2)
+    
+    # Add the baseball/ basket with specified padding to the saved image path
+    baseball_result_path = "/path/to/ Baseball_detected.png"
+    basket_result_path = "/path/to/ Basketball_detected.png"
+    cv2.imwrite(basket_result_path, image)
+    cv2.imwrite(baseball_result_path, image)
+    
+    # Convert the image to a numpy array and perform binary thresholding
+    image = np.array(image, dtype=np.uint8)
+    thresholded_image, kernel = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[0]
+    
+    # Get the coordinates of the objects with confidence score greater than the threshold
+    objects = object_detector.detectMultiScale(thresholded_image, scaleFactor=1.1, minNeighbors=5, minSize=(10, 15), flags=cv2.CASCADE_SCALE_IMAGE, threshold=threshold)
+    
+    # Draw bounding boxes for the detected objects
+    for (x, y, w, h) in objects:
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    
+    # Convert the image to a string and return
+    final_result = {"n_people": len(objects), "images": [baseball_result_path, basketball_result_path]}
+    return final_result
+
+# Read the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/validation/images/validation_Counting_35_image_image_1.jpg"
+print(detect_people(image_path))
+print('<final_result>', final_result)
+
+Solution: 4

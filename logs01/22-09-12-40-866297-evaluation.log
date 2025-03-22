@@ -1,0 +1,47 @@
+------------- 22-09-12-40-866297 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+# Read the image and perform object detection with default settings
+execution = execute_image_path(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_97_image_1.jpg")
+
+# If there are no detected objects, a blank list is returned
+if len(execution) == 0:
+    final_result = []
+else:
+    # Define empty dictionaries for saved image paths
+    image_paths = [item['saved_image_path'] for item in execution]
+    
+    # Define the number of people wearing solid red shirts
+    number_of_red_shirts = sum(1 for label in execution[0]['labels'] if label == "baseball" and 'red' in execution[0]['labels'])
+
+    # Add the number of red shirts to the result
+    final_result.append(number_of_red_shirts)
+    # Define the number of people sitting across from the base on the stairs
+    number_of_stairs = sum(1 for label in execution[0]['labels'] if label == "car" and ('car' in execution[0]['labels'] or 'base' in execution[0]['labels']))
+    # Add the number of empty spaces on the stairs to the result
+    final_result.append(number_of_stairs - execution[0]['boxes'].count({"bbox": {'y': -10, 'width': 0.5, 'height': 0, 'label': "car"}}))
+    # Add the number of people sitting on the same level as each other and on the stairs
+    number_of_lots = sum(1 for label in execution[0]['labels'] if label == "person" and execution[0]['boxes'].count({}))
+    # Add the number of people sitting together on one level to the result
+    final_result.append(number_of_lots)
+
+# Print the final result
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 3

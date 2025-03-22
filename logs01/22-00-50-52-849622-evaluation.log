@@ -1,0 +1,85 @@
+------------- 22-00-50-52-849622 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 64
+    %matplotlib inline
+    ^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_gloves(image_path, labels):
+    with open(image_path, 'rb') as img_file:
+        image_data = img_file.read()
+        image = image_data[8:2630, 2590:]
+    
+    # Detect gloves in the image
+    labels.extend(["gloves"] * 3)
+    
+    model_path = "/path/to/model"  # Replace with the path to the model
+    detection = tool.execute(image=image, labels=labels, threshold=0.6, model_size="tiny", padding=0)
+    
+    # Get the bounding boxes of the detected gloves
+    gloves = []
+    for bbox in detection['bbox']:
+        bounding_box = [bbox[2], bbox[3], bbox[5], bbox[4]]
+        if bounding_box[0] < 0:
+            bounding_box[2] -= bounding_box[0]
+        if bounding_box[1] < 0:
+            bounding_box[3] -= bounding_box[1]
+        if bounding_box[2] > 200:
+            bounding_box[2] -= 200
+        if bounding_box[3] > 200:
+            bounding_box[3] -= 200
+        gloves.append(bounding_box)
+    
+    # Count the gloves with more than one color
+    gloves_count = 0
+    for glove in gloves:
+        if len(set(glove)) < 7:
+            glove_count += 1
+    
+    return gloves_count
+
+# Read the image and get glove data
+glove_path = "/path/to/glove_data.jpg"
+image_path = glove_path
+image_data = tool.execute(image_path, labels=["gloves"], threshold=0.2, model_size="tiny", padding=0)
+
+glove_data = count_gloves(image_path, ["gloves"])
+glove_info = tool.execute(image_path, labels=["gloves"], threshold=0.2, model_size="tiny", padding=20)
+num_gloves = 0
+gloves = glove_data["bbox"] + glove_info["bbox"][1:]
+for glove in gloves:
+    if len(glove) > 0:
+        num_gloves += 1
+
+total_images = len(image_data['bbox'])
+num_gloves_count = num_gloves
+
+%matplotlib inline
+import matplotlib.pyplot as plt
+
+# Create a histogram based on the glove data
+plt.hist(num_gloves_count, bins=6, edgecolor='black', alpha=0.8)
+plt.xlabel('Gloves')
+plt.ylabel('Count')
+plt.title('Gloves per Image')
+plt.savefig('gloves_count_by_image_size.png')
+plt.show()
+
+final_result = num_gloves_count
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

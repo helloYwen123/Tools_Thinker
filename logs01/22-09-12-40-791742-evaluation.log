@@ -1,0 +1,47 @@
+------------- 22-09-12-40-791742 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_white_vertical_lines(image_path, labels, threshold, model_size, padding):
+    # Load the image file
+    input_image = Image.open(image_path)
+
+    # Convert the image to grayscale for improved object detection
+    input_image_gray = Image.cvtColor(input_image, 'L')
+
+    # Detect the white vertical lines using the object detection tool
+    detection_output = tool.execute(image_input=input_image_gray, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+    # Extract the detected objects and their bounding boxes
+    objects = [obj['bbox'] for obj in detection_output]
+
+    # Count the number of white vertical lines detected
+    num_white_lines = 0
+    for bounding_box in objects:
+        lower_left, upper_right = bounding_box
+        height = upper_right[1] - lower_left[1]
+        if height > 0:
+            num_white_lines += 1
+
+    return num_white_lines
+
+# Calculate the vertical lines on the ground
+vertical_lines = count_white_vertical_lines("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_106_image_1.jpg", ["baseball"], 0.35, "tiny", 20)
+
+print("There are", vertical_lines, "white vertical lines drawn on the ground.")  # Output: 1
+print('<final_result>', final_result)
+
+Solution: 5

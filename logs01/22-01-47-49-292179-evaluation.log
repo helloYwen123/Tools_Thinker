@@ -1,0 +1,40 @@
+------------- 22-01-47-49-292179 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_black_toilets(path_to_image, labels=None, threshold=0.35, model_size="tiny", padding=20):
+    if labels is None:
+        labels = ['toilet']
+    import os
+    from .Object_Detector_Tool import detect_objects
+
+    image = os.path.join(path_to_image, os.path.basename(path_to_image))
+    boxes, label_ids = detect_objects(image, labels, threshold, model_size=model_size, padding=padding)
+
+    black_toilets = []
+    for box in boxes:
+        if box["label"] == "toilet":
+            black_toilets.append({"label": "toilet", "confidence score": float(box["label"] + "." + box["confidence score"]), "box": box["box"]})
+
+    return black_toilets
+
+path_to_image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_2_image_1.jpg'
+black_toilets = count_black_toilets(path_to_image)
+final_result = len(black_toilets)
+print("There are", final_result, "black toilets in the image.")
+print('<final_result>', final_result)
+
+Solution: 0

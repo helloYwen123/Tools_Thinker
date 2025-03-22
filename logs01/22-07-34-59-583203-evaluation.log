@@ -1,0 +1,52 @@
+------------- 22-07-34-59-583203 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 42
+SyntaxError: 'return' outside function
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+# Load the image file
+def get_image_path():
+    return "/home/stud/wxie/BLINK_Dataset/Counting/test/images/test_counting_115_image_2.jpg"
+
+image_path = get_image_path()
+
+# Load the image and detect base bird
+objects = tool.execute(image=image_path, labels=['sandpiper'], padding=0)
+
+# Check if there are any detected birds
+if len(objects) == 2:
+    # Calculate the angle between the birds
+    bird1_location = objects[0]["box"]
+    bird2_location = objects[1]["box"]
+    angle = float(math.atan2(bird1_location[3] - bird2_location[3], bird1_location[2] - bird2_location[2])) * 180 / math.pi
+else:
+    # Add the right-hand rule logic
+    right_hand_rule = False
+
+    # Assuming the image is a single bird
+    if len(objects) == 1:
+        right_hand_rule = True
+    
+    # If birds are detected in opposite directions, return a count of 3
+    elif right_hand_rule:
+        return math.copysign(3, len(objects))
+
+    else:
+        return 0
+print('<final_result>', final_result)
+
+Solution: 1

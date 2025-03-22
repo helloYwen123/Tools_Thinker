@@ -1,0 +1,49 @@
+------------- 22-03-33-54-171108 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_flower_pots(image_path):
+    # Load the image
+    image = object_detector_Tool(image=image_path).execute().get('output')[1][0]['box'][0] ['bbox']
+
+    # Set a confidence threshold
+    threshold = 0.35
+
+    # Initialize an empty list to store flower pots
+    flower_pots = []
+
+    # Loop through the detected objects
+    for _, _, _, box, _, box2 in object_detector_Tool(image_path).execute().get('output'):
+        # Extract the flower pots from the detected objects
+        box3 = box2['box'].copy()
+        box3[0] = box3[0] + 20  # Add empty padding
+        for _, _, val in object_detector_Tool(image_path).execute().get('output'):
+            if val[1][0] <= threshold and val[1][1] >= 10:  # Check if the plant is flower
+                flower_pots.append({'bbox': box3, 'label': 'Flower_Pot'})
+                break
+    
+    # Return the count of flower pots
+    return len(flower_pots)
+
+# Example usage
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_42_image_1.jpg'
+final_result = count_flower_pots(image_path)
+print("Number of flower pots:", final_result)
+print('<final_result>', final_result)
+
+Solution: 6

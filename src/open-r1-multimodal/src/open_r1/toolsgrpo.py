@@ -85,7 +85,22 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         contents = [completion for completion in completions]
     else:
         contents = [completion[0]["content"] for completion in completions]
+    
+    ### deubg subprocess 
+    def run_async_from_sync(coro):
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            # No loop exists
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
         
+        if loop.is_closed():
+            # Previously closed loop
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+        return loop.run_until_complete(coro)
     
     def extract_code(completion):
         match = re.search(r"<command>(.*?)</command>", completion , re.DOTALL)
@@ -108,23 +123,23 @@ from PIL import Image, ImageOps
 import os
 import sys
 import warnings
-from tools.object_detector.tool import Object_Detector_Tool 
+from tools.object_detector.tool import Object_Detector_Tool
 """
 }
     async def run_all_codes(contents, solutions) :
         """
         Asynchronously run multiple code snippets.
         """
-        print("\n[DEBUG] contents type:", type(contents))
-        print("[DEBUG] solutions type:", type(solutions))
+        # print("\n[DEBUG] contents type:", type(contents))
+        # print("[DEBUG] solutions type:", type(solutions))
     
-        if len(contents) > 0:
-            print("[DEBUG] type of contents[0]:", type(contents[0]))
-            print("[DEBUG] sample contents[0]:", contents[0])
+        # if len(contents) > 0:
+        #     print("[DEBUG] type of contents[0]:", type(contents[0]))
+        #     print("[DEBUG] sample contents[0]:", contents[0])
         
-        if len(solutions) > 0:
-            print("[DEBUG] type of solutions[0]:", type(solutions[0]))
-            print("[DEBUG] sample solutions[0]:", solutions[0])
+        # if len(solutions) > 0:
+        #     print("[DEBUG] type of solutions[0]:", type(solutions[0]))
+        #     print("[DEBUG] sample solutions[0]:", solutions[0])
         tasks = []
         for content, sol in zip(contents, solutions):
             try:
@@ -136,7 +151,7 @@ from tools.object_detector.tool import Object_Detector_Tool
                 )
                 task = run_code_async(code_to_run, sol, 60)
             except Exception as e:
-                print(f"[ERROR] extract_code failed: {e}")
+                # print(f"[ERROR] extract_code failed: {e}")
                 async def return_zero():
                     return 0.0
                 task = return_zero()
@@ -231,7 +246,7 @@ from tools.object_detector.tool import Object_Detector_Tool
         return reward
     
   
-    return asyncio.run(run_all_codes(contents=contents,solutions=solution))
+    return run_async_from_sync(run_all_codes(contents=contents,solutions=solution))
 
 ####################################################################
 #############################FORMAT REWARD##########################
@@ -400,8 +415,13 @@ Please assign the final answer to a variable named "final_result".
     trainer.save_model(training_args.output_dir)
     if training_args.push_to_hub:
         trainer.push_to_hub(dataset_name=script_args.dataset_name)
-
-
+        
+        
+    # maybe needed for loop destroy , free resource   
+    loop = asyncio.get_event_loop()
+    if not loop.is_closed():
+        loop.close()
+    
 if __name__ == "__main__":
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()

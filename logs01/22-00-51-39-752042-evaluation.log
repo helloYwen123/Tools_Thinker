@@ -1,0 +1,39 @@
+------------- 22-00-51-39-752042 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'openvino'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import openvino.tools.object_detection.dino
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_27_image_1.jpg"
+labels = ["person"]
+threshold = 0.5
+model_size = "tiny"
+padding = 20
+
+execution = openvino.tools.object_detection.dino.execution(image_path, labels, threshold, model_size, padding)
+
+final_result = execution.executions[0]
+for output in final_result:
+    box = output["box"][0]
+    confidence = output["confidence"][0]
+    if "person" in box and input(box[0]) == "bed" and confidence > 0.8:
+        print("Person found in bed")
+        break
+print('<final_result>', final_result)
+
+Solution: 1

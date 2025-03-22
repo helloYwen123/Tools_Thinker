@@ -1,0 +1,55 @@
+------------- 22-05-56-06-051629 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+def find_red_skinny_skiers(inputs):
+    # Define the image and bounding boxes
+    if "image" in inputs and "labels" in inputs:
+        image = inputs["image"]
+        labels = inputs["labels"]
+        threshold = inputs["threshold"] if "threshold" in inputs else 0.35
+        model_size = inputs["model_size"] if "model_size" in inputs else "tiny"
+        padding = inputs["padding"] if "padding" in inputs else 20
+
+        # Execute the tool with the given parameters
+        execution = tool.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+        # Load the detected objects into a dictionary
+        detected_objects = {label: {"confidence score": score, "box": {"x": x, "y": y, "w": width, "h": height}}
+                            for label, score, box in execution}
+
+        # Filter the detected objects by color and shape
+        red_objects = {label: {"confidence score": score, "box": {"x": x, "y": y, "w": width, "h": height}}
+                       for label, score, box in detected_objects
+                       if "base ski" in label.lower() and "dark green" in label_lower() and score > 0.8}
+
+        # Return the number of detected objects (with confidence score > 0.8)
+        return len(red_objects)
+    elif "path/to/image.png" in inputs:
+        image = inputs["path/to/image.png"]
+        return find_red_skinny_skiers({"image": image, "threshold": 0.8, "model_size": "base"})  # Change the labels to correspond to the available tools
+    else:
+        return "Invalid input"
+
+# Example usage
+input_path = "path/to/image.png"
+result = find_red_skinny_skiers({"image": input_path, "threshold": 0.8, "model_size": "base"})
+print(f"There are {result} skiers wearing red in the image")
+print('<final_result>', final_result)
+
+Solution: 0

@@ -1,0 +1,37 @@
+------------- 22-03-53-32-506057 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_82_image_1.jpg"
+labels = ["Person", "Baseball"]
+threshold = 0.35
+model_size = "base"
+padding = 20
+img = Image.open(image_path)
+execution = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+detected_objects = execution[0]
+found_persons = set(map(int, detected_objects['label']))
+water_persons = [detected_objects['bbox'] for detected_objects in detected_objects['output'] if detected_objects['name'] == 'Person' and 'water' in detected_objects['name']]
+water_persons_set = set(water_persons)
+final_result = found_persons.intersection(water_persons_set)
+if final_result:
+    print(f"There are {len(final_result)} people in the water.")
+else: 
+    print("There is no one in the water.")
+print('<final_result>', final_result)
+
+Solution: 4

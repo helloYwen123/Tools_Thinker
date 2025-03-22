@@ -1,0 +1,51 @@
+------------- 22-03-02-08-221809 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 25
+    detections.append({"label": detection[3][0], "confidence": conf[1], "bbox": bbox[0])}")
+                                                                                       ^
+SyntaxError: closing parenthesis ')' does not match opening parenthesis '{'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_bird(text):
+    detection, conf, box = [], [], []
+    model_path = "/home/stud/wxie/BLINK_Dataset/Counting/skanska/models/grounding_dino_base_tiny.h5"
+    with open(model_path, "r") as f:
+        model = DINO_model()
+    with open(text, "r") as file:
+        lines = file.readlines()
+    detections = []
+    for line in lines:
+        detection, conf, box = model.predict(line)
+        detections.append({"label": detection[3][0], "confidence": conf[1], "bbox": bbox[0])}")
+    detections
+    return sorted(detections, key=lambda x: x["bbox"][-1], reverse=True)
+
+detection, conf, box = detect_bird(text)
+print({"bbox": detection[0][0: (conf[1] - conf[3] * 0.35): 1, conf[3] - conf[1]]}, sep="\n")
+
+
+class DINO_model:
+    def __init__(self):
+        self.model = load_model("grounding_dino_base_tiny.h5")
+
+    def predict(self, text):
+        detection, conf, box = self.model.predict(text)
+        return (detection + conf[1:])[:, conf[1] - conf[3] * 0.35: conf[3]] * 2
+
+detection, conf, box = detect_bird(text)
+print({"bbox": detection[0: (conf[1] - conf[3] * 0.35) / 2:.5, conf[3] - conf[1]]}, sep="\n")
+print('<final_result>', final_result)
+
+Solution: 0

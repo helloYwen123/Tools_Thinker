@@ -1,0 +1,42 @@
+------------- 22-05-16-28-496263 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def find_glasses(people, sunglasses=False):
+    glasses_found = False
+    for person in people:
+        if sunglasses:
+            glasses_found = True
+            break
+        for label in ['face', 'sunglasses', 'glasses', 'shades']:
+            if label in person['label']:
+                if 'glasses' in person['label']:
+                    glasses_found = True
+            if 'sunglasses' in person['label'] and not sunglasses:
+                glasses_found = True
+    return glasses_found
+
+people = [
+    {'label': ['face', 'nose', 'ear'], 'confidence_score': 0.55, 'position': {'x': 90, 'y': 50}},
+    {'label': ['hand', 'glasses'], 'confidence_score': 0.57, 'position': {'x': 100, 'y': 75}},
+    {'label': ['shirt', 'sunglasses'], 'confidence_score': 0.5, 'position': {'x': 120, 'y': 100}}
+]
+
+result = find_glasses(people, sunglasses=True)
+print(result)  # True
+print('<final_result>', final_result)
+
+Solution: 1

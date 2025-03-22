@@ -1,0 +1,52 @@
+------------- 22-03-43-12-862881 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def calculate_number_of_toilets(image_path):
+    """
+    This function calculates the number of toilets in an image.
+    """
+    object_detector = Object_Detector_Tool()  # Assuming the tool name is 'Object_Detector_Tool'
+    labels = ["toilet", "basin"]
+    threshold = 0.35  # Default confidence threshold is 0.35
+    model_size = 'tiny'  # Model size is 'tiny'
+    padding = 20  # Number of pixels of empty padding around detected objects is 20
+                                  # The 'model_size' should be 'tiny' for fine-grained toilet and basin detection.
+
+    # Load the image and convert it to RGB format
+    image = image_path + '.png'
+    image = cv2.imread(image)
+
+    output_path = None
+    try:
+        # Detect objects using the tool
+        result = object_detector.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+        print(result)
+    except Exception as e:
+        print(e)
+
+    # Calculate the number of toilets
+    count_toilets = None
+    if result and 'bbox' in result[0]:
+        count_toilets = sum(int(bbox[0]) <= 90 and int(bbox[2]) >= 90 for bbox in result[0])
+    return count_toilets
+
+# Replace '/home/stud/wxie/BLINK_Dataset/counting/val/images/val_counting_20_image_15742.jpg' with the path to your image file
+number_of_toilets = calculate_number_of_toilets('/home/stud/wxie/BLINK_Dataset/counting/val/images/val_counting_20_image_1.jpg')
+final_result = "The number of toilets to the left of the basins is: " + str(number_of_toilets)
+print('<final_result>', final_result)
+
+Solution: 6

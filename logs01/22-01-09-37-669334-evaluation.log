@@ -1,0 +1,57 @@
+------------- 22-01-09-37-669334 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def one_way_signs(image_path, labels=["baseball", "basket"], threshold=0.35, model_size="tiny", padding=20):
+    ## Load model
+    from Grounding_DINO import Grounding_DINO
+    from PIL import Image
+    import dino
+    import requests
+
+    # load model 
+    model = dino.TrinketTiny()
+    
+    request = requests.get(
+        'https://storage.googleapis.com/dino-public/models/tiny-tiny-2.0-train-b11.ckpt')
+    with open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.ckpt", 'wb') as f:
+        f.write(request.content)
+    
+    print("Model loaded")
+    
+    # get model
+    model = Grounding_DINO.load_model("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.ckpt")    
+     
+    # detect objects
+    image = dino.image_preprocess(Image.open(image_path).resize((128, 128)))
+    images = [image, *labels]
+    outputs = model(images, labels)
+
+    # box detection
+    detections = dino.detect_objects(outputs, threshold=threshold)
+    
+    # get object name and bounding box, filter out None label
+    detected_objects = [{"label": obj["name"], "bbox": [bbox[0],bbox[1],bbox[2],bbox[3]]} for obj in detections if obj["bbox"]]
+    
+    return detected_objects
+
+
+result = one_way_signs("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_113_image_1.jpg", labels=["one way"])
+for obj in result:
+    print(obj['label'], obj['bbox'])
+print('<final_result>', final_result)
+
+Solution: 3

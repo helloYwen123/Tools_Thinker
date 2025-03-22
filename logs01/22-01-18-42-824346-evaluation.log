@@ -1,0 +1,49 @@
+------------- 22-01-18-42-824346 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool as object_tool
+
+def count_people_in_sitting_near_motorcycle(path_to_image):
+    # Detect people in the background
+    detection_command = f"tool.execute(image=path_to_image, labels=['person'], threshold=0.5, model_size='base')"
+    detection_output = object_tool.run(detection_command)
+    
+    if len(detection_output) > 0:
+        # Count people who are sitting near the motorcycle
+        seating_distance_command = f"tool.execute(image=path_to_image, labels=['motorcycle'], threshold=0.35, model_size='tiny')"
+        seating_distance_output = object_tool.run(seating_distance_command)
+        
+        seated_people = []
+        for person in seating_distance_output['output']:
+            distance = person['box'][0]
+            motorcycle_position = distance + 20  # Adjust to a plausible distance from the motorcycle
+            if person['box'][2] == distance - 20 or person['box'][2] < (distance - 20):
+                seated_people.append(person)
+        
+        return len(seated_people)
+    else:
+        return 0
+
+# Set the path to the image file
+path_to_image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_61_image_1.jpg' 
+
+# Count the number of people sitting near the motorcycle
+number_of_people_near_motorcycle = count_people_in_sitting_near_motorcycle(path_to_image)
+number_of_people_near_motorcycle
+print('<final_result>', final_result)
+
+Solution: 0

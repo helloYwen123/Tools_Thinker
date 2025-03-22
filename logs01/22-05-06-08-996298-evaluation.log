@@ -1,0 +1,88 @@
+------------- 22-05-06-08-996298 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_toilets(image_path, labels, threshold, model_size="tiny", padding=0):
+    try:
+        # Load the image and convert it to grayscale for simplicity of detection
+        gray = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2GRAY)
+
+        # Identify objects using the Grounding DINO model
+        objects = tool.execute(image=gray, labels=labels, threshold=threshold)[0]
+
+        # Count the number of toilets
+        toilets_count = 0
+        for obj in objects:
+            if obj['name'] == "toilet":
+                toilets_count += 1
+
+        return toilets_count
+    except Exception as e:
+        return "Failed to detect objects"
+
+# Function to count toilets in the detected objects
+def count_toilets_in_objects(objects, toilet_name):
+    total_toilets = 0
+    for obj in objects:
+        if obj['name'] == toilet_name:
+            total_toilets += 1
+
+    return total_toilets
+
+# Convert labels to set for easier comparison
+labels = {'Toilet': 1}
+threshold = 0.35
+model_size = "tiny"
+
+# Convert object label into a list representing the toilet name
+labels_for_objects = []
+for obj in objects:
+    labels_for_objects.append(obj['name'].split('_')[0])
+
+# List of detected toilets
+detected_toilets = []
+
+# Iterate over each detected toilet
+for toilet_name in labels_for_objects:
+    # Initialize empty detection list
+    toilet_objects = []
+
+    # Iterate over each toilet object
+    for obj in det_objects:
+        # Check if the Toilet object is in the current toilet name list
+        if obj['name'] == toilet_name:
+            toilet_objects.append(obj)
+
+    # Count toilets using the count_toilets function
+    count = count_toilets(detected_toilets, 'Toilet')
+
+    detected_toilets.append({'label': toilet_name, 'count': count})
+
+    # Iterate over each toilet object detected in the detected toilets list
+    for toilet_obj in detected_toilets[-1]['detected_objects']:
+        # Check if toilet has a lid
+        if toilet_obj['object_properties']['lid'] == 0:
+            # Increment toilets count for toilets with lids
+            count_toilets_in_objects(detected_toilets[-1]["detected_objects"] + [('Toilet'),], 'Toilet')
+            toilet_obj['lid'] = "lid present"
+            toilet_obj['count'] = count
+
+# Print final result
+final_result = detected_toilets[0]
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

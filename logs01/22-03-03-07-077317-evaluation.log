@@ -1,0 +1,42 @@
+------------- 22-03-03-07-077317 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_signs(image_path):
+    image = Image.open(image_path)
+    
+    objects = detect_objects(image, labels=["STOP"])
+
+    if len(objects) == 0:
+        return 0
+
+    text_objects = [obj for obj in objects if obj['category'] == 'TEXT']
+    
+    stop_count = 0
+    for obj in text_objects:
+        if obj['text'] == 'STOP':
+            stop_count += 1
+    
+    return stop_count
+
+result = count_signs("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg")
+final_result = result
+print(f"There are {final_result} signs with black letters in the image.")
+print('<final_result>', final_result)
+
+Solution: 2

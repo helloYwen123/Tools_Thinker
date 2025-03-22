@@ -1,0 +1,58 @@
+------------- 22-06-33-52-394558 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 15
+    <python>
+    ^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+<python>
+ from object_detector_tool import *
+ from sklearn.model_selection import train_test_split
+ from sklearn.linear_model import LogisticRegression
+ from imutils import paths
+ import numpy as np
+
+ # Load the image
+ path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_92_image_1.jpg"
+ image = load_image(file_path=path)
+ print("Image is", str(image.shape))
+
+ # Prepare some training data, and use the object_detector tool to detect the objects in the image.
+ # detect_results is a dict containing the object detections
+ detect_results = object_detector_tool.execute(image=image, labels=["baseball", "basket"], threshold=0.35, model_size='base',
+                                                padding=5)
+
+ # Convert the detection box list to a bounding box array
+ # detected_box = [bbox[0], bbox[1], bbox[2], bbox[3] for bbox in detected_objects]
+
+ # Split the dataset into train and test sets
+ X_train, X_test, y_train, y_test = train_test_split(detected_box, class_labels, test_size=0.2, stratify=class_labels)
+
+ # Train a Logistic Regression model to get probabilities
+ lr = LogisticRegression(max_iter=1000)
+ lr.fit(X_train, y_train)
+
+ # Make predictions
+ y_pred = lr.predict(X_test)
+
+ # Define an accuracy metric
+ accuracy_metric = metrics.accuracy_score(y_test, y_pred)
+
+ accuracy_metric
+ </python>
+print('<final_result>', final_result)
+
+Solution: 2

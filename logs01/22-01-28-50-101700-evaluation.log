@@ -1,0 +1,65 @@
+------------- 22-01-28-50-101700 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def object_detector(file_name, labels):
+    # Load and prepare the object detection model
+    import requests
+    
+    # Send the request to the detector object
+    url = 'URL_TO_YOUR_OBJECT_DETECTOR'
+    response = requests.get(url)
+    response.raise_for_status()
+    
+    # Load the model JSON file
+    with open('yolov5_weight.01.pt', 'rb') as json_file:
+        model = torch.load(json_file)
+    
+    # Use the model to predict objects in the image
+    model = torch.jit.load('/model/to/model.pt').cuda()
+    
+    # Get the detected objects
+    detection_out = model(torch.zeros(10, 3, 1024, 1024).cuda())
+    
+    # Get the bounding box, label, and object IDs for only the base labels we're interested in
+    objects_to_show = False
+    show_bounding_boxes = True
+    if show_bounding_boxes:
+        result = []
+        
+        for i, boxes in enumerate(detection_out[0]):
+            for j, box in enumerate(boxes):
+                x1, y1, x2, y2 = box[0].tolist()
+                if 'base' in labels:
+                    result.append([labels[i], detections[i, j, 2], [x1, y1, x2, y2], ""])
+        
+        if result:
+            for line in result:
+                print("Object: " + line[1] + " {confidence_score:.1f}")
+    return
+    
+# Define the input parameters
+file_name = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg' 
+labels = ['baseball', 'basket'] 
+threshold = 0.35 
+model_size = 'tiny' 
+padding = 20 
+
+# Call the object detector function
+object_detector(file_name, labels, threshold, model_size, padding)
+print('<final_result>', final_result)
+
+Solution: 0

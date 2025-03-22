@@ -1,0 +1,45 @@
+------------- 22-07-10-45-741379 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 18
+SyntaxError: import * only allowed at module level
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_people_with_green_jacket(image_path):
+    import os
+    import numpy as np
+    from object_detector_tool import *
+
+    def bounding_box(x, y, w, h):
+        return f"{x}_T_{y}_L_{w}_{h}"
+
+    labels = ["skier"]
+    threshold = 0.5
+    model_size = "base"
+    padding = 15
+
+    detection_output = detection(image_path, labels, threshold, model_size, padding)
+    people_images_path = [np.array((data['saved_image_path'])[-2:], dtype=np.string_)[0]
+                           for image_path, data in detection_output.items() if "skier" in data['label']]
+    number_of_people = len(people_images_path)
+
+    return number_of_people
+
+image_path = "path/to/image.png"
+number_of_people = count_people_with_green_jacket(image_path)
+final_result = f"The number of people wearing a green jacket is {number_of_people}."
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

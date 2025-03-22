@@ -1,0 +1,44 @@
+------------- 22-08-30-27-069766 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_bottle(image_path, model_name):
+    import object_detector_tool as od
+
+    # Load the object detector model and save the bounding boxes to a CSV file
+    detection_file = 'bottles.csv'
+    detections = {'label': 'bottle', 'confidence score': 0.895, 'box': [473, 283, 533, 363], 'saved_image_path': 'bottle.png'}
+
+    # Check if the image is empty before running the detection
+    if 'empty_image' in image_path or not od.objects(image_path=image_path):
+        return [], detections
+
+    # Detect objects using the object detector model
+    objects, detections = od.detect_objects(model=image_path, model_name=model_name, image_path=image_path, labels=None, threshold=0.75, model_size='tiny')
+
+    return objects, detections
+
+# Load the images
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_53_image_1.jpg'
+
+# Detect wine bottles
+wines, _ = detect_bottle(image_path, model_name='wines')
+
+# Print the number of wine bottles
+print("There are", len(wines), len(wines) * 2, "wine bottle(s).")
+print('<final_result>', final_result)
+
+Solution: 1

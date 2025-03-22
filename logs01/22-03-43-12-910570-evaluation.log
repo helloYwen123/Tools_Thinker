@@ -1,0 +1,57 @@
+------------- 22-03-43-12-910570 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool as detector_tool
+
+def count_red_coat_people(image_path):
+    # Load the image
+    image = detector_tool.execute(image=image_path)['output_type']
+
+    # Detect red coats in the image
+    for label in ["baseball", "basket"]:
+        for conf in [0.4, 0.35, 0.3]:
+            for model_size in ['tiny', 'base']:
+                detection = detector_tool.execute(image=image_path,
+                                                   labels=[label], 
+                                                   threshold=conf, 
+                                                   model_size=model_size)['output_type'] 
+                for person in detection:
+                    if person['label'] == label:
+                        print(f"{label}: {person}")
+                        break
+
+    # Check for red coats
+    for person in image:
+        if person['label'] == "baseball" or person['label'] == "basket":
+            continue
+        for mask in person['mask']:
+            if any(mask['shape']['class'][0] == 0 for shape in person['mask']['shape'][2] for cls in range(len(shape['class']))):
+                continue
+            return person['bbox'][0], person['bbox'][2], detection
+    return None
+
+# Test the function
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_17_image_1.jpg"
+bbox, conf, person_dict = count_red_coat_people(image_path)
+final_result = bbox[1] - bbox[0] - conf, person_dict['bbox'][2], person_dict['bbox'][0]
+
+print("The number of people wearing a red coat is within the confidence threshold.")
+print(f"The number of people wearing a red coat is {final_result[0]}.")
+print(f"The number of people wearing a red coat is approximately {final_result[1]}.")
+print('<final_result>', final_result)
+
+Solution: 1

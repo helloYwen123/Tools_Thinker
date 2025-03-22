@@ -1,0 +1,76 @@
+------------- 22-07-20-04-147203 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_objs(image_path, labels=None):
+    """
+    Detect objects in an image using the Grounding DINO model and return their paths.
+    
+    Args:
+    - image_path (str): The path to the image file.
+    - labels (list): A list of object labels to detect.
+    - threshold (float): The confidence threshold for detection (default: 0.35).
+    - model_size (str): The size of the model to use ('tiny' or 'base', default: 'tiny').
+    - padding (int): The number of pixels to add as empty padding around detected objects (default: 20).
+    
+    Returns:
+    - list: A list of detected objects dictionaries with ('label';'confidence score';'box';'saved_image_path')keys and their corresponding values.
+    """
+    # Load the model
+    import os
+    import dino
+    from dino import DetectionResult
+    
+    # Load the image
+    image_path = os.path.realpath(image_path)
+    img_path = os.path.splitext(image_path)[0] + '.csv'
+    img = dino.io.imread(str(image_path))
+    
+    if labels is not None:
+        for obj in labels:
+            detected_obj = dino.detection_objs(img, img_path, object_labels={'baseball': 0.4, 'basket': 0.6},
+                                                threshold=0.35, model_name='tiny', model_size='tiny', padding=20)
+            if obj["label"] in obj["labels"]:
+                obj["confidence score"] = obj["scores"][-1]
+                detected_obj.append(obj)
+                break
+    
+    return detected_obj
+
+def get_number_of_white_fridges(image_path):
+    """
+    Detect white fridges in an image using the Grounding DINO model and return the number of white fridges.
+    
+    Args:
+    - image_path (str): The path to the image file.
+    
+    Returns:
+    - int: The number of detected white fridges.
+    """
+    detected_obj = detect_objs(image_path, labels=['white refrigerator'])
+    for obj in detected_obj:
+        if obj["label"] == 'white refrigerator':
+            return obj["box"][0][0]
+    return 0
+
+# Call the function with the image path
+num_white_fridges = get_number_of_white_fridges("path_to_your_image.jpg")
+
+# Output the final result
+final_result = "There are " + str(num_white_fridges) + " white fridges in the image."
+print('<final_result>', final_result)
+
+Solution: 1

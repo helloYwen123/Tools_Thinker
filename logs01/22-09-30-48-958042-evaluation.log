@@ -1,0 +1,39 @@
+------------- 22-09-30-48-958042 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_yellow_cars(image_path):
+    image = load_image(image_path)
+    detections = predict_objects(image, "basketball", threshold=0.35, model_size="tiny")
+    bounding_boxes = [obj["bbox"] for obj in detections]
+    
+    cars = [d["label"] for d in detections]
+    yellow_cars = [Car.detect_objects(c, "yellow_car") for c in cars]
+    total_cars = len(cars)
+    
+    for i, boxes in enumerate(bounding_boxes):
+        if boxes["label"] == "yellow_car" and not yellow_cars[i]:
+            total_cars -= 1
+    
+    return total_cars
+
+final_result = count_yellow_cars("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_117_image_1.jpg")
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

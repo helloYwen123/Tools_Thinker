@@ -1,0 +1,44 @@
+------------- 22-04-58-13-431106 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+import pandas as pd
+
+def count_red_letters(input_path, labels=['car', 'person', 'train'], threshold=0.5, model_size='base', padding=15):
+
+    # Load the image and detect objects
+    execution_output = execute_image(input_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    objects = pd.DataFrame(execution_output)
+    objects = objects[objects['label'].isin(labels)].drop_duplicates()
+    objects = objects[['label', 'confidence', 'bbox']]
+    objects = objects[objects['confidence'] >= threshold].sort_values('confidence')
+
+    # Count the number of red letters
+    num_red_letters = len([obj for obj in objects.objects if 'red' in obj.label])
+
+    return num_red_letters
+
+# Define the path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_65_image_1.jpg"
+
+# Call the function to count the number of red letters
+num_red_letters = count_red_letters(image_path)
+
+print(f'The image has {num_red_letters} red letters.')
+print('<final_result>', final_result)
+
+Solution: 5

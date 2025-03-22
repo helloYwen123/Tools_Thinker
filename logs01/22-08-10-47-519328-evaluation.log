@@ -1,0 +1,47 @@
+------------- 22-08-10-47-519328 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_sinking_boats(image_path):
+    try:
+        detected_objects = object_detector_tool.execute(image_path, labels=["boat"], threshold=0.5, model_size="tiny", padding=15)
+
+        # Find the bounding boxes of the boats in the detected objects
+        for index, item in enumerate(detected_objects[0][2]):
+            if detected_objects[0][1][0][index] == "boat":
+                boat_x1, boat_y1, boat_x2, boat_y2 = detected_objects[0][2][index]
+                boat_x1, boat_y1, boat_x2, boat_y2 = detected_objects[0][2][index][0:4]
+
+                # Calculate the bounding box of the bounding box of the boats
+                boat_total_area = (boat_x2 - boat_x1) * (boat_y2 - boat_y1)
+                sinking_boss_area = detected_objects[0][1][0][index][4][1][2][1]
+
+                # Check if the sinking boss area is greater than the total area of the boats
+                if sinking_boss_area > boat_total_area:
+                    return 1
+    except Exception as e:
+        print(e)
+
+    return 0
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_96_image_1.jpg"
+total_sinking_boss = count_sinking_boats(image_path)
+print(f"Number of sinking boats: {total_sinking_boss}")
+print('<final_result>', final_result)
+
+Solution: 0

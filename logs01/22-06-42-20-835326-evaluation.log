@@ -1,0 +1,43 @@
+------------- 22-06-42-20-835326 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 33
+    if (box[2] - pad) >= i * padding - pad and (box[2] + 1 - pad) <= (i + 1) * padding])  # Adjust bounding box order considering added padding.
+                                                                                       ^
+SyntaxError: unmatched ')'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+IMG_PATH = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_114_image_1.jpg"
+
+IMG_SIZE = "tiny"
+THRESHOLD = 0.35
+PAD_THRESHOLD = 20
+LABELS = ["baseball", "basket"]
+
+img = Image.open(img_path)
+labels = label_objects(img, labels, threshold=THRESHOLD)
+
+bbox_info = [box[2:] for box in labels]
+bbox_info.sort(key=lambda i: i[2])
+
+final_result = [f'[{bbox[0]}-{bbox[1] + 20}]'
+                for bbox in bbox_info  # Add padding around the objects according to the given 'padding' value
+                 for i, box in enumerate(bbox_info)  # Re-order the bounding boxes with added padding for efficient processing
+                 if (box[2] - pad) >= i * padding - pad and (box[2] + 1 - pad) <= (i + 1) * padding])  # Adjust bounding box order considering added padding.
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

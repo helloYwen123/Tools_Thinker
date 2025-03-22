@@ -1,0 +1,46 @@
+------------- 22-03-13-20-643435 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def find_ski_flops():
+    # Load the image using the Object_Detector_Tool
+    import os
+    import requests
+    from object_detector_tool import Execution
+    response = requests.get(os.path.join('/user_directory', 'val_counting_44', 'images', 'val_counting_44_image_1.jpg'))
+    img = Execution().execute(image=str(response.content), labels=["skier"], threshold=0.35, model_size="tiny", padding=20)
+    
+    # Each bounding box contains information about a detected object
+    for obj in img['output_type'][::-1]:
+        # Check if the object is a skiier
+        if obj['label'] == "skier":
+            # Extract the bounding box coordinates and the confidence score for the skiier
+            bounding_box = (obj['bbox'][0], obj['bbox'][1], obj['bbox'][2], obj['bbox'][3])
+            conf_score = obj['confidence_score']
+            # Check if the skiier is in the middle of the image and the flip is in the direction opposite to the original direction of ski
+            if conf_score > 0.2 and bounding_box[0] > bounding_box[2] and bounding_box[1] > bounding_box[3] > bounding_box[2]:
+                print(f"Ski flyer detected during skiflip.")
+                break
+    return False
+
+result = find_ski_flops()
+if result:
+    print("No ski fliers detected.")
+else:
+    print("Skis turned over by skier.")
+print('<final_result>', final_result)
+
+Solution: 0

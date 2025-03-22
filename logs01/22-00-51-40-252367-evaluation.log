@@ -1,0 +1,53 @@
+------------- 22-00-51-40-252367 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 44, in <module>
+NameError: name 'people' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_people(people,image_path,threshold="0.35",model_size="tiny",padding=20):
+    import Object_Detector_Tool
+    from PIL import Image
+    from PIL.Image import ImageDraw
+    from PIL.ImageOps import resize
+    from PIL.MatplotlibImageInsert import MatplotlibImageInsert
+    from matplotlib.patches import Rectangle
+    
+    if object_detection(tool.execute(image=image_path,labels=["people"]),threshold=threshold).len():
+         image = Image.open(image_path)
+         image = resize(image, (224, 224), preserve_ticks = True, zoom=1)
+         image = resize(image, (64), mode='L', preserve_ticks=True, zoom=1, output_format='PNG')
+         image = ImageOps.fit(image)
+         image = ImageDraw.Draw(image).image_rotated_rectangle(0, 0, 64, 64, 0, 0)
+         image = ImageOps.fit(image)
+         insert = MatplotlibImageInsert.from_clipart(
+             path=r"/path/to/baseline_image_1.jpg",
+             top_label="Image Title",
+             left_label="Image Title")
+         image = Image.open(r"/path/to/baseline_image_1.jpg")
+         insert.add_overlay(image)
+         image.save('new_image.png')
+         people = object_detection(tool.execute(image_path, labels=['people'], threshold=threshold, model_size='tiny', padding=padding))[0]
+         num_people = int(people["bbox"][-1]["ymin"] - people["bbox"][0]["ymin"] + 1)
+         print(f"Number of people detected: {num_people}")
+         return num_people
+    else:
+        return 0
+
+final_result = count_people(people, "val_Counting_27_image_1.jpg")
+print(f"Number of people laying down: {count_people(people, 'val_Counting_27_image_1.jpg')}")
+print('<final_result>', final_result)
+
+Solution: 1

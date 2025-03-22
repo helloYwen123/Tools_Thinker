@@ -1,0 +1,71 @@
+------------- 22-02-51-31-616868 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+progressive_decrease = 10
+
+label_dict = {}
+for i in range(len(labels)):
+    if labels[i] == "baseball":
+        label_dict[labels[i]] = 1
+    else:
+        label_dict[labels[i]] = -1
+
+image_output = image_detection(image_path, labels, threshold, model_size, padding)
+for obj in image_output:
+    if obj['label'] in label_dict:
+        obj['label'] = label_dict[obj['label']]
+    else:
+        obj['label'] = -1
+
+for label in labels:
+    count = 0
+    i = 0
+    while i < progressive_decrease:
+        try:
+            count += progress_check_count(image_path + "_" + label + "_" + (i + 1))
+            i += 1
+        except:
+            break
+    
+    print(f"{label}: {progressive_decrease}s ({count}s)")
+
+image_output = image_detection(image_path, labels, threshold, model_size, padding)
+for obj in image_output:
+    if obj['label'] in label_dict:
+        obj['label'] = label_dict[obj['label']]
+    else:
+        obj['label'] = -1
+
+count = 0
+i = 0
+while i < progressive_decrease:
+    try:
+        count += progress_check_count(image_path + "_" + label_dict["baseball"] + "_" + i)
+        i += 1
+    except:
+        break
+
+print(f"Baseball: {progressive_decrease}s ({count}s)")
+print('<final_result>', final_result)
+
+Solution: 1

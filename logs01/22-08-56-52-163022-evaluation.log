@@ -1,0 +1,49 @@
+------------- 22-08-56-52-163022 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import cv2
+from object_detector_tool import *
+import numpy as np
+
+# Load image and perform object detection
+img_path = "path/to/image.png"
+bboxs, detections, scores = object_detection(img_path)
+
+# Iterate over detected objects and calculate the total number of people
+total_people = 0
+for obj in detections:
+    if obj['label'] == 'people':
+        bounding_boxes = obj['bbox'] 
+        box_areas = (bounding_boxes[2] - bounding_boxes[0]) * (bounding_boxes[3] - bounding_boxes[1])
+        
+        for corner in bounding_boxes:
+            for i in range(4):
+                corner[i] -= 1
+                
+            x1, y1 = corner
+            x2, y2 = corner
+            
+            person_area = (y2 - y1) * (x2 - x1)
+            
+            # Calculate the total area of individual detection
+            total_people += box_areas[i] / person_area
+            
+avg_people = total_people / len(detections)
+final_result=f"The total number of people washing hand is: {avg_people}"
+print('<final_result>', final_result)
+
+Solution: 0

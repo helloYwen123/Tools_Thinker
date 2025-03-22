@@ -1,0 +1,60 @@
+------------- 22-07-11-45-504128 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from torchvision import transforms
+
+def count_stove_burners(image_path):
+    # Convert the image to RGB
+    transform = transforms.Compose([transforms.ColorJitter(brightness=60, contrast=60, saturation=60, hue=60),
+                                    transforms.ToTensor()])
+    image = image_path
+    transform_image = transform(image)
+
+    # Detect the stove burners using the Grounding DINO model
+    detection_output = []
+    result = object_detection_tool.detect(transform_image)
+    for object_info in result["output"]:
+        if "name" in object_info and object_info["name"] == "stove burner" and "confidence score" in object_info:
+            # Get the bounding box of the stove burner
+            box = tuple([bounding_box["x_min"] for bounding_box in object_info["bbox"] if bounding_box["name"] == "stove burner"])
+            # Extract the label name for the stove burner
+            label_name = "stove burner" if "name" in object_info else "stove"
+            detection_output.append({"label": label_name, "confidence score": object_info["confidence score"], "box": box})
+
+    # Convert the obtained data to a list of dictionaries
+    detection_output = [{"label": "stove burner", "confidence score": detection_output[0]["confidence score"], "box": detection_output[0]["box"]}]
+
+    # Check the confidence score and add empty padding if needed
+    detection_output = [{"label": "stove burner", "confidence score": confidence_score, "box": bounding_box} for confidence_score, bounding_box in detection_output if confidence_score > 0.7]
+
+    # Return the final result without empty padding
+    final_result = [{"label": "stove burner", "confidence score": detection_output[0]["confidence score"], "box": detection_output[0]["box"]}]
+
+    return final_result
+
+# Load the model
+object_detection_tool = Object_Detector_Tool()
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_64_image_1.jpg"
+
+# Get the obtained data
+data = count_stove_burners(image_path)
+print(data)
+print('<final_result>', final_result)
+
+Solution: 4

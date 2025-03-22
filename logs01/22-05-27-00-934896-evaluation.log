@@ -1,0 +1,42 @@
+------------- 22-05-27-00-934896 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Load the bounding box predictions
+predictions = result['output_type'][0]
+
+# Get the bounding boxes for the tall buildings with a flat top first
+flat_top_tall_buildings = []
+
+# Iterate over the bounding boxes of the predicted objects
+for box in predictions['bbox']:
+    # Get the bounding box coordinates
+    x1, y1, x2, y2 = box['bbox']
+    
+    # Check if the object is a tall building with a flat top
+    if 'label' in box and box['label'] == 'BASE' and box['confidence score'] > 0.5:
+        # Check if the bounding box is a tall building with a flat top
+        if 'y1' < 15 and 'y2' > 45 and 'x1' > 20:
+            # Add the bounding box to the list
+            flat_top_tall_buildings.append({'x1': box['x1'], 'y1': box['y1'], 'x2': box['x2'], 'y2': box['y2']})
+
+# Return the final result
+final_result = len(flat_top_tall_buildings)
+print('<final_result>', final_result)
+
+Solution: 0

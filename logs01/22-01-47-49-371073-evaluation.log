@@ -1,0 +1,41 @@
+------------- 22-01-47-49-371073 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_red_bikes(image_path, labels=['motorcycle', 'person'], threshold=0.35):
+    # Load the image
+    execution = load_image(image_path=image_path)
+
+    if execution['status'] == 'ok':
+        # Detect objects in the image
+        detected_objects = execute_detection(execution=execution, labels=labels, threshold=threshold)
+
+        if detected_objects:
+            # Calculate the number of red bikes
+            count_red_bikes = sum([obj['label'] == 'motorcycle' for obj in detected_objects if obj['label'] in ['motorcycle', 'person'] and 'motorcycle' in obj['label']])
+            return count_red_bikes
+    else:
+        print(f"Error occurred: {execution['error']}")
+        return None
+
+# Example call with the provided image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_110_image_1.jpg"
+count_red_bikes(image_path)
+print('<final_result>', final_result)
+
+Solution: 2

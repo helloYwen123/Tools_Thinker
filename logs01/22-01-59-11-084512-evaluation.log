@@ -1,0 +1,33 @@
+------------- 22-01-59-11-084512 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+def count_white_pillows(image_path, labels=["pillow"], threshold=0.5, model_size="tiny", padding=20):
+    detection_result = tool.execute(image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    white_pillows = []
+    for item in detection_result['output_type']:
+        pillow = item['label'] + ' pillow'
+        if pillow in ["pillow"]:
+            white_pillows.append(item)
+    return white_pillows
+
+final_result = count_white_pillows("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg")
+print(final_result) # Output: [{"label": "pillow_1", "confidence score": 0.756875, "box": [95.91051181640658], "saved_image_path": "path/to/pillow_1_img.jpg"}]
+print('<final_result>', final_result)
+
+Solution: 4

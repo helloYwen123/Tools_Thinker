@@ -1,0 +1,56 @@
+------------- 22-05-27-00-903778 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import execute
+
+def count_people_without_hats(image_path, labels=('baseball', 'basket'), threshold=0.35, model_size='tiny', padding=20):
+    """
+    Detect baseball, basket, person, and car in an image and count people without hats.
+    """
+    # Load the image and labels
+    image = execute(image_path, labels=labels, threshold=threshold)[0]["image"]
+    
+    # Detect the objects
+    for object_label, confidence_score, bounding_box, saved_image_path in execute(image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding):
+        if object_label == 'person':
+            if confidence_score < threshold:
+                break
+
+    # Initialize the counter
+    people_without_hats = 0
+
+    # Check if the person is wearing a hat
+    for object_label, confidence_score, bounding_box, saved_image_path in execute(image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding):
+        if object_label != 'baseball' and object_label != 'basket' and object_label != 'person':
+            continue
+        if bounding_box[3] < padding or bounding_box[2] < padding:
+            continue
+        hat_top_left = tuple([bounding_box[3] - padding, bounding_box[5] - padding])
+        hat_bottom_right = tuple([bounding_box[3] + padding, bounding_box[5] + padding])
+        
+        if hat_top_left[1] < padding // 2 or hat_bottom_right[1] > padding * 2 + padding // 2:
+            people_without_hats += 1
+
+    return people_without_hats
+
+# Test the function
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+final_result = count_people_without_hats(image_path)
+print(f"Number of people without hats: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 0

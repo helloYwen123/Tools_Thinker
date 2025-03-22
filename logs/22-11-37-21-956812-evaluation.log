@@ -1,0 +1,64 @@
+------------- 22-11-37-21-956812 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_demonator_tool import *
+categories = ["baseball", "basket"]
+min_confidence = 0.5
+models = ["base"]
+padding = 15
+
+def analyze_image(image_path, labels, confidence_threshold, model_size, padding):
+    detection = detect_objects(image_path, labels, confidence_threshold, model_size)
+    detected_items = []
+    for image in detection:
+        box = [min(detection[i]["bbox"][0], detection[i]["bbox"][1]) for i in range(len(detection))]
+        if all(box < (x + padding) for x in prediction["bbox"] for prediction in image):
+            found = False
+            for key, value in prediction.items():
+                if key in categories:
+                    found = True
+                    detected_items.append(["{}({})".format(value, detection[i]["bbox"][0]), "{} ({})".format(detection[i]["bbox"][1])])
+                    break
+            if not found:
+                detected_items.append(["{} ({})".format(values, detection[i]["bbox"][0]), ""
+                                    "{} ({})".format(detection[i]["bbox"][1])])
+    return detected_items
+
+# Load labels
+labels_to_detect = labels_to_objects_labels = labels = ["basketball", "baseball", "base", "person"]
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_103_image_1.jpg"
+
+# Detect objects in image
+detection = analyze_image(image_path=image_path, labels=categories, confidence_threshold=min_confidence, model_size=model_size, padding=padding)
+
+# Print result
+if not detection:
+    print("Unable to detect objects in image")
+
+for i in range(len(detection)):
+    print(f"{categories[i]}({detection[i]['bbox'][0]}-{detection[i]['bbox'][1]})")
+    print("{:.2f}".format(float(values[i]["bbox"][1] - detection[i]["bbox"][0])))
+
+final_result = detection[0]['bbox'][0]  # Check the x-coordinate of the bounding box
+
+# Determine if a person is wearing a yellow jacket
+print(f"Number of people wearing a yellow jacket: ", final_result / 3)
+print('<final_result>', final_result)
+
+Solution: 1

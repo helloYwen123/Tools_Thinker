@@ -1,0 +1,41 @@
+------------- 22-02-31-37-456395 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def execute(img, labels, threshold=0.35, model_size="tiny", padding=10):
+    detection = {}
+    model = Object_Detector_Tool()
+    for obj in model.labels:
+        execution = model.execute(image=img, labels=[obj], threshold=threshold, model_size=model_size, padding=padding)
+        detections = {label: detection[0] for label, detection in execution.items()}
+    return detections
+
+def detect_cows(image_path):
+    image = Image.open(image_path)
+    cows = {}
+    for label in ["cow"]:
+        cow_detections = execute(image=image, labels=[label], threshold=0.4, model_size="tiny", padding=20)
+        if cow_detections['cow']:
+            cow_obj = cow_detections['cow'][0]
+            cows[label] = {'bbox': cow_obj.bbox, 'confidence': cow_obj.confidence, 'name': label}
+    return cows
+
+cows = detect_cows("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_63_image_1.jpg")
+for label in cows:
+    print(f"{label} - {cows[label]['bbox']}:{cows[label]['confidence']}({cows[label]['bbox'][0]}, {cows[label]['bbox'][1]}, {cows[label]['bbox'][2]}, {cows[label]['bbox'][3]}:{cows[label]['bbox'][2]}")
+print('<final_result>', final_result)
+
+Solution: 0

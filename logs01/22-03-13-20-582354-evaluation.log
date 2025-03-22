@@ -1,0 +1,44 @@
+------------- 22-03-13-20-582354 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def label_objects(image_path, labels=['bus', 'parking'], threshold=0.5, model_size="tiny", padding=20):
+    # Load the object detection model
+    import object_detector_tool as ot
+    detection_result = ot.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    # Process the detection results
+    import io
+    import pandas as pd
+    import numpy as np
+
+    # Process the detection results into a pandas DataFrame for easy manipulation
+    df = pd.DataFrame(detection_result["output"])
+    # Filter the results to include only "bus" and get the coordinates of the buses
+    bus_results = df[(df["label"] == 'bus') | (df["label"] == 'parking')]
+    # Get the bounding box coordinates
+    box_coordinates = bus_results["box"].values.tolist()
+
+    final_result = {"count": len(box_coordinates)}
+    if final_result:
+        final_result["bbox_coordinates"] = box_coordinates
+    return final_result
+
+# Apply the object detection function to the specified image
+result = label_objects("/path/to/image.jpg")
+print(result)
+print('<final_result>', final_result)
+
+Solution: 0

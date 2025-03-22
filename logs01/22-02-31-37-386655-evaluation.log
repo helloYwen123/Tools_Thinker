@@ -1,0 +1,58 @@
+------------- 22-02-31-37-386655 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Set the input image and labels
+input_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_119_image_1.jpg"
+labels = ["person"]
+
+# Set the threshold and model size
+threshold = 0.6
+model_size = "base"
+
+# Initialize the empty padding
+padding = 20
+
+# Define the function to detect the object at a confidence threshold
+def detect_object(image_path, labels, threshold, model_size):
+    detections = []
+    
+    for label in labels:
+        execution = tool.execute(image=image_path, labels=[label], threshold=threshold, model_size=model_size)
+        
+        if label in execution:
+            detection = execution[label]
+            box_info = detection['data'][0] + detection['bbox'][0] - padding
+            detection = detection['data'][2:].tolist() + [label] + box_info
+            
+            detections.append(detection)
+
+    return detections
+
+# Detect the person in the image
+detections = detect_object(input_image, labels, threshold, model_size)
+
+# Get the number of persons
+num_people = sum(detections)
+
+# Output the result
+final_result = {"number_of_people_wearing_yellow_shirt": num_people}
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

@@ -1,0 +1,51 @@
+------------- 22-04-21-48-741131 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+label_ids = ['baseball', 'basket', 'car', 'person', 'wall', 'fireplace', 'fire', 'candle', 'wood']
+threshold = 0.35
+model_size = 'tiny'
+padding = 20
+input_image_path = 'val_Counting_56_image_1.jpg'
+
+output_image_path = f'target_image_{label_ids}.png'
+
+def check_candle_locations(image_path, label_ids, threshold, model_size, padding):
+    detected_objects = detection_tool.execute(image=image_path, labels=label_ids, threshold=threshold, model_size=model_size, padding=padding)[0]
+    candle_list = []
+    for detected_object in detected_objects:
+        if 'candle' in detected_object['label'] and detected_object['confidence score'] > 0.2 and 'box' in detected_object:
+            candle_location = detected_object['box']
+            x, y, width, height = detected_object['box']
+            return candle_location
+    return None
+
+candle_location = check_candle_locations(input_image_path, label_ids, threshold, model_size, padding)
+if candle_location is not None:
+    candle_location = list(range(2, x+2))
+    candle_location.extend(list(range(y+2, height+padding)))
+    candle_location.extend(list(range(2, width+padding)))
+    candle_location.extend([3])
+    candle_image_path = create_blank_image(image_path, label_ids, candle_location, 'candle')
+    output_image_path = candle_image_path.replace(".jpg",".png")
+    cv2.imwrite(output_image_path, candle_image_path)
+else:
+    final_result = candle_location
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 3

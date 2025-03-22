@@ -1,0 +1,56 @@
+------------- 22-06-03-16-320234 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 15
+    <python>
+    ^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+<python>
+from object_detector_tool import *
+
+# Load the image
+execution = object_detector_tool.execute(image="path/to/image.jpg", labels=["train"], threshold=0.6, model_size="base", padding=20)
+train_json = execution[0].pop("labels")
+train_boxs = [bbox.tolist() for bbox in train_json]
+
+# Calculate the number of drive wheels on the train
+train_drive_wheels = 0
+for box in train_boxs:
+    front_wheels = 0
+    rear_wheels = 0
+    for _offset in range(3):
+        for _scale in range(5):
+            wheel_box = [box[scale * _offset] + box[scale * _offset + 1] for scale in range(1, 2)]
+            wheel_side = [wheel_box[1], wheel_box[3]]
+            position = sum(wheel_side)
+            if position > 0.5:
+                wheels = wheel_box[1] - wheel_box[0], wheel_box[3] - wheel_box[2]
+                if wheels[0] == wheels[1]:
+                    front_wheels += 1
+                else:
+                    rear_wheels += 1
+    if front_wheels > rear_wheels:
+        drive_wheels = front_wheels
+    elif (front_wheels == 0 and rear_wheels > 0) or (rear_wheels == 0 and front_wheels > 0):
+        drive_wheels = 2
+    else:
+        drive_wheels = 0
+    break
+
+final_result = "The train has %d drive wheels." % drive_wheels
+print('<final_result>', final_result)
+
+Solution: 3

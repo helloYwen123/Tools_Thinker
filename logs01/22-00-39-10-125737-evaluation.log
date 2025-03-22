@@ -1,0 +1,52 @@
+------------- 22-00-39-10-125737 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detection_tool import *
+
+# Define the input image
+input_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_1_image_1.jpg"
+
+# Define the labels to detect
+labels = ["blue_float"]
+
+# Set the threshold
+threshold = 0.35
+
+# Set the model size
+model_size = "tiny"
+
+# Set the number of pixels to add as empty padding
+padding = 20
+
+# Load the object detector model
+model = build_object_detection_model(model_name=model_size)
+
+# Detect blue floats in the input image
+floating_objects = detection_model.detect_objects_on_image(model, labels=labels, image_path=input_path, threshold=threshold, model_size=model_size, padding=padding)
+
+# Get the detected blue float bounding box
+floating_bounding_boxes = [bbox for bbox in floating_objects if bbox['label'] == 'blue_flower']
+
+# Count the number of blue floats
+num_blue_floats = len(floating_bounding_boxes)
+
+# Print the final result
+final_result = {"num_blue_floats": num_blue_floats}
+print(json.dumps(final_result))
+print('<final_result>', final_result)
+
+Solution: 1

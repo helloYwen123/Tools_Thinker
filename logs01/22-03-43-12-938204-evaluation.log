@@ -1,0 +1,48 @@
+------------- 22-03-43-12-938204 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import execute
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_17_1.jpg"
+
+# Labels to detect
+labels = ["baseball", "basket"]
+
+# Confidence threshold
+threshold = 0.35
+
+# Model size
+model_size = "base"
+
+# Number of pixels to add as empty padding
+padding = 15
+
+# Detect objects in the image
+execution = execute(image_path=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+# Get object detection results
+objects = execution[0]["output_type"]
+
+# Count objects with a confidence score >= 0.35
+count_objects = sum(1 for obj in objects if float(obj["confidence score"]) >= threshold)
+
+final_result = count_objects
+print(f"Number of people wearing a red coat: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 1

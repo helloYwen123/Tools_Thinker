@@ -1,0 +1,49 @@
+------------- 22-03-43-12-843118 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+try:
+    image = os.path.join("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_62_image_1.jpg")
+    detection = detect_objects(image, ["baseball"], 0.35, "base", 20)
+    baseballs = [obj["label"] for obj in detection]
+    detection = detect_objects(image, ["person"], 0.5, "base", 15)
+    people = [obj["label"] for obj in detection]
+    total_objects = len(detection)
+
+    # Calculate the percentage of people in the baseballs or people
+    if total_objects > 4:
+        print("Percentage of people in baseballs or people: ", people/total_objects * 100)
+    else:
+        print("People detected are not majority in baseballs or people")
+
+except FileNotFoundError:
+    print("File not found. Please ensure the image is in the specified location and the file name is correct.")
+
+else:
+    all_objects = detection
+    found_objects = set()
+    for obj in all_objects:
+        if obj["label"] not in found_objects and obj["label"] != "person":
+            found_objects.add(obj["label"])
+    print("Detected objects:", len(all_objects))
+    if any(found_objects):
+        print("Detected objects that are present:", len(found_objects))
+    else:
+        print("No objects in baseballs or people detected.")
+print('<final_result>', final_result)
+
+Solution: 1

@@ -1,0 +1,57 @@
+------------- 22-01-18-42-841084 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import numpy as np
+from Object_Detector_Tool import *
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_43_image_1.jpg"
+image = Image.open(image_path)
+
+# Define labels to detect
+labels = ["elephant"]
+
+# Define threshold and model size
+threshold = 0.35
+model_size = "tiny"
+
+# Load the model and save the detection
+model, bounding_box, score, saved_image_path = model_detector(image_path, model_size)
+
+# Check if any elephant is in the image
+if score > threshold:
+    trunks_in_water = []
+    for bbox in bounding_box:
+        x, y, w, h = bbox
+        if x - 1 >= 0:
+            x -= 1
+        if y - 1 >= 0:
+            y -= 1
+        if x + w + 1 < image.width and y + h + 1 < image.height:
+            trunks_in_water.append((labels[0], score, (x, y, w, h), f"{image_path}", f"{bounding_box}.jpg"))
+
+trunks_in_water.sort(key=lambda x: x[0], reverse=True)
+
+elephant_trunks_in_water = 0
+for i in range(len(trunks_in_water)):
+    if trunks_in_water[i][0] == "elephant":
+        elephant_trunks_in_water += 1
+
+elephant_trunks_in_water
+print('<final_result>', final_result)
+
+Solution: 1

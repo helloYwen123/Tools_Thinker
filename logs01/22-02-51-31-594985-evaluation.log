@@ -1,0 +1,54 @@
+------------- 22-02-51-31-594985 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_sandwiches(image_path, labels, threshold, model_size, padding):
+    import os
+    import cv2
+    import Image
+    import numpy as np
+    
+    # Load image using OpenCV
+    image = cv2.imread(image_path)
+    image = Image.open(image_path)
+    
+    # Detect labels
+    detector = Object_Detector_Tool(image=image, model_name="tiny", threshold=threshold)
+    labels = detector.execute()
+    
+    # Prepare labels
+    labels = {l[:-2]: l for l in labels}
+    max_conf = max([l[1] for l in labels.values()])
+    labels = {l: label_for_label(item) for l, item in labels.items() if item[1] == max_conf}
+    
+    return labels
+
+def label_for_label(image, label):
+    if label == "sandwich":
+        return "sandwiches"
+    elif label == "sub":
+        return "sub"
+    else:
+        return None
+
+sandwiches = count_sandwiches("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_60_image_1.jpg", labels=["baseball", "basket"], 
+                              threshold=0.35, model_size="tiny", padding=20)
+
+final_result = (len(sandwiches["sandwiches"]))
+print("The number of sandwiches is:", final_result)
+print('<final_result>', final_result)
+
+Solution: 3

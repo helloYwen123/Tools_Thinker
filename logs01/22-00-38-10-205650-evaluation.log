@@ -1,0 +1,84 @@
+------------- 22-00-38-10-205650 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 64
+    (f'{person_image_path.split('_')[-1]}' + 1)
+                                 ^
+SyntaxError: f-string: f-string: unmatched '('
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool as object_detector_tool
+
+input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_53_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Load the model
+model = object_detector_tool.load_model(model_name="dino_tiny")
+
+# Detect objects and save detected images
+for _ in range(3):
+    detection_result = object_detector_tool.execute(image=input_image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    if detection_result:
+        detected_objects = [item for item in detection_result if (image_item["label"] in labels) and (image_item["confidence"] > 0.3)]
+        for i in range(len(detected_objects)):
+            object_image_path = f"counting_images/counting_53_{i + 1}.png"
+            object_detector_tool.process_image(detection_results=detected_objects, object_label=detected_objects[i]["label"], output_image_path=object_image_path)
+
+# Load pre-trained model
+baseball_model = object_detector_tool.load_model(model_name="dino_tiny")
+person_model = object_detector_tool.load_model(model_name="dino_tiny")
+
+# Detect and save objects
+baseball_detections = baseball_model.detect(input_image_path)
+baseball_model.process_detector_output(baseball_detections, input_image_path, baseball_model_output_path="baseball_output_1.png")
+
+baseball_detection_result = baseball_model.detect(input_image_path)
+baseball_images = []
+for detection in baseball_detection_result:
+    if "baseball" in detection["label"] and "ball" in detection["label"]:
+        baseball_image_path = f"baseball_output_{detection['object_id'] + 1}.png"
+        baseball_images.append(baseball_image_path)
+
+person_detections = person_model.detect(input_image_path)
+person_images = []
+for detection in person_detections:
+    if "person" in detection["label"]:
+        person_image_path = f"person_output_{detection['object_id'] + 1}.png"
+        person_images.append(person_image_path)
+
+# Write object names to a file
+counting_objects = set()
+for baseball_image_path in baseball_images:
+    count = image_counter.count_images(image_path=baseball_image_path)
+    counting_objects.add(f"baseball_{count}")
+
+for person_image_path in person_images:
+    counting_objects.add(f"person_{person_image_path.split('_')[-1]}", f"person_output_{f'{person_image_path.split('_')[-1]}' + 1}.png")
+
+# Write object names to a file
+counting_objects
+
+# CountingObjects
+counting_objects = {"baseball": 0, "person": 0}
+for object in counting_objects:
+    if object in counting_objects:
+        counting_objects[object] += 1
+
+counting_objects
+print('<final_result>', final_result)
+
+Solution: 1

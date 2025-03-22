@@ -1,0 +1,53 @@
+------------- 22-03-03-07-113309 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import argparse
+
+# Parse command line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--image', required=True, help='Path to the image file.')
+parser.add_argument('--model_size', default='tiny', choices=['tiny', 'base'], help='Size of the ground model to use.')
+parser.add_argument('--padding', type=int, default=20, help='Number of pixels to add as empty padding around detected objects.')
+parser.add_argument('--threshold', type=float, default=0.35, help='Confidence threshold for detection.')
+args = parser.parse_args()
+
+# Load image file
+image_path = args.image
+image = Object_Detector_Tool.load_image_with_box_if_exists(image_path)
+
+# Define object labels to detect and threshold for detection
+labels = ['STOP', 'GRANDV', 'SUNSET TERR. DR.']
+threshold = args.threshold
+
+# Detect objects in image
+detect_results = Object_Detector_Tool.detection(image)
+
+# Count number of STOP signs
+num_stops = 0
+for det_obj in detect_results:
+    if det_obj['label'] == 'STOP':
+        num_stops += 1
+    if det_obj['label'] == 'GRANDV':
+        num_stops += 1
+    if det_obj['label'] == 'SUNSET TERR. DR.':
+        num_stops += 1
+
+# Print final result
+print("Number of STOP signs: ", num_stops)
+print('<final_result>', final_result)
+
+Solution: 2

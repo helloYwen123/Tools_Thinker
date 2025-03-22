@@ -1,0 +1,45 @@
+------------- 22-03-53-32-529846 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_object(image_path, labels, threshold, model_size, padding):
+    detect_objects = []
+    model = 'base'
+    if model_size == 'tiny':
+        model = 'tiny'
+    detection = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model, padding=padding)
+    for obj in detection.output:
+        label, confidence_score, _, _ = obj
+        if label.lower() in labels:
+            box = (obj['bbox'][0], obj['bbox'][1], obj['bbox'][2], obj['bbox'][3])
+            saved_image_path = f"output/{obj['name']}_boxes.jpg"
+            # Save the object box with default empty padding
+            save_box_with_default_padding(box, saved_image_path)
+            detect_objects.append({'label': label, 'confidence score': confidence_score, 'box': box, 'saved_image_path': saved_image_path})
+    
+    return detect_objects
+
+if __name__ == '__main__':
+    path_to_image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_47_image_1.jpg'
+    labels_to_detect = ['cake']
+    threshold = 0.35
+    model_size = 'tiny'
+    padding = 20
+    final_result = detect_object(path_to_image, labels_to_detect, threshold, model_size, padding)
+    print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

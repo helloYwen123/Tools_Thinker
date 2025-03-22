@@ -1,0 +1,43 @@
+------------- 22-05-47-23-634531 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+# Define the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_42_image_1.jpg"
+
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = "base"
+padding = 15
+
+# Call the tool to detect baseball and basket in the image
+executions = [tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)]
+
+# Get the saved image paths
+boxes = [box["bbox"] for execution in executions for box in execution["output_type"][1]]
+
+
+# Get the flowers coordinates and calculate their number
+flowers_coordinates = [bounding_box[::4] for bounding_box in boxes if "plant" in bounding_box[-2]]
+flower_count = sum(1 for _ in flower_coordinates if "flower" in _)
+
+# Print the flower count
+print(f"Flowers have {flower_count} in them.")
+print('<final_result>', final_result)
+
+Solution: 6

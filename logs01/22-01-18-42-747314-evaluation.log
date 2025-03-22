@@ -1,0 +1,54 @@
+------------- 22-01-18-42-747314 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import numpy as np
+
+def count_bats(image_path, threshold, model_size):
+    if model_size.lower() == 'tiny':
+        model_path = 'TinyDetectionModel/tiny_model.h5'
+    elif model_size.lower() == 'base':
+        model_path = 'TinyDetectionModel/base_model.h5'
+    else:
+        raise ValueError("Unsupported model size")
+
+    model = load_model(model_path)
+    
+    image = image_as_array(image_path)
+    image = preprocess_image(image, model, threshold)
+
+    results = get_bats(model, image)
+    return len(results)
+
+def get_bats(model, image):
+    bat_boxes = [(bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]) for _, _, bbox in model.predict(image)]
+    for i, bat in enumerate(bat_boxes):
+        if bat not in ["baseball", "basket"]:
+            raise ValueError("Unexpected object in output")
+    return [bat for bat, _, _ in bat_boxes]
+
+def image_as_array(image_path):
+    return np.array(Image.open(image_path))
+
+def preprocess_image(image, model, threshold):
+    image = np.array(Image.open(image))
+    image = image.astype(bool)
+    model_input = preprocess(image.astype(np.float32) / 255, model, threshold)
+    model_output = model.predict(model_input)
+    return model_output[0]
+print('<final_result>', final_result)
+
+Solution: 1

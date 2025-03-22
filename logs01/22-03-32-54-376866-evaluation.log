@@ -1,0 +1,60 @@
+------------- 22-03-32-54-376866 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 28
+    generated_image_paths = create_grounded_image_labels_images(ground truth=ground_truth, labels=labels)
+                                                                ^^^^^^^^^^^^
+SyntaxError: invalid syntax. Perhaps you forgot a comma?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def detect_people_and_make_image_paths(image_path, labels=("Person", "Car"), threshold=0.35, model_size="tiny", padding=20):
+    # Load model
+    model = LoadModel(model=model_size)
+    
+    # Load labels
+    labels = get_labels(labels=labels)
+    
+    # Detect and save ground truth data
+    ground_truth = predict_ground_truth(model=model, image_path=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    
+    # Create and return image_paths
+    generated_image_paths = create_grounded_image_labels_images(ground truth=ground_truth, labels=labels)
+    
+    return generated_image_paths
+
+# Check function to verify correctness
+def check():
+    # Input parameter image path
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_109_image_1.jpg"
+
+    # Detect people and save image paths
+    generated_image_paths = detect_people_and_make_image_paths(image_path=image_path)
+    
+    # Print results
+    print(f"Detected people paths: {generated_image_paths}")
+    plt.figure()
+    for i, image_path in enumerate(generated_image_paths):
+        plt.imshow(cv2.imread(image_path))
+        plt.text(15,i,str(len(ground_truth[i])),(f"{ground_truth[i][0]}")+" "+(ground_truth[i][1]).split("(")[-2][:-1],
+                 (i-0*10.0)+5*2.5,"gray" if groundtruth[i][0] == 1 else ("red" if groundtruth[i][1] == groundtruth[i][0] else ""
+          ), va="top", ha="left", ha="center", size=4)
+
+    plt.show()
+
+check()
+print('<final_result>', final_result)
+
+Solution: 1

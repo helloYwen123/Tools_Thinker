@@ -1,0 +1,60 @@
+------------- 22-04-32-10-906603 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_objects(image_path, labels, threshold, model_size, padding):
+    object_dict = []
+    model_output = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    for obj in model_output:
+        obj_dict = {
+            'label': obj[0],
+            'confidence': obj[1],
+            'box': f'{obj[2]}x{obj[3]}',
+            'saved_image_path': model_output[0][6]
+        }
+        object_dict.append(obj_dict)
+    return object_dict
+
+def count_black_suitcases(object_dict):
+    black_suitcases = 0
+    for obj in object_dict:
+        if obj['label'] == 'Baseball':
+            black_suitcases += int(obj['confidence']) * obj['box']
+        if obj['label'] == 'Basketball':
+            black_suitcases += int(obj['confidence']) * obj['box']
+        if obj['label'] == 'Shoe':
+            black_suitcases += int(obj['confidence']) * obj['box']
+    return int(black_suitcases)
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg"
+
+# Detect objects
+labels = ["basketball", "basketball"]
+threshold = 0.1
+model_size = "tiny"
+padding = 10
+
+# Initialize object_dict
+object_dict = detect_objects(image_path, labels, threshold, model_size, padding)
+
+# Count black suitcases
+black_suitcases = count_black_suitcases(object_dict)
+
+print(f"Number of black suitcases = {black_suitcases}")
+print('<final_result>', final_result)
+
+Solution: 2

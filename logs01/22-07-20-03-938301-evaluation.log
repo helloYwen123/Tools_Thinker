@@ -1,0 +1,52 @@
+------------- 22-07-20-03-938301 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import os
+from object_detector_tool import *
+from PIL import Image
+
+def detect_objects(image_path, labels, threshold=0.35, model_size='tiny', padding=20):
+    image = Image.open(image_path)
+    detection = detect(image.open(), labels=labels, threshold=threshold, model_name=model_size, padding=padding)
+    detections = [obj for obj in detection]
+    return detections
+
+class hotdog_parser():
+    def __init__(self, path_to_image):
+        self.path_to_image = path_to_image
+        self.detections = detect_objects(image_path=path_to_image, labels=["hot dog"])
+
+    def get_number_of_people(self, box_dimensions):
+        # Assuming the box dimensions are for 4 hot dogs
+        return len(box_dimensions) / 4
+
+    def calculate_hot_dog_count(self):
+        img = Image.open(self.path_to_image)
+        detections = self.detections
+        for box in detections:
+            hot_dog = hotdog_parser(box["path to hot dog"])
+            hot_dog_count = hot_dog.get_number_of_people(box["bbox"])
+            yield hot_dog_count
+
+final_result = []
+for result in calculate_hot_dog_count():
+    final_result.append(result)
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

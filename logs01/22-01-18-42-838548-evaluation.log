@@ -1,0 +1,35 @@
+------------- 22-01-18-42-838548 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def find_objects(image_path, labels=['car', 'person']):
+    # Load image
+    image = Object_Detector_Tool.execute(image=image_path)['output']['object'].sort(key=lambda x: x['label'], reverse=True)[0]
+    
+    # Create empty padding for labels
+    padding = Image.new('RGB', image.shape, color="000000")
+    empty_image = ImageUtils.overlay_image(image, padding, 'Y', 'overlay', 'center', 15)
+
+    # Count object labels
+    count = len(list(filter(lambda x: x['label'] in labels, empty_image.split())))
+    
+    return count
+
+final_result = find_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_61_image_1.jpg")
+print("Number of objects near motorcycle: ", final_result)
+print('<final_result>', final_result)
+
+Solution: 0

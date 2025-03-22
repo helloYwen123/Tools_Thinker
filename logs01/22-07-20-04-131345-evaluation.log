@@ -1,0 +1,46 @@
+------------- 22-07-20-04-131345 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import object_detection_tool
+import pandas as pd
+
+def detect_white_fridge(image_path):
+    object_detection_result = object_detection_tool(image_path,
+                                                    ["fridge"], 
+                                                    threshold=0.35,
+                                                    model_size="tiny")
+
+    if object_detection_result and object_detection_result[0][4][1] > 0.15:
+        return True
+    else:
+        return False
+
+# path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_100_image_1.jpg"
+
+# check if there is a white fridge in the image
+white_fridge_detection_result = detect_white_fridge(image_path)
+
+# If there is a white fridge, return True, otherwise False
+if white_fridge_detection_result is True:
+    final_result = "There is a white refrigerator in the image."
+else:
+    final_result = "There is no white refrigerator in the image."
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

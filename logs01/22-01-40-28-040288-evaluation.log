@@ -1,0 +1,42 @@
+------------- 22-01-40-28-040288 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detection_tool import *
+
+def find_windows(image_path):
+    # Load the image
+    image = Image.open(image_path)
+
+    # Set the confidence threshold
+    thresholds = {0.65: 0.4, 0.55: 0.35, 0.5: 0.25, 0.4: 0.15}
+    thresholds = thresholds[0.65]
+
+    # Load the model
+    model = get_model('model_weight/saved_model')
+
+    # Extract the bounding boxes and predictions of windows
+    execution = tool.execute(image_path, labels=["window"], threshold=thresholds['0.65'], model_size='base', padding=15)
+    
+    # Convert the label and prediction lists to bounding boxes format
+    label_dict = []
+    for label in execution:
+        label_dict.append({"label": label[0], "confidence": label[1], "bbox": label[2]})
+    
+    return label_dict
+print('<final_result>', final_result)
+
+Solution: 2

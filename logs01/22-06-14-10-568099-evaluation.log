@@ -1,0 +1,66 @@
+------------- 22-06-14-10-568099 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_people(image_path, labels, threshold, model_size, padding):
+    import Object_Detector_Tool
+    from PIL import Image
+
+    # Load the image and the associated annotations
+    image = Image.open(image_path)
+    image = image.convert('RGB')
+
+    # Set the label to be counted
+    labels_to_count = ["human"]
+
+    try:
+        # Detect the people in the image
+        execution = Object_Detector_Tool.execute(image=image, labels=labels_to_count, threshold=threshold, model_size=model_size, padding=padding)
+
+        # Get the bounding boxes and confidence scores
+        bounding_boxes = []
+        for obj in execution:
+            bounding_box = (float(obj['bbox']['xmin']), float(obj['bbox']['ymin']), float(obj['bbox']['xmax']), float(obj['bbox']['ymax']))
+            confidence = float(obj['bbox']['confidence'])
+            bounding_boxes.append({'label': obj['categories'][0]['name'], 'confidence': confidence, 'bbox': bounding_box})
+
+        # Count the number of people in the image
+        num_people = 0
+        for box in bounding_boxes:
+            if box['label'] in ["human"]:
+                num_people += 1
+
+        return num_people
+
+    except Exception as e:
+        print(f"Error retrieving people: {str(e)}")
+        return -1
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_27_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 10
+
+# Count the number of people in the image
+num_people = count_people(image_path, labels, threshold, model_size, padding)
+
+# Print the result
+print(f"Number of people in the image: {num_people}")
+print('<final_result>', final_result)
+
+Solution: 1

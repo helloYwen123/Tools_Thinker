@@ -1,0 +1,49 @@
+------------- 22-01-18-42-802476 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import cv2 as cv
+
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_43_image_1.jpg"
+
+boxes, labels, scores = [], [], []
+
+elephant_labels = "elephant"
+
+# Load the image and convert it to RGB format
+img1 = cv.imread(path_to_image)
+img1_rgb = cv.cvtColor(img1, cv.COLOR_BGR2RGB)
+
+# Detect the objects in the image
+results = object_detector_tool.execute(image= img1_rgb, labels=[elephant_labels])
+
+for result in results:
+    if 'id' in result:
+        if result['id'] == elephant_labels:
+            boxes.append(((result['bbox'][0], result['bbox'][1]), (result['bbox'][0] + result['bbox'][2], result['bbox'][1] + result['bbox'][3])))
+            labels.append(result["label"])
+            scores.append(result["score"])
+
+# Save the identified objects in image with default empty padding
+for box, label, score, img_name in zip(boxes, labels, scores, ["elephant"]*len(boxes)):
+    cv.rectangle(img1_rgb, box[0], box[1], (255, 0, 0), thickness=2)
+
+cv.imshow("Rectangle of Objects", img1_rgb)
+cv.waitKey(0)
+cv.destroyAllWindows()
+print('<final_result>', final_result)
+
+Solution: 1

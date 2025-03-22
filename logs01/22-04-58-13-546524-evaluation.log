@@ -1,0 +1,76 @@
+------------- 22-04-58-13-546524 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def get_object_labels(image_path):
+    detection_results = detection_model.predict(image_path)  
+    labels = detection_results['label']
+    
+    return labels
+
+def detect_object_with_padding(image_path, labels, threshold=0.35, model="tiny", padding=20):
+    detection_results = detection_model.predict(image_path)  
+
+    if labels is None:
+        return None
+
+    detected_objects = []  
+
+    for label in labels:
+        box = {'box': {'left': (detection_results['bbox'][0][0] * threshold), 'top': (detection_results['bbox'][0][1] * threshold), 'width': (abs(detection_results['bbox'][0][2] * threshold)), 'height': (abs(detection_results['bbox'][0][3] * threshold))}, 'label': label, 'confidence score': detection_results['bbox[0]'][0] * threshold}
+        if label in ['baseball', 'basket', 'car', 'person']:
+            box['padding'] = padding
+        detected_objects.append(box)
+
+    return detected_objects
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_65_image_1.jpg"
+labels = get_object_labels(image_path)
+boxes = get_object_labels(image_path)
+total_labels = len(labels)
+total_boxes = len(boxes)
+print(f"Total Labels: {total_labels}")
+print(f"Total Boxes: {total_boxes}")
+
+print(f"Detected Objects without Padding: {boxes}")
+
+for obj in boxes:
+    if obj['label'] == 'baseball':
+        print(f"Detection of baseball: {obj}")
+    if obj['label'] == 'basket':
+        print(f"Detection of basket: {obj}")
+    if obj['label'] == 'car':
+        print(f"Detection of car: {obj}")
+    if obj['label'] == 'person':
+        print(f"Detection of person: {obj}")
+
+for obj in boxes:
+    if obj['bbox'][1] - obj['bbox'][0] < 10:
+        print(f"Detection of person: {obj}")
+
+if labels is None:
+    print("Could not detect any labels for the object")
+else:
+    print("No detection found")
+    detection_model = "/path/to/detection/model.pth"
+    detection_model = '/path/to/detection/model.pth'
+    boxes = detection_model.predict(image_path)
+    print(f"Detected Box Size: {boxes}")
+print('<final_result>', final_result)
+
+Solution: 5

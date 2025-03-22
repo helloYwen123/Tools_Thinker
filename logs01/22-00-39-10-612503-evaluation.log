@@ -1,0 +1,39 @@
+------------- 22-00-39-10-612503 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+def count_reflected_people():
+    try:
+        with open('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg', 'rb') as f:
+            # Load the image as a byte string 
+            image = f.read()
+        
+        # Detect the number of people in the image
+        detection_result = tool.execute(image=image, labels=["baseball", "basket"], threshold=0.35, model_size="tiny", padding=0)
+        people_count = len(detection_result['objects']['baseball'])
+        
+        return people_count
+    except FileNotFoundError:
+        return "Image not found"
+
+final_result = count_reflected_people()
+
+print("Number of people reflected in the mirror:", final_result)
+print('<final_result>', final_result)
+
+Solution: 2

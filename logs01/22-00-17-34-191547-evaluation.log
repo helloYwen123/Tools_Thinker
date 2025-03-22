@@ -1,0 +1,89 @@
+------------- 22-00-17-34-191547 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+def count_parking_meters(image_path, labels=["parking_meter"], threshold=0.35, model_size='tiny', padding=20):
+    import os
+    from PIL import Image
+
+    # Load the image
+    try:
+        image = Image.open(image_path)
+        labels = labels.copy()
+    except Exception as e:
+        print(f"Error opening image: {e}")
+        return False
+
+    def preprocess(image, labels, padding):
+        images = []
+        for label in labels:
+            mask, box, confidence_score = detect_objects(image, label)
+            if not mask:
+                continue
+            # Create bounding box for each object
+            mask = mask.astype(bool)
+            box = mask.nonzero()
+            box = [np.asanyarray(box)]  # Append a single value to convert np array to list
+            box = [box[0]] + box[1:]  # [start x, start y, width, height]
+            images.append((box, confidence_score, label))  # Append bounding box and confidence score to list
+        return images
+
+    # Detect objects
+    detections = tool.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+    if not detections:
+        return False
+
+    detector_labels = [detection[2] for detection in detections]
+    boxes = [tuple(detection[3]) for detection in detections]
+    image_path = image_path
+
+    # Preprocess image
+    try:
+        preprocess_result = preprocess(image=image, labels=detector_labels, padding=padding)
+        if not preprocess_result:
+            return False
+    except Exception as e:
+        print(f"Error preprocessing image: {e}")
+        return False
+
+    # Count parking meters
+    parking_meters = []
+    for box, confidence_score in preprocess_result:
+        # Find parking meters
+        parking_meter = tool.find_parking_meter(box)
+        center_x, center_y = parking_meter[0], parking_meter[1]
+        parking_meters.append((center_x, center_y))
+
+    return parking_meters
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_41_image_1.jpg"
+
+# Count parking meters
+result = count_parking_meters(image_path)
+
+if result:
+    final_result = result
+else:
+    final_result = "No parking meters found."
+
+final_result
+print('<final_result>', final_result)
+
+Solution: 1

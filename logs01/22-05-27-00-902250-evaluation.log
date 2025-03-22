@@ -1,0 +1,73 @@
+------------- 22-05-27-00-902250 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import os
+
+# Load the object detection model from the tool
+model_path = os.path.join(os.environ['HOME'], 'AppData', 'Local', 'MachinaiDino', 'MachinaiDino-01-Tiny')
+label_file_path = os.path.join(os.environ['HOME'], '_Temp', 'labels.txt')
+
+# Load the labels from the labels.txt file
+with open(label_file_path, 'r') as f:
+    labels_text = f.read()
+    labels = [x.strip() for x in labels_text.split() if x.strip()]
+threshold = 0.35
+model_size = 'tiny'
+
+# Detect the objects in the image
+execution = tool.execute(
+    image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_82_image_1.jpg",
+    labels=labels,
+    threshold=threshold,
+    model_size=model_size,
+    padding=0
+)
+labels_to_be_saved = []
+
+for item in execution:
+    if item[0] in ['basket', 'baseball'] and item[1] > threshold:
+        labels_to_be_saved.append(item[0])
+
+box_positions = []
+confidence_values = []
+# Add bounding box and confidence values to the list
+for item in execution:
+    if item[0] in ['basket', 'baseball'] and item[1] > threshold:
+        box_positions.append([item[2]['y_min'],item[2]['x_min'],item[2]['w'],item[2]['h']])
+        confidence_values.append(item[2])
+
+# Calculate the sum of coordinates and confidence values
+bounding_box_sum = sum([box[0] for box in box_positions])
+confidence_sum = sum([conf for _,conf in confidence_values])
+
+# Calculate the number of people in the water
+number_of_people_in_water = confidence_sum // 4
+
+execution['label_list'] = labels
+execution['box_positions'] = box_positions
+execution['confidence_values'] = confidence_values
+execution['box_sum'] = bounding_box_sum
+execution['confidence_sum'] = confidence_sum
+
+# Return the final result
+final_result = execution
+
+# Print or use the final result
+final_result
+print('<final_result>', final_result)
+
+Solution: 4

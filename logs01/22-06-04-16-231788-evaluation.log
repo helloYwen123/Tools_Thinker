@@ -1,0 +1,48 @@
+------------- 22-06-04-16-231788 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+try:
+    from object_detector_tool import *
+
+    # Load the image
+    images = find_objects_by_label(location="path/to/image.jpg", labels=["calf", "cow"])
+    if not images:
+        raise ValueError("No object label detected for 'calf' or 'cow'.")
+
+    # Extract bounding box information for the detected objects
+    bounding_boxes = [obj['bbox'] for ob in images for obj in ob['data']['object']]
+
+    # Count the number of detected calves
+    number_of_calves = sum(1 for x in bounding_boxes if x['type'] == 'calf')
+
+    # Extract bounding box information for the detected calves
+    calves_in_train = get_single_object_info(bounding_boxes=calves_in_train[0], labels=["calf"], threshold=0.5)  # Extract bounding boxes for calves
+    number_of_calves += sum(1 for x in calves_in_train['bbox'])  # Count the number of calves
+
+    # Extract bounding box information for the detected cows
+    cows_in_train = get_single_object_info(bounding_boxes=cows_in_train[1], labels=["cow"], threshold=0.5)  # Extract bounding boxes for cows
+    number_of_cows = sum(1 for x in cows_in_train['bbox'])  # Count the number of cows
+
+    final_result = f"Number of cows on the train: {number_of_cows}\nNumber of calves on the train: {number_of_calves}"
+
+except Exception as e:
+    final_result = str(e)
+finally:
+    print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

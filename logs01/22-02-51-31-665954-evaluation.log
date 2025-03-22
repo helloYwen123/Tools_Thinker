@@ -1,0 +1,44 @@
+------------- 22-02-51-31-665954 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Step 1: Load the image
+execution = execute_command(image_path="/root/BLINK_Dataset/Counting/val/images/image_1.jpg")
+
+# Step 2: Check the detection results and count the objects
+objects = []
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+for output in execution:
+    objects.append({"label": output[0], "confidence": float(output[1]), "box": output[2], "saved_image_path": output[3]})
+
+# Step 3: Determine the number of people not wearing a blue hat
+num_people_without_blue_hat = 0
+
+# Iterate through the detection results to find people not wearing a blue hat
+for obj in objects:
+    if obj["label"] not in ["blue hat"]:
+        num_people_without_blue_hat += 1
+
+# Step 4: Print the final result
+final_result = num_people_without_blue_hat
+print("The number of people not wearing a blue hat is:", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

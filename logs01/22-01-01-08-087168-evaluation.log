@@ -1,0 +1,44 @@
+------------- 22-01-01-08-087168 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 34, in <module>
+  File "<string>", line 20, in count_toilets_with_lids
+NameError: name 'tool' is not defined. Did you mean: 'bool'?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_toilets_with_lids(input_image_path, confidence_threshold=0.5):
+    # Load the image
+    image = Image.open(input_image_path)
+
+    # Detect the toilets with lids
+    detection = tool.execute(image=image, labels=["toilet lid"], threshold=confidence_threshold)
+
+    # Extract the bounding box and saved image path for each detected toilet
+    toilets_with_lids = []
+    for item in detection:
+        bbox = item["bbox"]
+        img_path = item["saved_image_path"]
+
+        # Add the toilet lid as a separate entry
+        toilets_with_lids.append({"label": "toilet lid", "confidence score": item["confidence score"], "bbox": bbox, "saved_image_path": img_path})
+
+    return toilets_with_lids
+
+# Call the function
+final_result = count_toilets_with_lids("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_48_image_1.jpg")
+final_result
+print('<final_result>', final_result)
+
+Solution: 2

@@ -1,0 +1,60 @@
+------------- 22-07-02-28-131666 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def extract_tile_count(image_path):
+    # Load the image
+    image = Image.open(image_path)
+
+    # Define the bounding box for each tile
+    bounding_boxes = [
+        (290, 8, 370, 63), # top left
+        (400, 8, 480, 71), # bottom left
+        (470, 10, 550, 84), # right of bottom left
+        (560, 11, 640, 104) # top right
+    ]
+
+    # Draw each bounding box
+    for box in bounding_boxes:
+        draw.rectangle(box, fill='red', outline='gray')
+
+    # Resize the image to match the size of the bounding boxes
+    resized_image = image.resize((480, 480), Image.ANTIALIAS)
+
+    # Convert the image to a NumPy array
+    image_array = np.array(resized_image)
+
+    # Call the image_object function to detect objects
+    detection_result = tool.execute(image=image_array, labels=["tile_pattern"], threshold=0.35)
+
+    # Get the detected objects and their boxes
+    detected_objects = detection_result[0]
+
+    # Calculate the count of colored tiles
+    tile_count = sum(detection_result[0]["bbox"] for detection_result in detection_result if detection_result["bbox"][4] == 1)
+
+    return tile_count
+
+# Define the path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_5_image_1.jpg"
+
+# Call the function to count the colored tiles
+tile_count = extract_tile_count(image_path)
+
+tile_count
+print('<final_result>', final_result)
+
+Solution: 6

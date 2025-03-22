@@ -1,0 +1,44 @@
+------------- 22-00-29-55-800375 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg"
+
+# Detect objects (red car and people) and save the detected objects with empty padding
+execution = detection(image_path, 
+                      labels=["car", "person"], 
+                      threshold=0.35, 
+                      model_size="tiny", 
+                      padding=20)
+
+# Get the detected objects
+detected_objects = execution.output_type
+
+# Count the number of people driving the red car
+count_people = 0
+if "car" in detected_objects:
+    for bbox in detected_objects.car:
+        if "person" in bbox[1]:
+            count_people += 1
+
+# Set the final result
+final_result = f"The number of people driving the red car is {count_people}."
+print('<final_result>', final_result)
+
+Solution: 0

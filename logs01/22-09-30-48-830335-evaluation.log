@@ -1,0 +1,46 @@
+------------- 22-09-30-48-830335 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from PIL import Image
+
+# Load the image
+image_file = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.jpg"
+image = Image.open(image_file).convert('RGB')
+
+# Detect objects
+object_detection = {
+    'object_detection': Tool().execute(image=image, labels=['baseball', 'basket', 'car', 'person'], threshold=0.35, model_size='base', padding=10)
+}
+
+# Filter for objects with 'baseball' label
+baseball_counts = sum([det['label'] == 'baseball' for det in object_detection['output_type']])
+
+# Check for 'car' and 'person' objects
+one_way_counts = sum([det['label'] in {'car', 'person'} for det in object_detection['output_type']])
+
+# Calculate total one way signs
+total_one_way = one_way_counts + baseball_counts
+
+# Calculate percentage of one way signs
+percentage_one_way = (one_way_counts + baseball_counts) / sum([det['label'] in ['baseball', 'basket', 'car', 'person'] for det in object_detection['output_type']])
+
+# Print final results
+final_result = f"Total one way signs: {total_one_way}"
+print("Final result:", final_result)
+print('<final_result>', final_result)
+
+Solution: 3

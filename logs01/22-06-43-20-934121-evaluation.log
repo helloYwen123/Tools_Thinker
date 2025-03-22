@@ -1,0 +1,66 @@
+------------- 22-06-43-20-934121 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_player_blue_shirt_images(image_path, player_labels, threshold=0.35, model_size="tiny", padding=20):
+    import Image
+    image = Image.open(image_path)
+    player_count = 0
+
+    for player in player_labels:
+        players = detected_objects(image, labels=[player])
+        for player_image_stats in players:
+            if player_image_stats['label'] == player:
+                if 'confidence score' not in player_image_stats or player_image_stats['confidence score'] > threshold:
+                    player_count += 1
+
+    return player_count
+
+def detection(image_path, labels=['baseball', 'basket'], threshold=0.5, model_size="base", padding=15):
+    import DINO
+
+    detection_output = DINO.load_config(model_name="dino_vit_h", pretrained=True, layers="tiny")
+    detection_output.run(image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+    detected_objects = []
+    for object in detection_output.results:
+        if object.label in labels:
+            detected_object = {'label': object.label, 'confidence score': object.confidence_score, 'box': [object.x1, object.y1, object.x2, object.y2], 'saved_image_path': object.saved_image_path}
+            detected_objects.append(detected_object)
+
+    return detected_objects
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg"
+threshold = 0.35
+model_size = "base"
+padding = 20
+player_labels = ['baseball', 'basket']
+
+colorama.init()
+
+# Use the object detector tool to detect and count objects in the image
+count_blue_shirt_players = count_player_blue_shirt_images(image_path=image_path, player_labels=player_labels, threshold=threshold, model_size=model_size, padding=padding)
+
+if count_blue_shirt_players:
+    colorama.Style.DICT['text'] = 'yellow'
+    print(f"Number of people wearing blue shirts: {count_blue_shirt_players}")
+
+# Close out the colorama module to restore the terminal session
+colorama.cleanup()
+print('<final_result>', final_result)
+
+Solution: 2

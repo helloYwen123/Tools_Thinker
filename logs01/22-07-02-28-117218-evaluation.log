@@ -1,0 +1,50 @@
+------------- 22-07-02-28-117218 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+# path to image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_18_image_1.jpg"
+
+# function to detect baseball and basket in an image
+def detect_basketball_and_baseball(image_path, labels):
+    detection_result = tool.execute(image=image_path, labels=labels, threshold=0.35, model_size="tiny")
+
+    # if baseball is detected
+    if "baseball" in detection_result[0][0]:
+        # if basket is detected
+        if "basket" in detection_result[0][0]:
+            return f"2 fingers"
+        else:
+            return f"1 finger"
+    else:
+        return "No baseball found"
+
+# detect baseball and basket in the image
+image_path_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_18_image_1.jpg"
+labels = ["baseball", "basket"]
+result = detect_basketball_and_baseball(image_path_path, labels)
+
+# get number of fingers
+num_fingers = result.split()[1]
+
+final_result = f"The number of fingers in front of the bathtub is {num_fingers}."
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 3

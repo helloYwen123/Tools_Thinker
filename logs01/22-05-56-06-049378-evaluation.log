@@ -1,0 +1,42 @@
+------------- 22-05-56-06-049378 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+# Define input variables
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+label_to_detect = "baseball"
+label_to_reject = "catcher"
+threshold = 0.35
+model_size = "base"
+padding = 20
+output_type = ["label", "confidence score", "bbox", "saved_image_path"]
+
+# Detect objects
+execution = tool.execute(image=path_to_image, labels=[label_to_detect], threshold=threshold, model_size=model_size, padding=padding)
+detected_objects = execution["output_type"]
+
+# Identify the detected objects
+baseball_objects = [bbox for label, bbox in detected_objects["bbox"] if label == label_to_detect]
+caught_objects = [bbox for label, bbox in detected_objects["bbox"] if label in label_to_reject]
+if passed_checker_function(detected_objects, baseball_objects, caught_objects):
+    print("Number of players wearing face guards:")
+    print(len(baseball_objects))
+else:
+    print("Error in detecting baseball players and caught players.")
+print('<final_result>', final_result)
+
+Solution: 2

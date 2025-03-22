@@ -1,0 +1,44 @@
+------------- 22-05-37-12-125327 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import execute as detect_objects
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_44_image_1.jpg"
+
+# Detect objects
+labels = ["skier"]
+threshold = 0.5
+model_size = "base"
+
+# Execute the detection
+data = detect_objects(image_path=image_path, labels=labels, threshold=threshold, model_size=model_size)
+
+# Generate object coordinates and paths
+object_boxes = []
+for obj_info in data:
+    coordinates = [(x, y) for (x, y, _) in obj_info["box"]]
+    coordinates_str = " ".join(map(str, coordinates))
+    object_boxes.append({"label": obj_info["label"], "confidence score": obj_info["confidence score"], "box": coordinates_str, "saved_image_path": obj_info["saved_image_path"]})
+
+# Count the number of skiers
+number_of_skiers = len([obj for obj in object_boxes if obj["label"] == "skier"])
+
+final_result = f"The code detected {number_of_skiers} skiers doing a flip."
+print('<final_result>', final_result)
+
+Solution: 0

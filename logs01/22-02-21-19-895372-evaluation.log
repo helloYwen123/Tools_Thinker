@@ -1,0 +1,44 @@
+------------- 22-02-21-19-895372 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_87_image_1.jpg"
+labels = ["apple"]
+threshold = 0.3
+model_size = "base"
+padding = 10
+
+execution = object_detector_tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+obj_ids = [obj["id"] for obj in execution['output_type'][0]]
+object_classes = [obj["label"] for obj in execution['output_type'][0]]
+confidence_scores = [obj["confidence score"] for obj in execution['output_type'][0]]
+
+for obj_id in obj_ids:
+    obj = execution['output_type'][obj_id]
+    x, y, width, height = obj["bbox"]
+    start_x = x - int(padding * max(1.0 / threshold, width / (max(1.0, threshold))))
+    start_y = y - int(padding * max(1.0 / threshold, height / (max(1.0, threshold))))
+    for label in object_classes:
+        if label == "apple":
+            print(f"Found {confidence_scores[label][obj_id]:.2f} apples at ({start_x:.1f}, {start_y:.1f})")
+
+final_result = ["0"]
+print('<final_result>', final_result)
+
+Solution: 0

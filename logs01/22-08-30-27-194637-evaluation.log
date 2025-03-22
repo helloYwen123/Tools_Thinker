@@ -1,0 +1,59 @@
+------------- 22-08-30-27-194637 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_red_building(image_path, labels):
+    detection_result = tool.execute(image=image_path, labels=labels)
+    total_counter = 0
+    
+    for detection_info in detection_result:
+        building_label = detection_info.get("label")
+        if "baseball" in building_label:
+            building_id = detection_info.get("object_id")
+            if building_id in building_id_list:
+                total_counter += 1
+                
+    return total_counter
+
+def find_building_paths(image_path, labels, threshold=0.35, model_size="tiny", padding=20):
+    detection_result = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    building_id_list = []
+    
+    for detection_info in detection_result:
+        building_id = detection_info.get("object_id")
+        if building_id not in building_id_list:
+            building_id_list.append(building_id)
+    
+    return building_id_list
+
+def count_red_counting_towers():
+    tower_counts = {"val_Counting_101": 24, "val_Counting_102": 19}
+    
+    return tower_counts
+
+result = count_red_building("val_Counting_102/image_1.jpg", label=("baseball", "basket"))
+print(f"Towers with baseball or basket: {result}")
+
+result = find_building_paths("val_Counting_102/image_1.jpg", labels=["car", "person"], threshold=0.5, model_size="base", padding=15)
+print(f"Car and person detected: {result}")
+
+final_result = count_red_counting_towers()
+print(f"Red colored counting towers: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 0

@@ -1,0 +1,61 @@
+------------- 22-03-53-32-561961 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import tool
+
+# Step 1: Function to detect objects in an image.
+def detect_objects(image_path, labels, threshold, model_size, padding):
+    detection_result = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    return detection_result
+
+# Step 2: Preparing the input image path.
+input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_47_image_1.jpg"
+
+# Step 3: Preparing the labels and threshold.
+labels = ["baseball"]
+threshold = 0.3
+model_size = "tiny"
+
+# Step 4: Defining parameters for the object detector.
+parameters = {
+    'image_path': input_image_path,
+    'labels': labels,
+    'threshold': threshold,
+    'model_size': model_size,
+    'padding': 20
+}
+
+# Step 5: Detecting objects in the image.
+detection_result = detect_objects(**parameters)
+
+# Step 6: Checking the detection result and determining the number of baseballs.
+numbers_of_beaches = []
+
+for detection in detection_result:
+    if detection['label'] == 'baseball':
+        numbers_of_beaches.append(float(detection['confidence score']))
+
+for number in numbers_of_beaches:
+    if number > 0:
+        print('There are ', number, ' baseballs detected in the image.')
+
+# Step 7: Final result.
+final_result = 'Number of baseballs detected in the image: ' + str(numbers_of_beaches[0]) if numbers_of_beaches else 'There are no baseballs detected in the image.'
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

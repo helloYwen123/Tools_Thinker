@@ -1,0 +1,73 @@
+------------- 22-00-51-40-351369 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 16, in <module>
+ModuleNotFoundError: No module named 'objects'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import cv2
+from objects.DINO import ObjectDINO
+
+def count_people(image_path):
+    # Load the detector from the Object_DINO tool
+    detector = ObjectDINO()
+
+    # Load the image
+    image = cv2.imread(image_path)
+
+    # Detect the dog and human
+    result = detector.detect(image)
+
+    # Get bounding boxes for both objects
+    box_dog = []
+    box_human = []
+    for obj in result["objects"]:
+        if obj["label"] == "Baseball":
+            box_dog.append(obj["bbox"])
+        elif obj["label"] == "Basket":
+            box_human.append(obj["bbox"])
+
+    # Count the number of people in the image
+    people_number = 0
+    for box_human in box_human:
+        # Calculate the width and height of the human body
+        x1, y1, x2, y2 = box_human["bbox"]
+        width = x2 - x1
+        height = y2 - y1
+        # Ensure that the human body covers a sufficient area
+        if width > 10 and height > 10:
+            # Calculate the score of the human
+            score = (width * height) / (image.shape[1] * image.shape[0])
+            # If the score is high, the human is counted
+            if score > 0.75:
+                people_number += 1
+
+    return people_number
+
+# Get the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_27_image_1.jpg"
+
+# Call the tool to get bounding box info for objects
+result = count_people(image_path)
+
+# Print the bounding box details for the dog and human
+print("Dog bounding box: ", result["bbox_dog"])
+print("Human bounding box: ", result["bbox_human"])
+
+# Print the number of people in the image
+print("Number of people: ", result["number_people"])
+print('<final_result>', final_result)
+
+Solution: 1

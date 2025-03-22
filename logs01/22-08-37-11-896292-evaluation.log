@@ -1,0 +1,73 @@
+------------- 22-08-37-11-896292 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Load the image file
+input_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_24_image_1.jpg"
+image_path = input_path
+image = Image.open(image_path)
+
+# Detect the objects and get the paths
+output = tool.execute(image=image, labels=["car", "person"], threshold=0.5, model_size="base", padding=15)
+
+# Extract the paths of cars
+cars_paths = []
+for label in output["output"]:
+    for car in label:
+        car_path = "path/to/image/cars/cars_label_" + str(car["label"]) + ".jpg"
+        cars_paths.append(car_path)
+
+# Check if there are any cars, people, or combinations on the front of the bus
+bus_status = {"front_cars": [], "front_people": []}
+
+for cars_path in cars_paths:
+    img = Image.open(cars_path)
+    result = tool.execute(image=img, labels=["car"], threshold=0.35, model_size="tiny", padding=20)
+    cars = [car for label, car in result["output"] if label == "car"]
+    if len(cars) > 0:
+        # Detect the front of the bus
+        bus_front_cars = []
+        for car in cars:
+            car_path = "path/to/image/bus/front_" + car["label"] + ".jpg"
+            bus_front_cars.append(car_path)
+        bus_front_people = []
+        for car in cars:
+            car_path = "path/to/image/bus/back_" + car["label"] + ".jpg"
+            bus_front_people.append(car_path)
+        bus_status["front_cars"] += bus_front_cars
+        bus_status["front_people"] += bus_front_people
+
+# Check if there is a front person (car)
+if len(bus_status["front_people"]) > 0:
+    front_person = bus_status["front_people"][0]
+    if "baseball" not in front_person:
+        front_person = "baseball"
+else:
+    front_person = "no front person"
+
+# Check if there are two windows on the front and not the sides of the bus
+# One window on the front
+front_window = "path/to/image/bus/1_window.jpg"
+if front_window not in bus_status["front_cars"]:
+    bus_status["front_cars"].append(front_window)
+
+# Print the result
+print("Number of windows on the front and not the sides of the bus:", len(bus_status["front_cars"]))
+print('<final_result>', final_result)
+
+Solution: 2

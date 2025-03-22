@@ -1,0 +1,65 @@
+------------- 22-11-57-11-745413 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_consonants(letters):
+    consonants = "bcdfghjklmnpqrstvwxyz"
+    count = 0
+    for letter in letters:
+        if letter in consonants:
+            count += 1
+    return count
+
+# Read the image file path from the input
+file_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_79_image_1.jpg"
+
+# Load the image with Grounding DINO and apply a threshold of 0.6 for detecting objects (in this case, the snowboard)
+objects = tool.execute(image=file_path, labels=["snowboard"], threshold=0.6)
+
+# Get the labels and bounding boxes of the Detected Objects
+label_objects = [{"label": obj_name, "bbox": obj_bbox} for obj_name, obj_bbox in objects["objects"][0] if obj_bbox]
+
+# Initialize a counter for consonant letter count
+consonant_count = 0
+
+# Iterate over each object detected
+for obj in label_objects:
+    # Check if the bounding box of the snowboard is within the image boundary to avoid counting it as an exception
+    if obj["bbox"][2] - obj["bbox"][0] > 0 and obj["bbox"][3] - obj["bbox"][1] > 0:
+        # Extract the horizontal and vertical coordinates of the bounding box to calculate the slope and width of the snowboard
+        x1, y1 = obj["bbox"][0], obj["bbox"][1]
+        x2, y2 = obj["bbox"][2], obj["bbox"][3]
+
+        # Calculate the slope of the snowboard
+        slope = (y2 - y1) / (x2 - x1)
+
+        # Check if the slope of the snowboard is less than 1 to ensure it is a steep slope
+        if slope < 1:
+
+            # Check if the snowboard has a width that is more than twice its height (i.e., it is a proper snowboard)
+            if x2 - x1 > 2 * (y2 - y1):
+                # Calculate the y-intercept (where the snowboard intersects with the ground)
+                y_intercept = (2 * (y2 - y1) - (x2 - x1)) / 2
+
+                # Check if the snowboard intersects with the ground
+                if x1 < (y_intercept / slope) < x2 and x1 < (y_intercept / slope) < x2:
+                    count_consonants(obj["label"]).__add__()
+
+# Print the total consonant letter count
+print("Total consonant letter count:", count_consonants("snowboard"))
+print('<final_result>', final_result)
+
+Solution: 3

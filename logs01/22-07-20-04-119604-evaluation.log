@@ -1,0 +1,49 @@
+------------- 22-07-20-04-119604 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def detect_objects(image_path, labels, threshold=0.35, model_size="tiny", padding=20):
+    confidence_threshold = float(threshold)
+    model_size = str(model_size)
+    label_detection_model = Model(model_name="resnet-50")
+    objects_data = []
+    
+    image = Image.open(image_path)
+    object_labels = detect(model_image=image, labels=labels, confidence_threshold=confidence_threshold)
+    
+    if object_labels:
+        for index, detection_data in enumerate(object_labels):
+            if "basketball" in detection_data["label"]:
+                objects_data.append({"label": "basketball", "confidence score": detection_data["confidence score"]})
+            elif "car" in detection_data["label"]:
+                objects_data.append({"label": "car", "confidence score": detection_data["confidence score"]})
+            elif "person" in detection_data["label"]:
+                objects_data.append({"label": "person", "confidence score": detection_data["confidence score"]})
+            else:
+                detection_data["label"]
+        return objects_data
+    else:
+        return []
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_100_image_1.jpg"
+labels = ["baseball", "basket"]
+objects = detect_objects(image_path, labels)
+print(f"Objects detected in the image: {objects}")
+print('<final_result>', final_result)
+
+Solution: 1

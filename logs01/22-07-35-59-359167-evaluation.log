@@ -1,0 +1,46 @@
+------------- 22-07-35-59-359167 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_115_image_1.jpg"
+execution = object_detector_tool.execute(image=image_path)
+objects = execution['output_type']
+
+# Define the angle to calculate the number of birds facing right
+angle = 30
+
+# Count the number of birds facing right
+right_facing_count = 0
+
+# Loop through the detected objects and count the birds facing right
+for obj in objects:
+    if obj['label'] == 'birds' and np.abs(np.array(obj['bbox'])[0] - np.array(obj['bbox'])[2]) < np.array(obj['bbox'])[3] * 0.35:
+        right_facing_count += 1
+
+# Calculate the total number of birds
+total_birds = len(objects)
+
+# Calculate the number of birds facing right
+birds_facing_right = int(right_facing_count / 2) - int((total_birds - len(objects)) / 2)
+
+final_result = {"number of birds": str(birds_facing_right)}
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

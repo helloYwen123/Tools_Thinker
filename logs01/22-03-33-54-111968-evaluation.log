@@ -1,0 +1,46 @@
+------------- 22-03-33-54-111968 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+import os
+
+def get_people_with_glasses(people):
+    detected_people = []
+    for person in people:
+        detected = find_objects(image=person, labels=["glasses"], threshold=0.35)
+        if detected:
+            detected_people.append([person, detected[0]["confidence"]])
+    return detected_people
+
+def check_glasses(glasses, people):
+    glasses_people = []
+    for person in people:
+        detected = find_objects(image=person, labels=["glasses"], threshold=0.35)
+        if detected:
+            glasses_people.append([person, detected[0]["confidence"]])
+    glasses_people_with_glasses = [person for person, glasses in glasses_people if glasses >= glasses_people[0]["confidence"]]
+    return glasses_people_with_glasses[0]
+
+final_result = get_people_with_glasses(object_list)
+if len(final_result) > 0:
+    print("There", end=" ")
+    print(int(check_glasses(final_result[0], object_list)), "people are wearing glasses.")
+else:
+    print("No people are wearing glasses.")
+print('<final_result>', final_result)
+
+Solution: 1

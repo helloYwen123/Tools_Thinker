@@ -1,0 +1,46 @@
+------------- 22-08-37-11-911013 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def detect_objects(image_path, labels, threshold=0.35, model_size="tiny", padding=20):
+    # Load the image
+    image = load_image(image_path)
+    
+    # Define the labels for detection
+    label_dict = {"green train carts": 0, "gray train carts": 1, "blue train carts": 2}
+    
+    # Detect objects in the image and return their paths
+    detection_objects = detection(image, labels, model_size=model_size, threshold=threshold, padding=padding, image=image)
+    
+    # Count the green train carts found
+    green_train_carts_count = sum((d['bbox'][0], d['bbox'][2]) for d in detection_objects if d['label'] == "green train carts")
+    
+    return {"final_result": green_train_carts_count}
+
+# Example image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_31_image_1.jpg"
+
+# Define labels for detection
+labels = ["car", "person", "green train carts", "gray train carts", "blue train carts"]
+
+# Call the function to detect objects
+result = detect_objects(image_path, labels)
+
+# Print the count of green train carts
+print(result)
+print('<final_result>', final_result)
+
+Solution: 1

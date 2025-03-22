@@ -1,0 +1,56 @@
+------------- 22-05-06-08-960939 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def find_red_cars(input_image, model_size):
+    # Load the image
+    image = Image.open(input_image)
+    
+    # Detect the car objects
+    detection = run_tool_with_labels([
+        (ModelSize(size=model_size, label="baseball"), "baseball"),
+        (ModelSize(size=model_size, label="basket"), "basket")
+    ], threshold=0.35, model_size=model_size)
+    
+    # Convert the pixel coordinates to bounding box coordinates
+    for detection in detection:
+        xmin, ymin, xmax, ymax = detection["bbox"]
+        
+        # Extract the color for red cars
+        color = (255, 0, 0)
+        
+        # If the color matches, add the location to the list of cars
+        if (color == (255, 0, 0)): 
+            yield xmin, ymin, xmax, ymax
+
+# Define the threshold for the background color
+background_color = (153, 153, 153)
+threshold = 0.1
+
+# Read a sample image
+sample_image = Image.open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_29_image_1.jpg")
+
+# Convert the sample image to a NumPy array for processing
+sample_image_array = np.array(sample_image).astype('float') / 255.0
+
+# Process the image to find cars
+cars = find_red_cars(sample_image, threshold)
+
+# Print the list of found red cars
+print("There are %d red cars." % len(cars))
+print('<final_result>', final_result)
+
+Solution: 0

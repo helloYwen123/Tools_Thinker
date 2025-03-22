@@ -1,0 +1,40 @@
+------------- 22-04-21-48-703603 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_84_image_1.jpg"
+execution = object_detector_tool.execute(image=image_path, labels=["baseball", "basket"], threshold=0.3, model_size="tiny")
+boxes, detections = execution
+
+# Extract the baseball box
+baseball_box = [bbox["bbox"][0], box["bbox"][2], box["bbox"][1], box["bbox"][3]+box["bbox"][4]+(20*2)]
+
+# Extract the basketball box
+basket_box = [bbox["bbox"][0], box["bbox"][2], box["bbox"][1], box["bbox"][3]+box["bbox"][4]**2]
+
+# Check if it is a baseball
+if baseball_box and basketball_box:
+    objects = {"basball": {"bbox": baseball_box, "confidence": confidence, "score": score, "name": prediction}}
+else:
+    objects = {"basket": {"bbox": basketball_box, "confidence": confidence, "score": score, "name": prediction}}
+
+# Add any other image-related information here as needed
+print('<final_result>', final_result)
+
+Solution: 4

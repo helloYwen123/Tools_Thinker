@@ -1,0 +1,64 @@
+------------- 22-09-30-48-989876 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *  # Import the Object_Detector_Tool class
+
+def count_yellow_cars(image_path):
+    # Get object labels for cars, buses, and yellow cars
+    labels = ['car', 'bus', 'yellow car']
+
+    # Use the object_detector_tool function to detect and save the objects with a confidence threshold of 0.35
+    output = tool.execute(image_path, labels, threshold=0.35, model_size="tiny")
+
+    # Initialize a counter for the yellow car instances
+    count = {'yellow car': 0}
+
+    # Go through the detected objects and count yellow cars
+    for obj in output:
+        if "yellow car" in obj["label"]:
+            if "bbox" in obj:
+                x, y, w, h = obj["bbox"]  # Extract the bounding box coordinates
+                x_center = (x + w) / 2  # Calculate the center x-coordinate of the car
+                y_center = (y + h) / 2  # Calculate the center y-coordinate of the car
+                x0, y0 = x - (w / 2), y - (h / 2)  # Calculate the center location of the bounding box
+                width = w  # Store width of the bounding box
+                height = h  # Store height of the bounding box
+
+                # Calculate the empty padding and position of the bounding box
+                padding = round(length)
+                x0, y0 = max(x0 - padding, 0), max(y0 - padding, 0)
+                width += 2 * padding
+                height += 2 * padding
+
+                # Draw the bounding box around the car
+                rect_draw(x0, y0, width, height)
+                width = height = round(width / 2)
+
+            count[yield_label] += 1  # Increment the count for each yellow car
+
+    return count
+
+# Example image file for testing
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_117_image_1.jpg"
+
+# Get the yellow car count for the specified image
+final_result = count_yellow_cars(image_path)
+
+print("Number of yellow cars:", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

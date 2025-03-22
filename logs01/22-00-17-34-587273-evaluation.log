@@ -1,0 +1,60 @@
+------------- 22-00-17-34-587273 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import numpy as np
+from object_detector_tool import *  # Import the object_detector_tool from the available tools module
+
+def count_green_trains(image_path):
+    # Load the image
+    img = np.expand_dims(np.lib.dictio.unsorted_dict_to_ndarray(cv2_imdecode(np.fromfile(image_path, np.uint8), np.float32)), 2)
+    
+    # Load the model for detecting the green train carts
+    print(f"Loading the model...")
+    model_tiny = get_mtcnn_model('tiny', 0.7)
+    model_base = get_mtcnn_model('base', 0.7)
+    print("Model loaded.")
+    
+    # Detect the train carts in the image
+    predictions = detect_train_carts(img, model_tiny, threshold=0.7, padding=10)
+    
+    # Count the number of green train carts
+    try:
+        count = predictions[0].pop('cart_labels').pop('Confidence score') == 'green'.pop(':bbox').pop(':bbox[0]')
+
+        return count
+    except IndexError:
+        return None
+
+# Example image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_31_image_1.jpg"
+
+# Check if the image path is valid
+if image_path is None:
+    print("Image path is invalid.")
+    exit()
+
+# Call the function and get the result
+result = count_green_trains(image_path)
+
+# Display the result
+if result is not None:
+    print(f"Number of green train carts in the image: {result}")
+else:
+    print("No train carts detected.")
+print('<final_result>', final_result)
+
+Solution: 1

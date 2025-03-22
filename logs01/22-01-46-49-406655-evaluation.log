@@ -1,0 +1,45 @@
+------------- 22-01-46-49-406655 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 21
+    tomatoes = [d for d in detection['output_type'] if 'tomato' in d['label'])
+                                                                             ^
+SyntaxError: closing parenthesis ')' does not match opening parenthesis '['
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import * 
+
+def count_slices_of_tomatoes(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_25_image_1.jpg", labels=["tomato"]):
+
+    detection = detection(image=image, labels=labels)
+
+    tomatoes = [d for d in detection['output_type'] if 'tomato' in d['label'])
+
+    for t in tomatoes:
+        for s in t['box']:
+            x1, y1, x2, y2 = s['bbox']
+            width, height = (x2-x1), (y2-y1)
+
+            if (t['label'] == "tomato") and (width > 30) and (height > 30):
+                # Calculate total number of slices of tomatoes
+                total_slices = (width + height) / 2 * width/2 / 3
+                return total_slices
+
+if __name__ == '__main__':
+    result = count_slices_of_tomatoes()
+    final_result = result['label']
+    print("Total number of slices of tomatoes: ", int(result['label']))
+print('<final_result>', final_result)
+
+Solution: 2

@@ -1,0 +1,48 @@
+------------- 22-03-33-54-204732 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from detection_tool import Object_Detector_Tool
+
+def count_bananas(bananas_image_path):
+    detector = Object_Detector_Tool()
+    detection_result = detector.execute(image=bananas_image_path, labels=["banana"], threshold=0.35)
+    banana_boxes = []
+    for detection in detection_result:
+        banana_boxes.append([detection['bbox']])
+    banana_count = sum(1 for box in banana_boxes if box['class'] == "banana")
+    return banana_count
+
+def count_croissants(croissants_image_path):
+    detector = Object_Detector_Tool()
+    detection_result = detector.execute(image=croissants_image_path, labels=["croissant"], threshold=0.35)
+    croissant_boxes = []
+    for detection in detection_result:
+        croissant_boxes.append([detection['bbox']])
+    croissant_count = sum(1 for box in croissant_boxes if box['class'] == "croissant")
+    return croissant_count
+
+def count_bananas_in_table(bananas_on_table_image_path):
+    banana_count = count_bananas(bananas_on_table_image_path)
+    croissant_count = count_croissants(bananas_on_table_image_path)
+    final_result = banana_count + croissant_count
+    return final_result
+
+final_result = count_bananas_in_table("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_23/image_2.jpg")
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 6

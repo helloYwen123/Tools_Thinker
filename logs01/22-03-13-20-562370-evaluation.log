@@ -1,0 +1,47 @@
+------------- 22-03-13-20-562370 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_13_image_1.jpg'
+
+# Load the image
+image = Image.open(image_path).resize((224, 224))
+
+# Run the object detection model
+results = detect_objects(image, labels=['baseball', 'basket'], threshold=0.35, model_size='tiny', padding=20)
+
+# Assuming the object 'basket' is the target to detect
+for obj in results:
+    if obj['label'] == 'basket':
+        print(f"{obj['label']} was detected: {obj['confidence score']}")
+        break
+
+# Calculate the number of people wearing a hat
+counts = {label: 0 for label in labels}
+for result in results:
+    if 'baseball' in result['label']:
+        counts['baseball'] += 1
+    elif 'basket' in result['label']:
+        counts['basket'] += 1
+
+total_people = sum(counts.values())
+
+print("Total people wearing a hat:", total_people)
+print('<final_result>', final_result)
+
+Solution: 1

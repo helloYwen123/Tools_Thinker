@@ -1,0 +1,53 @@
+------------- 22-06-33-52-318874 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 27
+    if label label_labels:
+             ^^^^^^^^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from pytagnocg import ObjectDetector
+
+def detect_buses_and_count_buses(image_path):
+    results = []
+    detector = ObjectDetector(input_model="tiny")
+    img = detector.get_image(image_path)
+    
+    with open('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.png', 'rb') as f:
+        label_images = f.read()
+    
+    for label in detector.detect(img, output_format=results.output_type):
+        box = results[results.keys() if results else []][1:]
+        if label label_labels:
+            results.append((label.label, label.confidence, box))
+        
+    return results
+
+def count_buses(results):
+    count = 0
+    for result in results:
+        if result[0] == 'bus':
+
+            count += 1
+    
+    return count
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg'
+results = detect_buses_and_count_buses(image_path)
+final_result = count_buses(results)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

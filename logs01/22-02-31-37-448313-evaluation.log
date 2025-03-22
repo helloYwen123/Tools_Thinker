@@ -1,0 +1,72 @@
+------------- 22-02-31-37-448313 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from PIL import Image
+
+# Load the image
+image = Image.open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_119_image_1.jpg")
+
+# Define the label to search for
+label = "garb_p"
+
+# Get the confidence score
+confidence = image.confidences.get(label)
+
+# Check if the label is not detected (confidence < 0.5)
+if confidence is None:
+    detected_people = image.detect_objects([label])
+else:
+    # Get the bounding box for the detected object
+    bbox = image.bounding_boxes[label]
+
+    # Get the object confidence score for bounding box bbox
+    bbox_confidence = image.confidences[label][bbox[0]:bbox[1], bbox[2]:bbox[3]]
+
+    # Get the image index for the detected object
+    image_index = image.indexes[label]["image"]
+    
+    # Get the image path
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_119_image_1_" + str(image_index) + ".jpg"
+
+    # Load the object image and extract the confidence score for the object
+    object_image = Image.open(image_path)
+    object_bbox = object_image.bboxes[label]
+    object_confidence = object_image.confidences[label][object_bbox[0]:object_bbox[1], object_bbox[2]:object_bbox[3]]
+
+    # Check if both the confidence score and bounding box are not None
+    if confidence is not None and bbox is not None:
+        # Check if the object confidence score is greater than the previous best
+        if confidence > best_confidence:
+            best_confidence = confidence
+            best_bbox = bbox
+            best_image_path = image_path
+    else:
+        # If not, just set the confidence score and bounding box to the default values
+        best_confidence = 0
+        best_bbox = None
+        best_image_path = None
+
+# Print the results
+print("Best Confidence Score:", best_confidence)
+print("Bounding Box:", best_bbox)
+print("Image Path:", best_image_path)
+
+# Print the final results
+final_result = {"Best Confidence Score": best_confidence, "Bounding Box": best_bbox, "Image Path": best_image_path}
+print('<final_result>', final_result)
+
+Solution: 0

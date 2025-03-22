@@ -1,0 +1,44 @@
+------------- 22-03-23-47-216586 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+
+def count_blue_collars(image_path):
+    # Load the model
+    model = get_model(model_name='base')
+
+    # Load the images and their object labels
+    object_labels = get_object_labels(image_path=base_image_path)
+
+    # Detect blue collars in the image and gather their paths
+    detection = []
+
+    for det_label, det_conf, det_box in get_objects(model=model, image_path=image_path, labels=object_labels, threshold=0.8):
+        if det_label == 'Blue Collar':
+            detection.append({'label': det_label, 'confidence score': det_conf, 'box': det_box})
+
+    # Print the number of detected blue collars
+    print(f'Total blue collars detected: {len(detection)}')
+
+# Extract the image path
+base_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_38_image_1.jpg"
+
+# Call the function to count blue collars
+count_blue_collars(image_path=base_image_path)
+print('<final_result>', final_result)
+
+Solution: 1

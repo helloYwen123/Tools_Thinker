@@ -1,0 +1,51 @@
+------------- 22-08-37-11-872177 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+def count_windows(img_path, labels=None, threshold=0.5, model_size='tiny', padding=20):
+    # Load the model and labels
+    if model_size == 'tiny':
+        import ground_dino as gd
+        gd.configure('tiny')
+    elif model_size == 'base':
+        import ground_dino as gd
+        gd.configure('base')
+    else:
+        gd.configure('base')
+        
+    # Add empty padding to the image
+    img = img_path
+    img = gd.add_padding(img, padding=padding)
+        
+    # Detect the objects in the image
+    detection = gd.detect(img, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+        
+    # Count the number of windows on the front and not the sides of the bus
+    window_counts = 0
+    count = 0
+    for obj in detection['output']:
+        if obj['label'] == 'window':  # Check if the object is a window in the front
+            window_counts += 1
+            count = 0  # Start a new count for the next window
+    
+    return window_counts
+
+# Assuming the image path is 'path_to_image.jpg' and the bus has windows
+final_result = count_windows('path_to_image.jpg')
+print('The bus has', final_result, 'windows.')
+print('<final_result>', final_result)
+
+Solution: 2

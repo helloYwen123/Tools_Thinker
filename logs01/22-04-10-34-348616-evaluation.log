@@ -1,0 +1,53 @@
+------------- 22-04-10-34-348616 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from PIL import Image
+import torch
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg'
+labels = ['baseball', 'basket']
+
+threshold = 0.35
+padding = 20
+
+model_size = 'tiny'
+padding = 15
+
+image = Image.open(image_path)
+
+image = torch.unsqueeze(image, 0)
+image = image.permute(0, 4, 1, 2).float()
+image = image / 255
+
+model = torch.hub.load('pytorch/vision:v0.10.1', 'deit_small')
+model.eval()
+
+with torch.no_grad():
+    detections = model(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+detections = detections[0]
+detections = detections[0]['boxes']
+
+num_red_buses = 0
+for det in detections:
+    if det.label == 'baseball':
+        num_red_buses += 1
+
+final_result = f'How many red buses are there: {num_red_buses}'
+print('<final_result>', final_result)
+
+Solution: 1

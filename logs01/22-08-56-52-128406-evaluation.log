@@ -1,0 +1,50 @@
+------------- 22-08-56-52-128406 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import object_detector_tool
+
+def count_people(in_img_path, people_labels, threshold, model_size='tiny', padding=20):
+    # Load the custom model pre-trained with fine-tuning
+    model = object_detector_tool.get_model(model_size="base", use_imagenet_labels=True)
+
+    # Set the confidence threshold for detection
+    model.confidence_threshold = threshold
+
+    # Load the image
+    img = object_detector_tool.load_image(in_img_path)
+
+    # Detect people as ground truth class
+    detected_people = object_detector_tool.detect_objects(model, mode='bbox', image=img, person_labels=people_labels)
+
+    # Calculate the number of detected people
+    num_people = len(detected_people["boxes"])
+
+    return num_people
+
+# Set the object detector parameters
+in_img_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_107_image_1.jpg"
+people_labels = ["dog", "cat"]
+threshold = 0.35
+model_size = 'tiny'
+padding = 20
+
+# Count people in the image
+num_people = count_people(in_img_path, people_labels, threshold, model_size, padding)
+print(f"Number of people in the image: {num_people}")
+print('<final_result>', final_result)
+
+Solution: 3

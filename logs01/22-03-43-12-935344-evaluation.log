@@ -1,0 +1,48 @@
+------------- 22-03-43-12-935344 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+import numpy as np
+import PIL.Image as im
+
+def count_red_coat(image_path, labels, threshold=0.5, model_size="tiny", padding=20):
+    # Load the image
+    image_data = im.imread(image_path)
+    # Define the label data based on the detection labels
+    label_data = [labels[label] for label in labels if label in set(image.data) and np.max(image.data == label) > threshold]
+    
+    # Perform object detection
+    detection_data = []
+    detections = tool.execute(image=image_data, labels=label_data, threshold=threshold, model_size=model_size, padding=padding)
+    objects = [d['label'] for d in detections if d['confidence'] > threshold]
+    
+    # Count the number of red-coated objects
+    num_red_coats = len(objects)
+    
+    return num_red_coats
+
+# Load the image and labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_17_image_1.jpg"
+label_path = "/home/stud/wxie/BLINK_Dataset/Counting/val_labels.txt"
+# Remove the first line of the text file to separate object labels
+# If the file contains multiple labels in the order of their appearance on the image, ensure to load them one by one for accurate counting.
+for label in np.genfromtxt(label_path, delimiter=' ').tolist():
+    labels[label] = label.replace("-1", "")
+    num_red_coats = count_red_coat(image_path, labels)
+    print(f"Image: {image_path}, Red-coated: {num_red_coats}")
+print('<final_result>', final_result)
+
+Solution: 1

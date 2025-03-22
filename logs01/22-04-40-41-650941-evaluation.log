@@ -1,0 +1,47 @@
+------------- 22-04-40-41-650941 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from object_detector_tool import *
+import os
+
+# Load and preprocess the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+preprocessed_image_path = generate_preprocessed_image(image_path)
+
+# Detect the ground truth
+def load_and_detect_labels(image_path, labels=['baseball', 'basket'], threshold=0.35, model_size="tiny", padding=20):
+    print(f"Loading & Detecting labels for image {preprocessed_image_path}")
+    # Load the image
+    data = load_data_from_file(preprocessed_image_path)
+
+    # Detect labels
+    results = execute_data(data=data, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+    return results
+
+# Detect baseball and basketball in the image
+baseball_labels = ['baseball']
+basket_labels = ['basket']
+baseball_results = load_and_detect_labels(preprocessed_image_path, baseball_labels, threshold=0.35, model_size="tiny", padding=20)
+basket_results = load_and_detect_labels(preprocessed_image_path, basket_labels, threshold=0.35, model_size="tiny", padding=20)
+
+# Calculate the count of purple planes in the image
+purple_count = len(basket_labels) - len(baseball_results) + len(basket_results)
+print(f"Purple planes: {purple_count}")
+print('<final_result>', final_result)
+
+Solution: 0

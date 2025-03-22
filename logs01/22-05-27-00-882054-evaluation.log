@@ -1,0 +1,44 @@
+------------- 22-05-27-00-882054 Exception in run_code_async -------------
+Exception: in create subproess 
+
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool 
+
+from detection_tool import *
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Detect baseball and basketball in the image
+execution = object_detection_tool.execute(image_path, labels, threshold=threshold, model_size=model_size, padding=padding)
+
+# Check if any baseball or basketball are detected
+def_has_baseball = "baseball" in execution
+has_basketball = any([object['id'] in labels for object in execution])
+
+# Determine the total number of detected baseball and basketball
+number_of_based_game = (has_basketball and not has_baseball) or has_baseball
+number_of_bezels_game = len(execution["detected_objects"] if has_basketball else [])
+
+# Calculate the number of people without hats
+number_of_people_without_hats = number_of_bezels_game - number_of_based_game
+
+final_result = number_of_people_without_hats
+print('<final_result>', final_result)
+
+Solution: 0
