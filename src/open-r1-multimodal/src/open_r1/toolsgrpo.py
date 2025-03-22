@@ -27,6 +27,7 @@ import runpy
 from math_verify import parse, verify
 from datetime import datetime
 import asyncio
+
 import subprocess
 from PIL import Image, ImageOps
 import json
@@ -130,32 +131,25 @@ from tools.object_detector.tool import Object_Detector_Tool
         """
         Asynchronously run multiple code snippets.
         """
-        # print("\n[DEBUG] contents type:", type(contents))
-        # print("[DEBUG] solutions type:", type(solutions))
-    
-        # if len(contents) > 0:
-        #     print("[DEBUG] type of contents[0]:", type(contents[0]))
-        #     print("[DEBUG] sample contents[0]:", contents[0])
+        sema = asyncio.Semaphore(4)  # max 4 ubprocess
         
-        # if len(solutions) > 0:
-        #     print("[DEBUG] type of solutions[0]:", type(solutions[0]))
-        #     print("[DEBUG] sample solutions[0]:", solutions[0])
         tasks = []
         for content, sol in zip(contents, solutions):
-            try:
-                extracted_code = extract_code(content)
-                code_to_run = (
-                    f"{api_methods['object_detector'].format(root_dir=root_dir)}\n"
-                    f"{extracted_code}\n"
-                    "print('<final_result>', final_result)"
-                )
-                task = run_code_async(code_to_run, sol, 60)
-            except Exception as e:
-                # print(f"[ERROR] extract_code failed: {e}")
-                async def return_zero():
+            async def limited_task(content=content, sol=sol):
+                try:
+                    extracted_code = extract_code(content)  # ✅ 先尝试提取
+                except Exception as e:
+                    print(f"[ERROR] extract_code failed: {e}")
                     return 0.0
-                task = return_zero()
-            tasks.append(task)
+                
+                async with sema:
+                    code_to_run = (
+                        f"{api_methods['object_detector'].format(root_dir=root_dir)}\n"
+                        f"{extracted_code}\n"
+                        "print('<final_result>', final_result)"
+                        )
+                    return await run_code_async(code_to_run, sol, 60)
+            tasks.append(limited_task())
         return await asyncio.gather(*tasks)
     
     async def run_code_async(code, solution, exec_timeout: int = 10) -> float:
@@ -169,6 +163,7 @@ from tools.object_detector.tool import Object_Detector_Tool
             #     stderr=asyncio.subprocess.PIPE,
             # )
             python_exec = sys.executable
+            print("Python Exec Path:", python_exec)
             proc = await asyncio.create_subprocess_exec(
                 python_exec, '-c', code,
                 stdout=asyncio.subprocess.PIPE,
@@ -191,8 +186,8 @@ from tools.object_detector.tool import Object_Detector_Tool
             log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
             os.makedirs(os.path.dirname(log_path), exist_ok=True)
             with open(log_path, "w") as f:
-                f.write(f"------------- {current_time} Exception in run_code_async -------------\n")
-                f.write(f"Exception: in create subproess \n{str(e)}\n")
+                f.write(f"------------- {current_time} Exception in creating subproess -------------\n")
+                f.write(f"Exception: in creating subproess \n{str(e)}\n")
                 f.write(f"Code: {code}\n\n")
                 f.write(f"Solution: {solution}\n")
             return 0.0
