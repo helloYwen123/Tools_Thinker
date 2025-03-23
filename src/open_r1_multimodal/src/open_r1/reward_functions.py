@@ -7,14 +7,23 @@ import multiprocessing
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from math_verify import parse, verify
-root_dir = "/home/stud/wxie/Tools_Thinker/"
 
+root_dir = "/home/stud/wxie/Tools_Thinker/"
+sys.path.insert(0, root_dir)
+
+from tools.object_detector.tool import Object_Detector_Tool
 def code_exec_acc_reward(completions, solution, **kwargs):
     if isinstance(completions[0], str):
         contents = [completion for completion in completions]
     else:
         contents = [completion[0]["content"] for completion in completions]
-
+        
+    def extract_code(completion):
+        match = re.search(r"<command>(.*?)</command>", completion , re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        else:
+            raise ValueError("No command tag found!!")
     tasks = []
     for idx, (content, sol) in enumerate(zip(contents, solution)):
         try:
@@ -26,13 +35,6 @@ def code_exec_acc_reward(completions, solution, **kwargs):
             code=code,
             solution=sol
         ))
-    def extract_code(completion):
-        match = re.search(r"<command>(.*?)</command>", completion , re.DOTALL)
-        if match:
-            return match.group(1).strip()
-        else:
-            raise ValueError("No command tag found!!")
-
     def reliability_guard():
         faulthandler.disable()
         import builtins
@@ -50,7 +52,6 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         import sys
         sys.modules["ipdb"] = None    
     def unsafe_execute(code: str, solution: str, timeout: float, result):
-        
         import signal
         from io import StringIO
         import contextlib
@@ -61,31 +62,25 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(int(timeout))
 
-        try:
-            reliability_guard()
-            full_code = f"""
-import sys
-import os
-import torch
-from transformers import pipeline
-sys.path.insert(0, "{root_dir}")
-from tools.base import BaseTool
-from PIL import Image, ImageOps
-from tools.object_detector.tool import Object_Detector_Tool
-
+        full_code = f"""
 {code}
-
 print('<final_result>', final_result)
 """
+        try:
+            reliability_guard()
 
             buffer = StringIO()
             with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
-                exec_globals = {}
-                exec(full_code, exec_globals)
-
+                exec_globals = {
+                    "Object_Detector_Tool": Object_Detector_Tool,
+                    "final_result": None
+                }
+                exec(full_code, exec_globals)  # python dynamic execution environment
             output_raw = buffer.getvalue()  # seems all output/print in code execution
             output = None
-            
+            #####################################
+            #record immediate variables and outputs
+            #####################################
             log_dir = os.path.join(f"{root_dir}/src/open_r1_multimodal/src/open_r1", "logs")
             os.makedirs(log_dir, exist_ok=True)
             debug_log_path = os.path.join(log_dir, "debug_exec.log")
@@ -102,7 +97,7 @@ print('<final_result>', final_result)
                     break
                 
             with open(debug_log_path, "a") as df:
-                df.write("[PARSED FINAL_RESULT]\n")
+                df.write("[GENERATE FINAL_RESULT]\n")
                 df.write(str(output) + "\n")
             ##################
             #extract final result after code execution#
@@ -115,11 +110,17 @@ print('<final_result>', final_result)
                     reward = 1.0
             except Exception:
                 with open(debug_log_path, "a") as df:
-                    df.write("[PARSE/VERIFY EXCEPTION]\n")
-                    df.write(str(e) + "\n")
-                    
-                if output == solution:
-                    reward = 1.0
+                    df.write("[PARSE/VERIFY FAILED]\n")
+                    pass        
+            if output == solution:
+                with open(debug_log_path, "a") as df:
+                    df.write("[CORRECT RESULT]\n")          
+                reward = 1.0
+            else:
+                with open(debug_log_path, "a") as df:
+                    df.write("[WRONG RESULT]\n")
+                reward = 0.0
+                
             result.append((reward, output))
         except Exception as e:
             log_dir = os.path.join(f"{root_dir}/src/open_r1_multimodal/src/open_r1", "logs")
@@ -128,6 +129,7 @@ print('<final_result>', final_result)
             with open(debug_log_path, "a") as df:
                 df.write("[EXECUTION EXCEPTION]\n")
                 df.write(str(e) + "\n")
+                df.write(f"code:{full_code}")
             result.append((0.0, str(e)))
         finally:
             signal.alarm(0)    
