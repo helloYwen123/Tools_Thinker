@@ -18,7 +18,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --gradient_checkpointing true \
     --attn_implementation flash_attention_2 \
     --max_pixels 401408 \
-    --num_train_epochs 1 \
+    --num_train_epochs 2 \
     --run_name Qwen2-VL-2B-GRPO-BLINK \
     --save_steps 100 \
     --save_only_model true \

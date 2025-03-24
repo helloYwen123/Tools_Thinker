@@ -1,0 +1,183 @@
+[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code:from object_detector_tool import *
+
+# Step 1: Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg"
+(image, labels) = load_image(image_path)
+
+# Step 2: Find the base objects with confidence above 0.5 and no empty padding
+base_objects = find_objects_with_threshold(image_path, labels, 0.5, "base")
+
+# Step 3: Count the number of white umbrellas
+image = image_path.replace(".jpg", ".png")
+num_umbrellas = 0
+for obj_pos in base_objects:
+    if 'baseball' in obj_pos['label'] and 'baseball' not in obj_pos['box']:
+        # Check and count the number of umbrellas
+        for obj in obj_pos["box"]:
+            if "umbrella" in obj:
+                num_umbrellas += int(obj)
+
+final_result = num_umbrellas[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code:from object_detector_tool import *
+
+def get_umbrellas_left():
+    path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg"
+    labels_to_find = ["umbrellas"]
+    threshold = 0.35
+    model_size = "base"
+    padding = 20
+
+    detection = detection_path(path_to_image, labels_to_find, threshold, model_size, padding)
+    
+    if detections is not None:
+        for obj in detections:
+            if obj['label'] == 'umbrellas':
+                total_umbrellas = obj['confidence'] * detection_obj_count_per_img.size(3)
+                
+                # Assuming there is one umbrella per object
+                umbrellas_on_left = int(total_umbrellas)
+                
+                right_umbrellas = objects.countobj("umbrellas")
+                
+                umbrella_count_difference = umbrellas_on_left - umbrella_count_initial
+                return umbrella_count_difference
+    else:
+        return "No umbrellas detected"
+    
+umbrella_count_difference = get_umbrellas_left()
+print(f"Number of white umbrellas on the left side: {umbrella_count_difference}")
+============================== NEW EXECUTION ==============================
+[EXEC CODE]
+
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code:from object_detector_tool import Execution
+
+def count_umbrellas(image_path, output_type):
+    detection = Execution(image=image_path, labels=["white umbrella"], threshold=0.5, model_size="tiny", padding=20)
+    objects = detection.output_type
+    umbrella_count = 0
+    for object in objects:
+        if "white umbrella" in object["label"]:
+            umbrella_count += 1
+    return umbrella_count
+
+final_result = count_umbrellas("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg", output_type=["label", "confidence score", "box", "saved image path"])
+print(f"Number of white umbrellas on the left side: {final_result[0]}")[
+WRONG RESULT]
+
+[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code:from object_detector_tool import *
+
+# Load the first image and obtain results
+execution = tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg", labels=["umbrella"])
+
+# Extract the number of white umbrellas
+white_umbrellas = sum((value['label'] == 'umbrella' and value['confidence score'] > 0.35) for value in execution[0])
+
+print("Number of white umbrellas:", white_umbrellas)[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code:from object_detector_tool import *
+
+confidence_threshold = 0.35
+model_size = 'base'
+
+def detect_umbrellas(image_path: str) -> list:
+    """
+    Detection of umbrellas in an image.
+
+    Parameters:
+    image_path (str): The path to the image file.
+
+    Returns:
+    list: A list of detected objects dictionaries with ('label';'confidence score';'box';'saved_image_path') keys and their corresponding values.
+    """
+    # Extract objects from the image
+    detection_result = objects_detector(image=image_path)
+
+    # Filter out umbrellas based on detection confidence
+    umbrellas = [obj['label'] == 'umbrella' for obj in detection_result]
+    umbrellas = [obj for obj in detection_result if obj['label'] == 'umbrella' and obj['confidence score'] > threshold]
+
+    # Return the result
+    return umbrellas
+
+# Image path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg'
+
+# Calculate number of umbrellas on the left side
+left_side_umbrellas = detect_umbrellas(image_path=image_path)[0]
+left_side_umbrellas = len(left_side_umbrellas)
+
+final_result = {
+    'left-side-umbrellas': left_side_umbrellas
+}
+
+print(final_result)
+============================== NEW EXECUTION ==============================
+[EXEC CODE]
+
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+[EXECUTION EXCEPTION]
+'NoneType' object is not subscriptable
+code:from typing import List
+
+class ImageDetector:
+    def __init__(self, labels: List[str]):
+        self.labels = labels
+        
+    def detect_objects(self, image_path: str):
+        label_detection_result = []
+        
+        try:
+            object_list = self._detect_objects_with_model(image_path)
+            
+            # Save the detected objects with empty padding
+            for i, obj in enumerate(object_list):
+                file_path = f"counting_{i}.png"
+                obj["box"].append(f"box_{i}")
+                obj["saved_image_path"] = file_path
+                with open(file_path, mode="w", encoding="utf-8") as file:
+                    for key, value in obj.items():
+                        file.write(f"{key} {value}")
+                    
+            label_detection_result = object_list
+                
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            label_detection_result = None
+            
+        return label_detection_result
+        
+    def _detect_objects_with_model(self, image_path: str) -> List[dict]:
+        import ground_dino
+        
+        objects = ground_dino.detect_objects_in_image(image_path, 
+                        labels=self.labels, 
+                        threshold=0.75, 
+                        model_size="tiny")
+        return objects
+        
+# Function to count the number of white umbrellas
+def count_umbrellas(image_path: str):
+    detector = ImageDetector([])
+    detection_result = detector.detect_objects(image_path)
+    return detection_result["total_objects"][1]["count"]
+
+# Demonstration of the function
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg"
+umbrellas = count_umbrellas(image_path)
+print(f"Number of white umbrellas: {umbrellas}")[
+WRONG RESULT]
+

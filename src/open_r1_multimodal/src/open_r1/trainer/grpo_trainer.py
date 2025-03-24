@@ -456,32 +456,33 @@ class Qwen2VLGRPOTrainer(Trainer):
         # Decode the generated and truncated completions
         completions = self.processing_class.batch_decode(completion_ids, skip_special_tokens=True)
 ##################################################################################################################
-        # Debug: Decode full generated sequence (prompt + completion)
-        decoded_full = self.processing_class.batch_decode(prompt_completion_ids, skip_special_tokens=True)
-        # Also re-create prompt_texts for string comparison
-        decoded_prompt = self.processing_class.batch_decode(prompt_ids, skip_special_tokens=True)
+### ONLY FOR DEBUG 
+        # # Debug: Decode full generated sequence (prompt + completion)
+        # decoded_full = self.processing_class.batch_decode(prompt_completion_ids, skip_special_tokens=True)
+        # # Also re-create prompt_texts for string comparison
+        # decoded_prompt = self.processing_class.batch_decode(prompt_ids, skip_special_tokens=True)
         
-        save_dir = "trajectories/debug_logs"
-        os.makedirs(save_dir, exist_ok=True)
-        log_file = os.path.join(save_dir, f"step{self.state.global_step}_rank{self.accelerator.process_index}.log")
+        # save_dir = "trajectories/debug_logs"
+        # os.makedirs(save_dir, exist_ok=True)
+        # log_file = os.path.join(save_dir, f"step{self.state.global_step}_rank{self.accelerator.process_index}.log")
 
-        with open(log_file, "w") as f:
-            f.write("🧪 [DEBUG] Verifying prompt/completion separation:\n")
-            for i in range(min(3, len(prompt_completion_ids))):
-                f.write(f"\n🔹 Sample {i}\n")
-                f.write(f"→ Prompt:\n{repr(decoded_prompt[i][:])}\n")
-                f.write(f"→ Decoded FULL sequence:\n{repr(decoded_full[i][:])}\n")
-                f.write(f"→ Decoded COMPLETION:\n{repr(completions[i][:])}\n")
+        # with open(log_file, "w") as f:
+        #     f.write("🧪 [DEBUG] Verifying prompt/completion separation:\n")
+        #     for i in range(min(3, len(prompt_completion_ids))):
+        #         f.write(f"\n🔹 Sample {i}\n")
+        #         f.write(f"→ Prompt:\n{repr(decoded_prompt[i][:])}\n")
+        #         f.write(f"→ Decoded FULL sequence:\n{repr(decoded_full[i][:])}\n")
+        #         f.write(f"→ Decoded COMPLETION:\n{repr(completions[i][:])}\n")
                 
-                if decoded_full[i].startswith(decoded_prompt[i]):
-                    f.write("✅ [Match] Full output starts with prompt.\n")
-                else:
-                    f.write("⚠️ [Mismatch] Full output does NOT start with prompt!\n")
+        #         if decoded_full[i].startswith(decoded_prompt[i]):
+        #             f.write("✅ [Match] Full output starts with prompt.\n")
+        #         else:
+        #             f.write("⚠️ [Mismatch] Full output does NOT start with prompt!\n")
                 
-                if decoded_prompt[i] in completions[i]:
-                    f.write("⚠️ [Issue] Completion includes prompt! ❌\n")
-                else:
-                    f.write("✅ [Clean] Completion does NOT include prompt.\n")
+        #         if decoded_prompt[i] in completions[i]:
+        #             f.write("⚠️ [Issue] Completion includes prompt! ❌\n")
+        #         else:
+        #             f.write("✅ [Clean] Completion does NOT include prompt.\n")
 #################################################################################################################        
         if is_conversational(inputs[0]):
             completions = [[{"role": "assistant", "content": completion}] for completion in completions]
