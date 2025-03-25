@@ -1,0 +1,57 @@
+------------- 24-14-06-40-939600 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detector_tool as ot
+
+# Path of the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_23_image_1.jpg"
+
+# Configuration
+labels = ['banana']
+threshold = 0.5
+model_size = 'tiny'
+padding = 20
+
+# Function to detect bananas
+def detect_bananas(image_path, labels, threshold, model_size, padding):
+    # Load model
+    model = ot.load_model(model_size=model_size)
+    
+    # Detect objects
+    detection_results = ot.detect_objects(image_path, labels, threshold, model=model)
+    
+    # Collect detected objects paths
+    detected_objects_path = []
+    for result in detection_results:
+        label, confidence, box, path = result[0], result[1], result[2], result[3]
+        if label == 'banana':
+            detected_objects_path.append(path)
+    
+    return detected_objects_path
+
+# Run detection
+detected_objects_path = detect_bananas(image_path, labels, threshold, model_size, padding)
+
+# Extract the number of bananas
+num_bananas = len(detected_objects_path)
+
+final_result = f"The image contains {num_bananas} bananas."
+print('<final_result>', final_result)
+
+Solution: 6

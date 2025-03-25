@@ -1,0 +1,48 @@
+------------- 24-12-58-49-571406 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 15
+    ```python
+    ^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+```python
+
+from object_detector_tool import tool as odt
+
+output = []
+label_names = ["baseball", "basket"]
+
+threshold = 0.35
+model_size = "base"
+
+padding = 20
+
+# Example image path
+img_file_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_107_image_1.jpg"
+
+output.extend(odt.execute(image=img_file_path, labels=label_names, threshold=threshold, model_size=model_size, padding=padding))
+
+for output in output:
+    if output['label'] == "basket" and output['confidence score']:
+        basket_obj_file = output['box']['right'][0] + '_' + output['box']['top'][0] + '_' + output['box']['dx'][0] + '_' + output['box']['dy'][0] + '.' + output['box']['right'][1] + '_' + output['box']['top'][1] + '_' + output['box']['dx'][1] + '_' + output['box']['dy'][1] + 'jpg'
+        print(f'Basket object detected: {basket_obj_file}')
+        export_image(img_file_path, output['saved_image_path'] + "." + output['label'], output['box']['left'][0] + '_' + output['box']['top'][0] + '_' + output['box']['dx'][0] + '_' + output['box']['dy'][0] + ' - ' + output['box']['right'][0] + '_' + output['box']['top'][1] + '_' + output['box']['dx'][1] + '_' + output['box']['dy'][1])
+
+# Example image detection result
+print(output)
+print('<final_result>', final_result)
+
+Solution: 3

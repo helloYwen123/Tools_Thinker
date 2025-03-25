@@ -1,0 +1,87 @@
+------------- 24-12-53-16-733400 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import ObjectDetectorTool
+import os
+
+model = "tiny"
+
+threshold = 0.35
+padding = 20
+
+label = ["baseball", "basket"]
+categories = [0, 1]
+
+input_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.png"
+output_path = "/home/stud/wxie/BLINK_Dataset/Counting/val_images/val_Counting_101_image_1.png"
+
+output_extension = "png"
+num_obj_output_extension = "txt"
+
+categories_output_extension = "txt"
+
+label_output_extension = "txt"
+
+image_path = input_path
+
+output_path_num = os.path.splitext(output_path)[0]
+output_path_cat = os.path.splitext(output_path)[1]
+output_path_label = os.path.splitext(output_path)[0] + output_path_label
+output_path_num_obj = os.path.splitext(output_path)[0] + f":{output_path_num}" + output_extension
+output_path_cat_obj = os.path.splitext(output_path)[1] + "_outputs" + output_path_cat_obj
+output_path_num_label = output_path_num + "_outputs" + num_obj_output_extension
+output_path_cat_label = os.path.splitext(output_path)[1] + "_" + os.path.splitext(output_path)[0][2:] + f"{output_path_label}_outputs" + labels_output_extension
+
+if "baseball" in label:
+  label = "Baseball"
+  output_path_label = output_path_label + "_" + labels_output_extension
+else:
+  label = "Basketball"
+  output_path_label = output_path_label + "_" + labels_output_extension
+
+if not os.path.exists(output_path):
+  os.makedirs(output_path)
+
+if label not in categories:
+  categories.append(label)
+  
+try:
+  tool = ObjectDetectorTool()
+  detection_output = tool.execute(image=image_path,
+                                   labels=label,
+                                   threshold=threshold,
+                                   model_size=model,
+                                   padding=padding)   
+except:
+  print("Unable to execute the object detection tool.")
+  exit()
+
+for detection in detection_output:
+  confidence = int(detection['confidence score'])
+  label = detection['label']
+  box = ','.join('%f,%f' % (detection['box'], detection['box']) for detection in detection['bbox'])
+  saved_image_path = os.path.join(output_path, output_path_label + "_" + label + "." + output_path_extension) 
+  if not os.path.exists(saved_image_path):
+    os.makedirs(os.path.dirname(saved_image_path))
+    tool.imwrite(saved_image_path, box, label)
+
+  final_result = Detection
+print('<final_result>', final_result)
+
+Solution: 0

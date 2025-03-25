@@ -1,0 +1,63 @@
+------------- 24-13-29-17-553524 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 53, in <module>
+  File "<string>", line 24, in count_person_in_image
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_person_in_image(image_path, labels, threshold, model_size, padding):
+    detector_model = "tiny"
+    if 'path' in model_size:
+        model_size = model_size.split('/')[-1]
+    else:
+        model_size = 'tiny'
+    if 'threshold' in model_size:
+        model_size = model_size.split('/')[-1]
+
+    import object_detector_tool
+
+    if len(labels) == 0:
+        return []
+
+    detector_model = 'tiny'
+    if 'path' in model_size:
+        model_size = model_size.split('/')[-1]
+
+    if labels == [] and 'path' not in model_size:
+        return []
+
+    detection_results = object_detector_tool.execute(image_path, labels, threshold, model_size, padding)
+    number_person = 0
+    for object_detection in detection_results:
+        if object_detection.get('label') in labels:
+            number_person += 1
+
+    if 'person' in labels:
+        return ['person', number_person]
+
+    return []
+
+image_path = "path/to/image.png"
+labels = ['baseball', 'basket']
+threshold = 0.5
+model_size = 'base'
+padding = 20
+
+result = count_person_in_image(image_path, labels, threshold, model_size, padding)
+print(result)
+print('<final_result>', final_result)
+
+Solution: 3

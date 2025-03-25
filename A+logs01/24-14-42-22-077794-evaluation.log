@@ -1,0 +1,73 @@
+------------- 24-14-42-22-077794 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_22_image_1.jpg"
+execution = tool.execute(image=image_path, labels=["cupcake"])
+
+# Get the bounding box and confidence score for each detected cupcake
+cupcakes = []
+
+for obj in execution[0]:
+    if obj["label"] == "cupcake":
+        box = [float(x) for x in obj["box"].split(",")]
+        cupcakes.append({"label": obj["label"], "confidence score": float(obj["confidence score"])})
+
+cupcakes = [cupcake for cupcake in cupcakes if cupcake["label"] == "cupcake"]  
+cupcakes = sorted(cupcakes, key=lambda x: x["confidence score"], reverse=True)[:3]  # Sort by confidence score in descending order and limit to 3
+
+# Get the bounding box and confidence score for each detected person
+execution_people = tool.execute(image=image_path, labels=["person"], threshold=0.5, model_size="base", padding=15)
+if len(execution_people) > 1:
+    people = []
+    for obj in execution_people[1:]:
+        if obj["label"] == "person":
+            people.append({"label": obj["label"], "confidence score": float(obj["confidence score"])})
+
+people = [person for person in people if person["label"] == "person"]
+
+# Calculate the average confidence score
+average_score = sum(float(person["confidence score"]) for person in people) / len(people)
+
+# Get the bounding box and confidence score for each detected donut
+donuts = tool.execute(image=image_path, labels=["donut"], threshold=0.35, model_size="tiny")
+
+if len(donuts) > 0:
+    donuts = [{"label": donut["label"], "confidence score": float(donut["confidence score"])} for donut in donuts]
+    donuts = sorted(donuts, key=lambda x: x["confidence score"], reverse=True)[:3]
+
+# Calculate the average confidence score for the donuts
+donut_average_score = sum(float(d["confidence score"]) for d in donuts) / len(donuts)
+
+# Final result
+final_result = {
+    "total number of people": len(people),
+    "average confidence score for people": average_score,
+    "total number of cupcakes": len(cupcakes),
+    "average confidence score for cupcakes": cupcake_average_score,
+    "total number of donuts": len(donuts),
+    "average confidence score for donuts": donut_average_score
+}
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

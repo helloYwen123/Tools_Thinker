@@ -1,0 +1,43 @@
+------------- 24-12-55-47-743553 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 33, in <module>
+  File "<string>", line 18, in calculate_total_eating_personages
+NameError: name 'object_detector_tool' is not defined. Did you mean: 'Object_Detector_Tool'?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def calculate_total_eating_personages():
+    # Load the image
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg"
+    execution = object_detector_tool.execute(image=image_path, labels=["hot dog"])
+    
+    # Get the bounding boxes of the hot dog
+    bboxes = [bbox for bbox in execution['output_type']][0]
+    
+    # Count the number of hot dogs
+    hot_dog_count = [bbox[2] * bbox[3] for bbox in bboxes if 'hot dog' in bbox[0] and bbox[0] not in ['background', 'human']]
+    
+    # Calculate the number of people eating hot dogs
+    people_count = len(hot_dog_count) / 4 # Each hot dog is shared by 4 people
+    people_count = round(people_count, 2)
+    
+    return people_count
+
+# Get the number of people eating sandwiches
+hot_dog_people_count = calculate_total_eating_personages()
+print(f"The number of people eating hot dogs is {hot_dog_people_count}")
+print('<final_result>', final_result)
+
+Solution: 0

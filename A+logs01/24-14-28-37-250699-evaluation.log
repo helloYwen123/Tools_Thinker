@@ -1,0 +1,126 @@
+------------- 24-14-28-37-250699 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execution
+
+def count_detection(results):
+    detected_objects = []
+    for label, _confidence, bbox, saved_image_path in results:
+        detected_objects.append({"label": label, "confidence score": _confidence, "box": bbox, "saved_image_path": saved_image_path})
+    return detected_objects
+
+def count_people(responses):
+    detected_objects = []
+    for detection in responses['output_type']:
+        people = []
+        for person_label, _, person_box, person_saved_image_path in detection['label']:
+            if person_label.startswith('person'):
+                people.append({'bounding_box': person_box, 'label': person_label})
+            else:
+                break
+        if people:
+            detected_objects.append({
+                'image_path': detection['image_path'],
+                'number': len(people),
+                'threshold': detection['threshold']
+            })
+    return found_people
+
+result = list(execution(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg", labels=["player"], threshold=0.3, model_size="base", padding=20))
+threshold = 0.15
+threshold_result = list(execution(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg", labels=["player"], threshold=threshold, model_size="base", padding=20))
+for det in result:
+    for people in threshold_result:
+        if det['image_path'] == people['image_path']:
+            for idx, people in enumerate(people['number']):
+                if threshold == 0.15:
+                    det['people number'] = people + 1
+                    threshold_result += [{'image_path': det['image_path'], 'number': 1}]
+                    break
+                else:
+                    if people == 1 and threshold == 0.2:
+                        det['people number'] = people -1
+                        threshold_result += [{'image_path': det['image_path'], 'number': 0}]
+                        break
+                if people == 1:
+                    det['people number'] = 0
+                    threshold_result += [{'image_path': det['image_path'], 'number': 0}]
+                    break
+
+threshold_result = list(execution(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg", labels=["player"], threshold=threshold, model_size="base", padding=20))
+for det in result:
+    for people in threshold_result:
+        if det['image_path'] == people['image_path']:
+            for idx, people in enumerate(people['number']):
+                if threshold == 0.2:
+                    det['people number'] = people + 1
+                    break
+                elif threshold == 0.15 or threshold == 0.2:
+                    if people == 1:
+                        for new_people in det['people number']:
+                            det['people number'].append(new_people + 1)
+                            break
+                        det['people number'] *= 2
+                        threshold_result += [{'image_path': det['image_path'], 'number': 1}]
+                        break  
+                        threshold_result += [{'image_path': det['image_path'], 'number': 1}]
+                        break
+                    elif people == 2:
+                        for new_people in det['people number']:
+                            det['people number'].append(new_people + 1)
+                            break
+                        det['people number'] *= 2
+                        threshold_result += [{'image_path': det['image_path'], 'number': 1}]
+                        break
+                    elif people == 3:
+                        for new_people in det['people number']:
+                            det['people number'].append(new_people + 1)
+                            break
+                        det['people number'] *= 2
+                        threshold_result += [{'image_path': det['image_path'], 'number': 1}]
+                        break
+            break
+
+for row in threshold_result:
+    if threshold == 0.15:
+        idx = 0
+        for i in range(len(row['people number'])):
+            if len(row['people number'][i]) == 3:
+                for new_people in range(row['people number'][i][0], row['people number'][i][1], -1):
+                    row['people number'][i] = new_people
+                    idx += 1
+                    break
+                final_result.append({"image_path": row['image_path'], 'number': idx})
+                break
+
+for row in threshold_result:
+    if threshold == 0.2:
+        idx = 0
+        for i in range(len(row['people number'])):
+            if len(row['people number'][i]) == 2:
+                for new_people in range(row['people number'][i][0], row['people number'][i][1]):
+                    row['people number'][i] = new_people - 1
+                    break
+                final_result.append({"image_path": row['image_path'], 'number': idx})
+                break
+
+final_result = [result for result in final_result if result['number'] > 0]
+print('<final_result>', final_result)
+
+Solution: 2

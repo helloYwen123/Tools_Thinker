@@ -1,0 +1,49 @@
+------------- 24-14-35-54-417080 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 32
+    final_result_str = f'Showing {bbox_count["kumquat"]} kumquat for every {adjusted_bbox_count["yellow plum"]} yellow plum. Proportion of 'kumquat' is ({proportion_kumquat:.2f}).'
+                                                                                                                                            ^^^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Set the image path
+img_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_120_image_1.jpg"
+
+# Load the image
+img = cv2.imread(img_path)
+
+# Detect and count objects
+bbox_count = count_objects(img, labels=["kumquat"])
+
+# Check if 'kumquat' is detected in the image
+if 'kumquat' in labels(img, threshold=0.35) and 'yellow plum' not in labels(img):
+    # Calculate the proportion of 'kumquat' and 'yellow plum'
+    proportion_kumquat = bbox_count['kumquat'] / (bbox_count['kumquat'] + bbox_count['yellow plum'])
+    # Adjust the bounding boxes for 'kumquat' if not detected
+    adjusted_bbox_count = {k: v if 'kumquat' in labels(img) else v - bbox_count['kumquat'] for k, v in bbox_count.items()}
+    final_result_str = f'Showing {bbox_count["kumquat"]} kumquat for every {adjusted_bbox_count["yellow plum"]} yellow plum. Proportion of 'kumquat' is ({proportion_kumquat:.2f}).'
+if bbox_count["kumquat"]:
+    # If there are detected 'kumquat' in the image
+    final_result_str = f'{bbox_count["kumquat"]} kumquat detected among {bbox_count["yellow plum"]} yellow plums for a proportion of {proportion_kumquat:.2f}%.'    
+else:
+    final_result_str = f"No kumquat detected in {bbox_count["yellow plum"]} yellow plums."
+
+final_result = str(final_result_str)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

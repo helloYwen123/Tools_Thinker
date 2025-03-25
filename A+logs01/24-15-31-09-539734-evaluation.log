@@ -1,0 +1,54 @@
+------------- 24-15-31-09-539734 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 42, in <module>
+TypeError: detect_objects() got an unexpected keyword argument 'padding'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def detect_objects(image_path, labels, threshold=0.5, model_size="tiny"):
+    object_labels = labels
+    # Load the object labels as a list of strings
+    object_labels = labels
+    
+    # Load the model and adjust the threshold
+    from object_detector_tool import Tool
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = Tool.load_model(model_name='dino', device=device, threshold=threshold)
+    
+    # Read the image and preprocess it
+    image = Tool.load_image(image_path)
+    image = preprocess_image(image, model.model_size, padding=20)[0]
+    
+    # Detect objects in the image using the model and check their bounding boxes
+    objects = []
+    results = model.detect_objects(image=image, labels=object_labels)
+    for obj in results:
+        if obj.confidence_score > threshold:
+            objects.append(obj)
+    
+    return objects
+
+# Convert the image_path to absolute path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_117_image_1.jpg"
+
+# Detect objects in the image
+objects = detect_objects(image_path, ["car", "person"], threshold=0.5, model_size="base", padding=15)
+
+# Select the car and person objects and return the confidence scores
+confidence_scores = [obj.confidence_score for obj in objects if 'car' in obj.label and 'person' in obj.label]
+confidence_scores
+print('<final_result>', final_result)
+
+Solution: 1

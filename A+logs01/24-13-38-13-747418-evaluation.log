@@ -1,0 +1,52 @@
+------------- 24-13-38-13-747418 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 43, in <module>
+  File "<string>", line 19, in get_blue_circles
+NotADirectoryError: [Errno 20] Not a directory: '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_46_image_1.jpg'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def get_blue_circles(image_path):
+    import os
+
+    # Load the image
+    image = os.listdir(image_path)[0]
+
+    # Read image
+    img = image_path + '/' + image
+
+    # Open up image
+    image = open(img, "rb")
+
+    # Load the DINO model
+    detection = Image_Detection_Tool(
+        labels=["baseball"], path={"model_path": "path/to/model"}).execute(image=image)
+
+    # Save objects
+    [image.save(f"{image}.jpg") for image in [d['object_name']]]
+
+    # Get the bounding boxes
+    bboxes = [b for b in detection["output"].values() if b["label"] == "baseball"]
+
+    # Filter for blue circles
+    blue_bboxes = [bbox for bbox in bboxes if bbox["label"] == "baseball" and bbox["color"] == "blue"]
+
+    return len(blue_bboxes)
+
+# Test the function
+print(get_blue_circles("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_46_image_1.jpg"))
+print('<final_result>', final_result)
+
+Solution: 1

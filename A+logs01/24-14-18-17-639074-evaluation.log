@@ -1,0 +1,67 @@
+------------- 24-14-18-17-639074 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+def count_people(image_path):
+    with open(image_path + '.png', mode='r', encoding='utf8') as fimage:
+        image_data = fimage.read()
+ 
+    labels = ["person"]
+    threshold = 0.35
+    model_size = "tiny"
+    padding = 20
+
+    detection = tool.execute(image=image_data, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    people_count = len(detection[0][0])
+    return people_count
+
+def display_results(path):
+    try:
+        output_path = path + 'result.png'
+        detection = tool.execute(image=path, labels="person010001", threshold=0.15, model_size="base", padding=20)
+        people_count = len(detection[0][0])
+        if people_count == 3:
+            print(f"There are {people_count} people in the image.")
+            with open(output_path, 'w') as foutput:
+                foutput.write('People')
+            return output_path
+        else:
+            print("Number of people could not be determined.")
+            return None
+    except Exception as e:
+        print(f"An error occurred: {e}.")
+        return None
+
+def calculate_final_result(image_path):
+    result_path = display_results(image_path)
+    if result_path:
+        return result_path
+    else:
+        return None
+
+path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_27_image_1.jpg"
+result = calculate_final_result(path)
+if result:
+    print(f"The final result is {result}")
+else:
+    print("Error occurred in calculating the final result.")
+print('<final_result>', final_result)
+
+Solution: 1

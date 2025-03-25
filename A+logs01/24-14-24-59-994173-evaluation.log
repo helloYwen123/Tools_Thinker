@@ -1,0 +1,69 @@
+------------- 24-14-24-59-994173 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'Image_Detector_Tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from Image_Detector_Tool import Image_Detector_Tool
+
+tool = Image_Detector_Tool()
+
+# Read the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_92_image_1.jpg"
+label = tool.label(image_path)
+
+# Read the input labels
+input_labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Check if there are labels detected
+if label['model_size'] == 'base':
+    input_labels.append("baseball")
+
+    # Detect the labels
+    detection_result = tool.execute(image=image_path, labels=input_labels, threshold=threshold, model_size=model_size, padding=padding)
+
+    for object_detection in detection_result:
+        if "baseball" in object_detection['label']:
+            baseball_count = object_detection['label'][-2:]
+            print(f"Baseball detection count: {baseball_count}")
+        elif "basket" in object_detection['label']:
+            basketball_count = object_detection['label'][-2:]
+            print(f"Basketball detection count: {basketball_count}")
+
+    # Check if there are any baskets detected
+    if "basket" in input_labels:
+        basket_count = detection_result[0]['bbox'][0]
+        print(f"Basket detection count: {basket_count}")
+    
+    # Check if there are any bats detected
+    if "baseball" in input_labels:
+        baseball_count = 0
+        for object_detection in detection_result:
+            if "baseball" in object_detection['label']:
+                baseball_count += int(object_detection['bbox'][1])
+            elif "basket" in object_detection['label']:
+                basketball_count += int(object_detection['bbox'][2])
+        baseball_output = f"Baseball count: {baseball_count}"
+        basketball_output = f"Basket count: {basketball_count}"
+        print(f"{basketball_output}{'and baseball' if baseball_count else ''} detected")
+else:
+    print("No labels detected in the image.")
+print('<final_result>', final_result)
+
+Solution: 2

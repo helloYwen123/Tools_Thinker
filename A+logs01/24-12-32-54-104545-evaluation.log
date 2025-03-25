@@ -1,0 +1,65 @@
+------------- 24-12-32-54-104545 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 51
+    loaded_image_path = object_image_loader(image=image, object=bbox=objects[0].bbox, padding=padding, model_size=model_size)
+                                                                    ^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Load the image
+execution = object_detector_tool.load('val_Counting_52_image_1.jpg')
+
+# Define labels for different objects
+labels = [
+    'baseball',
+    'basket'
+]
+
+# Define threshold for confidence score
+threshold = 0.35
+
+# Define model size
+model_size = 'tiny'
+
+# Define empty padding
+padding = 20
+
+# Function to detect baseball and basket in an image
+def find_objects(image):
+    for label in labels:
+        query = label
+        threshold_values = [threshold]
+        if model_size == 'tiny':
+            threshold_values = [threshold]
+        else:
+            threshold_values = [threshold, 0.2, 0.4, 0.6, 0.8]
+        for threshold_value in threshold_values:
+            objects = detector_tool.detect_objects(image=image, labels=labels, threshold=threshold_value, model_size=model_size, padding=padding)
+            if len(objects) > 0:
+                print(f"Detected {label}: {len(objects)}")
+                print(f"Box: {objects[0].bbox}")
+                print(f"Confidence score: {objects[0].confidence_score}")
+                # Load object image
+                loaded_image_path = object_image_loader(image=image, object=bbox=objects[0].bbox, padding=padding, model_size=model_size)
+                print(f"Found object at {bbox} for {label}. Loaded image path: {loaded_image_path}")
+                break
+
+# Find baseball and basket
+find_objects(image=execution)
+print('<final_result>', final_result)
+
+Solution: 1

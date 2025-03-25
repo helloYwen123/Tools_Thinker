@@ -1,0 +1,63 @@
+------------- 24-13-26-05-734459 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_82_image_1.jpg"
+image = Image.open(image_path)
+labels = ["baseball", "basket"]
+
+# Detect and save the detected objects with default empty padding, using the tiny model
+execution = tool.execute(image=image, labels=labels, threshold=0.35, model_size="tiny")
+boxes = [box['box'] for box in execution if box['label'] == "baseball"]
+saved_image_path = execution[0]['saved_image_path']
+
+# Detect and save the detected objects with 15 pixels of empty padding, using the base model
+execution = tool.execute(image=image, labels=labels, threshold=0.5, model_size="base", padding=15)
+boxes = [box['box'] for box in execution if box['label'] == "person"]
+saved_image_path = execution[0]['saved_image_path']
+
+# Get the confidence scores of the objects we are interested in
+confidence_scores = [box["confidence"] for box in execution]
+
+# Check if any of the objects have a confidence score greater than a certain threshold, such as 1.0
+if max(confidence_scores) > 1.0:
+    baseball_cones = [box for _, box, saved_image_path in boxes if box[3] == "baseball"]
+    baseball_cones_saved_path = baseball_cones[0]['saved_image_path']
+    print("Baseball cones detected: ", baseball_cones_saved_path)
+
+# If we found a baseball cone, check if it is near the water
+if baseball_cones and baseball_cones[0]:
+    baseball_cone_box = baseball_cones[0]
+    baseball_cone_box['confidence'] = baseball_cones[0]['confidence']
+    baseball_cone_box['x coordinate'] = baseball_cone_box['x coordinate'] - 50
+    baseball_cone_box['y coordinate'] = baseball_cone_box['y coordinate'] - 50
+    baseball_cone_box['width'] = baseball_cone_box['width'] - 100
+    baseball_cone_box['height'] = baseball_cone_box['height'] - 100
+    beach_y = float(image_shape[1] * 0.25)  # Assuming the beach is 25% of the image's height
+    y_axis_conversion = Image.new('RGB', image.size, (255, 255, 255))
+    y_axis_conv_x = np.array(image_array[beach_y:, baseball_cone_box['y coordinate']: baseball_cone_box['y coordinate']: baseball_cone_box['width'], baseball_cone_box['x coordinate']: baseball_cone_box['x coordinate']: baseball_cone_box['height']])
+    baseball_cone_box = {'box': baseball_cone_box, 'image': y_axis_conv_x}
+
+    print("Baseball cone near the water: ", baseball_cone_box['image_path'])
+    print("Confidence score of the baseball cone near the water: ", baseball_cone_box['confidence'])
+print('<final_result>', final_result)
+
+Solution: 4

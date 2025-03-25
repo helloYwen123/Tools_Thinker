@@ -1,0 +1,59 @@
+------------- 24-12-08-08-232373 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+confidence_threshold = 0.35
+model_size = 'base'
+
+def detect_umbrellas(image_path: str) -> list:
+    """
+    Detection of umbrellas in an image.
+
+    Parameters:
+    image_path (str): The path to the image file.
+
+    Returns:
+    list: A list of detected objects dictionaries with ('label';'confidence score';'box';'saved_image_path') keys and their corresponding values.
+    """
+    # Extract objects from the image
+    detection_result = objects_detector(image=image_path)
+
+    # Filter out umbrellas based on detection confidence
+    umbrellas = [obj['label'] == 'umbrella' for obj in detection_result]
+    umbrellas = [obj for obj in detection_result if obj['label'] == 'umbrella' and obj['confidence score'] > threshold]
+
+    # Return the result
+    return umbrellas
+
+# Image path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg'
+
+# Calculate number of umbrellas on the left side
+left_side_umbrellas = detect_umbrellas(image_path=image_path)[0]
+left_side_umbrellas = len(left_side_umbrellas)
+
+final_result = {
+    'left-side-umbrellas': left_side_umbrellas
+}
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 3

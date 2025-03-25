@@ -1,0 +1,55 @@
+------------- 24-15-11-28-726638 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_24_image_1.jpg"
+
+labels = ["baseball", "basket"] # Label object paths
+threshold = 0.3
+model_size = "tiny"
+
+num_windows_front = []
+num_windows_sides = []
+
+# Load the image using OpenCV
+img = image_loader(image_path)
+
+# Detect baseball
+execution = tool.execute(image= img, labels=labels, threshold=threshold, model_size=model_size)
+for detected_object in execution:
+    if detected_object[label] == "baseball":
+        num_windows_front.append(1) # Add 1 if the front has windows
+
+# Detect car
+execution = tool.execute(image= img, labels= ["car"] , threshold=threshold, model_size=model_size)
+for detected_object in execution:
+    if detected_object[label] == "car":
+        num_windows_sides.append(1) # Add 1 if the side has windows
+
+num_windows_front_sum = sum(num_windows_front)
+num_windows_sides_sum = sum(num_windows_sides)
+
+# Calculate total number of windows
+total_windows = num_windows_front_sum + num_windows_sides_sum
+
+final_result = total_windows
+print("The total number of windows in the front (excluding sides) is:", final_result)
+print('<final_result>', final_result)
+
+Solution: 2

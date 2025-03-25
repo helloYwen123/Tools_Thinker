@@ -1,0 +1,51 @@
+------------- 24-13-22-35-685494 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import detection
+
+def count_man_pondering_image(input_image_path, output_path):
+    # Load the input image
+    image = detection.load_image(image_path=input_image_path)
+
+    # Perform object detection
+    labeled_objects, confidence_scores, boxes, saved_image_paths = detection.detect_objects(image=image)
+
+    # Find man
+    man_indices = [box['label'] == 'man' for box in boxes]
+    man_confidences = {box['label']: box['confidence'] for box in boxes}
+
+    # Count man who is pondering
+    man_pondering = []
+    for i, (l, c) in enumerate(zip(labeled_objects, man_confidences)):
+        if man_confidences[l] > confidence_scores[i]:
+            man_pondering.append([i, [label, 'ponder']])
+
+    # Save paths
+    paths = [saved_image_paths[i] for i in man_pondering]
+    
+    # Return count
+    return len(man_pondering)
+
+input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_62_image_1.jpg"
+count_man_pondering_image(input_image_path, output_path="count_output.txt")
+final_result = float(open(f"{output_path}", "r").read())
+print(f"Number of people who are pondering: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 1

@@ -24,5 +24,3 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --save_only_model true \
     --report_to wandb \
     --use_cpu false
-# netstat -tulnp | grep 29507
-#"flash_attention_2",  #  "eager" / "sdpa"

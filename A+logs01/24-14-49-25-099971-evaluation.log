@@ -1,0 +1,38 @@
+------------- 24-14-49-25-099971 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_blue_collars(image_path, labels, threshold, model_size, padding=20):
+    detected_objects = execute(image_path, labels=label_names, threshold=threshold, \
+                               model_size=model_size, padding=padding)
+    blue_collars = []
+    for obj in detected_objects:
+        if obj["label"] == "Dog" and obj["confidence"] > 0.2 and obj["bbox"].min() > 0 and obj["bbox"].max() <= 1 and obj["bbox"][1] < 1 and obj["bbox"][0] < 1:
+            blue_collars.append(obj)
+    return blue_collars
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_38_image_1.jpg"
+label_names = ["baseball", "basket"]
+execution = count_blue_collars(image_path, label_names=label_names, threshold=0.5, model_size="base", padding=15)
+
+print("Total blue collars detected:", len(execution))
+print('<final_result>', final_result)
+
+Solution: 1

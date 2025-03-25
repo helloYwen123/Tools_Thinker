@@ -1,0 +1,47 @@
+------------- 24-12-45-47-091397 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_toilets(image_path):
+    # Load the image
+    try:
+        image_data = execute(image=image_path, labels=["toilet"])
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+    if not image_data:
+        return 0
+
+    toilets = []
+    for d in image_data:
+        if d["label"] == "toilet":
+            toilets.append({"box": d["box"], "confidence score": d["confidence score"]})
+
+    return len(toilets)
+
+final_result = count_toilets("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_2_image_1.jpg")
+if final_result is not None:
+    print(f"There are {final_result} black toilets in the image")
+else:
+    print("No toilets detected in the image")
+print('<final_result>', final_result)
+
+Solution: 0

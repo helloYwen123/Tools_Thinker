@@ -1,0 +1,45 @@
+------------- 24-15-07-40-218648 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_53_image_1.jpg"
+labels = ["wine bottle"]
+threshold = 0.5
+model_size = "tiny"
+padding = 20
+labels_to_check = [labels]
+output = detect_objects_with_padding(image_path, labels, labels_to_check, model_size=model_size, threshold=threshold, padding=padding)
+if "wine bottle" in output:
+    wine_bottles = []
+    for obj in output:
+        if "wine bottle" in obj['label']:
+            wine_bottles.append(obj)
+    result = len(wine_bottles)
+    print(f"Number of clear bottles of wine: {result}")
+    final_result = {"number of clear bottles detected": result}
+elif "wine bottle" not in output:
+    print("No wine bottle detected in the image.")
+    final_result = {"no wine bottle detected": "True"}
+else:
+    print("Error: Multiple candidates detected between the labels")
+    final_result = {"multiple candidates detected for wine bottle": "True"}
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

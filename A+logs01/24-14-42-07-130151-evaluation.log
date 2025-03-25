@@ -1,0 +1,42 @@
+------------- 24-14-42-07-130151 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg"
+
+def detect_objects(labels=None, threshold=0.35, model_size="tiny", padding=20, output_path="detect_result.txt"):
+    detection_result = []
+    for label in labels:
+        execution = {"command": "tool.execute(image=image_path, labels=[label], threshold=0.35, model_size=model_size, padding=padding)", "output_type": "list", "user_metadata": {"label": label, "confidence score": None, "box": None, "saved_image_path": None}}
+        detection_result.append(execution)
+    with open(output_path, 'w') as file:
+        for result in detection_result:
+            file.write(f"{result['command']['command'][0]} \n{result['command']['command'][1]} {result['command']['command'][2]} \n{result['command']['command'][3]} \n")
+    return detection_result
+
+output_dets = detect_objects(labels=["hotdog", "lettuce"], threshold=0.35, model_size="tiny", padding=20)
+for det in output_dets:
+    print(det['command']['command'][0])
+    print(f" confidence score: {det['command']['command'][3]}")
+    print(f" box: {det['command']['command'][1]}")
+    print(f" saved image path: {det['command']['command'][4]}")
+print('<final_result>', final_result)
+
+Solution: 0

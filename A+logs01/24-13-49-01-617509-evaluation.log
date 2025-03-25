@@ -1,0 +1,41 @@
+------------- 24-13-49-01-617509 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool as obj_detector_tool
+
+def count_elephants( image, labels, threshold, model_size, padding ):
+    detection_count = 0
+
+    # Load labels from labels list
+    labels_list = labels
+    
+    # Create object detector tool for base model
+    detector_tool = obj_detector_tool()
+
+    for label in labels:
+        prediction = detector_tool.execute(image=image, labels=labels_list, thresholds=[threshold, threshold - (threshold * 0.025)], model_size=model_size, padding=padding)
+        detection_count += len(prediction)
+
+    return detection_count
+
+final_result = count_elephants( "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_73_image_1.jpg", ["elephant"], 0.35, "tiny", 20 )
+print(f"Number of elephants in the water: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 2

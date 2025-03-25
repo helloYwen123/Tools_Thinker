@@ -1,0 +1,96 @@
+------------- 24-15-18-53-190452 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 19
+    using namespace std;
+          ^^^^^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <opencv2/opencv.hpp>
+using namespace std;
+using namespace opencv;
+
+vector<vector<string>> labels = {"baseball","basket","car","person"};
+float threshold = 0.35;
+string model_size = "base";
+int padding = 20;
+
+int count_people_with_baseball = 0;
+int count_bases_with_baseball = 0;
+
+vector<vector<vector<int>>> execute_image_detection(string imagePath, vector<vector<string>> labels, float threshold, string model_size, int padding) {
+    vector<vector<vector<int>>> output;
+    input_image(imagePath);
+    label_image(imagePath, labels, threshold, model_size, padding);
+    vector<vector<vector<int>>> imgLabels = label_img_to_image(output, labels);
+    for (vector<vector<int>>& arr : imgLabels) {
+        if ( arr.size() == 0 ) {
+            continue;
+        }
+        bool found = false;
+        for (int i = 0; i < arr.size(); i++) {
+            if (arr[i][0] == 'baseball') {
+                found = true;
+                break;
+            }
+        }
+        if (found == false) continue;
+        count_bases_with_baseball++;
+        cout << "Found baseball!" << endl;
+    }
+    return imgLabels;
+}
+
+void execute_image_detection() {
+    string imagePath = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_68_image_1.jpg";
+    vector<vector<string>> labels = labels;
+    vector<vector<float>> thresholdLabel = label_objectness;
+    vector<vector<float>> confidenceScores = label_objectness;
+    vector<vector<float>> scores = label_obj_score;
+    vector<vector<vector<int>>> imgLabels = execute_image_detection(imagePath, labels, threshold_label, confidence, scores, 0.2);
+    cout << "Found baseball: " << count_bases_with_baseball << endl;
+}
+
+int count_people_with_baseball( vector<vector<string>> labels, vector<string> thresholdLabel, float threshold, string model_size, int padding ) {
+    vector<vector<vector<int>>> imgLabels = execute_image_detection();
+    for (vector<vector<string>>& arr : imgLabels) {
+        if ( arr.size() == 0 ) {
+            continue;
+        }
+        int count = 0;
+        for (vector<vector<int>>& arr2 : arr) {
+            if ( arr2.size() == 0 ) {
+                continue;
+            }
+            for (int i = 0; i < arr2.size(); i++) {
+                if (arr2[i][0] == "people") {
+                    count++;
+                }
+            }
+        }
+    }
+    return count;
+}
+
+int main() {
+    execute_image_detection();
+    return 0;
+}
+print('<final_result>', final_result)
+
+Solution: 1

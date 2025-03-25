@@ -1,0 +1,55 @@
+------------- 24-14-21-40-108644 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 33
+    people = check_for_dog_or_cat(labels=["human"], image_path, threshold=0.35, model_size="base")
+                                                                                                 ^
+SyntaxError: positional argument follows keyword argument
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool as ot
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_8_image_1.jpg"
+labels = ["dog", "cat"]
+threshold = 0.35
+model_size = "tiny"
+
+def check_for_dog_or_cat(labels_to_check, image_path, threshold, model_size):
+    detect_result = ot.execute(image=image_path, labels=labels_to_check, threshold=threshold, model_size=model_size)
+    for obj_dict in detect_result:
+        if obj_dict["label"] in labels_to_check:
+            return obj_dict
+
+def count_people(frame_image_dir):
+    people_count = 2
+    for filename in sorted(os.listdir(frame_image_dir)):
+        image_path = os.path.join(frame_image_dir, filename)
+        if os.path.isfile(image_path):
+            people = check_for_dog_or_cat(labels=["human"], image_path, threshold=0.35, model_size="base")
+            people_count += len(people)
+    return people_count
+
+def generate_prediction(frame_image_dir):
+    people_count = count_people(frame_image_dir)
+    final_result = {
+        "People": people_count
+    }
+    return final_result
+
+# Apply the function to the given directory
+prediction = generate_prediction("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_8_image_1")
+print("The number of people is: ", prediction["People"])
+print('<final_result>', final_result)
+
+Solution: 1

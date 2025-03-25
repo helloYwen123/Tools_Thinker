@@ -1,0 +1,62 @@
+------------- 24-13-19-16-751734 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def number_of_people_with_glasses():
+    # Get the image as a string
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Cardental_109_image_1.jpg"
+    
+    # Get a list of object labels to detect
+    labels = ["Baseball", "Basket"]
+    
+    # Define the confidence threshold, model size, and empty padding.
+    # threshold can be in [0.35, 0.45] depending on the input image.
+    # model size can be either "tiny" (100 MB) or "base" (200 MB). 
+    # padding can be in [0, 50] pixels.
+    
+    # Execute the tool with the input data
+    result = execute(image=image_path, labels=labels, threshold=0.35, model_size="tiny")
+    
+    # Initialize counters for people with and without glasses
+    
+    people_with_glasses = 0
+    people_without_glasses = 0
+    
+    # Iterate through the detected objects in the image
+    for obj in result[1]:
+        label = obj["label"]
+        confidence_score = obj["confidence score"]
+        
+        # Check if the label is "Baseball" and the confidence score is over a threshold
+        if label == "Baseball" and confidence_score > 0.35:
+            # Add 1 to the counter for people with glasses
+            people_with_glasses += 1
+            
+        # Reset the counter when a new label is encountered
+        if label != "Basket":
+            people_without_glasses += 1
+            
+    return people_with_glasses
+
+final_result = number_of_people_with_glasses()
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

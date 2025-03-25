@@ -1,0 +1,43 @@
+------------- 24-14-55-35-413009 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_blue_buses(image_path):
+    try:
+        detection_result = execute(image_path, labels=['blue'], threshold=0.35, model_size="tiny")
+        if len(detection_result) >= 1:
+            box_and_confidence = detection_result[0]
+            box = [float(x) for x in box_and_confidence[1].split(",")][0]
+            x1, y1, x2, y2 = box
+            x1, x2 = int(x1) + round(x1), int(x2) + round(x2)
+            detection_result = [str(value) + " " + str(box)
+                                for (k, value) in zip(list_detections.keys(), detection_result)]
+            final_result = {"count": len(detection_result)}
+            return final_result
+        else:
+            return {"count": 0}
+    except Exception as e:
+        return {"count": 0, "error": f"Error while executing tool: {e}"}
+
+final_result = count_blue_buses('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_39_image_2.jpg')
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

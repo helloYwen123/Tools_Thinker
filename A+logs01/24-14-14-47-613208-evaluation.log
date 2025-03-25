@@ -1,0 +1,42 @@
+------------- 24-14-14-47-613208 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 19
+    execution = tool.execute(image=image_path, labels=labels, threshold)
+                                                                       ^
+SyntaxError: positional argument follows keyword argument
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+def count_person_with_cap(image_path, labels=["cap"], threshold=None):
+    # Load the image
+    execution = tool.execute(image=image_path, labels=labels, threshold)
+    bounding_boxes = [bbox['xmin'], bbox['ymin'], bbox['xmax'], bbox['ymax']] for bbox in execution["output_type"]
+    
+    # Filter out boxes where the 'cap' attribute is False or the bounding box is not valid
+    valid_boxes = [(bbox['xmin'], bbox['ymin'], bbox['xmax'], bbox['ymax']) for bbox in bounding_boxes if 'center_x' in bbox and 'center_y' in bbox and 'width' in bbox and 'height' in bbox and (bbox['width'] > 30 and bbox['height'] > 30 and bbox['center_x'] > 0 and bbox['center_y'] > 0)]
+    
+    # Count the number of person boxes with 'cap' attribute and bounding box
+    count_person = len([bbox for box in valid_boxes for bbox in bounding_boxes if 'cap' in box and (bbox['box_x'] >= box['center_x'] - th and bbox['box_y'] >= box['center_y'] - th and box['box_x'] <= bbox['center_x'] + th and box['box_y'] <= bbox['center_y'] + th)])
+    
+    return {'count': count_person, 'label': 'person'}
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_83_image_1.jpg"
+result = count_person_with_cap(image_path)
+print(result)
+print('<final_result>', final_result)
+
+Solution: 3

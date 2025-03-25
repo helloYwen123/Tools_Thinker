@@ -1,0 +1,45 @@
+------------- 24-14-15-08-268162 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def detect_objects(image_path, labels, threshold, model_size, padding):
+    detection = execute_object_detection(image_path, labels, threshold, model_size, padding)
+    return detection
+
+def calculate_cows_in_train(detection):
+    cow_count = 0
+    for person in detection:
+        if person['label'] == 'cow':
+            cow_count += 1
+    return cow_count
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_63_image_1.jpg'
+labels = ['cow']
+threshold = 0.5
+model_size = 'base'
+padding = 15
+
+detection = detect_objects(image_path, labels, threshold, model_size, padding)
+final_result = calculate_cows_in_train(detection)
+
+print("The number of cows in the train is:", final_result)
+print('<final_result>', final_result)
+
+Solution: 0

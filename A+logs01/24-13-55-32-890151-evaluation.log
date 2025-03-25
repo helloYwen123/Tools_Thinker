@@ -1,0 +1,50 @@
+------------- 24-13-55-32-890151 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *  # Import the Object_Detector_Tool class
+
+def get_toilts_to_lid_basin_count():
+    # Define the input variables
+    input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_1.jpg"  # Path to the image file
+    base_labels = ["toto"]  # List of labels to detect
+
+    # Initialize the object detector
+    detector = detect_objects_tool(input_image_path, base_labels)
+
+    # Iterate over the detection results
+    toilet_detector = []
+    for det in detector:
+        # Extract detection info
+        box = det["bbox"]
+        label = det["label"]  # label is not included in the results returned by object_detector_tool but can be manually inferred
+
+        # Check if the label is 'toto' (which should not be detected in this case)
+        if label == "toto":
+            toilet_detector.append({"label": label, "position": box})
+
+    # Calculate the count of toilets to the left of basins
+    num_toilts_left = sum([1 for toilet in toilet_detector if toilet["label"] == "toilet"])  # Check if the first toilet is toilet_detector[0]["label"]
+
+    return "num_toilts_left"  # Return the final result as the answer to the question
+
+final_result = get_toilts_to_lid_basin_count()  # Call the function with the image file
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 6

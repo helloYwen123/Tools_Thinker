@@ -1,0 +1,44 @@
+------------- 24-14-02-26-355493 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 34
+    finally:
+    ^^^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def detect_objects(image_path, labels, threshold, model_size, padding):
+    execution = detection(image_path, labels)
+    if "box" in execution.keys():
+        for obj in execution["box"]:
+            if obj["label"] in labels:
+                confidence_score = obj["confidence score"]
+                box = (obj["x1"], obj["y1"], obj["x2"], obj["y2"])
+                if threshold > confidence_score or model_size == "tiny":
+                    return {"label": obj["label"], "confidence score": confidence_score, "box": box}
+    return None
+
+result = detect_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_10_image_1.jpg", labels=["tower"], threshold=0.3, model_size="tiny", padding=40)
+if result:
+    final_result = [result]
+else:
+    final_result = None
+
+finally:
+    final_result
+print('<final_result>', final_result)
+
+Solution: 0

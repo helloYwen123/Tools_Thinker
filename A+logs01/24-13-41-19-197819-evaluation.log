@@ -1,0 +1,49 @@
+------------- 24-13-41-19-197819 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import ObjectDetector
+
+def count_wheels(image_path):
+    # Load the model
+    model = ObjectDetector()
+
+    # Load input data
+    input_data = {
+        "image": image_path, 
+        "labels": [], 
+        "threshold": 0.5, 
+        "model_size": "base", 
+        "padding": 20
+    }
+
+    # Perform object detection
+    detection_output = model.detect_objects(input_data)
+    
+    for detection in detection_output:
+        if detection[0] == "car" or detection[0] == "person":
+            print(f"Found {detection[0]} object at {(detection[1]['bbox'][0]+detection[1]['bbox'][2])*2} x {(detection[1]['bbox'][1]+detection[1]['bbox'][3])*2} pixels")
+            return int(detection[1]['bbox'][2]*(detection[1]['bbox'][3]-detection[1]['bbox'][1])*1.55)
+
+    return -1
+
+result = count_wheels("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg")
+print(f"The train has {result} wheels.")
+print('<final_result>', final_result)
+
+Solution: 3

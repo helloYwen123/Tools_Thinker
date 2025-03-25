@@ -1,0 +1,55 @@
+------------- 24-14-12-06-831504 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 41
+    percentage_people = round(percentage_people, 2)
+IndentationError: unexpected indent
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import ObjectDetectorTool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_116_image_1.jpg"
+execution = ObjectDetectorTool.execute(image=image_path)
+
+# Detect objects in binary format
+binary_labels = [obj['label'] for obj in execution['output_type'] if 'baseball' in obj['label'] or 'basket' in obj['label']]
+
+# Count the number of baseballs
+num_baseballs = sum(binary_labels)
+
+# Convert counts to percentage
+if num_baseballs:
+    percentage_baseballs = (num_baseballs / len(execution['output_type'])) * 100
+else:
+    percentage_baseballs = 0
+
+# Calculate the number of tennis players
+tennis_players = 2  # There are two tennis players on the court
+
+# Calculate the total number of people
+total_people = baseballs + tennis_players
+
+# Calculate the percentage of people and tennis players
+percentage_people = (tennis_players + baseballs) / total_people * 100
+ percentage_people = round(percentage_people, 2)
+
+final_result = f"{percentage_people:.2f} people are playing tennis." if baseballs else f"{percentage_people:.2f} tennis player(s) are playing."
+
+
+# Output the final result
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 4

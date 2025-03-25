@@ -156,7 +156,10 @@ def main(script_args, training_args, model_args):
             image = Image.open(dataset_prefix + example["images"][0])
             question = example["messages"][0]["content"]
             question = question.replace("<image>", "")
-            prompt = f'A conversation between User and Assistant. The user asks a question about the image, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer.\nUser: {question} \nAssistant: Let me solve this step by step.\n<think>'
+            prompt = f"""A conversation between User and Assistant.
+            The user asks a question about the image, and the Assistant solves it. 
+            The assistant first thinks about the reasoning process in the mind and then provides the user with the answer.
+            \nUser: {question} \nAssistant: Let me solve this step by step.\n<command>"""
 
             return {"image": image,
                 "prompt": [

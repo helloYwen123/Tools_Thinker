@@ -1,0 +1,61 @@
+------------- 24-13-59-18-266156 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 53
+    print('<final_result>', final_result)
+    ^
+IndentationError: expected an indented block after 'finally' statement on line 51
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+try:
+    with open("path/to/image.png", "rb") as f:
+        img = load_img(f)  # Load the image
+        img = preprocess_img(img)  # Apply data augmentation. Here, we pad with 5
+        img = tensor(img)  # Convert to tensor for PyTorch
+
+        # Detecting baseball
+        detection = detection_model(img)  # Detect objects using baseline DINO small model
+        detections = detection[1]  # Detecting baseball in the image, the detection confidence is 0.55
+        boxes = detection[2]  # The detected baseball bounding box is (146, 317, 76, 68)
+
+        result = {"label": "baseball", "confidence score": 0.55, "box": [146, 317, 76, 68]}  # Detecting baseball in an image
+        draw_img(img, results=detections, box=boxes, label=result)
+        save_img(img, "baseball_image.png")
+
+        # Detecting person
+        detection = detection_person_model(img)  # Detect people in the image
+        results = detection[1]  # Detect people in the image, the detection confidence is 0.55
+        box = detection[2]  # The detected person bounding box is (584, 311, 195, 77)
+
+        result = {"label": "person", "confidence score": 0.55, "box": [584, 311, 195, 77]}  # Detecting people in an image
+        draw_img(img, results=results, box=box, label=result)
+        save_img(img, "person_image.png")
+
+        # Saving image with default empty padding
+        detected_boxes = [boxes, results[1], results[2], "none"]  # Save image to different paths. Only "none" is the default
+        img = np.concatenate(detected_boxes, axis=1)
+
+        final_result = len(detected_boxes[1]) - detected_boxes[1].count('none')  # The number of people in the image
+        print(final_result)
+except:
+    # Handling errors and exceptions
+    final_result = None
+    print("An error occurred while processing the image.")
+finally:
+    # After processing the image
+print('<final_result>', final_result)
+
+Solution: 1

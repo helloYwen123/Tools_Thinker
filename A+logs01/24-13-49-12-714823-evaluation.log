@@ -1,0 +1,60 @@
+------------- 24-13-49-12-714823 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import detect_buses
+
+def get_num_blue_buses(image_path, labels=["blue"], threshold=0.35, model_size="tiny", padding=20):
+    """Detect blue buses in an image using the Grounding DINO model and return their paths.
+
+    Args:
+        image_path (str): The path to the image file.
+        labels (list): A list of object labels to detect.
+        threshold (float): The confidence threshold for detection (default: 0.35).
+        model_size (str): The size of the model to use ('tiny' or 'base', default: 'tiny').
+        padding (int): The number of pixels to add as empty padding around detected objects (default: 20).
+
+    Returns:
+        list: A list of detected objects dictionaries with ('label';'confidence score';'box', 'saved_image_path')keys and their corresponding values.
+    """
+    # Load model
+    model = detect_buses(model_size)
+
+    # Execute the function with provided parameters
+    detection_result = model.execute(image_path, labels, threshold, padding)
+
+    # Extract object data from the detection result
+    buses = []
+    for bus in detection_result['output']:
+        bus_label = bus['label']
+        bus_confidence_score = bus['confidence score']
+        busBox = bus['box']
+        saved_image_path = bus['saved_image_path']
+
+        if bus_label == "blue" and bus_confidence_score > 0.3:
+            buses.append({
+                'label': bus['label'],
+                'confidence score': bus_confidence_score,
+                'box': busBox,
+                'saved_image_path': saved_image_path
+            })
+
+    return buses
+print('<final_result>', final_result)
+
+Solution: 1

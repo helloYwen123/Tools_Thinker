@@ -1,0 +1,43 @@
+------------- 24-15-21-38-441494 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Read image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+image = open(image_path, 'rb').read()
+
+# Detect objects
+labels = ['baseball', 'basket']
+execution = detection_image(image=image, labels=labels, threshold=0.5, model_size="tiny", padding=20)
+
+# Save detected objects with empty padding
+for item in execution:
+    saved_image_path = f"{image_path[:-4]}_{item[-1]}_{item[-2]}_{item[-3]}_{item[-4]}_{item[-5]}_{item[-6]}_{item[-7]}_{item[-8]}_{item[-9]}_{item[-10]}.png"
+    save_image(image=image, label=item[-1], label_score=item[-2], box=item[-3], saved_image_path=saved_image_path)
+
+# Print the number of detected purple planes
+purple_planes = filter(lambda x: x[0] == "purple plane", execution)  # Filter out detected objects with labels 'purple plane' 
+number_of_purple_planes = len(purple_planes)  # Get the count of detected purple planes
+purple_planes_count = [f"Detected {purple_image[-3]} in {purple_image[-6]} with a label of 'purple plane' at the '{purple_image[-5]}'.\n" for purple_image in purple_planes]
+
+number_of_purple_planes, purple_planes_count
+print('<final_result>', final_result)
+
+Solution: 0

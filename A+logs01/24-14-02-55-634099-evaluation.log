@@ -1,0 +1,59 @@
+------------- 24-14-02-55-634099 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 43, in <module>
+  File "<string>", line 17, in count_people_in_water
+ModuleNotFoundError: No module named 'Image'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_people_in_water(image_path, labels, threshold=0.35, model_size="tiny", padding=20):
+    import os
+    from Image import Image
+
+    # Read the image
+    image = Image(image_path)
+
+    detected_objects = []
+
+    for object_label in labels:
+        execution = tool.execute(image=image.get_data(), labels=[object_label], threshold=threshold, model_size=model_size, padding=padding)
+
+        for path in execution.output_type:
+            if path[0] == "person":
+                detected_objects.append({"label": object_label, "confidence score": path[1], "box": path[2]})
+
+    return detected_objects
+
+# Load the image from the path provided
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_82_image_1.jpg"
+
+# Detect baseball and basketball in the image
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Call the function
+count_people = count_people_in_water(image_path, labels, threshold, model_size, padding)
+
+# Print the detected persons
+for detection in count_people:
+    print(detection["label"], detection["confidence score"], detection["box"])
+
+final_result = count_people_in_water("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_82_image_1.jpg", labels=["person"])
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 4

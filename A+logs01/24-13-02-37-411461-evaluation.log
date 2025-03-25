@@ -1,0 +1,48 @@
+------------- 24-13-02-37-411461 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_16_image_1.jpg"
+
+labels = ["baseball", "basket"]  # Replace with desired labels
+
+threshold = 0.35  # confidence threshold
+
+model_size = "tiny"  # base
+
+padding = 20  # number of pixels to add as empty padding around detected objects
+
+# Load the model
+model = load_model(model_name='model_name', model_size=model_size)
+
+# Detect baseball
+detections = detect_objects(image_path, labels, model, threshold)
+
+# Identify car and person
+detections = [label for label in detections if "car" in label or "person" in label]
+detections.sort(key=lambda x: float(x['confidence']))
+
+# Calculate the count of objects detected in front of the bus
+count = len(detections) - padding
+
+print("Number of kids in front of the yellow schoolbus:", count)
+print('<final_result>', final_result)
+
+Solution: 4

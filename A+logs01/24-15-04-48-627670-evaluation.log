@@ -1,0 +1,102 @@
+------------- 24-15-04-48-627670 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_people_in_image(image_path, labels):
+    output_list = []
+    with open(image_path, 'rb') as img:
+        detection = execute(img, labels=labels, threshold=0.35, model_size="tiny")
+        people_num = 0
+        for detected in detection:
+            if detected['label'] in labels and detected['box'].bbox:
+                x1, y1, x2, y2 = detected['box'].bbox
+                person_area = (x2 - x1) * (y2 - y1)
+                people_num += person_area
+            else:
+                pass
+        people_num = round(people_num)
+        output_list.append(('people', people_num, f"{people_num}% of individuals"))
+    return output_list[0]
+
+def count_bikes_in_image(image_path):
+    output_list = []
+    output_list.append(('bikes', 1))
+    return output_list
+
+def count_cars_in_image(image_path, labels, threshold, model_size, padding):
+    output_list = []
+    for label in labels:
+        count = 0
+        bbox = []
+        with open(image_path, 'rb') as img:
+            detection = execute(img, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+            for box in detection:
+                if box['bbox']:
+                    count += 1
+                    x1, y1, x2, y2 = box['bbox']
+                    person_area = (x2 - x1) * (y2 - y1)
+                    if person_area >= 220 and box['label'] == label:
+                        output_list.append(('car', 1))
+                    else:
+                        pass
+    return output_list
+
+def count_wheels_in_image(image_path):
+    output_list = []
+    with open(image_path, 'rb') as img:
+        for i in range(4):
+            detection = execute(img, labels=['front tire', 'back tire'], threshold=0.15, model_size='tiny')
+            output_tuple = count_bikes_in_image(image_path)
+            for det in output_tuple:
+                if det['label'] == 'car':
+                    count = 1
+                else:
+                    count = 0
+            if count == 1 and det['box']:
+                output_list.append(('wheel', 1))
+            else:
+                pass
+    return output_list
+
+def count_people(image_path):
+    labels = ["person"]
+    output = count_people_in_image(image_path, labels=labels)
+    if len(output) == 1:
+        return output[0]
+    else:
+        return output
+
+result = count_people("val_Counting_61_image_1.jpg")
+print(result)
+
+result = count_bikes_in_image("val_Fotor_266.jpg")
+print(result)
+
+result = count_wheels_in_image("val_Counting_12_image_1.jpg")
+print(result)
+
+final_result = []
+final_result.append(result[0])
+final_result.append(result[1])
+final_result.append(result[2])
+print("Final Result: ", final_result)
+print('<final_result>', final_result)
+
+Solution: 0

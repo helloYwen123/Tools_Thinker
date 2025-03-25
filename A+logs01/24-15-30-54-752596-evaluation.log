@@ -1,0 +1,46 @@
+------------- 24-15-30-54-752596 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_one_way_signs(image_path, threshold=0.5, model_size="base", padding=20):
+    # Load the image and save it with empty padding
+    image = plt.imread(image_path)
+    image_saved = image.copy()
+    
+    # Use the object_detector_tool to detect one way signs
+    sign_objects = object_detector_tool.execute(image=image_saved, labels=["one way sign"], threshold=threshold, model_size=model_size, padding=padding)
+    
+    # Count the number of "one way" signs pointing to the left
+    left_sign_count = len([obj for obj in sign_objects if obj['label'] == 'one way sign' and 'left' in obj['box']])
+    
+    # Return the count
+    return left_sign_count
+
+# Provide the path for the image with the "NO TAMERS" sign
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.jpg"
+
+# Call the function to get the count of "one way" signs pointing to the left
+left_sign_count = count_one_way_signs(image_path)
+
+# Print the count
+print("Number of 'one way' signs pointing to the left:", left_sign_count)
+print('<final_result>', final_result)
+
+Solution: 3

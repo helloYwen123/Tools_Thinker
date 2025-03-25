@@ -1,0 +1,47 @@
+------------- 24-14-49-05-561702 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 24
+    print(f"Blue collar detected: [{obj_data[1]}, {obj_data[2]]}")
+                                                                 ^
+SyntaxError: f-string: unmatched ']'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def calculate_blue_collars(image_path):
+    # Load the image using the object_detector_tool
+    obj = Object_Detector_Tool(image_path, 'baseball', threshold=0.35, model_size='tiny')
+    
+    # Iterate through the detected objects
+    blue_collars = []
+    for obj_data in obj['output_type']:
+        if obj_data[0] == 'base' and obj_data[3] == 'blue collar':
+            # Print the bounding box of the blue collar detected
+            print(f"Blue collar detected: [{obj_data[1]}, {obj_data[2]]}")
+            
+        # Add the bounding box of the detected object as padding
+        blue_collars.append({'label': 'blue collar', 'confidence score': obj_data[1], 'box': obj_data[1:-1],
+                             'saved_image_path': obj_data[-3]})
+
+    return blue_collars
+
+# Initialize the object_detector_tool with the image path
+object_detector_tool = Object_Detector_Tool('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_38_image_1.jpg', 'baseball', threshold=0.35, model_size='tiny')
+
+# Calculate the blue collar found in the image
+blue_collars = calculate_blue_collars('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_38_image_1.jpg')
+
+print("Number of blue collars found:", len(blue_collars))
+print('<final_result>', final_result)
+
+Solution: 1

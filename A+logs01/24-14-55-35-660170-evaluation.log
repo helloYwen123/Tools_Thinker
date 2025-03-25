@@ -1,0 +1,83 @@
+------------- 24-14-55-35-660170 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 70, in <module>
+  File "<string>", line 19, in identify_banners
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/PIL/Image.py", line 3465, in open
+    fp = builtins.open(filename, "rb")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/stud/Wxie/Counts/val/images/val_Counting_86_image_1.jpg'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def identify_banners(image_path, labels=("Lunch & Dinner", "Monday thru Saturday") ,padding=20):
+    output = []
+    bounding_boxes = []
+    # Load the image
+    img = image = Image.open(image_path)
+    
+    # Uncomment the following lines to enable detection using the Object_Detector_Tool
+    # For training purposes, we will use the default empty padding and base model.
+    # detection_result = tool.execute(image=image, labels=labels, threshold=0.35, model_size="tiny", padding=20)
+    # print(detection_result)
+
+    # Convert the image to an array of pixels
+    img_array = np.array(img)
+    
+    # Define the list of image paths
+    image_paths = [f"val_Counting_86_image_{i}.jpg" for i in range(1)]
+    
+    # Loop through the image paths and apply the Detection Tool to each path
+    for i, image_path in enumerate(image_paths):
+        detection_result = tool.execute(image=image_path, labels=labels)
+        if "bbox" in detection_result[0]:
+            bounding_boxes.append(detection_result[0]["bbox"])
+
+    # Iterate through the bounding boxes and find the left and right columns of the image where the banners are located
+    banner_columns = []
+    image_width, image_height, _ = img_array.shape
+    offset_x = max([box[2] for box in bounding_boxes]) + 20 # Adding the padding
+    all_columns = ["left", "right"]
+    
+    for col in all_columns:
+        start = max([bbox[0] - offset_x for bbox in bounding_boxes if col == "left"])
+        end = min([bbox[2] + offset_x for bbox in bounding_boxes if col == "right"])
+        banner_column_length = end - start + 1
+        banner_columns.append(banner_column_length)
+    
+    # Calculate the total number of banners across all columns
+    total_banners = sum(banner_columns)
+    
+    # Draw the banner columns
+    banner_height = 15
+    banner_width = 50
+    
+    for i, image_path in enumerate(image_paths):
+        img = img.copy()
+        banner_width = max(banner_width, banner_columns[i])
+        banner_height += 2  # Add a gap to avoid overlapping the banner and the edges
+        banner = Image.new('RGB', (banner_width, banner_height))
+        banner.paste(banner_column, (start, i*banner_height)) # Draw banner column at x=y
+        banner.alpha_channel = True
+        img.paste(banner, (start, i*banner_height), banner)  # Paste the banner inside the image
+        output.append({"image_path": image_path, "bbox": int(banner_column[0] / banner_width) * banner_column[0],})
+    
+    return output
+
+# Check with the provided data points
+output_str = " ".join([f"Found {y} banner(s) at x={x} for image {i}" for i, output in enumerate(identify_banners("/home/stud/Wxie/Counts/val/images/val_Counting_86_image_1.jpg", labels=("Lunch & Dinner", "Monday thru Saturday")))])
+print(output_str)
+print('<final_result>', final_result)
+
+Solution: 6

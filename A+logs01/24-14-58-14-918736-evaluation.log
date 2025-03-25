@@ -1,0 +1,51 @@
+------------- 24-14-58-14-918736 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_blue_towels(image_path):
+    # Create an empty list to store the detected blue towels
+    blue_towels = []
+
+    # Initialize the object detector model
+    detector = ObjectDetector_Tool()
+
+    # Load the image
+    image = Image.open(image_path).convert('RGB')
+
+    # Detect blue objects in the image
+    detected_objects = detector.get_objects(image)
+
+    # Iterate through the detected objects and count the blue towels
+    for object in detected_objects:
+        if 'base' in object['label']:
+            for color in ['red', 'blue']:
+                if color in object["label"]:
+                    if "towel" in object["label"]:
+                        if "blue" in object["label"]:
+                            blue_towels.append(object)
+
+    return len(blue_towels)
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_50_image_1.jpg"
+final_result = count_blue_towels(image_path)
+print(f"Number of blue towels: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 1

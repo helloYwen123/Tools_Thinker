@@ -1,0 +1,57 @@
+------------- 24-13-09-26-833601 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 46, in <module>
+  File "<string>", line 17, in count_stopped_trains
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_stopped_trains(image_path):
+    # Import the object detector tool
+    from object_detector_tool import ObjectDetectorTool
+
+    # Load the detection model
+    detector = ObjectDetectorTool()
+
+    # Prepare the image for detection
+    image = detector.prepare_image(image_path)
+
+    # Detect the train
+    obj_info = detector.detect_objects(image(image_path))
+
+    # Count the trains
+    num_trains = 0
+    for obj_info_obj in obj_info:
+        obj_info_confidence = obj_info_obj['confidence score']
+        obj_info_label = obj_info_obj['label']
+        if obj_info_label == 'train':
+            num_trains += 1
+
+        # Check if the train is stopped
+        if obj_info_obj['bbox'][0] > 25 and obj_info_obj['bbox'][3] > 125:
+            num_trains += 1
+
+    return num_trains
+
+# The image path of the station
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_98_image_1.jpg"
+
+# Call the function to count the trains
+num_stopped_trains = count_stopped_trains(image_path)
+
+num_stopped_trains
+print('<final_result>', final_result)
+
+Solution: 0

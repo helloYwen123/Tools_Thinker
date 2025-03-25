@@ -1,0 +1,64 @@
+------------- 24-14-15-21-074434 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.patches as mpatches
+import pandas as pd
+
+# Load the image
+image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_83_image_1.jpg'
+
+# Use the object detector to detect objects in the image
+demodict = tool.execute(image=image, labels=["car", "person"], threshold=0.5, model_size="base", padding=20)
+
+# Convert the detections into a dataframe
+df_demos = pd.DataFrame(demodict[0], columns=["label", "confidence score", "box", "saved_image_path"])
+
+# Load an image of a person
+person_image = 'person_demonstrator'
+
+# Use regular expressions to search for the person's bounding box in the image
+bbox_pattern = r'person_\d+'
+matches = (df_demos["bbox"] == bbox_pattern).all(axis=1)
+
+# Filter the detections to only include those that have at least one bounding box match
+df_demos = df_demos[matches & df_demos["label"] == "person"]
+
+# Convert the detections back into a dictionary
+demos_dict = {k: demodict[0][v] for k, v in df_demos.to_dict('records').items()}
+
+# Extract the bounding box coordinates from the person demo
+bbox = demos_dict['bbox'][0]
+
+# Calculate the area of the area occupied by the person
+person_area = box_area(bbox)
+
+# Plot the detected person
+fig, ax = plt.subplots()
+ax.imshow(person_image)
+ax.add_patch(mpatches.Rectangle((bbox[0],bbox[1]),bbox[2]-bbox[0],bbox[3]-bbox[1], fill=False))  
+plt.show()
+
+# Compute the percentage of the area occupied by the person in the image
+print("The percentage of the area occupied by the person is:", person_area / person_image.shape[0] * 100)
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,42 @@
+------------- 24-12-55-49-363875 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool as ogtool
+
+# Read the image
+img_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_115_image_1.jpg'
+img_data = ogtool.read_image(img_path)
+
+# Detect objects and extract bounding boxes
+labels = detect_objects(img_data)
+bbox_list = []
+for obj in labels:
+    if obj['label'] == 'bird':
+        bbox_list.append(obj['bbox'])
+
+# Find the bounding boxes of birds facing the right of the frame
+right_bboxes = [bbox for bbox in bbox_list if bbox[2] > bbox_list[0][2]]
+
+# Count the number of birds facing the right of the frame
+num_birds_right = len(right_bboxes)
+final_result = int(num_birds_right)
+print("How many birds are facing the right of the frame? ", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

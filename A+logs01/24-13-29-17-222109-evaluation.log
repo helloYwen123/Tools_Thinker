@@ -1,0 +1,54 @@
+------------- 24-13-29-17-222109 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Load the image and define the labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_78_image_1.jpg"
+labels = ["钟楼", "喷泉"]
+
+# Set the threshold and model size
+threshold = 0.35
+model_size = "tiny"
+
+# Initialize the detector
+detector = Object_Detector_Tool(image_path, labels, threshold, model_size)
+
+# Detect the objects
+objects = detector.execute()
+
+# Collect the path of the objects
+paths = [{"label": obj["label"], "confidence score": obj["confidence score"], "box": obj["bbox"], "saved image path": obj["saved image path"]} for obj in objects]
+
+# Extract the bounding box coordinates of the objects
+bbox_coords = [obj["box"] for obj in objects]
+
+# Collect the bounding box coordinates
+bbox_coords = [[bbox[0], bbox[1], bbox[2]] for bbox in bbox_coords] 
+
+# Plot the bounding box and center points of the objects 
+cv2.polylines(original_image, [bbox for obj in objects], color=0, thickness=2, lineType=8)
+cv2.putText(original_image, "People are climbing on the wall.", (bbox[0][0]+10, bbox[0][1]+10), cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 0, 0), 2)
+
+# Display the image with bounding box lines and centers
+# Add the actual path or image path to the label or object dictionary. In this example, we are just providing a dummy path. Replace it with your actual path.
+print(paths)
+print('<final_result>', final_result)
+
+Solution: 0

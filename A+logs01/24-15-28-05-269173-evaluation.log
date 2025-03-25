@@ -1,0 +1,48 @@
+------------- 24-15-28-05-269173 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 16, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import numpy as np
+from object_detector_tool import *
+
+# Load image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_52_image_1.jpg'
+image_data = np.array(Image.open(image_path)).astype('float32')
+
+# Run model
+model_version = 'base'
+threshold = 0.3
+padding = 20
+
+# Define labels
+labels = ['baseball', 'basket']
+
+# Process image
+res = run(model=image_data, labels=labels, threshold=threshold, model_version=model_version, padding=padding)
+
+# Filter detected objects
+filtered_objects = [obj for obj in res if obj['label'] == 'baseball']
+
+# Count objects
+num_baseball_bikes = len(filtered_objects)
+
+final_result = {'num_baseball_bikes': num_baseball_bikes}
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

@@ -1,0 +1,41 @@
+------------- 24-14-32-47-728135 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_81_image_1.jpg"
+
+labels = ["red_shirt"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+execution = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+# Detect and visualize objects
+for detected_obj in execution[0]:
+    bbox = (int(detected_obj["bbox"][0]), int(detected_obj["bbox"][1]), int(detected_obj["bbox"][0]+detected_obj["bbox"][2]), int(detected_obj["bbox"][1]+detected_obj["bbox"][3]))
+    box = f"{bbox[0]}x{bbox[1]}x{bbox[0]+bbox[2]}x{bbox[1]+bbox[3]}"
+    cv2.rectangle(image=image, pt1=(bbox[3],bbox[1]), pt2=(bbox[3]+10,bbox[1]+10), color=(0,255,0), thickness=2)
+
+# Display the image with detected objects
+imshow(image)
+print('<final_result>', final_result)
+
+Solution: 2

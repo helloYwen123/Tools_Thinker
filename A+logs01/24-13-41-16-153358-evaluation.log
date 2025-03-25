@@ -1,0 +1,37 @@
+------------- 24-13-41-16-153358 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 30, in <module>
+NameError: name 'final_result' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def get_train_wheels():
+    import numpy as np
+
+    # Read the image
+    image = np.load('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg')
+
+    # Detect and save the wheels
+    wheel_detection = tool.execute(image=image, labels=["wheel"])
+    wheel_positions = np.array([box for box in wheel_detection if box['label'].lower() == 'wheel'])[...]
+    wheel_positions[:, 3].astype(np.int16)
+
+    # Get the count of wheels
+    final_result = np.countnonzero(np.bitwise_and(~np.isnan(image), False)[wheel_positions[:, 1], wheel_positions[:, 2]])
+
+    return wheel_positions.shape[1] - 1, wheel_detection[wheel_positions[:, 1], wheel_positions[:, 2]]
+print('<final_result>', final_result)
+
+Solution: 3

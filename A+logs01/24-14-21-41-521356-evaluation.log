@@ -1,0 +1,58 @@
+------------- 24-14-21-41-521356 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Load the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_36_image_1.jpg"
+
+# Define labels if needed
+labels = ["baseball", "basket"]
+
+# Detect the objects and get their paths
+execution = tool.execute(image=image_path, labels=labels, threshold=0.35, model_size="tiny")
+
+# Get the bounding boxes and paths of detected objects
+boxes = []
+for idx, obj_dict in enumerate(execution):
+    box = obj_dict['box']
+    boxes.append(box)
+
+# Calculate the total number of wooden beams on top of the person
+total_boxes = len(boxes)
+total_beams = 0
+
+# Convert the boxes into horizontal coordinates for easier inspection
+for box in boxes:
+    x1, y1, x2, y2 = [int(x) for x in box]
+    x3 = x1
+
+    # Check if the coordinates of the bounding boxes fall within the bounding box of the person
+    for i in range(len(labels)):
+        # Calculate the average position of every label across the image
+        if sum([obj_dict['bbox'][i][0] for obj_dict in execution]) >= x1 and sum([obj_dict['bbox'][i][1] for obj_dict in execution]) <= x2:
+            total_beams += 1
+            break
+
+# Print the result
+final_result = total_beams
+print(f"There are {total_beams} wooden beams on top of the person.")
+print('<final_result>', final_result)
+
+Solution: 5

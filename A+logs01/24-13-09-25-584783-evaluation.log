@@ -1,0 +1,67 @@
+------------- 24-13-09-25-584783 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 29
+    if "basket" in detected_objects:
+                                    ^
+IndentationError: unindent does not match any outer indentation level
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def __init__(self):
+    self.train(model_name="base", limit=1024)
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_45_image_1.jpg"
+labels = []
+threshold = 0.2
+padding = 0
+output = []
+object_detection = Object_Detector_Tool()
+results = object_detection.execute(image=image_path.split('/')[-1], labels=labels, threshold=threshold, model_size="base", padding=padding)
+for result in results:
+    detected_objects, boxes, confidence_scores = result["output"]
+    if "baseball" in detected_objects:
+        ball_detector_label = "baseball"
+      # Detect baseball
+  if "basket" in detected_objects:
+    basketball_detector_label = "basket"
+  if "car" in detected_objects:
+    car_detector_label = "car"
+  if "person" in detected_objects:
+    person_detector_label = "person"
+    objects = [{"label": label, "confidence_score": confidence_scores, "box": boxes} for label in detected_objects]  # Add car and person labels to objects []
+    output.append(objects)
+
+ball_detector = object_detector.detect_objects(image_path, ball_detector_label)
+basket_detector = object_detector.detect_objects(image_path, basketball_detector_label)
+car_detector = object_detector.detect_objects(image_path, car_detector_label)
+person_detector = object_detector.detect_objects(image_path, person_detector_label)
+
+ball_detector_output = [{"label": label, "confidence_score": confidence, "box": box} for label, confidence, box in ball_detector]  # Add baseball detected objects
+basket_detector_output = [{"label": label, "confidence_score": confidence, "box": box} for _, confidence, box in basket_detector]  # Add basketball detected objects
+car_detector_output = [{"label": label, "confidence_score": confidence, "box": box} for _, _, box in car_detector]  # Add car detected objects
+person_detector_output = [{"label": label, "confidence_score": confidence, "box": box} for _, _, box in person_detector]  # Add person detected objects
+
+ball_detector_output.extend(basket_detector_output)
+ball_detector_output.extend(car_detector_output)
+ball_detector_output.extend(person_detector_output)
+
+final_result = {
+    "baseball": ball_detector_output,
+    "basketball": basketball_detector_output,
+    "car": car_detector_output,
+    "person": person_detector_output
+}
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

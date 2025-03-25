@@ -1,0 +1,49 @@
+------------- 24-13-22-46-760417 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import Detection_Tool
+
+def count_diamonders(players):
+    detected_objects = Detection_Tool().execute(image="val_Counting_7_image_1.jpg", 
+                                                 labels=["baseball"], 
+                                                 threshold=0.35)
+
+    for obj in detected_objects:
+        if "baseball" in obj["label"]:
+            for obj_per_group in obj["box"]:
+                if "ClevelandIndians" in obj_per_group["label"]:
+                    player1_box = obj_per_group
+                    break
+
+    for obj in detected_objects:
+        if "baseball" in obj["label"] and "ClevelandIndians" not in obj["label"]:
+            if "Catcher" in obj["label"]:
+                pass
+            elif "Firstbaseman" in obj["label"]:
+                pass
+            elif "Outfielder" in obj["label"]:
+                pass
+            
+    return len(obj["box"])
+
+final_result = count_diamonders()
+print("How many baseball players are looking towards the camera? ", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

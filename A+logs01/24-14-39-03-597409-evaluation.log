@@ -1,0 +1,44 @@
+------------- 24-14-39-03-597409 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg"
+
+# Detect objects
+execution = tool.execute(image=image_path, labels=["food"], threshold=0.8, model_size="tiny", padding=0)  # Remove padding parameter as it's not needed in this case
+
+# Get object labels
+obj_labels = [obj["label"] for obj in execution]
+
+# Check if 'food' is one of the detected labels
+if 'food' in obj_labels:
+    num_food = sum(1 for label in obj_labels if label == "food")
+    total_food = len(execution)  # Total number of detected objects in the image
+    prob_food = num_food / total_food  # Probability of detecting the food image among all detected objects
+else:
+    # Calculate the total number of detected objects considering "food" as an expected label
+    total_food = len(execution)
+    prob_food = 0
+
+final_result = {"number of food": num_food, "probability of food detection": prob_food}
+print('<final_result>', final_result)
+
+Solution: 0

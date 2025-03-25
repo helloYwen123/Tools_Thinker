@@ -1,0 +1,56 @@
+------------- 24-15-04-48-398623 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+# Read the image
+with open('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_14_image_1.jpg', 'rb') as f:
+    execution = tool.execute(image=f, labels=["baseball", "basket"])
+
+    # Check for baseball and basket
+    if len(execution['output_type']) > 2:
+        baseball = [box for box in execution['output_type'] if 'baseball' in box][0]
+        basket = [box for box in execution['output_type'] if 'basket' in box][0]
+
+        baseball_confidence = baseball['confidence score']
+        basket_confidence = basket['confidence score']
+
+        # Answer the question
+        if baseball_confidence > 0.35 and basket_confidence > 0.35:
+            motor_count = 2
+        else:
+            motor_count = 0
+    else:
+        print("No baseball or basket detected")
+
+# Check if there are motors near the horse
+four_wheels = [box for box in execution['output_type'] if 'motor' in box][0]
+four_wheels_confidence = four_wheels['confidence score']
+
+if four_wheels_confidence > 0.15:
+    motors_count = 1
+else:
+    motors_count = 0
+
+final_result = motor_count + motors_count
+
+print(f"There are {final_result} motors near the horse.")
+print('<final_result>', final_result)
+
+Solution: 0

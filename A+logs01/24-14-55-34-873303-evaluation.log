@@ -1,0 +1,58 @@
+------------- 24-14-55-34-873303 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+file_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg"
+
+label = ['GRAND', 'V', 'TERR', 'DR']
+
+threshold = 0.35
+model_size = 'tiny'
+
+padding = 20
+
+# Load the image
+image = Image.open(file_path)
+image = Image.fromarray(image.convert('RGB'))
+
+# Convert the image to grayscale
+gray_image = image.convert('L')
+
+# Detect objects in the image
+objects_info = detect_objects_on_image(image=gray_image, labels=label, threshold=threshold, model_size=model_size, padding=padding)
+
+# Filter out detections that are not within the expected bounding box coordinates
+filtered_objects = []
+
+for obj_info in objects_info:
+    box = obj_info['box']
+    if box[1] > 400 and box[3] < 550:
+        filtered_objects.append(obj_info)
+
+# Print the count of black-lettered signs
+black_lettered_count = 0
+for obj_info in filtered_objects:
+    if obj_info['label'] == "STOP" and obj_info['label'].isdigit():
+        black_lettered_count += 1
+
+black_lettered_count, final_result
+print('<final_result>', final_result)
+
+Solution: 2

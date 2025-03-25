@@ -1,0 +1,64 @@
+------------- 24-13-52-50-145598 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 33, in <module>
+KeyError: 'Object_Detector_Tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from sklearn.model_selection import KFold
+
+# Load the object detector tool
+object_detector = {
+    "tool_name": "Object_Detector_Tool",
+    "tool_description": "Detect objects in an image using the Grounding DINO model and save individual object images with empty padding.",
+    "tool_version": "1.0.0",
+    "input_types": {
+        "image": "str - The path to the image file.",
+        "labels": "list - A list of object labels to detect.",
+        "threshold": "float - The confidence threshold for detection (default: 0.35)",
+        "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
+        "padding": "int - The number of pixels to add as empty padding around detected objects (default: 20)."
+    },
+    "output_type": "list - A list of detected objects dictionaries with ('label';'confidence score';'box';'saved_image_path')keys and their corresponding values",
+    "user_metadata": {"limitation": "The model may not always detect objects accurately and its performance can vary depending on the input image and the associated labels. It typically struggles with detecting small objects, objects that are uncommon, or objects with limited or specific attributes. For improved accuracy or better detection in certain situations, consider using supplementary tools or image processing techniques to provide additional information for verification."}
+}
+
+object_detector_tool = object_detector["Object_Detector_Tool"]
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_32_image_1.jpg"
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+padding = 15
+
+# Define the variable to hold the detection result
+final_result = []
+
+# Read the image and run object detection
+execution = object_detector_tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+for bounding_box, confidence, label, saved_image_path in execution:
+    final_result.append({
+        'label': label,
+        'confidence': confidence,
+        'box': bounding_box,
+        'saved_image_path': saved_image_path[0]
+    })
+
+# Count the detected 'basket' objects in the detection result
+basket_count = sum([1 for _ in final_result if _["label"] == 'basket'])
+
+basket_count
+print('<final_result>', final_result)
+
+Solution: 0

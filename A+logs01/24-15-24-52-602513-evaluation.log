@@ -1,0 +1,74 @@
+------------- 24-15-24-52-602513 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Load the image
+image = load_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_66_image_1.jpg")
+
+# Detect the baseball as one of the labels
+baseball_detection_result = detect_object(image, "Baseball")
+
+# Check if the car was successfully detected
+car_detection_result = is_car_in_image(baseball_detection_result)
+
+if not car_detection_result:
+    # If no car was detected, check if the person
+    person_detection_result = detect_object(image, "Person") and len(person_detection_result) > 0
+    
+    if person_detection_result:
+        person_color = "Unknown"
+        # Count the gloves
+        gloves_count = 0
+    
+        # Check if 2 or more gloves are showing
+        if len(person_detection_result) >= 2:
+            gloves_count += 1
+            # Calculate the color of the third glove (from 0 to 2)
+            third_glove_color = person_detection_result[1].get("color") or person_detection_result[0]["color"] + "b"
+
+            # Check if the third glove is more than one color
+            if len(third_glove_color.split(",")) > 1:
+                gloves_count += 1
+
+        else:
+            gloves_count += 1
+
+    else:
+        # If there is no person detected, calculate the count considering that person detection is always present
+        gloves_count = 1
+        
+    # Convert the gloves count to an integer
+    gloves_count = int(gloves_count)
+
+else:
+    # If the car was not detected, count all objects with colors and check the count
+    gloves_count = 300
+    
+    # Convert the gloves count to an integer
+    gloves_count = int(gloves_count)
+
+# Define the answer variable
+final_result = {"number_of_gloves": gloves_count}
+
+# Print the result
+print("The number of gloves is:", final_result["number_of_gloves"])
+print('<final_result>', final_result)
+
+Solution: 1

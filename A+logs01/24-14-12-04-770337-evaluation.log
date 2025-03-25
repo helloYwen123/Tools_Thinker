@@ -1,0 +1,67 @@
+------------- 24-14-12-04-770337 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 47, in <module>
+  File "<string>", line 16, in count_sandwiches
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_sandwiches(image_path, labels, threshold=0.35, model_size="tiny", padding=20):
+    from object_detector_tool import detect_objects, save_objects
+
+    # Load the image
+    execution = detect_objects(image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    print("Objects detected:", execution)
+
+    # Example: count sandwiches
+    for label in labels:
+        if label == "sandwich":
+            try:  # Try to find objects
+                sandwich_boxes = execution[1]["boxes"]
+                num_sandwiches = sandwich_boxes[-1]["y1"] - sandwich_boxes[0]["y1"]
+                return num_sandwiches
+            except KeyError:
+                print("Could not find objects for label:", label)
+                return None
+
+# Function to count total plates with sandwich
+def count_total_sandwich_plates(image_path):
+    total_sandwiches = 0
+    for label in labels:
+        if label == "sandwich":
+            total_sandwiches += 1
+    return total_sandwiches
+
+# Load image with sandwich detections
+sandwich_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_60_image_1.jpg"
+labels = ["sandwich"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+total_sandwiches_detections = count_sandwiches(sandwich_image_path, labels)
+total_sandwiches_count = count_total_sandwich_plates(sandwich_image_path)
+
+# Check if the number of detected sandwich boxes was more than zero
+if total_sandwiches_detections is not None:
+    print(f"Count of detected sandwich boxes: {total_sandwiches_detections}")
+    print(f"Total plates with sandwiches: {total_sandwiches_count}")
+    final_result = {"count of detected sandwich boxes": total_sandwiches_detections, "total plates with sandwiches": total_sandwiches_count}
+else:
+    final_result = {"error": "No detected sandwhich boxes"}
+
+final_result
+print('<final_result>', final_result)
+
+Solution: 3

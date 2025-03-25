@@ -1,0 +1,47 @@
+------------- 24-14-52-47-489295 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+# Define input image and labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1.jpg"
+labels = ["baseball", "basket"]
+
+# Execute query
+result = tool.execute(image_path, labels=labels, threshold=0.35, model_size="tiny", padding=20)
+# Get confidence score for baseball detection
+confidence_score = result[0][1]
+# If confidence score is above 0.3, the baseball is detected in the image
+if confidence_score > 0.35:
+    baseball_count = result[0][2]
+else:
+    baseball_count = 0
+
+result = tool.execute(image_path, labels=["car", "person"], threshold=0.5, model_size="base", padding=15)
+# Get confidence score for person detection
+person_count = result[0][2]
+if person_count > 0:
+    final_result = baseball_count + person_count
+else:
+    final_result = baseball_count
+
+print("The number of telephone poles to the right of the truck is:", final_result)
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,54 @@
+------------- 24-14-02-55-862764 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 16, in <module>
+ModuleNotFoundError: No module named 'Object_Detector_Tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import os
+from Object_Detector_Tool import *
+
+# Set path to image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_13_image_1.jpg'
+
+# Load image and get bounding box
+object_detection = execute_image(image_path=image_path, labels=labels_list, threshold=0.35, model_size='tiny', padding=20)
+
+if object_detection:
+    # Get bounding box for objects
+    for bounding_box in object_detection['output']:
+        # Extract label
+        label = bounding_box['label'][0]
+        
+        # Calculate distance between detected object and camera
+        if label == 'baseball':
+            distance = calculate_distance_to_camera(distance=bounding_box['box'][2], camera_distance=2.5)
+            if distance < bounding_box['box'][3] / 2:
+                # Found baseball
+                print(f"Found baseball with bounding_box {bounding_box}, confidence score {label}")
+        elif label == 'basket':
+            distance = calculate_distance_to_camera(distance=bounding_box['box'][2], camera_distance=2.5)
+            if distance < bounding_box['box'][3] / 2:
+                # Found basketball
+                print(f"Found basketball with bounding_box {bounding_box}, confidence score {label}")
+        elif label == 'car':
+            print(f"Found car with bounding_box {bounding_box}, confidence score {label}")
+        else:
+            print(f"No object detected with bounding_box {bounding_box}, confidence score {label}")
+else:
+    print("Failed to detect any objects")
+print('<final_result>', final_result)
+
+Solution: 1

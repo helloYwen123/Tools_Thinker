@@ -1,0 +1,102 @@
+------------- 24-13-44-55-290791 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+# Define the input image file path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1.jpg"
+
+# Execute the object detection tool
+execution = execute(image=image_path, labels=["basket"], threshold=0.35)
+
+# Get the bounding box and confidence score for the basketball
+basket_bounding_box = execution[0]['bbox']
+basket_confidence = execution[0]['confidence score']
+
+# Calculate the distance to the nearest telephone pole
+nearest_phoneline = (0, 0)
+
+# Iterate through the detected objects and find the bounding box and confidence of the nearest telephone pole
+for i in range(len(execution)):
+    if execution[i]['label'] == "baseball":
+        baseball_bounding_box = execution[i]['bbox']
+        baseball_confidence = execution[i]['confidence score']
+    elif execution[i]['label'] == "basket":
+        basket_bounding_box = execution[i]['bbox']
+        basket_confidence = execution[i]['confidence score']
+
+    # Calculate the distance to the nearest telephone pole
+    telephone_pole_dists = []
+    for j in range(i):
+        distance = (basket_bounding_box[0] - execution[j]['bbox'][0])**2 + (basket_bounding_box[1] - execution[j]['bbox'][1])**2
+        telephone_pole_dists.append(distance)
+
+    nearest_phoneline = (-1, 0 if abs(distance[0]) <= abs(basket_confidence) else i)  # Return the index of the nearest telephone pole
+
+# Calculate the number of telephone poles to the right of the truck
+truck_dists = []
+truck = execution[9]  # Assuming the truck is at index 9
+for obj in execution:
+    if obj['bbox'][0] < truck['bbox'][0] and (obj['bbox'][0][0] - truck['bbox'][0][0] < 500 or obj['bbox'][0][1] - truck['bbox'][0][1] < 500):
+        truck_distance = (obj['bbox'][0][0] - truck['bbox'][0][0]) ** 2 + (obj['bbox'][0][1] - truck['bbox'][0][1] ** 2)
+    else:
+        truck_distance = 0
+
+    telephone_pole_distances = []
+    for obj in execution:
+        if abs(obj['bbox'][0][0] - truck['bbox'][0][0]) <= 500 and (obj['bbox'][0][1] - truck['bbox'][0][1]) ** 2 < 10000:
+            distance = (obj['bbox'][0][0] - truck['bbox'][0][0]) ** 2 + (obj['bbox'][0][1] - truck['bbox'][0][1] ** 2)
+            telephone_pole_distances.append(distance)
+
+    nearest_phoneline_distance = minTelephonePhonelineDistance = telephone_pole_distances.index(min(truck_distance, nearest_phoneline[1])) if truck_distance < nearest_phoneline[1] else nearest_phoneline[1]
+
+    telephone_pole_distances = execute(image=image_path, labels=["telephone", "pole"], threshold=0.9, padding=20)
+
+    for i in range(len(threshold)):
+        for j in range(len(execution[i])):
+            if execution[i][j]['label'] == "pole":
+                pole_bounding_box = execution[i][j]['bbox'] if j == i else Execution[i]['bbox']
+                
+                distance = ((pole_bounding_box[0] - execution[i][j]['bbox'][0])**2 + (pole_bounding_box[1] - execution[i][j]['bbox'][1])**2)**0.5
+
+                telephone_pole_distances.append(distance)
+
+    nearest_phoneline_distance = minTelephonePhonelineDistance
+    nearest_phoneline = nearest_phoneline_distance, nearest_phoneline[1]
+
+    if truck_distance < nearest_phoneline_distance and truck_distance < telephone_pole_distances[nearest_phoneline_distance[0]]:
+        telephone_pole_distance = telephone_pole_distances[nearest_phoneline_distance[0]]
+        closest_phoneline = execute(image=image_path, labels=["telephone", "pole"], threshold=0.9, padding=20)
+
+    if (
+        truck_distance < telephone_pole_distances[nearest_phoneline_distance[0]] if telephone_pole_distances[nearest_phoneline_distance[0]] > nearest_phoneline_distance else False
+    ):
+        closest_phoneline = execute(image=image_path, labels=["telephone", "pole"], threshold=0.9, padding=20)
+
+# Calculate the number of telephone poles to the right of the truck
+count_phonelines_parked = 0
+for phone_line, dist in closest_phoneline[1].items():
+    count_phonelines_parked += dist < 500
+
+
+# Print the result
+print("The number of telephone poles is:", count_phonelines_parked)
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,51 @@
+------------- 24-15-01-53-431097 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_doors(train_image_path):
+    train = Image.open(train_image_path)
+    objects = detect_objects_in_image(train, labels=["train"])
+
+    if "train" in objects:
+        train_label, conf = objects["train"]
+        train_mask = train_label.confidence_threshold <= conf
+    else:
+        train_label, conf = objects["wall"]
+        train_mask = train_label.confidence_threshold <= conf
+
+    train_mask = train_mask & object_labels.is_instance_object(masked_object)
+    train_mask[images["train"]]
+    train_mask = train_mask[images["train"]]
+    train_mask = apply_padding(train_mask)
+    train_mask = train_mask * (1000)  # Multiply by 1000 to adjust the ratio to fit the scale of the train
+
+    train_objects = np.unique(train_mask == 1, returns='on')
+    door_count = 0
+    for (object_key, object_labels) in door_labels.items():
+        for object in train_objects:
+            if object_label_in_object(object_key, object_labels, image, train_mask):
+                door_count += 10
+    return door_count
+
+final_result = count_doors("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_70_image_1.jpg")
+print("Final Result: ", final_result)
+print('<final_result>', final_result)
+
+Solution: 2

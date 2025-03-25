@@ -1,0 +1,44 @@
+------------- 24-12-08-01-506013 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 33, in <module>
+  File "<string>", line 16, in count_people_in_red_shirts
+ModuleNotFoundError: No module named 'imageobjct_detection'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_people_in_red_shirts(image_path, *args):
+    import imageobjct_detection as Idt
+    
+    image = Idt.load_image(image_path=image_path)
+    labels = ["red shirt"]
+    threshold = 0.35
+    model_size = "tiny"
+    padding = 20
+    
+    detection_results = Idt.detect_objects_ids(image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    
+    people_count = 0
+    for detected_objects in detection_results:
+        if "person" in detected_objects['labels']:
+            people_count += 1
+    
+    return people_count
+
+final_result = count_people_in_red_shirts("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_8_image_1.jpg")
+
+print(f"There is 1 person wearing a red shirt in this image. {final_result}")
+print('<final_result>', final_result)
+
+Solution: 1

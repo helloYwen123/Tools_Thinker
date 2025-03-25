@@ -1,0 +1,63 @@
+------------- 24-12-59-09-974756 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 33, in <module>
+NameError: name 'tool' is not defined. Did you mean: 'bool'?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from PIL import Image
+import numpy as np
+import pandas as pd
+
+# Load the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_119_image_1.jpg'
+image = np.array(Image.open(image_path))
+
+# Detect the objects
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+detections = []
+
+for label in labels:
+    # Detect the object
+    execution = tool.execute(image=image, labels=[label], threshold=threshold, model_size=model_size, padding=padding)
+    if execution:
+        boxes = [bbox["labels"] for bbox in execution[1]]
+        detections.extend([{'label': label, 'confidence score': box['score'], 'box': box['x_min'], 'saved_image_path': f'/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_COUNTING_119_image_{box["x_min"]}.jpg'} for box in boxes])
+
+# Convert to dataframe
+detections_df = pd.DataFrame(detections)
+
+# Count the objects
+num_balls = detections_df[detections_df['label'] == 'baseball'].shape[0]
+num_baskets = detections_df[detections_df['label'] == 'basket'].shape[0]
+
+# Determine percentage
+percentage = (num_balls / detections_df.shape[0]) * 100
+
+print(f"There are {num_balls} balls and {num_baskets} baskets in the image.")
+print(f"Percentage of balls is {percentage}%.")
+final_result = {
+    "num_balls": num_balls,
+    "num_baskets": num_baskets,
+    "percentage": percentage
+}
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

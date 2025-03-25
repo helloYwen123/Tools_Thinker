@@ -1,0 +1,67 @@
+------------- 24-14-32-48-444281 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 23, in <module>
+AttributeError: module 'PIL.Image' has no attribute 'ANTIALIAS'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from PIL import Image
+
+# Load the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_81_image_1.jpg'
+result = []
+
+# Open and resize the image
+image = Image.open(image_path).convert('RGB')
+image = image.resize((600, 600), Image.ANTIALIAS)
+
+# Get the current workspace
+import sys
+sys.path.append('/home/stud/dark/code/Similarity_Model')
+
+import similarity_model
+
+# Load the similarity model
+model = similarity_model.SimulationModel()
+
+# Detect baseball in the image
+label = ''
+threshold = 0.35
+model_size = 'tiny'
+padding = 20
+result = model.detect_model(image, labels=[label], threshold=threshold, model_size=model_size, padding=padding)
+
+# Get the detection path
+det_path = result[0]['saved_image_path']
+
+# Open and resize the detection path
+det_path = "/home/stud/dark/code/Similarity_Model/static_images/" + label + "_" + det_path
+det_img = Image.open(det_path).resize((600, 600), Image.ANTIALIAS)
+
+# Get the image coordinates
+bbox = result[0]['bbox']
+
+# Get the confidence score
+score = result[0]['confidence score']
+
+# Print the detection result
+print("Detected", label, "at", score, "bbox: {0[0]}:{0[1]}:{0[2]}:{0[3]}")
+
+result
+
+final_result = int(result[0]['label'])
+print('<final_result>', final_result)
+
+Solution: 2

@@ -1,0 +1,54 @@
+------------- 24-14-32-48-102211 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 44, in <module>
+  File "<string>", line 32, in count_red_shirts
+NameError: name 'threshold' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def detect_players(image_path, labels, threshold, model_size, padding=20):
+    import object_detector_tool as odt
+
+    # Load the object detector model
+    detector = odt.load_model('path_to_your_model')
+
+    # Define confidence threshold and optional model parameters
+    threshold = 0.35
+    model_size = 'tiny'
+    padding = 20
+
+    # Detect players in the image
+    detection_result = detector.detect_objects(image_path, labels=labels, model_size=model_size, threshold=threshold, padding=padding)
+
+    return detection_result
+
+def count_red_shirts(image_path):
+    detection_result = detect_players(image_path, labels=["red_shirt", "soccer_pant"], threshold=threshold, model_size=model_size, padding=padding)
+
+    # Define counters for red_shirt and soccer_pant
+    red_count = 0
+    for detected_label in detection_result:
+        if detected_label['label'] == 'red_shirt':
+            red_count += 1
+
+    return red_count
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_81_image_1.jpg"
+final_result = count_red_shirts(image_path)
+print("Number of players wearing red shirts:", final_result)
+print('<final_result>', final_result)
+
+Solution: 2

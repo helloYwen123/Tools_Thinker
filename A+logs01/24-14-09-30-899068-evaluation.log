@@ -1,0 +1,49 @@
+------------- 24-14-09-30-899068 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detection_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detection_tool import *
+
+def count_green_tiles(image):
+    # Load the image
+    image = Image.open(image)
+
+    # Define the bounding box dimensions and confidence threshold
+    bounding_boxes = {'green': (62, 31, 82, 104)}
+    confidence_threshold = 0.5
+
+    # Detect green tiles
+    for box in bounding_boxes:
+        if box[1] <= image.crop_coordinates['green'][1] and box[3] >= image.crop_coordinates['green'][
+            3]:
+            detection = detect_objects(image, {'bbox': box, 'confidence_threshold': confidence_threshold})
+            if 'green' in detection:
+                return box[0]
+
+    return -1
+
+# Path to the image
+image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg'
+
+# Call the function
+green_tile_count = count_green_tiles(image)
+
+print(f"The wall has {green_tile_count} green tiles.")
+print('<final_result>', final_result)
+
+Solution: 6

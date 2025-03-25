@@ -1,0 +1,45 @@
+------------- 24-13-41-18-167472 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import DetectTool
+
+def count_black_cases(image_path, labels=['baseball'], threshold=0.35, model_size="tiny", padding=20):
+    # Load model
+    model = DetectTool(model_size=model_size)
+
+    # Perform detection
+    detection_output = model.run(image=image_path, threshold=threshold, labels=['baseball'], padding=padding)
+
+    # Filter and count detection results
+    black_cases = []
+    for detection in detection_output:
+        if detection['label'] == 'baseball' and 'confidence score' in detection and detection['confidence score'] > 0.35:
+            black_cases.append(detection['object bounding box'])
+    return black_cases
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg"
+
+# Extract cases from the image path and return
+black_cases = count_black_cases(image_path)
+
+print(f"Number of black suitcases: {len(black_cases)}")
+print('<final_result>', final_result)
+
+Solution: 2

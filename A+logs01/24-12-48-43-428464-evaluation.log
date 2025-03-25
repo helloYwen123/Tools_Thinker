@@ -1,0 +1,62 @@
+------------- 24-12-48-43-428464 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+inputs = [
+    {"image": "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_112_image_1.jpg", "padding": 20, "model_size": "tiny"},
+    {"image": "val_Counting_112_image_1.jpg", "labels": ["baseball", "basket"], "threshold": 0.35}
+]
+
+def detect_all(objs):
+    for obj in objs:
+        label = obj[1]
+        objects = {}
+        objects[label] = {"bbox": [int(x) for x in obj[2]], "confidence": obj[3]}
+        return objects
+
+result = detect_all(inputs[0])
+result2 = detect_all(inputs[1])
+
+# count the bottles on the round table
+taps = [{"name": "tap1", "label": "bottle"}, {"name": "tap2", "label": "bottle"}, {"name": "tap3", "label": "bottle"}]
+
+found_bottles = [obj for obj in result.values() if obj.get("label", "none") == "bottle" and obj.get("bbox", [0, 0, 0, 0]) not in taps]
+bottle_count = 0
+for item in found_bottles:
+    bottle_count += int(item["bbox"][1]) + int(item["bbox"][3])
+
+bottle_count2 = 0
+for obj in result2:
+    if obj.get("label", "none") == "bottle" and obj.get("bbox", [0, 0, 0, 0]) not in taps:
+        bottle_count2 += int(obj["bbox"][1]) + int(obj["bbox"][3])
+
+result.extend(["bottles", bottle_count, bottle_count2])
+result2.extend(["bottles", bottle_count])
+
+result = sorted(result, key=lambda x: float(x[1]))
+result2 = sorted(result2, key=lambda x: float(x[1]))
+
+print(result)
+print(result2)
+print(bottle_count)
+print(bottle_count2)
+print('<final_result>', final_result)
+
+Solution: 2

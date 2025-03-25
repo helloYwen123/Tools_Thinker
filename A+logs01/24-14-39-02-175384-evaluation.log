@@ -1,0 +1,56 @@
+------------- 24-14-39-02-175384 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg"
+
+# Load the image
+img = Image.open(image_path)
+
+# Detect the base, person, and car objects, save with empty padding
+execution = tool.execute(image=img, labels=["baseball", "basket"], threshold=0.35, model_size="tiny", padding=20)
+
+# Get detected objects and their paths
+baseball_results = execution[0]
+basket_results = execution[1]
+
+# Check baseball and car in the same object?
+if baseball_results[0]["label"] == "baseball" and basket_results[0]["label"] == "baseball":
+    detected_objects = baseball_results + basketball_results
+else:
+    detected_objects = baseball_results + basketball_results
+
+# Get the total number of objects detected in the image
+total_detected_objects = len(detected_objects) + len(basketball_results)
+
+# Calculate the percentage of objects detected in the base category
+base_percentage = (len(baseball_results) + len(basketball_results)) / len(detected_objects) * 100
+
+# Print the total objects detected and the percentage of base objects
+final_result = f"Total objects detected: {total_detected_objects}\nPercentage of base objects: {round(base_percentage, 2)}%"
+
+# Define any additional information or output as needed
+additional_info = {"example: base baseball: 1, basket baseball: 1", "example: base basketball: 1, basket basketball: 1"}
+
+# Return the final result
+final_result
+print('<final_result>', final_result)
+
+Solution: 3

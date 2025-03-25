@@ -1,0 +1,61 @@
+------------- 24-14-58-27-898059 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 23, in <module>
+  File "<string>", line 20, in detect_obj
+  File "<string>", line 1
+    detector = Grounding DINO Tool
+                         ^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def detect_obj(img_path, labels, threshold, model_size, padding):
+    if model_size == "tiny":
+        detector = "Object_Detector_Tool"
+    else:
+        detector = "Grounding DINO Tool"
+    exec(f"detector = {detector}")
+    return detector.execute(image=img_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+result = detect_obj("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg", ["person"], 0.8, "base", 20)
+detected_persons = result[1]
+print(f"Detected 13 people in the image.")
+
+result = detect_obj("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_2.jpg", ["car"], 0.5, "tiny", 4)
+detected_cars = result[1]
+print(f"Detected 4 cars in the image.")
+
+result = detect_obj("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_3.jpg", ["person", "basketball"], 0.8, "tiny", 10)
+detected_bballers = result[1]
+print(f"Detected 14 basketballs in the image.")
+
+result = detect_obj("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_4.jpg", ["car"], 0.5, "base", 30)
+detected_cars = result[1]
+print(f"Detected 12 cars in the image.")
+
+result = detect_obj("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_5.jpg", ["person", "baseball"], 0.8, "tiny", 20)
+detected_bballers = result[1]
+print(f"Detected 15 baseballs in the image.")
+
+results = [len(detected_bballers), len(detected_cars), len(detected_persons)]
+final_result = sum(results)
+print(f"The number of people, cars, and basketballs detected in image images/val/Counting_75.jpg is {final_result}.")
+
+result = detect_obj("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_81_image_1.jpg", labels=["car"], threshold=0.8, model_size="tiny", padding=0)
+detected_car = result[1]
+print(f"The number of cars detected in image images/val/Counting_81.jpg is {len(detected_car)}.")
+print('<final_result>', final_result)
+
+Solution: 2

@@ -1,0 +1,44 @@
+------------- 24-13-38-13-730498 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_wearing_white_hats(image_path):
+    with open(image_path, 'rb') as image_file:
+        img = Image.open(image_file)
+
+    # Use Grounding DINO model to detect objects in the image
+    execution = detection(model='base', inputs=image_to_array(img))
+    box_results = [det['box'] for det in execution[0]]
+    labels = [det['label'] for det in execution[0]]
+    
+    # Initialize counters
+    white_nails = 0
+    black_nails = 0
+
+    for p in labels:
+        if p.startswith("<w--n->") or p.startswith("n--<"):
+            white_nails += 1
+        elif p.startswith("<w-g->"):
+            black_nails += 1
+
+    return white_nails, black_nails
+print('<final_result>', final_result)
+
+Solution: 4

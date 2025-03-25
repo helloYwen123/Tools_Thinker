@@ -1,0 +1,87 @@
+------------- 24-12-55-29-268853 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 37
+SyntaxError: 'return' outside function
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from IPython.display import Image
+
+# Load object_detector_tool for image and label detection
+import objects_detector_tool
+
+def detect_objects(image_path, labels, threshold, model_size='tiny', padding=20):
+    # Execute object detection on the provided image path
+    try:
+        objects_result = objects_detector_tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+        return objects_result
+    except:
+        return None
+
+# Define image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_87_image_1.jpg"
+
+# Detect objects
+objects_result = detect_objects(image_path, labels=["baseball", "basket"], threshold=0.35)
+
+# If object detection is successful, continue to step 4; otherwise, skip to step 5
+if objects_result is not None:
+    boxes = {label: [bbox[0], bbox[1], bbox[2], bbox[3]] for label, bbox in objects_result.items()}
+    return boxes
+else:
+    return None
+
+# If image path is not provided, skip to step 3
+if not image_path:
+    return None
+
+# If output_type is not 'list', ignore the next command and skip to the final_result
+if type(output_type) != list:
+    return None
+
+# If output_type is not 'image', skip to the final_result
+if type(output_type[0]) != str:
+    return None
+
+# Extract object detections from output_type
+detected_objects = [result[0] for result in output_type]
+
+# Initialize final_result with empty dictionary
+final_result = {}
+
+# Define empty object name key
+empty_name = '<empty>'
+# Assuming object detection result only contains 'baseball', 'basket'
+for label in detected_objects:
+    if label == 'baseball' or label == 'basket':
+        final_result[label] = {label: empty_name}
+        continue
+    try:
+        box = int(detected_objects[label][1])
+        # Calculate confidence score by comparing boxes with predicted confidence threshold of 0.35
+        confidence_score = detected_objects[label][3][box]
+        final_result[label] = {label: confidence_score}
+    except IndexError:
+        confidence_score = 0
+        final_result[label] = {label: confidence_score}
+final_result = {**final_result}
+
+# If final_result is not an empty dictionary, return the final result
+if final_result:
+    return final_result
+else:
+    return None
+print('<final_result>', final_result)
+
+Solution: 0

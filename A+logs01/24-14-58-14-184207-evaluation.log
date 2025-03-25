@@ -1,0 +1,68 @@
+------------- 24-14-58-14-184207 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_sign_with_face(sign):
+    signs_with_face = []
+    for x in sign["output_type"]:
+        if x in ["baseball", "basket", "person", "car"]:
+            if "box" in sign:
+                for y in sign["output_type"]:
+                    if y in ["box"]:
+                        if y in ["box"]:
+                            for z in sign["output_type"]:
+                                if z in ["box"]:
+                                    if "label" in sign:
+                                        count = sign["output_type"].index(z)
+                                        for i in range(count, count+20):
+                                            if sign["output_type"][i] in ["box"] and "label" in sign and sign["output_type"][i] == "bbox":
+                                                signs_with_face.append({"label": sign["output_type"][i], "confidence score": sign["output_type"][i]})
+            else:
+                if y in ["label"]:
+                    for z in sign["output_type"]:
+                        if z in ["box"] and sign["output_type"][z] == "bbox":
+                            signs_with_face.append({"label": sign["output_type"][z], "confidence score": sign["output_type"][z]})
+    return signs_with_face
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg"
+execute(image_path, labels=["face"], threshold=0.35, model_size="tiny", padding=20)
+face_signs = execute(image_path, labels=["face"], threshold=0.35, model_size="tiny", padding=20)
+faces_with_sign = execute(image_path, labels=["face"], threshold=0.35, model_size="tiny", padding=20)
+
+face_signs_in_img_path = [x for x in face_signs["output_type"] if x in ["box"] and "label" in face_signs and face_signs["output_type"][x] == "box"]
+face_signs_in_img_path = [x for x in face_signs_in_img_path if x in ["box"] and face_signs["output_type"][x] == "bbox"]
+faces_with_sign_in_img_path = [x for x in faces_with_sign["bbox"] if x in ["box"] and "label" in faces_with_sign and faces_with_sign["bbox"][x] == "bbox"]
+
+face_signs = []
+for x in face_signs_in_img_path:
+    for y in faces_with_sign_in_img_path:
+        if x == y:
+            break
+        if x in face_signs and y in faces_with_sign:
+            face_signs.append(y)
+
+face_sign_with_face = execute(image_path, labels=["face"], threshold=0.35, model_size="tiny", padding=20)
+faces_without_sign = [x["bbox"] for x in face_sign_with_face["bbox"] if "box" in x and not "label" in x and "box" in x and face_sign_with_face["bbox"][x["bbox"][0]] == "bbox"]
+
+final_result = {"count": len(face_sign_with_face["bbox"]) - len(faces_without_sign)}
+print(f"The number of signs with faces on them in the image {image_path} are {final_result}.")
+print('<final_result>', final_result)
+
+Solution: 2

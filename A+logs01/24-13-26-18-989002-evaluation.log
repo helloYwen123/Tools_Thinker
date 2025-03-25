@@ -1,0 +1,48 @@
+------------- 24-13-26-18-989002 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 33, in <module>
+NameError: name 'get_detected_objects' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_people_in_water(image_path):
+    import Object_Detector_Tool
+
+    def get_detected_objects(image_path, labels=["person"], threshold=0.2, model_size="tiny", padding=5):
+        detection_result = Object_Detector_Tool.execute(image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding).first()[
+            "bounding_boxes"]
+        num_people = sum(obj[1] for obj in detection_result)
+        return num_people
+
+    detected_objects = Object_Detector_Tool.execute(image_path, labels=["person"], threshold=0.2, model_size="base", padding=15)
+
+    if len(detected_objects) > 0:
+        print(f"Dected {len(detected_objects)} people.")
+        return detected_objects
+
+    else:
+        return None
+
+result = get_detected_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_82_image_1.jpg")
+if result:
+    final_result = len(result)
+    print(f"There are {final_result} people in the water.")
+else:
+    final_result = None
+
+print("Final result:", final_result)
+print('<final_result>', final_result)
+
+Solution: 4

@@ -1,0 +1,49 @@
+------------- 24-13-55-33-323880 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 36, in <module>
+  File "<string>", line 18, in count_toilets
+FileNotFoundError: [Errno 2] No such file or directory: '/user/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_2.jpg'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_toilets(annotated_path, is_objects):
+    output = []
+    # Load annotations
+    annotation_file = open(annotated_path, 'r')
+    lines = annotation_file.readlines()
+    for line in lines:
+        if line.startswith('bbox'):
+            box = list(map(float, line.replace('bbox:', '').split()))
+            output.append({'bbox': box, 'label': 'toilet'})
+    annotation_file.close()
+    
+    # Detect toilets
+    detection = tool.execute(image="{}/Counting_val_counting_20_image_2.jpg", labels=["toilet"], threshold=0.35)
+    for detection_dict in detection:
+        toilet_bbox = detection_dict['bbox']
+        toilet_label = 'toilet'
+        toilet_found = [bbox for bbox in output if bbox['bbox'] == toilet_bbox]
+        toilet_found.append({'bbox': toilet_bbox, 'label': toilet_label})
+    
+    return toilet_found
+
+final_result = count_toilets('/user/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_2.jpg', [])
+if final_result:
+    print(f"Found {len(final_result)} toilets.")
+else:
+    print("Fail to find toilets.")
+print('<final_result>', final_result)
+
+Solution: 6

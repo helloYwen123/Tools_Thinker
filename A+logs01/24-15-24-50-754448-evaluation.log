@@ -1,0 +1,65 @@
+------------- 24-15-24-50-754448 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import detection_tool
+
+# Image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_6_image_1.jpg"
+
+# Perform object detection
+execution = detection_tool.execute(image=image_path, labels=["nut"], threshold=0.5, model_size="tiny")
+
+# Display detected objects
+for output in execution:
+    if output["label"] == "nut":
+        print(f"Detected nut in the green bowl.")
+    else:
+        print(f"No detected nut in {output['box']}.")
+
+# Get original image path
+original_image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_6_image_1.jpg'
+
+# Save and display original image
+image = open(original_image_path, "r").read()
+imagenew = imgenew=imgenew.replace(original_image_path, 'image.jpg', '\n')
+
+# Execute detection tool using original path and save detected objects with original image as path
+execution = detection_tool.execute(image=image_new, labels=["nut"], threshold=0.5, model_size="tiny", padding=1)
+
+# Display detected objects
+for output in execution:
+    if output["label"] == "nut":
+        print(f"Detected nut in the original image.")
+    else:
+        print(f"No detected nut in {output['box']}.")
+
+# Calculate and finalize the number of nuts detected in the green bowl
+green_bowl_nuts = 0
+
+for output in execution:
+    if output["label"] == "nut" and output["box"][0][3] < output["box"][1][3] and output["box"][1][3] - output["box"][0][3] + 2 < 55:
+        green_bowl_nuts += 1
+
+# Calculate the final result
+final_result = green_bowl_nuts / 3 if len(execution) >= 3 else 0
+
+print(f"The number of big nuts in the green bowl is: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 3

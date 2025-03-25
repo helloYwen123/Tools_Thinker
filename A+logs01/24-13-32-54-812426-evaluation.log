@@ -1,0 +1,82 @@
+------------- 24-13-32-54-812426 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 73
+SyntaxError: 'return' outside function
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def calculate_objects(image_path):
+    # Load image
+    image = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2RGB)
+
+    # Detect objects
+    detection = object_detector(image=CV_BGR2RGB)
+
+    # Get bounding boxes of objects
+    boxes = [bbox for label, bbox in detection[1] if label == 'baseball']
+
+    return boxes
+
+# Load image
+image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_14_image_1.jpg'
+
+# Detect objects and get bounding boxes of baseball
+baseball_objects = calculate_objects(image)
+
+# Convert bounding boxes coordinates to integers
+baseball_box = [tuple(map(int, bb)) for BB, bb in baseball_objects]
+
+# Check if any 'baseball' objects exist
+if baseball_box:
+    distance = 500
+    x, y, width, height = baseball_box[0]
+    if (x + width - distance) > image.shape[1]:
+        # Objects are outside of the image
+        baseball_box = None
+    else:
+        # Objects are inside of the image
+        x, y, width, height = bounding_BOX2center_world(image, tuple(map(int, baseball_box)))
+
+        # Measure distance to center of horse
+        center_x, center_y = image.shape[1] / 2, image.shape[0] / 2
+        distance = (center_x - x) ** 2 + (center_y - y) ** 2
+
+        # Sort objects based on their distance to center of horse
+        objects = sorted(object.items, key=lambda x: x[1], reverse=True)
+
+        # Find top 5 objects closest to center of horse
+        if base_ball_top_objects <= len(objects):
+            top_objects = objects[:base_ball_top_objects]
+            top_objects.reverse()
+        elif objects:
+            top_objects = objects
+        else:
+            top_objects = ["Nothing found"]
+
+        # Extract bounding box information of top 5 objects
+        top_object_boxes = [bounding_BOX2box_world(image, tuple(map(int, bb))) for bb in top_objects]
+
+        # Convert bounding box information to x, y, width, height values
+        top_objects = [(bbox[2] - bbox[0]), (bbox[3] - bbox[1]), bbox[2] - bbox[0], bbox[3] - bbox[1]]
+        top_objects = sorted(top_objects, key=lambda x: x[0])
+
+        # Return top 5 objects' bounding box information
+        return top_objects
+else:
+    return None
+print('<final_result>', final_result)
+
+Solution: 0

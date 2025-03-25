@@ -1,0 +1,39 @@
+------------- 24-15-30-53-272195 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *  # Import the Object_Detector_Tool
+
+def count_ways(image_path):
+    # Load the image
+    image = Image.open(image_path)
+    
+    # Detect traffic signs
+    execution = tool.execute(image=image, labels=["one way"], threshold=0.9, model_size="tiny")
+    
+    # Convert the detected objects to lists and flatten the list
+    objects_list = [obj['label'] for obj in filter(lambda x: x['label'] == 'one way', *[exec for exec in execution])]
+    
+    # Return the count of "one way" signs pointing to the left
+    return len([obj for obj in objects_list if obj == 'left'])
+
+final_result = count_ways("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.jpg")
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 3

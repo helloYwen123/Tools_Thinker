@@ -1,0 +1,50 @@
+------------- 24-15-02-04-081330 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 40, in <module>
+  File "<string>", line 18, in count_sign_arrows
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_sign_arrows(image_path):
+    import os
+    import numpy as np
+    from object_detector_tool import Object_Detector_Tool
+
+    # Load the image with default empty padding
+    detector_tool = Object_Detector_Tool()
+    labels = ["merchand Marines Veterans Plaza", "Greenwich", "One Way", "Greenwich"]
+    threshold = 0.35
+    model_size = "tiny"
+    padding = 20
+
+    execution = detector_tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    objects = execution[0]
+
+    # Count the number of signs with arrows
+    sign_arrows_count = 0
+    for obj in objects:
+        if 'sign' in obj['label'] and 'arrows' in obj:
+            sign_arrows_count += 1
+
+    return sign_arrows_count
+
+# Check the function with the provided image path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_105_image_1.jpg'
+final_result = count_sign_arrows(image_path)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

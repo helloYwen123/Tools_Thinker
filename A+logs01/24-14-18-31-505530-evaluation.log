@@ -1,0 +1,60 @@
+------------- 24-14-18-31-505530 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 16, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+# Load the image and pre-process it
+from object_detector_tool import execute
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg'
+labels = ['base', 'ball', 'basket', 'person', 'vowel']  # Replace with the correct labels
+threshold = 0.4  # 0.35 is the default threshold
+model_size = 'base'  # 'tiny' for tiny 32x32 image, 'base' for base 48x48 image
+padding = 20  # The number of pixels to add as empty padding
+
+# Run object detection
+execution = execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+# Get the prediction and output paths for the detection result
+prediction_paths = [obj['bbox'][0] for obj in execution]
+output_paths = [obj['bbox'][1] for obj in execution]
+
+# Count the common vowels
+common_vowels = 0
+for prediction_path in prediction_paths:
+    detected_img_path = output_paths[0]
+    with open(detected_img_path, 'rb') as f:
+        img = Image.open(f)
+        img = img.convert('L')  # Convert to grayscale and convert to 8-bit unsigned int
+    # Load the predicted character
+    with open(prediction_path, 'rb') as p:
+        p = p.read()
+    # Apply the DINO model inference.
+    with open('dino_model/inferences/model.pbtxt') as p:
+        v = tf.image.decode_png(p.read(), channels=1)
+        v = tf.expand_dims(v, 0)
+        v = tf.image.convert_image_dtype(v, dtype=tf.float32)
+    result = tf.image.encode_png(img, num_channels=1)
+    inference_string = result.numpy().decode('utf-8')
+    common_vowels += next(iter(inference_string)).lower() in 'aeiou'  # Check if it's a vowel
+
+# Round the result to 2 decimal places
+final_result = round(common_vowels, 2)
+print('The result is {:.2f}'.format(final_result))
+print('<final_result>', final_result)
+
+Solution: 4

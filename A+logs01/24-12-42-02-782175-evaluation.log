@@ -1,0 +1,44 @@
+------------- 24-12-42-02-782175 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_dectector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_dectector_tool import tool_name
+
+def detect_objects(image, labels, threshold, model_size, padding):
+    detection = tool.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    if len(detection) > 0:
+        detected_objects = []
+        for item in detection:
+            detected_objects.append([item['label'], item['confidence'] / 100, item['box'], item['saved_image_path'] + ' ' + item['label']])
+        return detected_objects
+    else:
+        return []
+
+def count_people(image):
+    persons_detected = detect_objects(image, ['person'], 0.5, 'base', 20)
+    people_count = 0
+    for object in persons_detected:
+        if "person" in object[1]:
+            people_count += 1
+    return people_count
+
+final_result = count_people('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_4_image_1.jpg')
+print("There are", final_result, "people in purple.")
+print('<final_result>', final_result)
+
+Solution: 1

@@ -1,0 +1,99 @@
+------------- 24-14-17-57-777495 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 90
+    finally:
+    ^^^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from objectDetector_tool import *
+
+# Preprocess image by removing sky and converting it to grey with OpenCV
+def preprocess_image(image_path):
+    return preprocess_image(image_path)
+
+# Preprocess image by removing sky and converting it to grey with OpenCV
+def preprocess_image(image_path):
+    print(f"Parsing {image_path}...")
+    image = Image.open(image_path)
+    image = image.convert("L")
+    
+    print("Detected image details:")
+    info = get_image_info(image_path)
+    image_name, image_width, image_height, resolution = info
+    
+    return image_name, image_width, image_height, resolution
+
+# Preprocess image using DINO model.
+# The tool uses ImageBench, which creates an image with 20-pixel margins added around the bounding boxes. If the model is not able to detect objects, then the model is not able to provide bounding boxes.
+def preprocess_image(image_path):
+    image = Image.open(image_path)
+    prediction_result = detection(image_path, "object Detection", labels=["baseball", "basket"])
+    bboxes = prediction_result['output_type']
+    print(f"Detected {len(bboxes)} objects.")
+    if "baseball" in bboxes:
+        print("Found baseball.")
+    if "basket" in bboxes:
+        print("Found basket.")
+        
+    bounding_boxes = []
+    for object in bboxes:
+        
+        # Calculate bounding box
+        x1, y1, x2, y2 = bbox_rect_to_int(object)
+        x3 = x2 + prediction_result['threshold'] / 2
+
+        bounding_boxes.append([x1, y1, x3, y2])
+
+    return bounding_boxes
+
+# Load image
+image_path = "path/to/image.png"
+
+# Preprocess image
+name, width, height, resolution = preprocess_image(image_path)
+
+# Detect objects with threshold of 0.35
+label = detection(image_path, "object Detection", labels=["baseball", "basket"],threshold=0.35)
+
+# Display bounding box
+from matplotlib import pyplot as plt
+import numpy as np
+
+plt.figure(figsize=(8,8))
+for box in bounding_boxes:
+    plt.plot(box[0:2], box[2:4], "orange", linewidth=2)
+    plt.plot(box[0:2], box[2:4], "g", linewidth=1)
+plt.xlim([15,40])
+plt.ylim([5,20])
+plt.show()
+
+# Get object labels for bbox and print
+prediction_result = detection(image_path, "object Detection", labels=["baseball", "basket"], threshold=0.35)
+
+if "basket" in label:
+    print("Basket with confidence score  >  0.35.")
+if "baseball" in label:
+
+    # Use a threshold of 0.5 to filter out uncommon detections of objects
+    if detection(image_path, "object Detection", labels=["baseball", "basket"], threshold=0.5, model_size="base"):
+        print("Baseball with confidence score  >  0.5.")
+    print("Basketball with confidence score  >  0.5.")
+else:
+    print("Failing to detect any objects.")
+finally:
+print('<final_result>', final_result)
+
+Solution: 1

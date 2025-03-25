@@ -1,0 +1,54 @@
+------------- 24-13-12-25-395152 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 42
+    "label" : "Yellow Bus"} + obj_dets,}} 
+                                       ^
+SyntaxError: closing parenthesis '}' does not match opening parenthesis '[' on line 41
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_yellow_buses(image):
+    image = image.replace("#", "*")
+    image = image.expand((20, -20), image.shape)
+    image = image[:: -1].reshape((-1, 2))
+    image = label_image(img=image, labels=["Yellow Bus"], threshold=0.35)
+    return len(image["label"][0][1])
+
+def label_image(img, labels, threshold):
+    if labels is None:
+        return {}
+    else:
+        obj_dets = [det for det in img["output"] if det["class_id"] in labels]
+        for obj in obj_dets:
+            if obj["score"] < threshold:
+                continue
+            elif "location" in obj:
+                y1 = obj["location"][1][0]
+                x2 = obj["location"][0][1]
+                img["output"].remove(obj)
+        empty_obj = {"bbox" : [x2, y1, 0, 0], "name" : "Blank", "score" : 1e30, "label" : "Blank"}
+        new_obj = {"bbox" : [x2, y1, 0, 0], "name" : "Yellow Bus", "score" : 1e-25, "label" : "Yellow Bus", "location" : [x2, y1]}
+        if labels == "Yellow Bus":
+            return {"output" : [new_obj]}
+        else:
+            return {"output" : [{"bbox" : [round((0.5 + round(new_obj["bbox"][1])), round((0.285 + -0.035)), -0.075, 0.075)], "score" : -1000, # Yellow Bus is on the edge of the image
+                               "label" : "Yellow Bus"} + obj_dets,}} 
+image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_26_image_1.jpg"
+final_result = count_yellow_buses(image)
+print(f"The number of yellow buses is {final_result}")
+print('<final_result>', final_result)
+
+Solution: 0

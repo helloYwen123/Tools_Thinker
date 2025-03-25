@@ -1,0 +1,44 @@
+------------- 24-14-02-55-555994 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_people_without_hats(image_path):
+    # Load the model and detection labels
+    model = "tiny"
+    labels = ["person"]
+
+    image = execute(image_path, labels=labels, model_size=model, threshold=0.35)
+
+    # Find all objects in the image
+    detected_objects = image[0]["object_detection"][0]["detected_objects"]
+
+    # Count the number of people without hats
+    count = 0
+    for obj in detected_objects:
+        if "person" in obj["category"] and not obj["category"] == "baseball":
+            count += 1
+
+    return count
+
+final_result = count_people_without_hats("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg")
+print("There are", final_result, "people without hats.")
+print('<final_result>', final_result)
+
+Solution: 0

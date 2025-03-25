@@ -1,0 +1,49 @@
+------------- 24-13-29-03-062348 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Function to detect faces and other objects in the image using the Grounding DINO model.
+def detectFaces(image_path, labels=['baseball', 'basket']):
+    """
+    Use the Grounding DINO model to detect baseball and basket objects in an image.
+    Add empty padding around detected objects, save them with empty padding, and return their paths.
+    """
+    # Use the Grounding DINO model to detect objects in the image.
+    execution = tool.execute(image_path, labels, threshold, model_size)
+    
+    # If there are objects detected, return their paths.
+    if "baseball" in execution["output_type"]:
+        return execution["output_type"]["baseball"]
+    elif "basket" in execution["output_type"]:
+        return execution["output_type"]["basket"]
+    else:
+        return
+
+# Use the Grounding DINO model to detect faces and other objects in the image.
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+final_result = detectFaces(image_path, labels, threshold, model_size, padding)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

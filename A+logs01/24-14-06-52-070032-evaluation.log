@@ -1,0 +1,56 @@
+------------- 24-14-06-52-070032 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def how_many_skiers(image_path):
+    # Load image and extract bounding boxes of objects
+    images = image_detection_image(image_path)
+
+    # Threshold confidence score for detection
+    threshold = 0.35
+
+    # Collect detected objects
+    detected_objects = []
+
+    # Check each object for a skier if it meets the threshold confidence score
+    for obj in images['output']:
+        if 'label' in obj.keys() and obj['label'] == 'skier':
+            if obj['confidence'] >= threshold:
+                detected_objects.append(obj)
+
+    return detected_objects
+
+# Load image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_44_image_1.jpg'
+
+# Detecting skiers
+# image_path = 'path/to/image.png'
+# labels = ['skier']
+# threshold = 0.35
+# model_size = "tiny"
+# padding = 20
+
+result = how_many_skiers(image_path)
+final_result = result
+
+print(f"The number of skiers is {len(result)}")
+print('<final_result>', final_result)
+
+Solution: 0

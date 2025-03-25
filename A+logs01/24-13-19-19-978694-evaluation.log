@@ -1,0 +1,44 @@
+------------- 24-13-19-19-978694 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 16, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import numpy as np
+from object_detector_tool import DetectClass
+
+def count_flower_pots(image_path):
+    image = np.array(Image.open(image_path))
+    detection_list = DetectClass().execute(image_path, labels=["baseball", "basket"])
+    
+    flower_pots = []
+    for obj in detection_list["labels"]:
+        if obj["name"] == "baseball" or obj["name"] == "basket":
+            continue
+        flower_pots.append([obj["bbox"][0], obj["bbox"][2], obj["bbox"][3], obj["bbox"][1]])
+
+    flower_pots = np.array(flower_pots)
+    flower_pots[:, 1] += detection_list["bbox"][0] * 3  # Offset of 3 pixel based on model padding
+    flower_pots[:, 3] += detection_list["bbox"][2] * 3  # Offset of 3 pixel based on model padding
+
+    flower_pots = flower_pots[:, 1:4]
+    (x1, y1, x2, y2) = np.min(flower_pots, axis=0)
+    (x3, y3, x4, y4) = np.max(flower_pots, axis=0)
+
+    return x4 - x1 - (y4 - y1) - (t - b) if t > b else 0
+print('<final_result>', final_result)
+
+Solution: 6

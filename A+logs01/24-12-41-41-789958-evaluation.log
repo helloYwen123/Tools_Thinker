@@ -1,0 +1,56 @@
+------------- 24-12-41-41-789958 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 31
+    gt_data = {'bbox': [{'labels': label, 'bbox': [bbox[3], bbox[2], bbox[4], bbox[1]]} for bbox, label in zip(np.array([image_path.getbbox(), image_path[0], image_path[1]], dtype=[('bbox', int, int, int, int), ('bbox', float, float, float, float), ('bbox', float, float, float, float)])), np.array(label, dtype=[('bbox', float, float, float, float)])]}}
+                                                                                                                                                                                                                                                                                                                                                                 ^
+SyntaxError: unmatched '}'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+```python
+from open_clip import objects_detection
+
+def count_yellow_cars(image_path, label, threshold=None, model_size=None, padding=None):
+    model_name = "dino"
+    if model_size:
+        model_name += "_" + model_size
+    if threshold:
+        model_name += "_threshold_" + str(threshold)
+    if not label:
+        label = ["car"]
+    # Load the ground-truth data
+    print(f"Loading ground truth data...")
+    if model_name == "dino":
+        gt_data = {'bbox': [{'coordinates': (box[6][0], box[6][1], box[6][3], box[6][2]), 'label': label} for [bbox, label] in zip(np.array(zip(image_path.getbbox(), label), dtype=[('bbox', int, int, int, int), ('label', str)]))]}
+    else:
+        gt_data = {'bbox': [{'labels': label, 'bbox': [bbox[3], bbox[2], bbox[4], bbox[1]]} for bbox, label in zip(np.array([image_path.getbbox(), image_path[0], image_path[1]], dtype=[('bbox', int, int, int, int), ('bbox', float, float, float, float), ('bbox', float, float, float, float)])), np.array(label, dtype=[('bbox', float, float, float, float)])]}}
+    # Detect objects
+    print(f"Detecting objects...")
+    results = objects_detection.model.detect(image_path, output=gt_data, labels={"bbox": label, "bbox": label, "bbox": label}, threshold=threshold, model_name=model_name, padding=padding)
+    # Count yellow cars
+    count = 0
+    for det in results["bbox"]:
+        if det["label"] == "car" and det["prediction"]["bbox"][0] >= 0.70 and det["prediction"]["bbox"][2] <= width and det["pred_prob"] > 0.2:
+            count += 1
+    print(f"Count of yellow cars detected: {count}")
+    return count
+
+# Use the tool with valid inputs
+count = count_yellow_cars("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_117_image_1.jpg", "car", 0.35, "base")
+final_result = count / 1000  # Scale to 1000 for accuracy
+print(f"Number of yellow cars: {int(final_result)}")
+```
+print('<final_result>', final_result)
+
+Solution: 1

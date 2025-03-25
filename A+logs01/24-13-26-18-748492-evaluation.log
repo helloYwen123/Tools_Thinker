@@ -1,0 +1,42 @@
+------------- 24-13-26-18-748492 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_people_images(image_path):
+    labels = ['people']
+    threshold = 0.5
+    model_size = 'base'
+    padding = 15
+    for i in range(5):
+        execution = execute(image_path=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+        if 'predicted_box' in execution:
+            box = execution['predicted_box']
+            person_count = len(box) / 2 + 1
+        else:
+            person_count = 0
+    return person_count
+
+# Example usage
+person_images = [image_path for image_path in ('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg')]
+final_result = count_people_images('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg')
+final_result
+print('<final_result>', final_result)
+
+Solution: 1

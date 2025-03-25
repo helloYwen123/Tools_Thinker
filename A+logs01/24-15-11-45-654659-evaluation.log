@@ -1,0 +1,40 @@
+------------- 24-15-11-45-654659 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 31, in <module>
+  File "<string>", line 16, in extract_objects
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def extract_objects(image_path, labels=["bottle"], threshold=None, model_size="tiny", padding=20):
+    import object_detector_tool
+
+    detection_result = object_detector_tool.execute(image_path, labels=[*labels], threshold=threshold, model_size=model_size, padding=padding)
+
+    if detection_result:
+        for detected_objects in detection_result:
+            for bbox in detected_objects["bbox"]:
+                left, top, width, height = bbox
+                if "bottle" in labels and width > 50 and height > 50:
+                    print(f"Bottle detected at {left}, {top} with dimensions ({width}, {height})")
+
+        else:
+            print("No bottles detected in the image.")
+            print("Check the image and labels for any issues.")
+
+extract_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_112_image_1.jpg")
+print('<final_result>', final_result)
+
+Solution: 2

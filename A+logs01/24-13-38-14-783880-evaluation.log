@@ -1,0 +1,61 @@
+------------- 24-13-38-14-783880 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_blue_circles_image(image_path, model_size="tiny"):
+    image = cv2.imread(image_path)
+    model = create_model(model_size)
+    blob = tensorflow.keras.preprocessing.image.create_model_image(image)
+    detections = detect(model, blob, threshold=0.35)
+    
+    # Filter detections to only those with a blue object
+    blue_detections = [d for d in detections if d["label"] == "blue"]
+    
+    # Get the first bounding box with a blue object
+    blue_box = blue_detections[0]["box"]
+    
+    # Get the x, y coordinates of the top-left corner
+    top_left_x = int(blue_box[0])
+    top_left_y = int(blue_box[1])
+    
+    # Get the width and height of the bounding box
+    width = int(blue_box[2])
+    height = int(blue_box[3])
+    
+    # Get the color codes of the blue object
+    color = (detections[blue_detections[0]["label"]]["color"])[0:3]
+    
+    # Initialize loop to count blue circles
+    count = 0
+    
+    # Iterate through each pixel in the bounding box
+    for y in range(top_left_y, top_left_y + height):
+        for x in range(top_left_x, top_left_x + width):
+            # Get the pixel color at (x,y)
+            pixel_color = image[y + top_left_y, x + top_left_x]
+            
+            # If the pixel color is blue, increment the count
+            if pixel_color == color[2] or pixel_color == color[5]:
+                count += 1
+    
+    return count
+print('<final_result>', final_result)
+
+Solution: 1

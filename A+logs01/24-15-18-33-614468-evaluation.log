@@ -1,0 +1,237 @@
+------------- 24-15-18-33-614468 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 158
+    object_class = classes_in_object.index(class) if object_class in classes_in_model else classes_in_object
+                                           ^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detection_tool import *
+
+def detect_objects(image):
+
+    # Load the object detector model
+    model = model_detection_model()
+
+    # Detect objects in the image
+    detection_results = detection_results(image)
+
+    # Filter the detected objects and select those having confident score greater than 0.35
+    detected_objects = select_objects(detection_results, confidence_threshold=0.35, model_size="base")
+
+    # Return the detected objects
+    return detected_objects
+
+def select_objects(image_list, confidence_threshold, model_size):
+
+    # Convert the image_list to a list of image dictionaries
+    image_dictionaries = _convert_list_to_image_dictionaries(image_list)
+
+    # Detect objects in each image using the selected confidence_threshold and model_size
+    detected_objects = []
+
+    for image_dict in image_dictionaries:
+
+        # Load the detection results file for the current image
+        detection_dictionaries = _load_detection_results_in_file(image_dict["image_url"])
+
+        # Load the model for the current model_size
+        model = model_load(image_dict["model"], model_size)
+
+        # Detect objects in the image using the loaded model and the current detected results file
+        detected_objects.extend(_detect_objects(image_dict["image_url"], detection_dictionaries[" detections"], model))
+
+
+    # Filter the detected objects by confidence score and object class
+    detected_objects = _filter_objects_by_confidence_score_and_object_class(confidence_threshold, detected_objects)
+
+    # Load the model for the base model size
+    model = model_load("base_model.yaml", "base")
+
+    # Detect objects of the base model
+    base_model_detections = _detect_objects(image_dict["image_url"], detection_dictionaries[" detections"], model)
+
+
+    # Filter the detected objects by class and object class
+    base_model_detections = _filter_objects_by_class_and_object_class(base_model_detections, "base_model", detected_objects)
+
+    # Return the selected detected objects
+    return base_model_detections
+    
+def _convert_list_to_image_dictionaries(image_list):
+
+    # Define the labels to detect
+    labels = ["baseball", "basket"]
+
+    # Load the detection results
+    detection_results = detection_results(image_list=image_list, labels=labels)
+
+    # Return the image dictionaries
+    image_dictionaries = []
+    for image_dict in detection_results:
+
+        # Convert the current image to a dictionary
+        image_dict["image_url"] = image_dict["image_path"]
+        
+        # Add the image dictionary to the result dictionary
+        image_dictionaries.append(image_dict)
+
+    return image_dictionaries
+
+def _load_detection_results_in_file(image_url):
+
+    # Load and parse the detection results file
+    detection_results = detection_results_file(image_url)
+
+    return detection_results
+
+def _detect_objects(image_url, detections, model):
+
+    # Load the model for the base model size
+    model = model_load(image_url, "base")
+
+    # Detect objects in the image using the loaded model and the current detected results file
+    detections = _detect_objects_in_image(image_url, detections, model)
+    
+    return detections
+
+def _calculate_confidence_score_object_classes(detections):
+
+    # Calculate the confidence score for each object based on its object class and object class
+    confidence_score_objects = [obj["confidence_score"] for obj in detections if "object" in obj and obj["object"]["objectclass"] in ["baseball"] and obj["object"]["objectclass"] in ["basket"]]
+
+    return confidence_score_objects
+
+def _calculate_filter_by_confidence_score(confidence_threshold):
+    
+    # Initialize the objects to load the detection results file
+    detection_object_keys = [obj["object"].keys()[0] for obj in detection_results]
+    filtered_objects = []
+
+    # Loop through the object keys in the detection results file
+    for key in detection_object_keys:
+        # Check if the confidence score is higher than or equal to the specified threshold
+        is_filter = any([confidence in conf for conf in detection_object_keys if confidence == key])
+
+        # Filter the objects based on the check
+        if is_filter:
+            filtered_objects.append(detection_results[detection_object_keys.index(key)])
+
+    return filtered_objects
+
+def _detect_objects_in_image(image_url, detections, model):
+
+    # Load the model for the base model size
+    base_model = model_load("base_model.yaml", "base_model")
+
+    # Detect objects in the image using the loaded model and the current detected results file
+    detections = _detect_objects_in_image(image_url, detections, base_model)
+
+    return detections
+
+def _detect_objects_in_image(image_url, detections, model):
+
+    detections = []
+
+    # Detect objects
+    for obj in detections:
+        if obj and "object" in obj: 
+            new_detection = {}
+
+            # Calculate the object dictionary
+            for k, v in obj["object"].iteritems():
+                if "objectclass" not in v and "objectclass" not in v["categories"]:
+                    v["objectclass"] = []
+
+            # Loop through the object dictionary
+            for k, v in obj["object"].iteritems():
+                # Check if the object object is a model of a class with this class name 
+                if type(v["objectclass"]) == str:
+                    classes_in_object = v["objectclass"]
+                    classes_in_model = model.load_classes()
+                    object_class = classes_in_object.index(class) if object_class in classes_in_model else classes_in_object
+
+                    # Check if the object object matches the object class with this class name 
+                    if object_class in v["categories"]:
+                        if v["classes"] is None:
+                            v["classes"] = []
+                        v["classes"].append(object_class)
+                    else:
+                        if v["categories"] is None:
+                            v["categories"] = []
+                        v["categories"].append(object_class)
+
+            # Add the new detection to the detections list
+            detections.append(new_detection)
+
+    return detections
+
+
+def _calculate_filter_by_class_and_object_class(detections, class_name, object_name):
+
+    # Initialize the objects to load the detection results file
+    detection_object_keys = [obj["object"].keys()[0] for obj in detection_results]
+    filtered_objects = []
+
+    # Loop through the object keys in the detection results file
+    for k, v in detections:
+        # Check if the key is in the detection results file
+        if k in detection_object_keys:
+            # Check if the object has objectclass that is not a ball
+            if "objectclass" in v and "objectclass" not in v["objectclass"]:
+                # Check if objectclass is in model classes
+                if type(v["objectclass"]) == str:
+                    classes_in_object = v["objectclass"]
+                    classes_in_model = model.load_classes()
+
+                    # Check if object class is in all classes in the model classes
+                    if "objectclass" in v["objectclass"]:
+                        if "objectclass" in v["objectclass"]:
+                            if v["objectclass"] in classes_in_model:
+                                if v["objectclass"] not in v["objectclass"]:
+                                    v["objectclass"] = v["objectclass"] + classes_in_model[v["objectclass"]]
+                            else:
+                                if v["objectclass"]:
+                                    if v["objectclass"]:
+                                        if "objectclass" in v["objectclass"]:
+                                            classes_in_model[v["objectclass"]] = None
+
+                    else:
+                        if "objectclass" not in v["objectclass"]:
+                            classes_in_model[v["objectclass"]] = None
+
+            # Filter objects based on class and object class
+            filtered_objects.append(detections[detection_object_keys.index(k)])
+
+    return filtered_objects
+
+def _calculate_filter_by_confidence_score(detections, threshold):
+
+    # Initialize the objects to load the detection results file
+    filtered_objects = []
+
+    # Loop through the detection results file
+    for obj in detections:
+        # Check if its object has a confidence score
+        if obj and "object" in obj:
+            confidence_score_object = obj["object"]["confidence_score"]
+
+            # Filter objects based on confidence score and object class
+            filtered_objects.append(detections[detections[detection_object_keys.index(detection_object_keys[index])]
+
+    return filtered_objects
+print('<final_result>', final_result)
+
+Solution: 0

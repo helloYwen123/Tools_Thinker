@@ -1,0 +1,42 @@
+------------- 24-13-49-11-424876 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execution
+
+# Load image
+image_path = "val_Counting_108_image_1.jpg"
+image = execution(image_path)
+
+# Process the image to detect words written in chalk
+labels = []
+threshold = 0.6
+model_size = "base"
+padding = 20 
+
+for label in ["Brick Oven Pizza", "4astagioni", "The Boulevard", "Shrimp", "Casu-Migoghi", "Rafaga", "Rosa"]:
+    execution(image=image, labels=[label], threshold=threshold, model_size=model_size, padding=padding)
+
+for label in ["The", "Boulevard"]:
+    execution(image=image, labels=[label], threshold=threshold, model_size=model_size, padding=padding)
+
+final_result = len([label for label in image["output_type"] if "word" in label])
+print("Number of words written in white chalk are on the chalkboard:", final_result)
+print('<final_result>', final_result)
+
+Solution: 3

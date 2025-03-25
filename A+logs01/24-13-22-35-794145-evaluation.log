@@ -1,0 +1,50 @@
+------------- 24-13-22-35-794145 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detection
+
+def count_toilets(image_path):
+    try:
+        predicted_boxes, predicted_classes, predicted_scores = []
+
+        result = object_detection(image_path, labels=["toilet"], threshold=0.5)
+
+        if result is None:
+            return None
+
+        for element in result.output[0][0]:
+            predicted_boxes.append(element[0])
+            predicted_classes.append(element[1])
+            predicted_scores.append(element[2])
+
+        toilet_boxes = []
+        for i in range(len(predicted_boxes)):
+            x1, y1, x2, y2 = predicted_boxes[i]
+            detected_toilet = (predicted_classes[i], predicted_scores[i], (x1, y1, x2, y2)) if predicted_classes[i] == "toilet" else None
+            toilet_boxes.append(detected_toilet)
+
+        return len(toilet_boxes)
+    except:
+        return None
+
+final_result = count_toilets("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_1.jpg")
+print(f"Number of toilets to the left of the basins: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 6

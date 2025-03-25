@@ -1,0 +1,51 @@
+------------- 24-14-42-21-311113 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 39, in <module>
+  File "<string>", line 22, in count_white_hats
+NameError: name 'cv2' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import numpy as np
+
+def count_white_hats(image_file):
+    # Load the image
+    image = np.array(Image.open(image_file))
+
+    # Preprocess the image
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = np.expand_dims(image, axis=0)
+    image = np.clip(image, 0, 255).astype("uint8")
+
+    # Detect the white hat using Dino on the prediction
+    results = object_detection(image=image, model_size='tiny', padding=10)
+    detected_objects = results['output'][0]['label']
+
+    # Count the number of white hats
+    number_of_white_hats = sum(detected_objects == 'Baseball Hat')
+
+    return number_of_white_hats
+
+# Path of the image to be analyzed
+image_file = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_84_image_1.jpg'
+
+# Analyze the image
+number_of_white_hats = count_white_hats(image_file)
+
+# Print the result
+print(f"Number of white hats in the image: {number_of_white_hats}")
+print('<final_result>', final_result)
+
+Solution: 4

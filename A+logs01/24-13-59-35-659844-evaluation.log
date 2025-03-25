@@ -1,0 +1,73 @@
+------------- 24-13-59-35-659844 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_blue_hats(image_path, labels=["blue hat"], threshold=0.35, model_size="tiny", padding=20):
+    _, labels_info = read_labels(labels)
+    objects = detect_objects(image_path, labels, labels_info, threshold, model_size, padding)
+    if not objects:
+        return 0
+    blue_hat_count = 0
+    for obj in objects:
+        if obj['label'] == 'blue hat':
+            blue_hat_count += 1
+    return blue_hat_count
+
+def count_people_without_blue_hat(image_path, limit=100, label=1, padding=20):
+    count = 0
+    # Define a function to handle a specific number of detections
+    def get_first_n_detections(image_path, count_limit):
+        detections = []
+        detected_objects = detect_objects(image_path, [], [], threshold=0.35, model_size="tiny", padding=padding)
+        for obj in detected_objects:
+            if count == count_limit:
+                break
+            count += 1
+            detections.append(obj)
+        return detections
+    detections = get_first_n_detections(image_path, limit+10)
+    # Count people not wearing the blue hat
+    people_without_blue_hat_count = 0
+    for obj in detections:
+        if obj['label'] == 'bl':
+            continue
+        people_without_blue_hat_count += 1
+    return people_without_blue_hat_count
+
+# The path to your image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg"
+# Detection-related parameters
+labels = ['blue hat']
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+limit = 100
+label = 1
+
+# Counts non-blue hat individuals
+nonblue_hat_people_count = count_people_without_blue_hat(path_to_image, label, padding)
+print(f"COUNT NON-BLUE HAT PEOPLE: {nonblue_hat_people_count}")
+
+# Counts blue hat individuals
+blue_hat_count = count_blue_hats(path_to_image)
+print(f"COUNT BLUE HATS: {blue_hat_count}")
+print('<final_result>', final_result)
+
+Solution: 1

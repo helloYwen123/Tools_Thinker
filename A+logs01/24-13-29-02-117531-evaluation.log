@@ -1,0 +1,46 @@
+------------- 24-13-29-02-117531 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'Object_Detector_Tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from Object_Detector_Tool import *  # Importing the tool
+
+def count_car_occupants(image_path):
+    # Adding empty padding to the image
+    image = Image.open(image_path).convert('RGB')  # Converting the image to RGB format
+    image += Image.new('RGB', image.size, color='grey')  # Adding a grey image with the same dimensions as the original image to the image
+    image = Image.open(image_path + '_padding.png')  # Opening the image with padding added
+
+    # Executing the object detector tool with default arguments
+    execution = tool.execute(image=image_path, labels=["car", "person"], threshold=0.5, model_size="tiny", padding=0)
+
+    try:
+        # Extracting car and person details from the JSON data and saving them to lists
+        car_occupants_list = [item['label'] for item in execution[0]["output_type"] if item['label'] == "car"]
+        person_occupants_list = [item['label'] for item in execution[0]["output_type"] if item['label'] == "person"]
+
+        # Returning the total number of occupants in the image
+        return len(car_occupants_list)
+    except ValueError:
+        return 0  # Returning 0 if the tool fails to extract car occupants or if the threshold is too low
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_83_image_1.jpg'
+car_occupants = count_car_occupants(image_path)
+print(f"The image contains {car_occupants} occupants.")
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,75 @@
+------------- 24-12-42-14-407135 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 66, in <module>
+AttributeError: 'Bus' object has no attribute 'analyze_buses'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from PIL import Image
+
+class Bus(object):
+    def __init__(self):
+        self.vehicle = None
+
+    def detect_objects(self, image_path, labels=["baseball", "basket"], threshold=0.35, model_size="tiny", padding=20):
+        import pytesseract
+        from object_detector_tool import Detect
+        # Load tesseract OCR module
+        pytesseract.pytesseract.tesseract_cmd = 'C://Program Files//Tesseract-OCR//tesseract.exe'
+
+        # Load an image
+        image = Image.open(image_path)
+
+        # Create a tesseract image
+        tesseract_image = pytesseract.image_to_string(image.convert('L'), text_only=True)
+
+        # Detect objects and add bounding boxes
+        detection = Detect(tesseract_image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+        # Convert object bounding boxes to numpy arrays
+        bounding_boxes = detection.bounding_boxes.to_numpy()
+
+        # Display bounding boxes
+        for i in range(bounding_boxes.shape[0]):
+            x = bounding_boxes[i, 1].to_dict()['x']
+            y = bounding_boxes[i, 1].to_dict()['y']
+            w = bounding_boxes[i, 2].to_dict()['width']
+            h = bounding_boxes[i, 2].to_dict()['height']
+            print(dict(x=x, y=y, w=w, h=h))
+
+        # Save bounding boxes with default empty padding
+        detection.bounding_boxes.to_pillow()
+
+    def analyze_windows(self):
+        # Check if the bus has no windows
+        bus_label = "bus"
+        if bus_label not in self.vehicle.labels:
+            return
+    
+        windows = sum([obj['label'] == bus_label for obj in self.vehicle.labels if obj['label'] in ['window', 'door']])
+
+        window_count = buses[window_count]
+
+        return windows + (1 - window_count / windows) * 100
+
+buses = [
+    {'bus_label': 'bus', 'windows': 3, 'label': 'window'},
+    {'bus_label': 'window', 'windows': 8}
+]
+final_result = Bus().analyze_buses(buses)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

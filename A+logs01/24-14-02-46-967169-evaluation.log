@@ -1,0 +1,43 @@
+------------- 24-14-02-46-967169 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_10_image_1.jpg"
+execution = object_detector_tool.execute(image=image_path)
+boxes = [box for box in execution["output_type"] if box[2] == 'lackawanna']
+
+# Check for a flat top
+flat_top_count = 0
+for box in boxes:
+    tower_height = box[3] - box[4]
+    if tower_height <= 3:
+        flat_top_count += 1
+
+# Output the final result
+final_result = {"count": flat_top_count}
+if type(partial_results) != dict: final_result["category"] = "none"
+command = f"python -m PyFastAI " + f" ".join(command_list()) + f" --label count {category}" 
+result = call_command_with_output(output=final_result)
+final_result.update(result)
+print(f"Number of tall buildings with a flat top found: {final_result['count']}")
+print('<final_result>', final_result)
+
+Solution: 0

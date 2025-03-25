@@ -1,0 +1,49 @@
+------------- 24-15-02-06-479142 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'image_objectDetector'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from image_objectDetector import *
+
+# Step 1: Detect objects and save image paths
+execution = tool.execute(image="val_Counting_111_image_1.jpg", labels=["baseball", "basket"])
+for obj in execution["output_type"]:
+    if obj["label"] == "baseball" or obj["label"] == "basket":
+        object_path = obj["saved_image_path"]
+        break
+
+# Step 2: Detect objects using model of base
+execution = tool.execute(image="val_Counting_111_image_1.jpg", labels=['baseball', 'basket'], threshold=0.5, model_size="base", padding=15)
+for obj in execution["output_type"]:
+    if obj["label"] == "baseball" or obj["label"] == "basket":
+        object_path_base = obj["saved_image_path"]
+
+# Step 3: Compare object paths
+final_result = [object_path, object_path_base]
+
+if len(final_result) == 2:
+    if final_result[0] == final_result[1]:
+        count_tigers = 1
+    else:
+        count_tigers = 0
+else:
+    count_tigers = 0
+
+final_result
+print('<final_result>', final_result)
+
+Solution: 0

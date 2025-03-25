@@ -1,0 +1,69 @@
+------------- 24-15-28-19-021570 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+def count_consonants(side):
+    # Load object detector model
+    detection_model = "models/chatbot_model.t7"  # Use Chatbot model as detection model for demonstration
+
+    # Load confidence threshold
+    threshold = 0.35
+
+    # Load model for detection
+    detection_model = 'models/chatbot_model.t7'
+
+    # Load model confidence threshold
+    confidence_threshold = 0.0
+
+    # Initialize detection model with default threshold
+    detection_model = tool.execute(detection_model, labels=["consonant"], model_size="base", threshold=threshold)
+
+    # Initialize a counter for consonants found in the image
+    consonants_count = 0
+
+    # Loop through each image in the dataset
+    for image in side:
+
+        # Open and adjust image
+        image = tool.execute(image=image, labels=["consonant"])
+
+        # Iterate through each tile in the image
+        for tile in image.iter_tiles():
+            # Convert pixel to grayscale
+            grayscale_image = tile.to_grayscale()
+
+            for pixel in grayscale_image:
+                # Check if pixel is a consonant
+                if pixel.is_concert_note:
+                    # Increment the counter
+                    consonants_count += pixel.to_concert_note()
+
+                # Convert grayscale pixel back to color
+                pixel = tuple(pixel)
+
+    # Return the number of consonants in the image by dividing by two
+    return consonants_count // 2
+
+side = [[[1, 2, 3, 4, 5], None, [0, 2, 4, 6, 8]], [[[3, 2, 1, 4, 5], 'orange', [0, 1, 2, 3, 4, 5]], None], [[[6, 1, 2, 3], 'red', [0, 1, 2, 3, 5, 6]]]]
+consonants_count = count_consonants(side)
+print(f"Number of consonants found in the image: {consonants_count}")
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,56 @@
+------------- 24-12-21-57-368570 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 34
+    box.append([int(detection[0]), int(detection[1]), float(detection[2])]
+              ^
+SyntaxError: '(' was never closed
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def detect_object(image_path, labels, threshold, model_size, padding):
+    labels = labels.split(',')
+    threshold = float(threshold)
+    model_size = model_size.lower()
+    
+    if threshold == 0.0:
+        threshold = float(0.35)
+    
+    if model_size == "tiny":
+        model_size = "tiny-tiny"
+    else:
+        model_size = "base"
+
+    detection_results = []
+    
+    for index, label in enumerate(labels):
+        execution = tool.execute(image=image_path, labels=[label], threshold=threshold, model_size=model_size, padding=padding)
+        box = []
+        for detection in execution:
+            box.append([int(detection[0]), int(detection[1]), float(detection[2])]
+    
+        threshold = float(threshold)
+        if detection_results == []:
+            detection_results = [(label, float(detection[0]), float(detection[2]))]
+        else:
+            for result, confidence, box in detection_results:
+                if result < threshold:
+                    detection_results = [(label, float(box[0]) * (confidence + 1), box[1] + int(confidence) * (padding * 2) + 1)]
+    
+    return detection_results
+
+final_result = detect_object("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_53_image_1.jpg", ["baseball", "basket"], 0.35, "tiny", 20)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

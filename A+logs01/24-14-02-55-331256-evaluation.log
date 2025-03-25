@@ -1,0 +1,65 @@
+------------- 24-14-02-55-331256 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import detect_objects
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_13_image_1.jpg"
+execution = detect_objects(image_path=image_path)
+
+# Find objects with specific labels
+labels_to_detect = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+
+# Find baseball
+baseball_detections = []
+for detection in execution:
+    if detection["label"] == "baseball":
+        baseball_detection = detection
+        baseball_detections.append(baseball_detection)
+
+# Find basket
+basket_detections = []
+for detection in execution:
+    if detection["label"] == "basket":
+        basket_detection = detection
+        basket_detections.append(basket_detection)
+
+# Find baseball and basket together
+all_detections = []
+for detection in execution:
+    if label in ["baseball", "basket"]:
+        all_detections.append(detection)
+
+# Combine baseball and basket detections
+combined_detections = []
+for obj in all_detections:
+    if "baseball" in obj["label"] and "basket" in obj["label"]:
+        combined_detections.append(obj)
+
+# Calculate ratio of baseball and basket detections
+ratio = len(combined_detections) / len(execution)
+
+# Calculate percentage
+percentage = (ratio * 100 / len(execution))
+percentage
+print('<final_result>', final_result)
+
+Solution: 1

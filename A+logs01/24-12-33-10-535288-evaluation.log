@@ -1,0 +1,58 @@
+------------- 24-12-33-10-535288 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 18, in <module>
+ModuleNotFoundError: No module named 'matplotlib'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from torchvision import transforms
+from torch.utils.data import DataLoader
+from torchvision.transforms.transforms import Normalize, ToTensor
+import matplotlib.pyplot as plt
+import torch
+import numpy as np
+import torchvision
+import torchvision.transforms as T
+from PIL import Image
+from matplotlib import pyplot as plt
+from torchvision.transforms.transforms import Resize
+
+N = 100
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+root = "/home/stud/wxie/BLINK_Dataset/Counting/val/images-val_Counting_{}.jpg".format(N)
+transformations = T.Compose([T.Resize(224), T.ToTensor()])
+dataset = torchvision.datasets.ImageFolder(root=root, transform=transformations)
+loader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=0)
+result = []
+for images, _ in loader:
+    image = images[0][0]
+    x = Resize(image)
+    x = torch.tensor(x).to(device)
+    result.append(x)
+
+num_one_ways = 0
+
+for i in range(len(result)):
+    image = result[i]
+    x = image.permute(0, 2, 3, 1).to(device)
+    one_way_count = torchvision.ops.onnx_intrin_count_one_ways(x)
+    num_one_ways += one_way_count
+
+print(num_one_ways)
+print('<final_result>', final_result)
+
+Solution: 3

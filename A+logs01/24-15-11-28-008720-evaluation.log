@@ -1,0 +1,46 @@
+------------- 24-15-11-28-008720 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detection
+
+# Load the image of the bus
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_24_image_1.jpg"
+label_list = ["baseball", "basket"]
+threshold = 0.35
+model_size = "base"
+padding = 20
+
+# Detect the objects using the model
+result = object_detection(image_path, label_list, threshold, model_size, padding)
+
+# Get the windows count
+window_count = len(result["output_type"][0]["boxes"])
+
+# Calculate the front and not side windows count
+front_count = result["output_type"][0]["boxes"].count("front")
+not_side_count = result["output_type"][0]["boxes"].count("not_side")
+
+# Print the result
+print(f"The bus has {window_count} windows, including both front and not side windows.")
+print(f"The front windows are {front_count} and the not side windows are {not_side_count}.")
+
+final_result = {"front_count": front_count, "not_side_count": not_side_count}
+print('<final_result>', final_result)
+
+Solution: 2

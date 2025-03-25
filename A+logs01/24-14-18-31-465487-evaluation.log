@@ -1,0 +1,46 @@
+------------- 24-14-18-31-465487 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_people_in_image(image):
+    # Read the image
+    image = image 
+
+    # Detect people in the image
+    execution = execute(image=image, labels=["human"], threshold=0.5, model_size="base", padding=20)
+    
+    # Get the bounding boxes and labels for detected people
+    detections = execution["output_type"]
+    people = [dict(label=d["label"], confidence_score=d["confidence score"], box=d["bbox"], saved_image_path=d["saved_image_path"]) for d in detections]
+    
+    # Count people in the image
+    people_count = len(people)
+    
+    return people_count
+
+# Convert image_path to absolute path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_27_image_1.jpg"
+people_count = count_people_in_image(image_path)
+
+final_result = people_count
+print(f"The number of people lying down in the image is: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 1

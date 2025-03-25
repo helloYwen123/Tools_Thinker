@@ -1,0 +1,43 @@
+------------- 24-14-09-21-017244 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 29
+    break
+IndentationError: unexpected indent
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_words_on_chalkboard(image_path, labels, threshold, model_size):
+    detection = []
+    with open(image_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+        for line in content.split('\n')[:-1]:
+            if ' ' in line:
+                words = line.split(' ')
+                for word in words:
+                    if word != "":
+                        if threshold > 0.35 and word not in labels:
+                            for label in labels:
+                                if (word.startswith(label[0]) or word.startswith(label[0].lower()) or
+                                    word.startswith(label[0].upper())) and word != label:
+                                    detection.append((label, word))
+                                            break
+    detection = [d for d in detection if d[1] != '']
+    return len(detection)
+
+total_words_count = count_words_on_chalkboard("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_108_image_1.jpg",["araf'],0.3, "tiny")
+
+print("The number of words written in white chalk is:", total_words_count)
+print('<final_result>', final_result)
+
+Solution: 3

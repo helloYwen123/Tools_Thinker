@@ -1,0 +1,68 @@
+------------- 24-15-28-17-249937 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Loading image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_47_image_1.jpg"
+image, labels = load_image(image_path)
+print(f"Image loaded: {image.shape}")
+
+# Detecting objects
+for label in labels[0]:
+    objects_with_label = find_objects(image, label, mode="bbox")
+
+# Displaying detected objects
+for object_dict in objects_with_label:
+    print(f"Object found: {object_dict['label']} at {object_dict['bbox']}")
+
+# Drawing bounding boxes on the image
+draw = ImageDraw(image)
+for object_dict in objects_with_label:
+    draw.rectangle(object_dict["bbox"], outline="r")
+    draw.text((object_dict["bbox"][0], object_dict["bbox"][1]), object_dict["label"], font=("arial", 10, "bold"))
+image = draw_image(image, image)
+show_image(image)
+
+# Calculating number of people
+people_count = 0
+for object_dict in objects_with_label:
+    label = object_dict['label']
+    if label == "baseball":
+        people_count += 1
+    elif label == "basket":
+        people_count += 1
+print(f"Number of people: {people_count}")
+
+# Plotting object count
+object_count = {label: len(objects_with_label) for label, objects_with_label in objects_with_label.items()}
+plot_objects(object_count, "number_of_objects")
+plt.show()
+
+# Calculating percentage of people
+percentage_of_people = (people_count / len(labels[0])) * 100
+print(f"Percentage of people: {percentage_of_people:.2f}%")
+
+# Saving the result
+result = {"people": people_count, "percentage of people": percentage_of_people}
+result_json = json.dumps(result)
+print(f"Result: {result_json}")
+print('<final_result>', final_result)
+
+Solution: 0

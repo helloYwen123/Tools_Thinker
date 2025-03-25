@@ -1,0 +1,57 @@
+------------- 24-14-18-17-806207 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detection
+
+def count_subjects(image_path, object_labels, threshold, model_size, padding):
+    detection_output = object_detection(image_path, object_labels, threshold, model_size, padding)
+    return detection_output
+
+def calculate_count(objects):
+    return len(objects)
+
+def main():
+    # Define the image path for the image containing the horse
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_62_image_1.jpg"
+
+    # Define the object labels: ['man']
+    object_labels = ['man']
+
+    # Define the threshold for detection confidence
+    threshold = 0.5
+
+    # Define the model size to use: 'base'
+    model_size = 'base'
+
+    # Define the number of pixels to add as empty padding around detected objects
+    padding = 20
+
+    # Detect objects in the image using the ground detection API
+    object_detection_results = count_subjects(image_path, object_labels, threshold, model_size, padding)
+
+    # Calculate the number of subjects in the detected objects
+    subjects_count = calculate_count(object_detection_results)
+
+    return subjects_count
+
+final_result = main()
+print("Number of men looking through a camera:", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

@@ -1,0 +1,50 @@
+------------- 24-15-24-36-731205 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import detect_objects
+
+# Function to filter out people wearing solid red shirts
+def filter_people_wearing_solid_red(people_objects):
+    # Filtering objects based on their clothing color
+    # 1. Check if the shirt is red
+    if "red" in [obj["label"] for obj in people_objects]:
+        # Return those objects along with their confidence score
+        return [obj for obj in people_objects if obj["label"] == "red"]
+    
+    return people_objects
+
+# Provided image path
+image_path = "/path/to/image.png"
+
+# Execution
+objects_to_save = detect_objects(image_path, labels=["person"], threshold=0.35, padding=20, model_size="tiny")
+
+# Applying the filter function to the detected objects
+filtered_people_wearing_solid_red = filter_people_wearing_solid_red(objects_to_save)
+
+# Checking if we have any people wearing solid red shirts
+if filtered_people_wearing_solid_red:
+    final_result = filtered_people_wearing_solid_red
+else:
+    final_result = None
+
+print("The number of people wearing solid red shirts is:", final_result)
+print('<final_result>', final_result)
+
+Solution: 3

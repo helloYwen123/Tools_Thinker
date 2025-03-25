@@ -1,0 +1,44 @@
+------------- 24-14-25-01-761193 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+def count_red_buses(image_path):
+    """
+    Detect red buses in a given image and count them.
+    Returns the count of red buses.
+    """
+    with open(image_path, 'rb') as image_file:
+        execution = tool.execute(image_path, labels=["red公交车"], threshold=0.35)
+    
+    if 'label' in execution and 'confidence score' in execution and 'box' in execution:
+        for box in execution['box']:
+            if box['confidence score'] > 0.35 and box['label'] == "红色公交车":
+                return int(box['box'])
+
+def count_red_buses(road_image):
+    """
+    Detect red buses from a given road image and count them.
+    Returns the count of red buses.
+    """
+    road_image_box = tool.execute(image=road_image, labels=['红色公交车'], threshold=0.35)
+    return count_red_buses(road_image_box['box'][0]['box'][0]['path'])
+print('<final_result>', final_result)
+
+Solution: 1

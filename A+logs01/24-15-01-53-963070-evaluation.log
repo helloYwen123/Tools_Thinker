@@ -1,0 +1,57 @@
+------------- 24-15-01-53-963070 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def main():
+    # Load model
+    model = load_model('tiny')
+    
+    # Read image
+    image = read_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_111_image_1.jpg")
+    
+    # Detect objects
+    detection_result = detect_objects(image, labels=['baseball', 'basket'], threshold=0.2, model_size='tiny')
+    
+    # Write detection to file
+    save_detection_to_file(detection_result, 'path_to_detection.txt')
+    
+    
+    # Read file
+    file_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_111_image_1_detection.txt'
+    detection_result = pd.read_csv(file_path)
+    
+    # Get detections
+    detections = detection_result['label'].to_list()
+    
+    # Determine if tigers are in the detections
+    tigers_in_detection = []
+    for detection in detections:
+        is_tiger = 'tiger' in detection
+        tigers_in_detection.append(is_tiger)
+    
+    # Answer with result
+    final_result = len(tigers_in_detection)
+    print(f"The answer is: {final_result}")
+    
+if __name__ == "__main__":
+    main()
+print('<final_result>', final_result)
+
+Solution: 0

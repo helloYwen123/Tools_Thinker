@@ -1,0 +1,43 @@
+------------- 24-14-41-47-466288 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 28
+    return {"number_of_people": object["label"] + "}".format(object["label"], confidence)  # Return number of people
+           ^
+SyntaxError: '{' was never closed
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_people_image(image_path):
+    # Load the image
+    image = execute(image=image_path, labels=["baseball", "basket"])
+    
+    # Analyze the image
+    for obj in image:
+        x, y, w, h = obj['bbox']  # Extract bounding box coordinates
+        confidence = obj['confidence']  # Extract confidence score
+        
+        # Check if the object is a person and that its confidence is at least 0.5
+        if "person" in obj['label'] and confidence >= 0.5:
+            return {"number_of_people": object["label"] + "}".format(object["label"], confidence)  # Return number of people
+  
+    return None  # Return None if no people are detected
+
+# Check the function with an example image
+result = count_people_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg")
+print(result)
+print('<final_result>', final_result)
+
+Solution: 0

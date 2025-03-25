@@ -1,0 +1,40 @@
+------------- 24-14-28-36-222382 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 30, in <module>
+  File "<string>", line 17, in count_people_in_image
+TypeError: Object_Detector_Tool.execute() missing 1 required positional argument: 'labels'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_people_in_image(image_path):
+    object_detector = Object_Detector_Tool()
+    detection = object_detector.execute(model_size="tiny", image=image_path)
+
+    if detection:
+        people_boxes = []
+        for boxes in detection[0]:
+            for box in boxes:
+                if "person" in box[1]:
+                    people_boxes.append(box[2])
+
+        people_count = len(people_boxes)
+
+    return people_count
+
+final_result = count_people_in_image("/your_image_path")
+print(f"Number of people near the right of the giraffe: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 0

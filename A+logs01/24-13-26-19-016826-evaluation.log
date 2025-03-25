@@ -1,0 +1,69 @@
+------------- 24-13-26-19-016826 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 54, in <module>
+  File "<string>", line 47, in detect_base_model_and_save
+NameError: name 'plt' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def detect_people(image_path, label='baseball', threshold=0.35, model_size='tiny', padding=20):
+    """
+    Detect people using a base model and specified threshold and padding settings.
+    
+    Parameters:
+    - image_path (str): The path to the image file.
+    - label (str): The label to detect (e.g., 'baseball').
+    - threshold (float): The confidence threshold for detection (default: 0.35).
+    - model_size (str): The size of the model to use ('tiny' or 'base', default: 'tiny').
+    - padding (int): The number of pixels to add as empty padding around detected objects (default: 20).
+    
+    Returns:
+    - [str]: A list of detected person labels along with their bounding box and saved labels.
+    """
+    try:
+        # Load the image
+        img = plt.imread(image_path)
+        
+        # Detect people using a base model
+        detection = detect_people_base_model(img, label=label, threshold=threshold, model_size=model_size, padding=padding)
+        
+        return detection
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return None
+
+# Function to detect and return detected objects and bounding boxes
+def detect_base_model_and_save(image_path, labels=['person', 'basketball'], threshold=0.35, model_size='tiny', padding=20):
+    """
+    Detect people and basketball in an image using specified labels and parameters.
+    """
+    # Load the image
+    img = plt.imread(image_path)
+    
+    # Detect people and save objects with empty padding
+    detection = detect_people_base_model(img, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    
+    return detection
+
+result = detect_base_model_and_save(image_path="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg")
+if result:
+    people = result['labels']['person'].tolist()        # Detect people and convert to a list
+    print(f"There are {len(people)} people in the image.")
+else:
+    print("Error while detecting objects.")
+    print("Please provide a valid image path.")
+print('<final_result>', final_result)
+
+Solution: 1

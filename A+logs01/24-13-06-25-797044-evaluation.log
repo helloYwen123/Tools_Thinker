@@ -1,0 +1,50 @@
+------------- 24-13-06-25-797044 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'objects_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from objects_detector_tool import object_detector_tool
+
+# Load image
+with open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_93_image_1.jpg", 'r') as img:
+    image = img.read()
+
+# Initialize object dictionary with the input parameters
+label_dict = {
+    "label":["baseball", "basket"],
+    "confidence":[.35, .6],
+    "box":[None, None],
+    "saved_image_path":"" 
+}
+
+# Initialize the algorithm
+execution = object_detector_tool.execute(image=image, labels=label_dict, threshold=.05, model_size="base", padding=20)
+
+# Process the results and print the image path
+for i in range(11):
+    if execution == True:
+        print('Image path: {}, Label: {} '.format(execution['path'], execution['label'][0]))
+        break
+
+# Calculate total number of detected objects
+total_objects = sum(execution[label_dict['label']] for label in label_dict['label'])
+
+# Display the result
+print('Total number of objects detected: ', total_objects)
+print('<final_result>', final_result)
+
+Solution: 0

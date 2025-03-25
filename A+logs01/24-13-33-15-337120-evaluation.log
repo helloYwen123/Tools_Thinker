@@ -1,0 +1,44 @@
+------------- 24-13-33-15-337120 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 31, in <module>
+  File "<string>", line 19, in count_baseball_players
+NameError: name 'tool' is not defined. Did you mean: 'bool'?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import numpy as np
+
+def count_baseball_players(image_path, labels=['baseball', 'basket']):
+    img = np.array(image_path)
+    detection_result = np.array(tool.execute(image=image_path, labels=labels, threshold=0.35, model_size='tiny', padding=0))['output_type']
+    
+    total_cases = list(filter(lambda case: case['label'] == 'baseball', detection_result))
+    total_cases_percentage = np.percentile(np.array(total_cases)['confidence score'], 100)
+    total_cases_count = len(total_cases)
+    
+    if total_cases_percentage >= 0.8:
+        return total_cases_count
+    else:
+        return 0
+
+for path in ['./valCounting_57/image_1.jpg']:
+    result = count_baseball_players(path)
+    print(f"Path: {path} - Number of baseball players: {result}")
+    
+total_count = sum([count_baseball_players(path) for path in ['./valCounting_57/image_1.jpg']])
+print(f"Total number of baseball players: {total_count}")
+print('<final_result>', final_result)
+
+Solution: 2

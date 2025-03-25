@@ -1,0 +1,51 @@
+------------- 24-15-14-52-317002 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_people(image_path):
+    object_list = []
+    
+    # Detect people in the image
+    execution = tool.execute(image=image_path, labels=["person"], threshold=0.35, padding=5)
+    object_list += execution[1]
+    
+    # Detect cars in the image
+    execution = tool.execute(image=image_path, labels=["car"], threshold=0.35, padding=5)
+    object_list += execution[1]
+    
+    return object_list
+
+# Assuming the image is saved in the variables 'image_path1', 'image_path2', etc.
+counted_objects = count_people(image_path1)
+total_count = sum(1 for count in counted_objects if 'person' in count)
+unique_count = len(set(counted_objects)) if 'person' in counted_objects else 0
+non_car_objects = [obj for obj in counted_objects if obj['label'] != 'car']
+total_objects = sum(1 for count in mapped_val_objs if count is not None)
+
+final_result = {'total_people': total_count}
+if unique_count > 0:
+    final_result.update({'unique_people': unique_count})
+if non_car_objects > 0:
+    final_result.update({'non_car_people': non_car_objects})
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

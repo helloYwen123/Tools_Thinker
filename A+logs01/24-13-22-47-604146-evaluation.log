@@ -1,0 +1,39 @@
+------------- 24-13-22-47-604146 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+label = ["baseball", "basket"]
+
+def detect_objects(image_path, labels=None, threshold=None, model_size=None, padding=None):
+    detection_result = detection(image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    return detection_result
+
+result = detect_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_7_image_1.jpg", labels=label)
+for obj_dict in result:
+    print(f"Label: {obj_dict['label']}, Confidence Score: {obj_dict['confidence score']}, Box: {obj_dict['box']}, Saved Image Path: {obj_dict['saved_image path']}")
+
+final_result = []
+for obj in result:
+    if any(obj[k] == obj[k][0] for k in label):
+        final_result.append({"label": None, "confidence score": None, "box": None, "saved_image path": None})
+
+print(f"Number of baseball players looking towards the camera: {len(final_result)}")
+print('<final_result>', final_result)
+
+Solution: 1

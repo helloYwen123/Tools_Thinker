@@ -1,0 +1,47 @@
+------------- 24-13-33-13-881886 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detector
+
+def count_instances(image_path, labels, threshold, model_size='tiny', padding=None):
+
+    dataset = object_detector(image_path, labels, threshold, model_size)
+    if not dataset:
+        return 0
+
+    # Define detection and bounding boxes
+    detector = dataset['detector']
+    bounding_boxes = dataset['bounding_boxes']
+    if padding:
+        detections = {bbox['label']: (x, y, x + padding, y + padding)
+                      for (x, y, w, h), bbox in bounding_boxes.items()}
+    else:
+        detections = bounding_boxes
+
+    # Count instances within specified bounding box
+    if labels in detections:
+        # Get confidence of selected instance
+        confidences = [box['confidence'] for box in detections[labels]]
+        # Count instances with confidence higher than threshold
+        count = sum([1 for confidence in confidences if confidence > threshold])
+        return count
+    return 0
+print('<final_result>', final_result)
+
+Solution: 3

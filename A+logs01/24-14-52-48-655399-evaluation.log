@@ -1,0 +1,77 @@
+------------- 24-14-52-48-655399 Accuracy reward: 0.0 -------------
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def detect_objects(image_path, labels, threshold=0.5, model_size="tiny", padding=20):
+    try:
+        import detection_tool
+        detection_tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+        return detection_tool.output
+    
+    except Exception as e:
+        print(f"An error occurred while running the detection tool: {e}")
+        return None
+
+def count_glasses(image_path, threshold=0.5, padding=15):
+    try:
+        import detection_tool
+        detection_tool.execute(image=image_path, labels=["glasses"], threshold=threshold, model_size="base", padding=padding)
+        glasses = detection_tool.output
+        
+        empty_glasses = 0
+        for glass in glasses:
+            if glass['label'] != 'glasses':
+                continue
+            confidence = glass['confidence score']
+            empty_glasses += 1
+        
+        return empty_glasses
+
+    except Exception as e:
+        print(f"An error occurred while running the detection tool: {e}")
+        return None
+
+def main(image_path):
+    try:
+        detected_objects = detect_objects(image_path)
+        if detected_objects is None:
+            return None
+        
+        empty_glasses = count_glasses(image_path)
+        if empty_glasses is None:
+            return empty_glasses
+        
+        return detected_objects
+    except Exception as e:
+        print(f"An error occurred while performing the main task: {e}")
+        return None
+
+# Path of the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_74_image_1.jpg"
+
+# Call the main function to obtain the result of the image
+result = main(path_to_image)
+
+# Print the result
+if result:
+    print(f"The image {result[0]} contains {result[1]} empty glasses.")
+else:
+    print("No detected objects available.")
+
+final_result = result
+print('<final_result>', final_result)
+
+Final Result: None
+
+Solution: 1

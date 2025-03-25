@@ -1,0 +1,63 @@
+------------- 24-14-39-16-172264 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 34, in <module>
+NameError: name 'image_path' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def detect_water_glasses(image_path):
+    detection_result = tool.execute(image=image_path, labels=["water"], threshold=0.35)
+    if len(detection_result) > 0:
+        return len(detection_result[0]["box"]) > 0
+    return False
+
+def count_water_glasses(image_path):
+    result_path = "{}/water_glasses_count.csv".format(image_path[:-3])
+    if os.path.exists(result_path):
+        df = pd.read_csv(result_path)
+        return len(df["counter"])
+    else:
+        total_glasses = 0
+        for i in range(len(os.listdir(image_path))):
+            file_path = "{}/water_glasses_{}.jpg".format(image_path, i)
+            if os.path.exists(file_path):
+                total_glasses += 1
+        return total_glasses
+
+final_result = detect_water_glasses(image_path)
+if final_result:
+    print(f"There are {final_result} glasses filled with water.")
+
+total_count_pizzas = 0
+for i in range(len(os.listdir(image_path))):
+    file_path = "{}/pizza_{}.jpg".format(image_path, i)
+    if os.path.exists(file_path):
+        total_count_pizzas += 1
+
+total_count_meat = 0
+for i in range(len(os.listdir(image_path))):
+    file_path = "{}/meat_{}.jpg".format(image_path, i)
+    if os.path.exists(file_path):
+        total_count_meat += 1
+
+final_result = count_water_glasses(image_path)
+print(f"Total glasses filled with water: {final_result}")
+total_count_pizzas = count_pizzas(image_path)
+print(f"Total pizzas: {total_count_pizzas}")
+total_count_meat = count_meat(image_path)
+print(f"Total meat: {total_count_meat}")
+print('<final_result>', final_result)
+
+Solution: 3

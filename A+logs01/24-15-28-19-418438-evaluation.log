@@ -1,0 +1,48 @@
+------------- 24-15-28-19-418438 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_79_image_1.jpg"
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Detect snowboard and find the number of letters ('A' to 'Z' on a Snowboard)
+snowboard_output = tool.execute(image=input_image_path, labels=["snowboard"], threshold=threshold, model_size=model_size, padding=padding)
+snowboard_label = snowboard_output[0][0][2]
+snowboard_box = snowboard_output[0][0][1]
+
+# Assuming 'snowboard' object has a shape with n rows and c columns, where n=7 and c=8 (ex: Top H, S, N, O, W, J, L, P)
+# Each cell has (label, letter), here index 0 is 'A' to 'Z', and -1 is to -.
+# A dictionary of snowboard label and corresponding letter index
+snowboard_label_dict = {label: (i, label) for i, (label, _) in enumerate(snowboard_output[0][0][1])}
+
+# Assuming 'snowboard' object has a shape with n rows and c columns, where n=7 and c=8 (ex: Top H, S, N, O, W, J, L, P)
+# Each cell has letter, where index is the letter and -1 is to -.
+# Here are the 26 letters in the English language.
+snowboard_letter_dict = {label: letter for letter, label in snowboard_label_dict.items() if label >= 0}
+
+snowboard_label_count = len(list(snowboard_letter_dict.keys()))
+
+final_result = snowboard_label_count
+print("The number of letters printed on the climber's snowboard are:", final_result)
+print('<final_result>', final_result)
+
+Solution: 3

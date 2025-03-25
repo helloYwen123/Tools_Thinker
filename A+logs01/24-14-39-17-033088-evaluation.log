@@ -1,0 +1,54 @@
+------------- 24-14-39-17-033088 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_people():
+    # Load the image
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg"
+    # Create a new Object_Detector_Tool instance
+    detector = Object_Detector_Tool()
+    
+    # Set the detection threshold, model size, and padding as variables
+    threshold = 0.35
+    model_size = "tiny"
+    padding = 15
+    
+    # Detect people in the image and save the detected objects with padding
+    detections = detector.execute(image_path, ["baseball"], threshold, model_size, padding)
+    
+    # Convert the predictions list to a dictionary
+    detected_objects = {d["label"]: d["confidence score"] for d in detections}
+    
+    # Count detected baseballs as a representative of people
+    num_people = 0
+    for obj_label, obj_confidence in detected_objects.items():
+        if obj_label == "baseball":
+            num_people += 1
+            
+    # Round the number of detected people to the nearest integer
+    num_people = round(num_people)
+    
+    return num_people
+
+final_result = count_people()
+print(f"The number of people eating food is {final_result}.")
+print('<final_result>', final_result)
+
+Solution: 0

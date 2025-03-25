@@ -1,0 +1,44 @@
+------------- 24-14-06-20-956585 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 17
+    def count_bananas(didn't_open_camera=False):
+                          ^
+SyntaxError: unterminated string literal (detected at line 17)
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from tool import Object_Detector_Tool
+
+def count_bananas(didn't_open_camera=False):
+    if didn't_open_camera:
+        image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_23_image_1.png"
+        object_detector = Object_Detector_Tool()
+        execution = object_detector.execute(image=image,
+                                             labels=["butter"] + ['banana'], threshold=0.35,
+                                             model_size="tiny", padding=20, diden't_open_camera=True)
+        print(execution)
+    output = []
+    for i in execution:
+        label = i[0]
+        confidence = i[1]
+        box = [{'x': round(x[0], 2), 'y': round(y[0], 2), 'width': x[2]-x[0]+1, 'height': y[2]-y[0]+1}
+               for x in i[2] for y in i[2]]
+        output.extend([{'label': 'banana', 'confidence': i[1], 'box': box}])
+    return output
+
+final_result = count_bananas()
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 6

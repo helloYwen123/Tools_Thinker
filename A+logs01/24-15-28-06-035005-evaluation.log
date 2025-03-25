@@ -1,0 +1,39 @@
+------------- 24-15-28-06-035005 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *  # Import the Object_Detector_Tool class
+
+def calculate_people_reading_book(image_path): 
+    # Read the image
+    execution = tool.execute(image=image_path, labels=['read book'], threshold=0.35, model_size='tiny', padding=20)  # Detect people reading a book and return their paths
+    
+    # Extract person bounding boxes
+    boxes = [execution[0]["bbox"] for execution in execution]
+    
+    # Calculate total number of people reading a book
+    num_people = sum(1 for box in boxes if box["label"] == "read book") - 1  # Subtract one to exclude the person slicing the cake
+    
+    return num_people
+# Read the image file
+calculate_result = calculate_people_reading_book("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_47_image_1.jpg")
+final_result = f"The number of people reading a book is {calculate_result}"
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 0

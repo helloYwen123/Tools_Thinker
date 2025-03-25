@@ -1,0 +1,76 @@
+------------- 24-14-36-05-993480 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detector_tool
+
+def count_people_in_white_uniform():
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_37_image_1.jpg"
+
+    images = ["val_Counting_37_image_1.jpg"]
+
+    labels = ["baseball", "basket", "car", "person"]
+    box_confidence = ["0.53", "1.0", "1.0", "0.68"]
+    model_size = "tiny"
+    padding = 20
+
+    execution = object_detector_tool(images, labels, box_confidence, model_size, padding)
+
+    for i in range(len(execution)):
+        for j in range(len(execution[i])):
+            
+            x1, y1, x2, y2 = execution[i][j]
+            confidence, labels, box = execution[i][j]
+
+            if "basket" in labels and confidence > 0.53:
+                print(f"Found basket in coordinate: ({x1};{y1})")
+                break
+                
+            if "baseball" in labels and confidence > 0.68 and x2 > execution[i][j].x1 and y2 > execution[i][j].y1:
+                print(f"Found baseball in coordinate: ({x2};{y2})")
+                
+            if "car" in labels and confidence > 0.68:
+                print(f"Found car in coordinate: ({x2};{y2})")
+    
+    baseball_count = 0
+    basket_count = 0
+    car_count = 0
+    
+    for i in range(len(images)):
+        for j in range(len(images[i])):
+            
+            x1, y1, x2, y2 = images[i][j]
+            confidence, labels, box = images[i][j]
+
+            if "basket" in labels and confidence > 0.53:
+                basket_count += 1
+        
+            if "baseball" in labels and confidence > 0.68 and x2 > execution[i][j].x1 and y2 > execution[i][j].y1:
+                baseball_count += 1
+            
+            if "car" in labels and confidence > 0.68:
+                car_count += 1
+        
+    print(f"Baseball count: {baseball_count}")
+    print(f"Basket count: {basket_count}")
+    print(f"Car count: {car_count}")
+    
+count_people_in_white_uniform()
+print('<final_result>', final_result)
+
+Solution: 1

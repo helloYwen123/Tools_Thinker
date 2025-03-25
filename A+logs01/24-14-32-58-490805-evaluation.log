@@ -1,0 +1,61 @@
+------------- 24-14-32-58-490805 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+# Function to detect elephants based on their presence in the image
+def detect(elephants):
+    detection = tool.execute(image=image_path, labels=["elephant"], threshold=0.35, model_size="tiny", padding=20)
+    if detection[0][0] == 'elephant':
+        return True
+    return False
+
+# Function to count the number of elephants with detected trunks in the water
+def count_trunks():
+    # Create a list to count the detected elephants
+    elephant_count = []
+
+    # Iterate through the detected objects
+    for obj in tool.output():
+        if obj[0] == "elephant":
+            # Add the bounding box of the elephant to the list
+            elephant_count.append((obj[1], obj[3]))
+
+    # Check if the elephant bounding boxes intersect with the water
+    for box in elephant_count:
+        if box[2][0] < image_path or box[2][1] > image_path or box[2][0] > (image_path + str(i_d)[:-4]) or box[2][1] > (image_path + str(i_d)[:-4]):
+            continue
+        else:
+            return len(elephant_count) - 1  # Return the number of elephants based on their bounding boxes
+
+# Image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_43_image_1.jpg"
+
+i_d = 210
+# Check if trunks are detected in the image
+if not detect():
+    trunks_count = count_trunks()
+else:
+    trunks_count = count_trunks()
+
+final_result = trunks_count
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

@@ -1,0 +1,74 @@
+------------- 24-14-06-51-591601 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Define output types
+OUTPUT_TYPE = [ ("label", "Type of label used for detection", 'str'), ("confidence score", "Confidence score of the detection", 'float'), ("box", "Box coordinates of the detection", 'tuple'), ("saved_image_path", "Path to the saved image", 'str') ]
+
+def chicken_nuggets_detection(image_path, labels, threshold, model_size, padding):
+    # Load the object detector model using fine-tuning
+    model = load_detector_model(model_name = "base")
+
+    # Detect chicken nuggets in the image
+    detections = detect_objects(image_path, model=model, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+    return detections
+
+# Provide the path to the image file
+image_path = "/path/to/your/image.jpg"
+
+# Define labels for chicken nuggets
+labels_chicken_nugget = ["chicken nugget"]
+
+# Define threshold
+threshold = 0.5
+
+# Define the model size
+model_size = "base"
+
+# Define the number of pixels to add for padding around detected objects
+padding = 20
+
+# Specify that we want to detect chicken nuggets
+labels_to_detect = ["chicken nugget"]
+
+# Load the dataset file
+dataset_file = find_dataset_file("chicken_nugget_dataset.csv")
+
+# Load the dataset file
+dataset = load_dataset(dataset_file=dataset_file)
+
+# Detect chicken nuggets in the image
+detections = chicken_nuggets_detection(image_path=image_path, labels=labels_chicken_nugget, threshold=threshold, model_size=model_size, padding=padding, labels_to_detect=labels_chicken_nugget)
+
+if det_name not in dataset:
+    # If the object was not detected, add it to the dataset
+    dataset[det_name] = {'label': labels_chicken_nugget[0], 'confidence score': None, 'box': None, 'saved_image_path': None}
+else:
+    # If the object was detected, update the confidence score, box, and saved_image_path
+    dataset[det_name]['confidence score'] = detections['label']['box'].confidence
+    dataset[det_name]['box'] = detections['label']['box']
+    dataset[det_name]['saved_image_path'] = detections['label']['box'].pad_confirmed_image_path
+    dataset[det_name]['label'] = labels_chicken_nugget[0]
+
+print(f"Number of chicken nuggets detected: {len(detections)}")  # Output the number of chicken nuggets detected
+print('<final_result>', final_result)
+
+Solution: 4

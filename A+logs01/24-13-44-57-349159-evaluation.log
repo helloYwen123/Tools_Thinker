@@ -1,0 +1,51 @@
+------------- 24-13-44-57-349159 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'Object_Detector_Tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from Object_Detector_Tool import *
+
+# Load the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1.jpg'
+execution = object_detector_tool.execute(image=image_path, labels=["baseball", "basket"])
+
+# Find the baseball
+baseball = [obj for obj in execution if obj["label"] == "baseball"]
+
+
+# Find the basket
+basket = [obj for obj in execution if obj["label"] == "basket"]
+
+# Define the x, y coordinates and size of the bounding box
+baseball_bbox = (baseball[0]["bbox"])
+basket_bbox = (basket[0]["bbox"])
+
+# Define the empty padding
+padding = 20
+
+# Get the paths of the objects
+baseball_path = f'/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1_{baseball_bbox[0]}_{baseball_bbox[1]}_{baseball_bbox[2]}_{baseball_bbox[3]}_{baseball_bbox[4]}_{baseball_bbox[5]}_{baseball_bbox[6]+padding}_ball.png'
+basket_path = f'/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1_{basket_bbox[0]}_{basket_bbox[1]}_{basket_bbox[2]}_{basket_bbox[3]}_{basket_bbox[4]}_{basket_bbox[5]}_{basket_bbox[6]+padding}_basket.png'
+
+# Find the number of telephone poles to the right of the truck
+telegraph_wires = [obj for obj in execution if obj["label"] == "telephone pole"]
+right_pole_count = len(telegraph_wires)
+
+final_result = right_pole_count
+print('<final_result>', final_result)
+
+Solution: 3

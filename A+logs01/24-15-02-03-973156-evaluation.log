@@ -1,0 +1,61 @@
+------------- 24-15-02-03-973156 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from tool import Object_Detector_Tool
+
+# Define the image path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_70_image_1.jpg'
+
+# Load the image
+image = Object_Detector_Tool(image_path).output[0]["output_images"][0]
+
+# Create a list of object labels to detect
+labels = ["baseball", "basket"]
+
+
+# Set the confidence threshold
+threshold = 0.35
+
+# Load the classifier model
+model = Object_Detector_Tool.load_model('base')
+
+# Extract object bounding boxes
+boxes = model(image)
+
+# Filter the labels
+filtered_labels = [box["label"] for box in boxes if box["label"] in labels]
+
+# Filter the images
+filtered_images = [box["path"] for box in boxes if box["label"] in labels and box["confidence score"] > threshold]
+
+# Combine the bounding boxes and images
+bbox_images = [{"name": box["labels"][0], "bbox": box["bbox"], "path": box["saved_image_path"]} for box in boxes if box["labels"][0] in labels and box["bbox"] and box["confidence score"] > threshold]
+
+# Get the minimum bounding box coordinates
+min_bbox = min(bbox_images, key=lambda k: k["bbox"])
+
+# Calculate the number of doors with red line
+num_doors = len(min_bbox["bbox"]) - 1  # Subtract the door handle to get the number of doors
+
+# Format the answer as a string
+final_result = f"Numbers of doors with red line: {num_doors} due to the image's detail"
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

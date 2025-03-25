@@ -1,0 +1,52 @@
+------------- 24-13-06-25-954094 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 40
+    final_result = "The image contains between {} and {} people."format(numbers_of_people)
+                                                                 ^^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_people(image_path, people_labels, threshold, model_size, padding):
+    detection = []
+    for label in people_labels:
+        for model in ('tiny', 'base'):
+            execution = execute(image_path, labels=[label], threshold=threshold, model_size=model, padding=padding)
+            if execution:
+                detection.extend(execution)
+    return detection
+
+def find_number_of_people(image_path, people_labels, threshold, model_size, padding):
+    return len(find_faces(image_path, people_labels, threshold, model_size, padding))
+
+# Sample image file path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_93_image_1.jpg"
+
+# Detect and count people in the image
+people_labels = ["baseball", "basket"]
+threshold = 0.6
+model_size = "tiny"
+padding = 20
+
+number_of_people = find_number_of_people(image_path, people_labels, threshold, model_size, padding)
+
+final_result = "The image contains between {} and {} people."format(numbers_of_people)
+print(final_result)
+
+# Sample image file path: val_Counting_93_image_1.jpg
+print('<final_result>', final_result)
+
+Solution: 0

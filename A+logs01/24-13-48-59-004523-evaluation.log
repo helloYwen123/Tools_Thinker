@@ -1,0 +1,65 @@
+------------- 24-13-48-59-004523 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_blue_buses(image_path):
+    # Load the model
+    num_workers = 2
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    object_detector = object_detection_model('tiny', num_workers=num_workers, device=device)
+
+    # Load the labels
+    labels = ["car", "person"]
+    threshold = 0.34
+    model_size = "base"
+    padding = 20
+
+    # Load the image
+    loaded_image = Image.open(image_path)
+
+    # Detect the objects
+    object_detection_result = object_detector.detect_objects_with_padding(loaded_image, labels, threshold, model_size, padding=padding)
+
+    # Get the detections
+    detections = [obj_detection_result[0][0] for obj_detection_result in object_detection_result]
+
+    # Get the number of detections
+    num_detections = len(detections)
+
+    # Get the bounding boxes of the detections
+    bboxes = [obj_detection_result[1] for obj_detection_result in object_detection_result]
+
+    # Get the names of the detections
+    names = [obj_detection_result[2] for obj_detection_result in object_detection_result]
+
+    # Filter the detections for blue buses
+    blue_buses = [bbox for obj_detection_result in detections for bbox in obj_detection_result[3] if obj_detection_result[2] == 'bus' and objects[1] == 'blue']
+
+    # Count the blue buses
+    num_blue_buses = len(blue_buses)
+
+    # Print the result
+    print(f"Number of blue buses: {num_blue_buses}")
+
+# Execute the function
+count_blue_buses('/')
+print('<final_result>', final_result)
+
+Solution: 1

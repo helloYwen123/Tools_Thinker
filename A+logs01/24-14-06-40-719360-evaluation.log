@@ -1,0 +1,52 @@
+------------- 24-14-06-40-719360 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 42, in <module>
+  File "<string>", line 30, in count_skiers
+NameError: name 'object_detection' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_skiers(image_path, labels=["ski"]):
+    """
+    This function detects and counts the number of people skiing in an image.
+    :param image_path: str, the path to the image file.
+    :param labels: list, object labels to detect (default: ["ski"]).
+                          Example labels: ["baseball", "basket"].
+    :param threshold: float, the confidence threshold for detection (default: 0.5).
+    :param model_size: str, the size of the model to use ('tiny' or 'base', default: 'tiny').
+    :param padding: int, the number of pixels to add as empty padding around detected objects (default: 20).
+    :return: int, the number of people skiing.
+    """
+    # Load the image
+    image = Image.open(image_path)
+
+    # Detect people in the image using the object detector
+    detection_result = object_detection(image=image, model_name='DINO-tiny')
+    
+    # Get bounding boxes for each detected person
+    people_boxes = detection_result['output'][0].get('bboxes')
+    
+    # Count the number of people
+    num_skiers = len(people_boxes)
+    
+    return num_skiers
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_76_image_1.jpg"
+num_skiers = count_skiers(image_path)
+print(f'The number of people skiing in the image is: {num_skiers}')
+print('<final_result>', final_result)
+
+Solution: 1

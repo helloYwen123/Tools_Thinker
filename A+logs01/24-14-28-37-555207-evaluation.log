@@ -1,0 +1,58 @@
+------------- 24-14-28-37-555207 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+def find_people_in_area(image_path, label_list, threshold=0.5, model_size="tiny", padding=20):
+    """Return the paths of people detected in an image based on label_list.
+
+    Parameters:
+    * image_path (str): The path to the image file.
+    * label_list (list): A list of object labels to detect.
+    * threshold: The confidence threshold for detection (default: 0.35).
+    * model_size (str): The size of the model to use ('tiny' or 'base', default: 'tiny').
+    * padding (int): The number of pixels to add as empty padding around detected objects (default: 20).
+
+    Returns:
+    List of detected object paths.
+    """
+    detection_results = tool.execute(image=image_path, labels=label_list, threshold=threshold, model_size=model_size, padding=padding)
+    people_detected_paths = []
+    for detection_result in detection_results:
+        if detection_result["label"] in ["person"] and float(detection_result["confidence score"]) > threshold:
+            people_detected_paths.append(f"/home/stud/wxie/BLINK_Dataset/Counting/counting_114_image_1_{float(detection_result['confidence score']):.2f}")
+    return people_detected_paths
+
+# Sample image path
+sample_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_114_image_1.jpg"
+
+# List of people labels to detect
+people_labels = ["baseball", "basket", "car"]
+
+# Get people detected paths
+people_paths = find_people_in_area(sample_image_path, people_labels)
+
+# Print people detected paths
+people_detected_paths = []
+for people_path in people_paths:
+    people_detected_paths.append(people_path.replace("/home/stud/wxie/BLINK_Dataset/Counting/counting_114_image_1_", "").strip())
+print("People detected paths:", people_detected_paths)
+print('<final_result>', final_result)
+
+Solution: 0

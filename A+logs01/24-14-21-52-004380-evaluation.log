@@ -1,0 +1,42 @@
+------------- 24-14-21-52-004380 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'matplotlib'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import matplotlib.pyplot as plt
+
+def count_red_shirts(image_path, labels, threshold=0.35, model_size="tiny", padding=20):
+    import object_detector_tool as OD
+
+    if model_size == "tiny":
+        input_image = image_path
+    else:
+        input_image = image_path.replace("image", "model")
+    
+    output_image, labels, confidence_scores, boxes = OD.execute(input_image, labels, threshold, model_size, padding)
+    return output_image
+
+# Example usage
+output_image = count_red_shirts("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_8_image_1.jpg", {"red_shirt": "NATIONAL_DRYER_Logo_D.png"})
+plt.imshow(output_image)
+plt.show()
+
+final_result = float(output_image.shape[1] / output_image.shape[0])
+print("Number of people wearing red shirts:", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

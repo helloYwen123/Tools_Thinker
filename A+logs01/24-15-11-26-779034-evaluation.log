@@ -1,0 +1,36 @@
+------------- 24-15-11-26-779034 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'objectDetector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from objectDetector_tool import *
+imageFilePath = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_112_image_1.jpg"
+labels = ["beer bottle"] # replace with actual labels detected in the image
+threshold = 0.3 # confidence threshold for detection
+model_size = "base" # fine-tuning model size
+padding = 20 # empty padding around detected objects
+total_bottles = 0
+execResult = tool.execute(image=imageFilePath, labels = labels, threshold=threshold, model_size=model_size, padding=padding)
+for bottleObj in execResult:
+	total_bottles += float(str(bottleObj['confidence score']).split('.')[1]) if str(bottleObj['label']).lower() in ['beer bottle'] else 0
+
+final_result = "There are " + "{:.2f}".format(total_bottles) + " beer bottle(s) on the round table at the bottom of the photo."
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

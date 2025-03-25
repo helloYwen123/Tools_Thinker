@@ -1,0 +1,81 @@
+------------- 24-14-52-35-939352 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 45
+    for r in np.array_split(image_canny, 15):
+    ^
+IndentationError: expected an indented block after 'for' statement on line 42
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool_to_function
+
+# Function to check if a wine glass is empty
+def is_wine_glass_empty(wine_glass):
+    return 'Wine' not in wine_glass or float(wine_glass['confidence_score']) < 0.7  # 70% is a reasonable threshold for emptying
+
+# Detect wine glasses in 2018 Umbria Italy white wine bottle
+import cv2
+import numpy as np
+path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_74_image_1.jpg'
+
+# Load the image
+image = cv2.imread(path)
+
+# Convert to grayscale
+image_grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Denoise the grayscale image
+image_denoise = cv2.fastNlMeansDenoisingColours(image_grayscale, None, 10, 10, 7, 21)
+
+# Convert the grayscale image to Canny thresholded image
+image_canny = cv2.Canny(image_denoise, 0.35, 0.35)
+
+# Initialize empty list to store detected glasses
+glasses = []
+
+# Iterate through each region in the image
+for r in np.array_split(image_canny, 15):
+    # Loop through each corner of the region to detect wine glasses
+    # (Note: Wine glass detection may vary based on image and region selection)
+for r in np.array_split(image_canny, 15):
+    # Get a copy of the region
+    region = r
+    
+    # Make a copy of the region for the mask
+    region_copy = region.copy()
+
+    # Convert the region to RGB to calculate its area
+    region = cv2.cvtColor(region, cv2.COLOR_GRAY2BGR)
+    
+    # Calculate the area of the current region
+    region_area = np.count_nonzero(region)
+
+    for r in np.array_split(image_canny, 15):
+        # Get a copy of the original region
+        region = r.copy()
+
+        # Calculate the ratio between the total pixel area of the region and the current region area
+        ratio = np.count_nonzero(region) / region_area
+        
+        if ratio < 0.8:
+            # Check if it's a glass
+            if cv2.countNonZero(classifier * (np.array(image_canny) - region.copy()) < 0)[0][0] == None:
+                # Append the glass label to the list
+                glasses.append(r) 
+
+# Print the length of the list
+len(glasses)
+print('<final_result>', final_result)
+
+Solution: 1

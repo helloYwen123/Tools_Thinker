@@ -1,0 +1,46 @@
+------------- 24-14-58-13-550021 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_white_pillows(image):
+
+    # Load the image
+    image = Image.open(image)
+
+    # Detect the pillow
+    detection = detect_objects(image, [], 0.5, 'tiny', padding=15)
+
+    # Count the white pillows
+    white_pillows = 0
+    for pillow in detection['output_type']:
+        if pillow['label'] == 'baseball' and pillow['confidence_score'] > 0.7 and pillow['box'][0] < image.height and pillow['box'][2] < image.height:
+            white_pillows += 1
+
+    return white_pillows
+
+# Open the image
+image = Path("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg").name
+
+# Get the result
+final_result = count_white_pillows(image)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 4

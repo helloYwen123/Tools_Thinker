@@ -1,0 +1,71 @@
+------------- 24-12-08-09-220766 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 61, in <module>
+  File "<string>", line 57, in count_umbrellas
+TypeError: 'NoneType' object is not subscriptable
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from typing import List
+
+class ImageDetector:
+    def __init__(self, labels: List[str]):
+        self.labels = labels
+        
+    def detect_objects(self, image_path: str):
+        label_detection_result = []
+        
+        try:
+            object_list = self._detect_objects_with_model(image_path)
+            
+            # Save the detected objects with empty padding
+            for i, obj in enumerate(object_list):
+                file_path = f"counting_{i}.png"
+                obj["box"].append(f"box_{i}")
+                obj["saved_image_path"] = file_path
+                with open(file_path, mode="w", encoding="utf-8") as file:
+                    for key, value in obj.items():
+                        file.write(f"{key} {value}")
+                    
+            label_detection_result = object_list
+                
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            label_detection_result = None
+            
+        return label_detection_result
+        
+    def _detect_objects_with_model(self, image_path: str) -> List[dict]:
+        import ground_dino
+        
+        objects = ground_dino.detect_objects_in_image(image_path, 
+                        labels=self.labels, 
+                        threshold=0.75, 
+                        model_size="tiny")
+        return objects
+        
+# Function to count the number of white umbrellas
+def count_umbrellas(image_path: str):
+    detector = ImageDetector([])
+    detection_result = detector.detect_objects(image_path)
+    return detection_result["total_objects"][1]["count"]
+
+# Demonstration of the function
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg"
+umbrellas = count_umbrellas(image_path)
+print(f"Number of white umbrellas: {umbrellas}")
+print('<final_result>', final_result)
+
+Solution: 3

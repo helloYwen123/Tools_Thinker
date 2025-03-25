@@ -1,0 +1,46 @@
+------------- 24-12-38-41-456679 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 26
+    x, y, x+w, y+h = obj['box']
+               ^^^
+SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_towels(image_path, labels, threshold, model_size, padding):
+    detection = execute([image_path], labels=['blue towel'], threshold=threshold, model_size=model_size, padding=padding)
+    blue_towels = {}
+    for obj in detection:
+        if obj['label'] in ['blue towel']:
+            if 'bbox' in obj:
+                x, y, w, h = obj['bbox']
+                blue_towels[(x, y, x+w, y+h)] = 1
+            elif 'box' in obj:
+                x, y, x+w, y+h = obj['box']
+                blue_towels[(x, y, x+w, y+h)] = 1
+    return blue_towels
+
+def count_towels_in_image(image_path):
+    result = {}
+    result['count'] = len(count_towels(image_path, 'blue towel', 0.35, 'tiny', 20))
+    return result
+
+count_towels_in_image('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_50_image_1.jpg')
+final_result = count_towels_in_image('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_50_image_n.jpg') if "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_50_image_n.jpg" in image_path else {'count': 0, 'message': 'Blue towel is not detected in the image.'}
+final_result['count']
+print('<final_result>', final_result)
+
+Solution: 1

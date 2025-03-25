@@ -1,0 +1,54 @@
+------------- 24-14-58-14-132935 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool 
+
+def count_white_pillows(image_path):
+    # Load the image
+    image = tool.execute(image=image_path)
+
+    # Detect the objects and save them
+    detected_objects = tool.execute(image=image, labels=["pillow"], threshold=0.25, model_size="tiny")
+
+    total_white_pills = 0
+    total_white_pillow_boxes = 0
+
+    for box in detected_objects:
+        if box['label'] == "pillow" and "white" in str(box['label']):
+            total_white_pills += 1
+            total_white_pillow_boxes += 1
+
+    print(f"Total white pillows detected: {total_white_pills}, of which {total_white_pillow_boxes} are in boxes.")
+    return total_white_pillow_boxes
+
+# Path of the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg"
+
+# Count the total white pillows detected
+total_white_pillows = count_white_pillows(path_to_image)
+
+# Calculate the number of white pillows in boxes
+white_pillows_in_boxes = count_white_pillows("/home/stud/wxie/BLINK_Dataset/Counting/Maize/val/Counting_50_image_1.jpg")
+
+# Calculate the overall proportion of white pillows in the total count
+proportion_white_pillows = white_pillows_in_boxes / total_white_pillows
+print(f"{percentage} percent of white pillows are found in boxes.")
+print('<final_result>', final_result)
+
+Solution: 4

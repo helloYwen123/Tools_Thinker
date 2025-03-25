@@ -1,0 +1,64 @@
+------------- 24-14-46-09-447763 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 18, in <module>
+ModuleNotFoundError: No module named 'groundinomodel'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+#!/usr/bin/env python3
+"""Detect people in an image using the Object Detection Tool and count the number of people standing in the picture."""
+import numpy as np
+from groundinomodel import GroundInoModel
+
+# Define object labels
+labels = ['baseball', 'baseball team member', 'basketball', 'basketball team member', 'car', 'person']
+
+# Load object detector model with default parameters
+model = GroundInoModel(model_size='tiny')
+
+# Define the threshold and padding parameters for detection
+threshold = 0.35
+padding = 20
+
+# Load image file
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_49_image_1.jpg'
+
+# Detect objects in the image and calculate object bounding boxes with padding
+image = np.array(np.array(image_path))
+objects, confidence_scores = model.detect_images(image=image, labels=labels, threshold=threshold, padding=padding)
+
+# Initialize counter for the number of standing people
+standing_people_count = 0
+
+# Iterate through the detected objects and count those that are standing
+for obj in objects:
+    if obj['label'] == 'basball' or obj['label'] == 'basball team member':
+        standing_people_count += 1
+    
+    obj['standing'] = standing_people_count
+
+    # Print bounding box and confidence score of the detected object
+    print(f"Detected {obj['label']} object with bounding box ({obj['bbox'][0]}, {obj['bbox'][1]}, {obj['bbox'][2]}, {obj['bbox'][3]}) and confidence score {confidence_scores[0]}")
+
+# Calculate the total number of people standing in the image (excluding standing objects)
+total_standing_people = 0
+for obj in objects:
+    standing_people_count = obj['standing']
+    total_standing_people += standing_people_count
+
+standing_people_count
+print('<final_result>', final_result)
+
+Solution: 2

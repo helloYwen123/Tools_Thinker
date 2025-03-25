@@ -1,0 +1,58 @@
+------------- 24-14-39-15-144515 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Load the dataset
+dataset = load_dataset("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_30_image_1.jpg", ["person", "baseball", "basket"])
+
+# Execute the detection
+images_with_objects = execute_detection(dataset,
+                                        labels=["baseball", "basket", "person"],
+                                        threshold=0.3,
+                                        model_size="tiny",
+                                        padding=5)
+
+# Process the detected objects
+process_images_with_objects(images_with_objects)
+
+# Define a function to determine the presence of a green jacket based on the label and threshold
+def is_green_jacket(label, threshold):
+    return label == "green_jacket" and threshold >= (label_index(label, model_index("green_jacket", "baseball")) or label_index(label, model_index("green_jacket", "baseball")))
+
+# Initialize a variable to store the count of people wearing green jackets
+green_jacket_count = 0
+
+# Iterate through the detected objects
+for image in images_with_objects:
+    # Extract the boxes from the image
+    boxes = [box for box in get_boxes(image, "person") if box["label"] == "person"]
+
+    # Iterate through the boxes
+    for box in boxes:
+        # Check if the person in the box has a green jacket
+        if is_green_jacket(box["label"], 0.5):
+            green_jacket_count += 1
+
+# Return the final result
+final_result = green_jacket_count
+print(f"Number of people wearing a green jacket: {final_result}")
+print('<final_result>', final_result)
+
+Solution: 0

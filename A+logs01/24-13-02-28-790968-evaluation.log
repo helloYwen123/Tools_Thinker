@@ -1,0 +1,61 @@
+------------- 24-13-02-28-790968 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 23
+    for obj_labels, conf_scores, boxes, bbox = [item[:-2] for item in image_binary].astype(np.float32):
+                                             ^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def get_nuts_in_bowl(image_path):
+    import os
+    import numpy as np
+    import dino
+    from PIL import Image
+    try:
+        image_binary = dino.detect_objects(np.array(Image.open(image_path))[None, :, :])
+        big_nuts = []
+        for obj_labels, conf_scores, boxes, bbox = [item[:-2] for item in image_binary].astype(np.float32):
+            conf_scores = conf_scores[conf_scores > 0.35]
+            if len(boxes) > 0:
+                boxes = list(boxes.flatten())
+                boxes = [(b[0][0], b[1][0], b[1][1], b[0][1]) for b in boxes]
+            if boxes and conf_scores.size > 0 and 2 < len(boxes):
+                min_conf = conf_scores.min()
+                index = np.argsort(conf_scores)
+                detected_boxes = boxes[index][conf_scores == min_conf]
+                for bbox in detected_boxes:
+                    bbox = bbox[:len(bbox) - 1].astype(np.int32)
+                    x_min = min(bbox[0], bbox[2])
+                    x_max = max(bbox[0], bbox[2])
+                    y_min = min(bbox[1], bbox[3])
+                    y_max = max(bbox[1], bbox[3])
+                    area = x_max - x_min + 1 * (y_max - y_min + 1)
+                    if len(detected_boxes) > 2:
+                        # for 3 or more detected objects, box with the largest overlap with the bowl.
+                        if area > 20:
+                            big_nuts.append((bbox, area))
+        return big_nuts
+    except Exception as e:
+        print('Error: ', str(e))
+        return []
+
+# Use the Image class to open and save images
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_6_image_1.jpg'
+big_nuts = get_nuts_in_bowl(image_path)
+final_result = len(big_nuts)
+print('The number of big nuts in the green bowl is: ', final_result)
+print('<final_result>', final_result)
+
+Solution: 3

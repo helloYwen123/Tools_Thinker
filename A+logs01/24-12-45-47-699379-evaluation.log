@@ -1,0 +1,46 @@
+------------- 24-12-45-47-699379 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 36, in <module>
+  File "<string>", line 25, in count_signs
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_signs(image_path, output_type):
+    import cv2
+    
+    # Load the image
+    image = cv2.imread(image_path)
+    
+    # Detect the signs and count them
+    signs = []
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            if image[i][j] >= 0.35:
+                sign = {}
+                sign['label'] = 'sign'
+                sign['confidence_score'] = float(image[i][j])
+                sign['box'] = [i, j]
+                signs.append(sign)
+    
+    # Return the number of signs detected
+    return len(signs)
+
+# Call the function to count signs
+number_of_signs = count_signs('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_105_image_1.jpg', output_type=str)
+print("Number of signs detected:", number_of_signs)
+print('<final_result>', final_result)
+
+Solution: 2

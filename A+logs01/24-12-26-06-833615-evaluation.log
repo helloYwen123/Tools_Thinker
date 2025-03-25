@@ -1,0 +1,47 @@
+------------- 24-12-26-06-833615 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from tool import Object_Detector_Tool
+
+# Define input variables
+input_image = 'path/to/image.jpg'
+labels_to_detect = ['human']  # Add human labels if required
+human_threshold = 0.5  # Custom threshold to filter out non-human pixels, e.g., 0.6 for a balanced threshold
+human_model_size = 'base'  # Use 'tiny' if detecting small objects, or 'base' for a standard model
+human_padding = 20  # Padding pixels around detected objects, e.g., 20
+output_image = 'path/to/output.jpg'
+
+# Prepare object detection function
+execution = Object_Detector_Tool.execute(input_image=input_image, labels=labels_to_detect, threshold=human_threshold, model_size=human_model_size, padding=human_padding)
+
+# Process and determine final result
+if execution:
+    human_labels = [obj['label'] for obj in execution[0] if 'human' in obj['label']]
+    if len(human_labels) > 0:
+        human_count = int(execution[0][human_labels.index('human')]['confidence score'])
+    else:
+        human_count = 0
+    final_result = {'People': human_count}
+else:
+    final_result = {'People': 0}
+
+final_result
+print('<final_result>', final_result)
+
+Solution: 1

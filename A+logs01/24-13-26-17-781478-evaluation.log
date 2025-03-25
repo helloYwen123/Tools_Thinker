@@ -1,0 +1,36 @@
+------------- 24-13-26-17-781478 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detector_tool
+
+def count_people(image_path, model="base", padding=20, threshold=0.5):
+    # Load the baseline object detector model
+    detector = object_detector_tool(image_path, labels=["person"], model_size=model, threshold=threshold)
+    # Detect people in the image
+    detections = list(detector.execute())
+    # Filter the detections based on bounding box size and save the bounding box with 20 pixels of padding
+    detections = [d for d in detections if d["bbox"][0] < 500 and d["bbox"][2] - d["bbox"][0] > 50 and d["bbox"][1] < 500 and d["bbox"][3] - d["bbox"][1] > 50]
+    # Get the bounding box, confidence score, and box from each detected object to identify people in a single query
+    person_boxes = [d["bbox"] for detection in detections for d in detection["output"]]
+    # Count the number of people by iterating through the bounding boxes and using the detected confidence scores as weights
+    count = sum([d["bbox"][0] < i < d["bbox"][2] for i in person_boxes]) / len(person_boxes)
+    return int(count * 100) / 100
+print('<final_result>', final_result)
+
+Solution: 0

@@ -1,0 +1,60 @@
+------------- 24-13-06-36-889868 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+label_list = ["baseballs", "basket"]
+confidence_threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+def get_detected_objects(image_path):
+    # Load the image
+    image = image_path
+
+    detection_data = tool.execute(image=image_path, labels=label_list, threshold=confidence_threshold, model_size=model_size, padding=padding)
+
+    # Extract bounding boxes from the detection data
+    bbox_data = []
+    for detection_data_dict in detection_data:
+        bbox_data.append((detection_data_dict["label"], detection_data_dict["confidence"] or 1, detection_data_dict["bbox"]))
+
+    return bbox_data
+
+# Load images
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_60_image_1.jpg"
+bbox_data = get_detected_objects(image_path)
+bbox_data
+
+# Use bounding boxes to identify the number of sandwiches
+num_sandwiches = 0
+for bbox_dict in bbox_data:
+    if "sandwich" in bbox_dict["label"]:
+        num_sandwiches += 1
+
+# Determine if there are any sandwiches
+if num_sandwiches:
+    final_result = num_sandwiches
+else:
+    final_result = 0
+
+print("There are", final_result, "plates holding sandwiches.")
+print('<final_result>', final_result)
+
+Solution: 3

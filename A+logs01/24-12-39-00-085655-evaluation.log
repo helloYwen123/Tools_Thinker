@@ -1,0 +1,41 @@
+------------- 24-12-39-00-085655 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+def count_glasses_in_image(image_path):
+    try:
+        # Load the image
+        image = tool.load_image(image_path)
+        
+        # Predict the labels and return the confidence score
+        labels, confidence_scores = tool.predict_labels(image=image, labels=["glasses"], threshold=0.5)
+        
+        # Calculate the number of glasses
+        num_glasses = sum([1 for label in labels if 'glasses' in label])
+        
+        return num_glasses
+    except Exception as e:
+        return 0
+
+final_result = count_glasses_in_image('path/to/image.jpg')
+print("Number of people wearing glasses:", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

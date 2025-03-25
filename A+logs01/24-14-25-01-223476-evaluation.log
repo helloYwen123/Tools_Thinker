@@ -1,0 +1,82 @@
+------------- 24-14-25-01-223476 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 48
+    print(f'Label: {key}, Confidence Score: {value["confidence score"]}, Box: {(value["box"])[0]}-{:value["box"][-1]}, Saved Image Path: {value["saved_image_path"]}')
+                                                                                                                                                                     ^
+SyntaxError: f-string: expression required before ':'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Set default options
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Load the model and image
+model, original_image = load_model_and_image(model_size)
+
+# Function to get bounding boxes and labels for a given image
+def get_bounding_boxes_and_labels(image_path):
+    # Load the image
+    image = load_image(image_path)
+
+    # Detect objects using the model
+    detected_objects = detect_objects(image, threshold, model)
+
+    # Get bounding boxes and labels from the model
+    bounding_boxes = {obj['label']: obj for obj in detected_objects}
+    
+    return bounding_boxes
+
+# Load the first image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg"
+
+# Get bounding boxes and labels using the function
+bounding_boxes = get_bounding_boxes_and_labels(image_path)
+
+# Print the bounding boxes and labels
+for key, value in bounding_boxes.items():
+    print(f'Label: {key}, Confidence Score: {value["confidence score"]}, Box: {(value["box"])[0]}-{:value["box"][-1]}, Saved Image Path: {value["saved_image_path"]}')
+
+# Get bounding boxes and labels for the first image
+boxes = bounding_boxes[list(bounding_boxes.keys())[0]]
+labels = bounding_boxes[list(bounding_boxes.keys())[0]]
+
+# Plot the bounding boxes
+fig, ax = plt.subplots()
+for box, label in zip(boxes, labels.values()):
+    ax.add_patch(np.patch.Patch(color=box["label"], alpha=0.1))  # Add bounding box to the plot
+
+plt.show()
+
+# Initialize a list for the red buses
+red_buses = []
+
+# Loop through the bounding boxes to check for red buses
+for box, label in zip(boxes, labels.values()):
+    if label.lower() == "red bus":
+        red_buses.append(box)
+
+# Print the number of red buses
+if red_buses:
+    print("There are", len(red_buses), "red buses.")
+else:
+    print("No red buses present.")
+print('<final_result>', final_result)
+
+Solution: 1

@@ -1,0 +1,47 @@
+------------- 24-13-02-28-945900 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 37, in <module>
+  File "<string>", line 23, in detect_nuts
+ModuleNotFoundError: No module named 'Object_Detector_Tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from PIL import Image
+import numpy as np
+
+def detect_nuts(img_path, labels=["almond"], threshold=0.35, model_name='tiny'):
+    """Detect nuts and return their paths."""
+    if model_name not in ['tiny', 'base']:
+        model_name = 'tiny'
+    # Load the model
+    from Object_Detector_Tool.object_detection import object_detection
+    from Object_Detector_Tool.object_detection import ObjectDetection
+    detection = object_detection(ObjectDetection(), labels, model=model_name, threshold=threshold)
+    # Open the image
+    with Image.open(img_path) as img:
+        # Detection
+        detections = detection(det_obj_path='{}.jpg'.format(img_path), img_path=img)
+        # Show the detections
+        for obj in detections:
+            print(obj.label, obj.box)
+            for c in detections[obj.label]: 
+                print("%s %.2f %f %f" % (
+                        c.label, c.conf, c.box[0], c.box[2]))
+
+final_result = detect_nuts('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_6_image_1.jpg', labels=["almond"])
+print("There are", len(final_result),"big nuts in the green bowl.")
+print('<final_result>', final_result)
+
+Solution: 3

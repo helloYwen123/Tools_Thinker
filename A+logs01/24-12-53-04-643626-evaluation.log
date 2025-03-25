@@ -1,0 +1,63 @@
+------------- 24-12-53-04-643626 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 53
+SyntaxError: 'return' outside function
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+from openpyxl import load_workbook
+import numpy as np
+import imageio
+
+cell_image = imageio.imread("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg")
+image = imageio.imread("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_2.jpg")
+
+def find_glasses_with_water(image):
+    # detect glasses in the image
+    detection_result = Detection_Tool.execute(image=image, labels=['glass'], threshold=0.4).output
+    
+    # count the number of glasses with water
+    water_count = 0
+    for detected_glass in detection_result:
+        if detected_glass.label == 'glass' and detected_glass.confidence_scores['glass'] > 0.9:
+            if detected_glass.box.lower() not in ['bottom-left'] and detected_glass.box.lower() not in ['top-left']:
+                water_count += 1
+                detected_glass.save_image("glass_water{}.png".format(water_count))
+    
+    return water_count
+
+water_count = find_glasses_with_water(cell_image)
+print(f"{water_count} glasses have water within their bounding box.")
+
+# use excel file for counting
+workbook = load_workbook("/home/stud/wxie/BLINK_Dataset/Counting/val/2023_04_23_193443_qwerty_counting_1.xlsx")  
+worksheet = workbook.active
+for row in worksheet.iter_rows(min_row=2, max_row=len(worksheet)):
+    detected_glass = next((det_glass for det_glass in row[-1].values_if_list(np.split(det_glass, ['box'])) if det_glass[0].get('label') == 'glass'), None)
+    if detected_glass and detected_glass.confidence_scores['glass'] > 0.9:
+        if detected_glass.box.lower() not in ['bottom-left'] and detected_glass.box.lower() not in ['top-left']:
+            water_count += 1
+if detect_glasses(image, labels=['glass'],threshold=0.9, model_size='tiny')['result']:
+        detected_glass.save_image('glass_water_glass.png')
+        print(f"Found {water_count} glasses with water within their bounding box.")
+else:
+    print("No detected glasses.")
+    return -1
+
+water_count = find_glasses_with_water(cell_image)
+print(f"{water_count} glasses have water within their bounding box.")
+print('<final_result>', final_result)
+
+Solution: 3

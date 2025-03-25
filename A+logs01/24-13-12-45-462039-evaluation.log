@@ -1,0 +1,62 @@
+------------- 24-13-12-45-462039 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 22, in <module>
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/PIL/ImageGrab.py", line 78, in grab
+    size, data = Image.core.grabscreen_x11(display_name)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: X connection failed: error 5
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from PIL import ImageGrab
+import numpy as np
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_76_image_1.jpg"
+
+# Load the image as a numpy array
+img = ImageGrab.grab(image_path)
+
+# Convert the image to grayscale
+img_gray = np.array(img)[:, :, ::-1].astype('float')
+
+# Convert the image to a binary image with 255 for all non-black pixels
+binary_image = np.zeros_like(img_gray, dtype='uint8')
+for i in range(255):
+    for j in range(255):
+        if img_gray[i][j] > 40:
+            binary_image[i][j] = 255
+
+# Threshold the binary image
+label_image = np.dimgaussfilt_labels(binary_image, mean=150, var=40)
+threshold = np.percentile(np.arange(0,1), 90).astype('int')
+label_image = np.dimgaussfilt_labels(label_image, mean=150, var=40)
+threshold = np.percentile(np.arange(0,1), 90).astype('int')
+
+# Extract the label with the highest frequency
+labels, counts = np.unique(label_image, return_counts=True)
+max_count = max(counts)
+max_label = np.argmax(counts)
+
+# Count the number of people labeled as "baseball" in the image
+baseball_count = counts.tolist().index(max_count)
+# Number of people labeled as "baseball" in the image
+num_people_ski = baseball_count
+
+# Print the result
+print("Number of people skiing:", num_people_ski)
+print('<final_result>', final_result)
+
+Solution: 1

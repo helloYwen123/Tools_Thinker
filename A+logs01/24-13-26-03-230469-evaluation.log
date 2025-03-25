@@ -1,0 +1,94 @@
+------------- 24-13-26-03-230469 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute_image_tool, execute_labels_tool
+
+
+def detect_people(image_path: str, labels: list, threshold: float, model_type: str, padding: int) -> list:
+    """
+    Detect people in an image using a pre-trained model.
+    
+    Args:
+        image_path (str): The path to the image to be detected.
+        labels (list): A list of object labels.
+        threshold (float): The object confident threshold.
+        model_type (str): The model type to use ('tiny' or 'base').
+        padding (int): The number of pixels to add as empty padding around detected objects.
+    
+    Returns:
+        list: A list of detected people dictionaries with ('label';'confidence score';'box';'saved_image_path') keys and their corresponding values.
+    
+    """
+    if model_type == 'tiny':
+        model_details = {'model_path': 'path/to/tiny_model_file.tiny', 'model_name': 'tiny'}
+    else:
+        model_details = {'model_path': 'path/to/base_model_file.tiny', 'model_name': 'base'}
+    
+    execution = execute_image_tool(image=image_path, labels=labels, threshold=threshold, model_details=model_details)
+    people = [det for det in execution if 'baseball' in str(det['label'])]
+    
+    # Add empty padding
+    people = [[p[0]['box'] + [padding] * 2, p[1], p[-2]] for p in people]
+    
+    return people
+
+
+def detect_people_4_image(image_path: str) -> list:
+    """
+    Detect people in an image and return their bounding boxes.
+    
+    Args:
+        image_path (str): The path to the image.
+    
+    Returns:
+        list: A list of detected people with their bounding boxes.
+    """
+    people = []
+    people.extend(detect_people(image_path, labels=["baseball", "basket"], threshold=0.3, model_type="tiny", padding=20))
+    people.extend(detect_people(image_path, labels=["car", "person"], threshold=0.5, model_type="base", padding=5))
+    
+    return people
+
+
+def count_people(seated_sitter: bool, standing_sitter: bool, image_path: str) -> int:
+    """
+    Count the number of people sitting on a bed.
+    
+    Args:
+        seated_sitter (bool): A boolean indicating if the sitting person is present.
+        standing_sitter (bool): A boolean indicating if the standing person is present.
+        image_path (str): The path to the image.
+    
+    Returns:
+        int: The number of people sitting on the bed.
+    """
+    if seated_sitter:
+        people_to_count = detect_people_4_image(image_path)
+    else:
+        people_to_count = detect_people(image_path)
+        
+    return len(people_to_count) if standing_sitter else len(people_to_count) - 1
+
+
+if __name__ == "__main__":
+    final_result = count_people(seated_sitter=True, standing_sitter=False, image_path="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg")  
+    final_result
+print('<final_result>', final_result)
+
+Solution: 1

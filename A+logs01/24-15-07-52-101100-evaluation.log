@@ -1,0 +1,52 @@
+------------- 24-15-07-52-101100 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+import cv2
+import numpy as np
+
+# Load the image
+with open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_56_image_1.jpg") as image_file:
+    image = np.array([cv2.imread(str(image_file.read())) for x in range(20)])
+
+# Make the image grayscale
+gray_image = cv2.imread("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_56_image_2.jpg", 0)
+gray_image_edges = cv2.Canny(gray_image,175,255,3,1)
+
+# Detect objects
+executes = execute_labels(list(), threshold=0.6)
+detections = []
+for execution in executions:
+    detections.append((executions["label"], evaluations["confidence score"], evaluations["box"], detections["x1"], detections["y1"], detections["x2"], detections["y2"], detections["shape"], detections["bbox"]))
+
+# Calculate the distance between the TV and the candle
+tv_pos = (detections[-1]["x1"], detections[-1]["y1"])
+candle_pos = (detections[-1]["x2"], detections[-1]["y2"])
+
+detection_distance = np.linalg.norm(np.array(tv_pos) - np.array(candle_pos))
+
+print(detection_distance)
+# Print the number of candies to the right of the TV
+if detection_distance < 100:
+    print("There are candies to the right of the TV")
+else:
+    print("There are no candies to the right of the TV")
+print('<final_result>', final_result)
+
+Solution: 3

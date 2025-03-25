@@ -1,0 +1,47 @@
+------------- 24-12-29-09-601486 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 38, in <module>
+TypeError: string indices must be integers, not 'str'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from typing import List
+
+def count_doors_with_red_line(train_image_path: str) -> int:
+    # Load the train image using the Object_Detector_Tool
+    detector = Object_Detector_Tool()
+    objects = detector.execute(image=train_image_path, labels=["train", "train-door"])[0]
+
+    # Loop through each detected door and count those with red border
+    count = 0
+    for object in objects:
+        if "train-door" in object["label"]:
+            if object["bbox"][3] > 100 and object["bbox"][3] < object["bbox"][4] and object["color"][1] > 100:
+                count += 1
+
+    return count
+
+# Sample data
+train_data = [
+    {"path": "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_70_image_1.png", "result": "Counting_1"}
+]
+
+# Run the function on each train object
+for dataset, result in train_data:
+    output = count_doors_with_red_line(result["path"])
+    print(f"Train {dataset}: {output}")
+print('<final_result>', final_result)
+
+Solution: 2

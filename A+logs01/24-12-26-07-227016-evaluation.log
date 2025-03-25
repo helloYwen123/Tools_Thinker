@@ -1,0 +1,47 @@
+------------- 24-12-26-07-227016 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 16, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import numpy as np
+from object_detector_tool import (
+    tool_execute,
+    execute_command,
+)
+
+label_list = ['baseball', 'basket']
+
+def count_water_drinkers(image_path):
+    # Detect basketball and baseball in the image
+    detection, confidence, bbox, saved_image_path = tool_execute(image_path, label_list)
+
+    count = []
+    for (bbox, label) in zip(bbox, detection):
+        box = tuple(map(int, bbox))
+        y = box[1]
+        x = box[0]
+        w = x + 20
+        h = y + 20
+        count.append(int(w))
+
+    return np.mean(count)
+
+final_result = count_water_drinkers("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_22_image_1.jpg")
+print("Number of people drinking water: ", final_result)
+print('<final_result>', final_result)
+
+Solution: 0

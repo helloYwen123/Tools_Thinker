@@ -1,0 +1,61 @@
+------------- 24-14-14-47-616620 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 51
+SyntaxError: 'return' outside function
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+try:
+    import object_detector_tool as OT
+
+    def count_wheels():
+        # Load image
+        image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg"
+        img = OT.Image(image_path, labels=["train", "wheels", "person"])
+
+        # Detect objects
+        labels_to_extract = ["train", "wheels", "person"]
+        for label in labels_to_extract:
+            if label == "train":
+                # Exclude train if detected
+                img = img.with_out_label_label(label)
+                if not img.detect():
+                    return None
+                break
+            label_detection = img.detect_objects(label)
+            if label_detection is None:
+                return None
+            # Convert bounding boxes of wheels to lists
+            wheels_bboxs = []
+            for bounding_box in label_detection[1]["wheels"]:
+                wheels_bboxs.append([bounding_box.center, bounding_box.size])
+            if wheels_bboxs:
+                # Find the number of wheels
+                wheels_num = 1 + max([len(bbox) for bbox in wheels_bboxs])
+
+                return wheels_num
+        return None
+
+    # Call the function
+    wheels_num = count_wheels()
+        
+    final_result = int(wheels_num) if wheels_num is not None else None
+
+    return final_result
+except Exception as e:
+    final_result = str(e)
+    return final_result
+print('<final_result>', final_result)
+
+Solution: 3

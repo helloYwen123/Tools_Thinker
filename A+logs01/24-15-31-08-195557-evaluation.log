@@ -1,0 +1,57 @@
+------------- 24-15-31-08-195557 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def count_bear_colors(image: str) -> dict:
+    """
+    Detects bear-related objects in an image and returns their detected color.
+
+    Parameters:
+    image (str): A path to the image file.
+
+    Returns:
+    dict: A dictionary with keys 'label', 'confidence score', 'bbox', 'saved_image_path', where:
+          - label: The detected bear object label.
+          - confidence score: The confidence score of the detection.
+          - bbox: The bounding box coordinates of the object.
+          - saved_image_path: The path to the detected image.
+    """
+    detection = execute(image=image, labels=["bear"], threshold=0.5, model_size="base", padding=20)
+    bears = detection['output_type']
+    bear_dict = {}
+    for bear in bears:
+        bear_dict[bear['label']] = {
+            'confidence score': bear['confidence score'],
+            'bbox': bear['bbox'],
+            'saved_image_path': bear['saved_image_path']
+        }
+    return bear_dict
+
+# Load the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val.jpg"  # Path to the image file
+bear_dict = count_bear_colors(path_to_image)
+
+# Count the number of yellow bears
+yellow_bears_count = len([bear for bear in bear_dict if bear['label'] == 'YELLOW BEAR'])
+
+final_result = f"{yellow_bears_count}"  # Directly calculate and return the count
+print('<final_result>', final_result)
+
+Solution: 5

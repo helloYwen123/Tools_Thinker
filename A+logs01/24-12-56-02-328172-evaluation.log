@@ -1,0 +1,46 @@
+------------- 24-12-56-02-328172 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_empty_blue_seats(image_path):
+    # Load the model from the object_detector_tool library
+    detection_tool = Object_Detector_Tool(image_path, labels=["baseball"], model_size="base", padding=20)
+
+    # Use the model to detect baseballs in the image
+    baseball_detection = detection_tool.execute()
+
+    # Count the number of empty blue seats in the image
+    empty_blue_seats_count = 0
+
+    # Loop through each baseball in the baseball_detection output and count the number of empty blue seats
+    for label in baseball_detection:
+        if label[0] == "baseball" and label[1] > 0.35:
+            if label[2] == "baseball_blue_seats":
+                empty_blue_seats_count += 1
+
+    return empty_blue_seats_count
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+empty_blue_seats_count = count_empty_blue_seats(image_path)
+print(f"Number of empty blue seats: {empty_blue_seats_count}")
+print('<final_result>', final_result)
+
+Solution: 3

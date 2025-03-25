@@ -1,0 +1,78 @@
+------------- 24-14-18-18-207891 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 71
+SyntaxError: 'return' outside function
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from objects_detector_tool import Object_Detector_Tool
+
+detector = Object_Detector_Tool()
+
+with open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_27_image_1.jpg", 'rb') as image:
+
+    detection = detector.execute(image=image, labels=["dog", "woman"], threshold=0.35)
+    prediction = [], [], []
+    for result in detection:
+        box = result[3]
+        prediction.append([label, result[0], box[3], result[2]])
+
+    final_label = max(prediction, key=lambda x: x[0])
+    final_point = []
+    for point in prediction:
+        final_point.append(point[1])
+
+    dog_box = None
+    dog_point = None
+    dog_label = None
+    woman_box = None
+    woman_point = None
+    woman_label = None
+    for i in range(0, len(final_point)):
+        if final_label == "woman":
+            woman_box = {}
+            woman_box['bbox'] = final_point[i]
+            woman_label = prediction[i][0]
+            woman_point = [final_point[i][0], final_point[i][1]]
+        if final_label == "dog":
+            dog_box = {}
+            dog_box['bbox'] = final_point[i]
+            dog_label = prediction[i][0]
+            dog_point = [final_point[i][0], final_point[i][1]]
+    
+    if dog_point is not None:
+        dog_point.append([dog_box['bbox'][0]+20, dog_box['bbox'][1]+20])
+        for person in final_point[i+1:]:
+            person[1][0] = person[1][0]+20
+        final_result = []
+
+        if dog_label == "dog":
+            for l in prediction:
+                a = l[1]
+                b = (dog_box['bbox'][0]+dog_box['bbox'][1]+20,dog_point[1]+dog_box['bbox'][1]+20)
+                final_result.append([dog_point, a, b])
+                if len(final_result) == len(prediction):
+                    break
+        else:
+            for l in prediction:
+                a = l[1]
+                b = dog_box['bbox'][0]+dogBox['bbox'][1]-dogBox['bbox'][0], dogPoint[1]-dogBox['bbox'][0]
+                final_result.append([dogPoint, a, b])
+                if len(final_result) == len(prediction):
+                    break
+
+    return final_point
+print('<final_result>', final_result)
+
+Solution: 1

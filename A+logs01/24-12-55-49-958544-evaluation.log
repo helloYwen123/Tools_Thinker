@@ -1,0 +1,61 @@
+------------- 24-12-55-49-958544 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 17, in <module>
+ModuleNotFoundError: No module named 'tensorflow'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from PIL import Image
+import numpy as np
+import tensorflow as tf
+from object_detector_tool import *
+import matplotlib.pyplot as plt
+
+def load_image(image_path):
+    img = Image.open(image_path)
+    return img
+
+def predict_labels(img, labels, threshold):
+    img_arr = np.array(img)
+    predictions, threshold = predict(img_arr, labels)
+    predictions = predictions[:, 1:]  # Remove the background label and keep only the predicted labels
+    return predictions
+
+def analyze_images(image_paths):
+    all_labels = []
+    for image_path in image_paths:
+        img = load_image(image_path)
+        predictions = predict_labels(img, labels, threshold)
+        for p in predictions:
+            all_labels.append(p[0])
+        plt.figure(figsize=(10, 10))
+        plt.scatter(all_labels, color="r", label="Predicted Labels")
+    plt.scatter(np.arange(0, len(all_labels), 1), color="gray", label="True Labels")
+    plt.xlabel("Predicted Labels")
+    plt.ylabel("True Labels")
+    plt.legend()
+    plt.show()
+
+if __name__ == "__main__":
+    label_image_paths = ["path/to/image.png", "path/to/image.png"]
+    labels = ["baseball", "basket"]
+    threshold = 0.35
+    model_size = "tiny"
+    padding = 20
+
+    analyze_images(label_image_paths)
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,59 @@
+------------- 24-13-29-01-434294 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'image_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from image_tool import Object_Detector_Tool
+import os
+
+# Define the input image path
+input_image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_83_image_1.jpg'
+
+# Create the Object_Detector_Tool instance
+tool = Object_Detector_Tool()
+
+# Set the input_path to the image and labels to detect, the threshold to 0.35 for confidence, the model_size to 'tiny', and padding to 20
+execution = tool.execute(image=input_image_path, labels=["cap"], threshold=0.35, model_size="tiny", padding=20)
+
+# Get the output
+output = execution['output_type']
+
+
+# Process the output
+result = []
+for label, confidence, box, saved_image_path in output:
+    if label == "cap":
+        result.append({"label": label, "confidence score": confidence, "box": box, "saved_image_path": saved_image_path})
+
+# Check if any objects were detected and show the count
+count = 0
+for obj in result:
+    if "person" in obj['label']:
+        final_result = count
+    elif "baseball" in obj['label']:
+        final_result = count
+    elif "basket" in obj['label']:
+        final_result = count
+    else:
+        # Continue checking for other possible objects...
+        final_result = count
+
+# Print the final result
+final_result
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,46 @@
+------------- 24-15-28-06-074475 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execution
+
+def count_consonants_on_snowboard():
+    # Load snowboard image
+    snowboard_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_79_image_1.jpg"
+    
+    snowboard_output = execution(image=snowboard_image_path)
+
+    snowboard_labels = snowboard_output["output_type"][-1]
+    snowboard_boxes = snowboard_output["bbox"]
+    snowboard_confidences = snowboard_output["confidence score"]
+    snowboard_used_labels = [l for l, _, _, _ in snowboard_boxes]
+    snowboard_used_boxes = [[bbox[0] + 0, bbox[1] + 0, bbox[2] + 0, bbox[3] + 0] for bbox in snowboard_boxes]
+    
+    # Define consonants
+    consonants = {'a', 'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm'}
+    
+    # Calculate count
+    consonant_count = sum(fTrue in snowboard_used_labels for fTrue in consonants)
+    
+    return consonant_count
+
+final_result = count_consonants_on_snowboard()
+print("The number of consonants on the snowboard:", final_result)
+print('<final_result>', final_result)
+
+Solution: 3

@@ -1,0 +1,52 @@
+------------- 24-13-44-57-609394 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_purple_planes(input_image):
+    """
+    Count the number of purple planes in an input image.
+    
+    Parameters:
+    input_image (str): The path to the image file.
+    
+    Returns:
+    int: The count of purple planes in the image.
+    """
+    
+    # Load the image and extract the plane detections
+    detection = execute(image=input_image, labels=["purpleplane"])
+    
+    # Initialize the plane count
+    plane_count = 0
+    
+    # Iterate over each detection
+    for obj in detection:
+        # Check if the object is a plane and if it is purple
+        if obj["label"] == "purpleplane":
+            plane_count += float(obj["confidence score"])  # Convert confidence score to decimal
+            
+    return plane_count
+
+input_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+purple_plane_count = count_purple_planes(input_image)
+final_result = purple_plane_count
+print('<final_result>', final_result)
+
+Solution: 0

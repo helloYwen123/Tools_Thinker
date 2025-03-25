@@ -1,0 +1,67 @@
+------------- 24-14-42-08-500490 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_84_image_1.jpg"
+
+# Detect baseball and basket in the image
+execution = detect_objects(image_path, labels=["basket", "baseball"], threshold=0.35, model_size="tiny")
+if execution != None:
+    basketball_path = detection(image_path, execution)
+    baseball_path = detection(image_path, execution)
+    basketball_confidence = calculate_confidence(baseball_path, basketball_path)
+    if basketball_confidence < 0.5:
+        print(f"Detecting basketball and baseball in the image.")
+    elif basketball_confidence < 0.8:
+        print(f"Detecting basketball and no baseball in the image.")
+else:
+    print("Detecting basketball and no baseball in the image.")
+
+# Detect person and car in the image
+execution = detect_objects(image_path, labels=["person", "car"], threshold=0.5, model_size="base")
+if execution != None:
+    person_path = detection(image_path, execution)
+    car_path = detection(image_path, execution)
+    person_confidence = calculate_confidence(person_path, car_path)
+    if person_confidence < 0.8:
+        print(f"Detecting person and car in the image.")
+    else:
+        print(f"Detecting person and no car in the image.")
+else:
+    print("Detecting person and no car in the image.")
+
+# Detect white hat in the image
+execution = detect_objects(image_path, labels=["white hat"], threshold=0.8, padding=15)
+if execution != None:
+    white_hat_path = detection(image_path, execution)
+    if white_hat_path != None:
+        white_hat_confidence = calculate_confidence(white_hat_path)
+        white_hat_count = count_objects(white_hat_path.split('/'), white_hat_confidence)
+        print(f"There are {white_hat_count} people wearing a white hat in the image.")
+else:
+    print("Detecting white hat in the image.")
+
+# Determine the number of people wearing a white hat
+total_people = total_objects(image_path)
+
+print(f"Total people on the court: {total_people}")
+print('<final_result>', final_result)
+
+Solution: 4

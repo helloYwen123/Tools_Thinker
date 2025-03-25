@@ -1,0 +1,47 @@
+------------- 24-12-39-01-193145 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+def count_without_hats(image_path):
+    # Read the image
+    execution = tool.execute(image_path)
+
+    # Get the list of detected facial features and their corresponding classes
+    detected_features = execution["output_type"][0]
+    features_with_hats = []
+    features_without_hats = []
+
+    # Iterate through the detected features
+    for feature, confidence in detected_features:
+        if feature != "hats":
+            features_with_hats.append(feature)
+        else:
+            features_without_hats.append(feature)
+
+    # Count the number of 'features_without_hats' that are also present
+    count_without_hats = 0
+    for feature_without_hats in features_without_hats:
+        if features_with_hats.count(feature_without_hats) > 0:
+            count_without_hats += 1
+
+    return count_without_hats
+print('<final_result>', final_result)
+
+Solution: 0

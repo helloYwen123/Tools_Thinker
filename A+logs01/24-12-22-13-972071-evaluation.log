@@ -1,0 +1,59 @@
+------------- 24-12-22-13-972071 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 48, in <module>
+  File "<string>", line 44, in count_clear_bottles
+  File "<string>", line 19, in detect_wine_bottles
+NameError: name 'plt' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import numpy as np
+
+def detect_wine_bottles(image_path, labels, thresholds, model_size, padding):
+    # Load the image
+    image = np.array(plt.imread(image_path), dtype=np.float32)
+    
+    wines = []
+    
+    # Detect wine bottles
+    for label in labels:
+        detected_elements = []
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                color = (image[i, j])
+                for box in detected_elements:
+                    if np.linalg.norm(box[1] - color) < 0.3:
+                        continue
+                for box in detected_elements:
+                    if label in label.lower() and np.linalg.norm(box[1] - color) > 0.5:
+                        continue
+                    detected_elements.append(box)
+                
+        for box in detected_elements:
+            if box[4] > thresholds:
+                wines.append((box[0], box[2], label, str(image.shape[0]*image.shape[1]), box[3]))
+                
+    return wines
+
+def count_clear_bottles(image_path):
+    detected_wine_bottles = detect_wine_bottles(image_path, ["baseball"], 0.35, "tiny", 10)
+    
+    return len([wine for wine in detected_wine_bottles if wine[4] == "wine"])
+
+final_result = count_clear_bottles("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_53_image_1.tif")
+print(f"There are {final_result} clear bottles of wine on the table.")
+print('<final_result>', final_result)
+
+Solution: 1

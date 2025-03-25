@@ -1,0 +1,42 @@
+------------- 24-12-42-14-612001 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import Object_Detector_Tool
+
+# Load the image
+im1 = Object_Detector_Tool.load_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_4_image_1.jpg")
+
+# Detect the objects
+objects = Object_Detector_Tool.detect_objects(
+    image=im1, 
+    labels=["baseball", "basket"], 
+    threshold=0.35, 
+    model_size="tiny"
+)
+
+# Display the detected objects with the original image (empty padding)
+for obj in objects:
+    print(f"{obj['label']} found with confidence score {round(obj['confidence score'], 2)}, detected at box {obj['box']} with saved image path {obj['saved_image_path']}")
+
+# Count the number of people wearing purple
+final_result = len([obj["label"] == "purple" for obj in objects]) 
+print(f"There are {final_result} people wearing purple.")
+print('<final_result>', final_result)
+
+Solution: 1

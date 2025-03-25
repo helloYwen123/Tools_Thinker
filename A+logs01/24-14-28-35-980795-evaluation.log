@@ -1,0 +1,47 @@
+------------- 24-14-28-35-980795 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from tool import Object_Detector_Tool
+
+# Path to the image file
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_114_image_1.jpg"
+
+# Detect objects using the groundling_dino model
+execution = Object_Detector_Tool.execute(image=path_to_image, labels=["giraff", "man"], threshold=0.35, model_size="tiny", padding=20)
+
+# Extract object labels and bounding box coordinates
+for object_info in execution["output_type"]:
+    if "label" in object_info:
+        print(object_info)
+        # Assuming we want to count the number of people near the giraffe
+        if "label" in object_info and object_info["label"] == "man":
+            # Calculate the distance between the giraffe and the man
+            giraffe_dist = (object_info["bbox"][0] - object_info["bbox"][2]) / 2
+            man_dist = (object_info["bbox"][5] - object_info["bbox"][3]) / 2
+            # Add or subtract the distance based on whether the man is closer or further than the giraffe
+            if giraffe_dist > man_dist:
+                final_result += 1
+            else:
+                final_result -= 1
+
+# Return the number of people near the giraffe
+final_result
+print('<final_result>', final_result)
+
+Solution: 0

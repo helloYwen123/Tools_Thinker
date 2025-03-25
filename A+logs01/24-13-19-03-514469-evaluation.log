@@ -1,0 +1,45 @@
+------------- 24-13-19-03-514469 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'groundindobot'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from groundindobot import GroundingDino
+
+input_image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_71_image_1.jpg'
+
+# Create the GroundingDino object
+grounding_dino = GroundingDino(model_name="base")
+
+# Examine the object labels
+labels = grounding_dino.run(image=input_image_path, labels=["baseball", "basket"])
+
+# Extract the bounding box coordinates
+bbox_coordinates = [bbox[2] for bbox in labels['bbox']]
+
+# Check the object type
+if "basket" in labels['label']:
+    final_result = "There is 1 yellow star on the basketball post."
+elif "baseball" in labels['label']:
+    final_result = "There is 1 yellow star on the baseball post."
+else:
+    # Detecting an object that is not listed in the labels
+    final_result = "No yellow stars were detected on the colorful bridge."
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

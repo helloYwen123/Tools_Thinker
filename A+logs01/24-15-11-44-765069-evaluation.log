@@ -1,0 +1,59 @@
+------------- 24-15-11-44-765069 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+def count_windows(x):
+    for numWindows in range(1, 11):
+        if x.numWindows - numWindows >= 4:
+            return numWindows
+    return None
+
+# Example image
+image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_24_image_1.jpg'
+
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+def image_to_dict(image_path):
+    obj_dict = {}
+    obj_dict["label"] = None
+    obj_dict["confidence score"] = None
+    obj_dict["box"] = None
+    obj_dict["saved_image_path"] = None
+    
+    return obj_dict
+
+execution = tool.execute(image=image, labels=[model_name], threshold=threshold, model_size=model_size, padding=padding)
+detected_objects = execution.output
+
+obj_boxes = []
+for d in detected_objects:
+    obj_boxes.append(d['box'])  
+
+number_of_windows = count_windows(len(obj_boxes)) + 1
+
+if number_of_windows is None:
+    number_of_windows = 0
+
+print(number_of_windows)
+final_result = number_of_windows
+print('<final_result>', final_result)
+
+Solution: 2

@@ -1,0 +1,63 @@
+------------- 24-13-16-14-086938 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 42
+    finally:
+    ^^^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detector
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_100_image_1.jpg"
+
+labels = ["fridge", "stove", "sink", "counter", "oven"]
+
+confidence_threshold = 0.35
+
+model_size = "tiny"
+
+padding = 20
+
+execution = object_detector(tool_name='Object_Detector_Tool',
+                            tool_description='Detect fridge, stove, sink, counter, oven in the image, save the detected objects with default empty padding, and return their paths.',
+                            labels=labels, 
+                            threshold=confidence_threshold, 
+                            model_size=model_size, 
+                            padding=padding)
+
+executed_objects = execution[0]["label"]
+confidence_scores = [executed_object["confidence score"] for executed_object in executed_objects]
+
+if max(confidence_scores) > 0.35:
+    fridge_count = sum(1 for _, score in zip(executed_objects, confidence_scores) if score > max(confidence_scores))
+    print("There are", fridge_count, "white fridges in the image.")
+else:
+    print("There are no white fridges detected in the image.")
+finally:
+    tool_id = "Object_Detector_Tool"
+    tool_version = "1.0.0"
+    output_type = ["detected objects dictionaries", "list of detected objects dictionaries", "list of detected object paths"]
+    
+    tool_id = "Object_Detector_Tool"
+    tool_version = "1.0.0"
+    
+    output_type = ["detected objects dictionaries", "list of detected objects dictionaries", "list of detected object paths"]
+    
+    output = {"result": {"tool_id": tool_id, "tool_version": tool_version, "output_type": output_type, "params": {"labels": labels, "threshold": confidence_threshold, "model_size": model_size, "padding": padding}}}
+    
+    print(f"The total number of white fridges detected in the image is {fridge_count}, with the tool running ID: {tool_id}.")
+print('<final_result>', final_result)
+
+Solution: 1

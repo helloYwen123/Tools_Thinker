@@ -1,0 +1,48 @@
+------------- 24-14-15-20-478392 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 38, in <module>
+  File "<string>", line 16, in find_people_with_white_hats
+ModuleNotFoundError: No module named 'Object_Detector_Tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def find_people_with_white_hats(image_path):
+    from Object_Detector_Tool import Object_Detector_Tool
+    detector_tool = Object_Detector_Tool()
+
+    try:
+        execution = detection_tool.execute(image=image_path, labels=["baseball", "basket"], threshold=0.35, model_size="base", padding=20)
+        detected_objects = execution[0]['output_type']
+
+        # Iterate over detected objects and check if they are white hats
+        for object in detected_objects:
+            if 'cap' in object and 'hat' in object and object['label'] == 'hat':
+                hat = object['label'] + ' hat'
+                confidence_score = object['confidence score']
+                box = [float(x) for x in object['bbox']]
+                if hat == 'baseball hat' and confidence_score > 0.35 and box[2] - box[0] > 10:
+                    return f"{hat} wearing a hat"
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# Assuming 'path_to_image' is valid and contains the image file path
+# path_to_image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_59_image_1.jpg'
+
+result = find_people_with_white_hats('path_to_image')
+print(result)
+print('<final_result>', final_result)
+
+Solution: 4

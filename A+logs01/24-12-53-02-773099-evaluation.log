@@ -1,0 +1,81 @@
+------------- 24-12-53-02-773099 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 69, in <module>
+  File "<string>", line 22, in count_glasses_filled_with_water
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/numpy/lib/npyio.py", line 462, in load
+    raise ValueError("Cannot load file containing pickled data "
+ValueError: Cannot load file containing pickled data when allow_pickle=False
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_glasses_filled_with_water(image_path):
+    """
+    Count the number of glasses filled with water in an image.
+    """
+    import numpy as np
+    
+    # Load the image
+    image = np.load(image_path)
+    
+    # Get the dimensions of the image
+    image_size = image.shape
+    
+    # Check if the image is 3D or 4D, assuming it's a single image
+    num_channels, _ = np.ndim(image)
+    if num_channels == 3:
+        num_channels = 1
+    
+    # Calculate the number of overlapping boxes (40% overlap)
+    num_overlapping_boxes = int((0.4 * np.prod(image_size)) / (1024 * 0.4))
+    box_dims = tuple(image_size)[:-1] * (1024 // np.prod(image_size) + 1)
+    
+    # Pre-process the image to detect glass edges
+    boxes = []
+    scores = []
+    for iy in range(num_overlapping_boxes):
+        for ix in range(num_overlapping_boxes):
+            box = (iy * box_dims[0], ix * box_dims[1])
+            if not any(box[0] in line for line in ['0', '1']):
+                boxes.append(box)
+            score = image[int(box[0]):int(box[0] + box[1]), int(box[1]):int(box[1] + box[2])].mean()
+            scores.append(score)
+    box_idx = scores.index(max(scores)) + num_overlapping_boxes
+        
+    # Filter out false positives at the edge of the box
+    box_idx_mask = (box_idx > 10600) & (box_idx < len(scores) - 10600)
+    selected_boxes = [boxes[idx] for idx in box_idx_mask]
+    
+    # Filter out boxes in dim dimx < 1024 and boxes with a score < 0.35
+    selected_boxes = [box for box in selected_boxes if box[0] >= 10600 and box[2] >= 10600] 
+    
+    # Check if boxes are within the image and their y-y coordinates are within 40% of the height
+    selected_boxes = [box for box in selected_boxes if (box[0][1] - box[2][1]) // box_size[1] < 0.4 and -(box[0][1] - box[2][1]) // box_size[1] < 0.4 and box[0][1] > -0.4 and box[1][1] < 0.4]
+    
+    # Check if the center of each box is in the first quadrant (0 to 400x400)
+    for box in selected_boxes:
+        box_ys = [(box[0][0] + box[1][0]) // box_size[0], (box[0][0] + box[1][0]) // box_size[0]]
+        box_ys.append((box[0][0] + box[1][0]) // box_size[0] - 1)
+        box_y = min(box_ys)
+        if box_y > 300 and box_y + 300 < 1300:
+            return 1  # No glass filled with water
+    return 0  # At least one glass filled with water
+
+# Call the function with the path to an image with glasses
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg'
+num_glasses_filled_with_water = count_glasses_filled_with_water(image_path)
+print(num_glasses_filled_with_water)
+print('<final_result>', final_result)
+
+Solution: 3

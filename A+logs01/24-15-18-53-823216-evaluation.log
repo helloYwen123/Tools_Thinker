@@ -1,0 +1,42 @@
+------------- 24-15-18-53-823216 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'objectdetector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from objectdetector_tool import *
+
+img_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_268_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Load the image
+execution = process_image(img_path= img_path)
+
+# Detect baseball and basket
+baseball_results = detection_results[0]
+basket_results = detection_results[0]
+
+# Calculate the number of people wearing a yellow jacket
+total_people = sum((baseball_results["confidence score"] > threshold) for baseball_result in baseball_results if "baseball" in baseball_results["label"])
+
+final_result = {"total_people": total_people}
+print(f"The number of people wearing yellow jacket in the image is: {final_result['total_people']}.")
+print('<final_result>', final_result)
+
+Solution: 1

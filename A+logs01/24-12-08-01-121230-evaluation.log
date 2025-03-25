@@ -1,0 +1,40 @@
+------------- 24-12-08-01-121230 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 31, in <module>
+TypeError: count_people_on_food_tray() got an unexpected keyword argument 'image_path'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def get_object_labels(image_path, labels, threshold, model_size="tiny", padding=20):
+    detection = tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    object_labels = []
+    for obj in detection["output_type"]:
+        if 'label' in obj:
+            object_labels.append(obj['label'])
+    return object_labels
+
+def count_people_on_food_tray(food_tray_image, food_tray_labels, food_tray_threshold, food_tray_model_size="tiny", food_tray_padding=20):
+    food_tray_object_labels = get_object_labels(image_path=food_tray_image, labels=food_tray_labels, threshold=food_tray_threshold, model_size=food_tray_model_size, padding=food_tray_padding)
+    tray_count = 0
+    for label in food_tray_object_labels:
+        if 'people' in label:
+            tray_count += 1
+    return tray_count
+
+final_result = count_people_on_food_tray(image_path="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg", food_tray_labels=["salad", "meat"], food_tray_threshold=0.5, food_tray_model_size="base", food_tray_padding=15)
+final_result
+print('<final_result>', final_result)
+
+Solution: 0

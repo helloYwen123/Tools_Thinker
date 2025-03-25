@@ -1,0 +1,49 @@
+------------- 24-15-30-54-408068 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import ObjectDetectorTool
+
+# Detect the image using the Object Detector Tool
+def detect_image(image_path):
+    tool = ObjectDetectorTool()
+    execution = tool.execute(image=image_path['image'], labels=["baseball", "basket"])
+    labels = execution[0]['labels']
+    bounding = execution[1]['bbox']
+    object_info = [ {'bbox': bounding, 'label': labels[0]}, {'bbox': bounding, 'label': labels[1]} ]
+    save_image = [ image_path['path'] + 'baseball' + '_' + labels[0] + "_" + str(labels[1]) + '_' + str(image_info[0]) + '.jpg' , image_path['path'] + 'basket' + '_' + labels[0] + "_" + str(labels[1]) + '_' + str(image_info[0]) + '.jpg' ]
+    return object_info, save_image
+
+detector = ObjectDetectorTool()
+detect_image({'path': '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_88_image_1.jpg'})
+
+# Calculate the total number of objects detected
+total_bears = len(detect_image['object_info'])
+
+# Calculate the number of yellow bears
+yellow_bears = 0
+for bear in detect_image['object_info']:
+    if bear[0] == 'baseball' and bear[1] == 'yellow' and 'baseball' in bear[0]:
+        yellow_bears += 1
+total_bears -= yellow_bears
+
+final_result = total_bears
+print("Total bears:", final_result)
+print('<final_result>', final_result)
+
+Solution: 5

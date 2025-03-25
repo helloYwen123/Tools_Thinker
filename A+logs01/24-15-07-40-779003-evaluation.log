@@ -1,0 +1,44 @@
+------------- 24-15-07-40-779003 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 24
+    candle_path = f'{Model_root}/candles/{obj["label"]}-{obj['box']['top']}_{obj['box']['bottom']}_{model_size}.png'
+                                                              ^^^
+SyntaxError: f-string: unmatched '['
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_candlelights(img_path, candle_labels, threshold=0.35, model_size='tiny', padding=20):
+    candle_objects = []
+    with Object_Detector_Tool(input_image=img_path, labels=candle_labels) as execution:
+        for obj in execution: 
+            if obj[0] == "candle":
+                candle_objects.append({'label': obj[0], 'confidence': obj[1], 'box': {'top': obj[2]['top'], 'left': obj[2]['left'], 'bottom': obj[2]['bottom'], 'right': obj[2]['right']}})
+    candle_objects = sorted(candle_objects, key=lambda x: -x['confidence']) 
+    for obj in candle_objects:
+        top_right = {'top': obj['box']['top'] + padding, 'left': obj['box']['left'], 'bottom': obj['box']['bottom'] + padding, 'right': obj['box']['right'] + padding} 
+        candle_path = f'{Model_root}/candles/{obj["label"]}-{obj['box']['top']}_{obj['box']['bottom']}_{model_size}.png'
+        if threshold > obj['confidence'] > threshold * 0.5 and 'base' in obj['label']:
+            print(f'OBJ: {obj["label"]}\n\tTOP: {top_right}\n\tPATH: {candle_path}') 
+            candle_objects.remove(obj)
+    return candle_objects
+
+# Load image
+img_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_56_image_1.jpg'
+candle_objects = count_candlights(img_path, candle_labels)
+print('Candle lights:')
+for obj in candle_objects:
+    print(f'{obj["label"]}: {obj["confidence"]} {obj["top"]} {obj["bottom"]} {obj["right"]} {obj["left"]} ({obj["path"]})')
+print('<final_result>', final_result)
+
+Solution: 3

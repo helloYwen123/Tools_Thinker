@@ -1,0 +1,41 @@
+------------- 24-14-02-26-348833 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 20
+    if filename.endswith(".jpg") andfilename.startswith("No_hats"):
+                                 ^^^^^^^^^^^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import detection
+
+def count_without_hats(directory):
+    count = 0
+    for filename in os.listdir(directory):
+        if filename.endswith(".jpg") andfilename.startswith("No_hats"):
+            image = Image.open(os.path.join(directory, filename))
+            results = detection(image)
+            for result in results:
+                if 'baseball' in result['label'] or 'basket' in result['label']:
+                    continue
+                if 'person' in result['label']:
+                    continue
+                count += 1
+    return count
+
+final_result = count_without_hats('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg')
+print("Count of people without hats:", final_result)
+print('<final_result>', final_result)
+
+Solution: 0

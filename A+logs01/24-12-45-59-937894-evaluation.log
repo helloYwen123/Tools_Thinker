@@ -1,0 +1,54 @@
+------------- 24-12-45-59-937894 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def count_red_riders(image_path):
+    predicted_labels = ['motorbike', 'motorcycle', 'roller__', 'roller_b']
+    threshold = 0.35
+    model_size = 'tiny'
+    padding = 3
+
+    image = image_reader(image_path)
+    image = convert_to_gravity_centered(image, 'center')
+    image = remove_shadows(image, alpha=0.5)
+    image = increase_brightness(image, 30)
+    image = adjust_contrast(image, 1.2)
+
+    detected_objects = detect_objects(image, labels=predicted_labels, threshold=threshold, model_size=model_size, padding=padding)
+    detection_status = [obj['status'] for obj in detected_objects]
+    if 'motorbike' in detection_status:
+        return 1
+    elif 'motorcycle' in detection_status:
+        return 1
+    elif 'roller__' in detection_status:
+        return 1
+    elif 'roller_b' in detection_status:
+        return 1
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_110_image_1.jpg"
+total_bikes = 0
+for num in range(0, 4, 1):
+    result = count_red_riders(image_path)
+    if result == 1:
+        total_bikes += 1
+total_bikes
+print('<final_result>', final_result)
+
+Solution: 2

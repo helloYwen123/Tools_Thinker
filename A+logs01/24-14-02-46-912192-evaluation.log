@@ -1,0 +1,45 @@
+------------- 24-14-02-46-912192 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execution
+
+def count_lake_building_heights(input_image, building_height=None):
+    """
+    Counts the number of tall buildings that are over 100 meters in height.
+    
+    :param input_image: A string with the path to the input image.
+    :param building_height: The height of the building to be considered tall.
+    :return: The number of tall buildings.
+    """
+    detected_objects = execution(input_image=input_image, labels=["building"], threshold=0.4, model_size="tiny")
+    # Filter the detected objects to only those with a height parameter greater than 100
+    tall_buildings = [obj for obj in detected_objects if float(obj['bbox'][2]) > 102]
+    return len(tall_buildings)
+
+def main():
+    # Sample data from sample_images_dir
+    sample_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_10_image_1.jpg"
+    final_result = count_lake_building_heights(input_image=sample_image_path)
+    print("Number of tall buildings:", final_result)
+
+if __name__ == "__main__":
+    main()
+print('<final_result>', final_result)
+
+Solution: 0

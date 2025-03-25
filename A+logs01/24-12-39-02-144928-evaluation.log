@@ -1,0 +1,63 @@
+------------- 24-12-39-02-144928 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 27, in <module>
+NameError: name 'tool' is not defined. Did you mean: 'bool'?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import cv2
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+image = cv2.imread(image_path)
+
+# Detect people
+labels = []
+threshold = 0.35
+padding = 20
+
+# Execute the object detection
+for label in tool.execute(image=image, labels=["car", "person"], threshold=threshold, model_size="mini"):
+    if "person" in label[0] and label[1] > 0:
+        labels.append(label)
+
+# Find people without hats
+people_without_hats = []
+for label in labels:
+    if "baseball" not in label[0] and "baseball" not in label[1]:  # Check if the head is not an object
+        people_without_hats.append(label)
+
+# Get the boxes and paths
+boxes = []
+bboxes = tool.execute(image=image, labels=people_without_hats, threshold=threshold, model_size="base", padding=padding)
+for i, b in enumerate(bboxes[2]):
+    boxes.append((b["box"].astype(int), b["bbox"].astype(int), b["label"], b["confidence"]))
+
+# Print the results
+print("People without hats:")
+for i, b in enumerate(boxes):
+    print(f"{i + 1}. {b[0]} ({int(b[1][0][0] + b[1][1] * 0.5 + b[1][0][1] * 0.5)}, {int(b[1][0][0] + b[1][1] * 0.5 + b[1][0][1] * 0.5)}, {(b[1][0][0] + b[1][1] * 0.5) * 2 + b[1][1]}, {b[1][0][1]})")
+for index in range(len(labels)):
+    if labels[index][1] < 0.5:
+        print("Person with glasses", index + 1)
+    else:
+        print("Person without glasses", index + 1)
+
+# Check the number of people without hats
+final_result = len(people_without_hats)
+print(f"The number of people without hats is {final_result}")
+print('<final_result>', final_result)
+
+Solution: 0

@@ -1,0 +1,97 @@
+------------- 24-14-38-41-842295 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 88
+    <command>
+    ^
+SyntaxError: invalid syntax
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+import numpy as np
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg'
+labels = []
+
+cap = cv2.VideoCapture(image_path)
+
+if not cap.isOpened():
+    print("Error opening file")
+    sys.exit()
+
+current_path = 'data.json'
+
+with open(current_path, 'r') as fi:
+    data = json.load(fi)
+
+    box_size = 30
+    image_path = 'data.json'
+
+    for i in data:
+        # loop through bounding boxes
+        for j in range(i['bbox'][0], i['bbox'][0] + i['bbox'][1]):
+            for k in range(i['bbox'][2], i['bbox'][2] + i['bbox'][3]):
+                # draw rectangle around each bounding box
+                y1 = np.clip(float(j) + i['bbox'][0], 0, None)
+                x1 = np.clip(float(k) + i['bbox'][1], 0, None)
+                y2 = np.clip(float(j) + i['bbox'][2], 0, None)
+                x2 = np.clip(float(k) + i['bbox'][3], 0, None)
+                cv2.rectangle(image, (x1, y1), (x2, y2), (100, 50, 50), 2)
+
+        cap.set(1, i["height"])
+        cap.set(0, i["width"])
+        cap.set(2, 2)
+
+        w, h, ic = cv2.imencode('.jpg', image)
+
+
+def object_labeling(image_path, labels):
+    img = Image.open(image_path)
+    obj_image = obj_detector(image_path,labels)
+    x, y, h, w, c = img_size_to_bbox(coco_class_to_label, img)
+    return [x, y, h, w, c]
+
+for i in labels:
+  print('bbox ', i['bbox'])
+
+cap.release()
+cv2.destroyAllWindows()
+
+boxes = []
+i = 0
+
+while cap.isOpened():
+    ret, frame = cap.read()
+    i = i + 1
+
+    if ret:
+        boxes.append(object_labeling(image_path, labels))
+        x, y, h, w, c = img_size_to_bbox(coco_class_to_label, frame)
+        print(f"bbox {i}")
+    else:
+        break
+
+# Draw bounding boxes on the image
+for box, _ in zip(boxes, colors):
+    cv2.rectangle(frame, (*box[:, :2], *box[3:]), (coco_class_to_label[box[4]],), 2)
+
+cv2.imwrite('output.jpg', frame)
+with open(image_path.split('.')[0] + '.json', 'w') as fi:
+    json.dump(labels, fi)
+
+final_result = image_path.split('.')[0] + '.json'
+<command>
+print('<final_result>', final_result)
+
+Solution: 3

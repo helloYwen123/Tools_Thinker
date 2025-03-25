@@ -1,0 +1,56 @@
+------------- 24-12-42-02-888115 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 47, in <module>
+TypeError: count_yellow_bears() takes 3 positional arguments but 5 were given
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from torchvision import transforms
+
+def count_yellow_bears(img_path, labels, threshold):
+    try:
+        # Read the image
+        img = Image.open(img_path).convert('RGB')
+
+        # Use a transform to convert the image to grayscale and resize it
+        grayscale_transform = transforms.ToTensor()
+        resized_img = grayscale_transform(img) / 255.0
+
+        # Perform object detection using the Grounding DINO model
+        detection_df = pd.read_csv('object_labels.csv')
+        ground_truth_dict = {i["label"] for i in detection_df}
+        img_dict = {'label': i for i in detection_df['label']}
+        objects = Objects(resized_img, ground_truth_dict, threshold)
+
+        # Filter bear objects by their label
+        bear_df = objects.filter({'label': 'Bear'})
+        bear_df = bear_df[[k for k in bear_df if bear_df[k].isin(ground_truth_dict.keys()) & bear_df[k].isin(labels)]]
+
+        return len(bear_df)
+    except Exception as e:
+        print("Error:", str(e))
+        return len(bear_df)
+
+# Example usage
+img_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_88_image_1.jpg'
+labels = ['bear', 'cat', 'dog', 'zebra', 'monkey']
+threshold = 0.35
+model_size = 'tiny'
+padding = 20
+final_result = count_yellow_bears(img_path, labels, threshold, model_size, padding)
+print("Number of yellow bears:", final_result)
+print('<final_result>', final_result)
+
+Solution: 5

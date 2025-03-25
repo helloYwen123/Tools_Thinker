@@ -1,0 +1,107 @@
+------------- 24-15-14-33-133822 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 20
+SyntaxError: import * only allowed at module level
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_frogs(image_path, labels):
+    import os
+    import glob
+    import cv2
+    import numpy as np
+    from object_detector_tool import *
+    
+    try:
+        detections = object_detection(image_path, labels, threshold=0.35, model_size="base", padding=20)
+        frog_boxes = []
+        for detection in detections:
+            for label in detection["labels"]:
+                if label == "frog":
+                    frog_boxes.append(detection)
+        if frog_boxes:
+            frog_confidences = [detection["confidence score"] for detection in frog_boxes if detection["label"] == "frog"]
+            frog_count = np.sum(frog_confidences)
+            return frog_count, frog_boxes
+        else:
+            return 0, []
+    except Exception as e:
+        print(e)
+        return 0, []
+
+def count_frogs_subimage(image_path, bottom_left, top_right):
+    import os
+    import glob
+    import pandas as pd
+    import numpy as np
+    from object_detector_tool import *
+    import cv2
+    
+    try:
+        detections = object_detection(image_path, ["frog"], threshold=0.35, model_size="base", padding=20)
+        positions = []
+        for detection in detections:
+            coordinates = []
+            for label in detection["labels"]:
+                if label == "frog":
+                    Coordinates = detection["bbox"]
+                    for i, (x, y, w, h) in enumerate(Coordinates):
+                        coordinates.append([x, y, w, h])
+            positions.append(np.array(coordinates))
+        positions_df = pd.DataFrame(positions)
+        index, values = zip(*[(i, j) for j, i in enumerate(positions_df.index)])
+        positions_df['value'] = values
+        positions_df = positions_df.sort_values('value')
+        positions_df = positions_df[positions_df['value'] >= top_right].iloc[:-1]
+        positions_df = positions_df[positions_df['value'] <= bottom_left]
+        positions = positions_df['value'].values
+        positions_df = pd.DataFrame(positions_df.iloc[1:-1])
+        positions_df = positions_df.replace(0, None)
+        positions = positions_df.values
+        
+        frog_counts = []
+        frog_positions = []
+        for i, j in enumerate(positions):
+            frog_detection = detections[i]
+            for label in frog_detection["labels"]:
+                if label == "frog":
+                    for box in frog_detection["bbox"]:
+                        if ((box[0] <= j) and (box[1] >= j)) or ((box[2] >= j) and (box[3] <= j)):
+                            frog_positions.append((j, i))
+            frog_counts.append(len(frog_positions))
+        
+        return sum(frog_counts)
+    except Exception as e:
+        print(e)
+        return 0, float("inf")
+    
+def main():
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_32_image_1.jpg"
+    bottom_left = 330
+    top_right = 590
+    
+    frog_counts, frog_positions = count_frogs_subimage(image_path, bottom_left, top_right)
+    if frog_counts:
+        frog_count, frog_boxes = count_frogs(image_path, frog_positions)
+        print(f"Number of frogs = {frog_count}")
+        print(frogs_boxes)
+    else:
+        print("No frog detection.")
+       
+    return frog_count, frog_positions
+
+frog_count, frog_positions
+print('<final_result>', final_result)
+
+Solution: 0

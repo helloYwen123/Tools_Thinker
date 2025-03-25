@@ -1,0 +1,45 @@
+------------- 24-14-15-21-697410 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_63_image_1.jpg"
+
+# Load the image
+exec = tool.execute(image=image_path, labels=[", ", "("] + ["baseball", "basket"] + [], threshold=0.35, model_size="tiny", padding=20)
+
+# Extract the detected objects (excluding the empty padding)
+objects = [obj['label'] + ' (confidence score: ' + obj['confidence score'] + ')' for obj in exec]
+
+# Check if there's any detected cow
+if "cow" not in objects:
+    # If not, there's no cow detected
+    final_result = 0
+else:
+    # Otherwise, there's a cow detected
+    # Remove the first (empty) object from the list
+    objects = objects[1:]
+    # Count the remaining objects
+    num_cows = sum([obj[0] == "cow" for obj in objects])
+
+final_result = num_cows
+print('<final_result>', final_result)
+
+Solution: 0

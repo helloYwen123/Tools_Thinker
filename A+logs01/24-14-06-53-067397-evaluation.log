@@ -1,0 +1,75 @@
+------------- 24-14-06-53-067397 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 18, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from PIL import Image, ImageTk
+import numpy as np
+from scipy.ndimage import binary_dilation
+import object_detector_tool as ot
+import matplotlib.pyplot as plt
+
+def count_skiers(image_path):
+    image = Image.open(image_path)
+
+    # Convert the image to NumPy array
+    image_array = np.array(image)
+
+    # Load the base model from the provided model size
+    # Load the detector model from the model_size
+    # Check if the model is ready
+    model = ot.Model.load_image(image, model_size="base")
+
+    # Detect objects in the image
+    detections = model.detect_objects(image_array)
+
+    # Filter out the detected skiier objects
+    skiier_detections = [d for d in detections if "baseball" not in d['label'] and "baseball" not in d['label'] and "car" not in d['label'] and "person" not in d['label']]
+
+    # Determine the number of skiier objects
+    num_skiers = len(skiier_detections)
+
+    # Make a copy of the array to replace the original array with the processed array
+    image_copied = image_array.copy()
+
+    # Add 15 pixels of empty padding around each object
+    image_copied[BINARY_DILATION, :, :15, :] = 255
+    image_copied[BINARY_DILATION, :15, :15, :] = 255
+    image_copied[~BINARY_DILATION, :, +15, :] = 255
+    image_copied[~BINARY_DILATION, :15, +15, :] = 255
+    image_copied[BINARY_DILATION, :, -15, :] = 0
+    image_copied[BINARY_DILATION, : +15, -15, :] = 0
+    image_copied[BINARY_DILATION, -15, : +15, :] = 0
+    image_copied[BINARY_DILATION, : -15, -15, :] = 0
+
+    # Visualize the original array and the processed array
+    plt.figure(figsize=(10, 8))
+    plt.subplot(2, 1, 1)
+    plt.title("Original Image")
+    plt.imshow(image_array)
+    plt.subplot(2, 1, 2)
+    plt.title("Processed Image")
+    plt.imshow(image_copied)
+    plt.show()
+
+count_skiers("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_44_image_1.jpg")
+
+# Determine the number of skiier objects
+num_skiers
+print('<final_result>', final_result)
+
+Solution: 0

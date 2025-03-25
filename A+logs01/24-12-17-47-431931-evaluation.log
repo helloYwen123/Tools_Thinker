@@ -1,0 +1,54 @@
+------------- 24-12-17-47-431931 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+# Function to count people and cars
+def count_vehicle_on_tracks(image_path):
+    try:
+        detection_results = tool.execute(image=image_path, labels=["person", "car"])
+        people_count = 0
+        cars_count = 0
+        non_vehicle_detections = 0
+
+        for result in detection_results:
+            if result['label'] == 'person':
+                people_count += 1
+            if result['label'] == 'car':
+                cars_count += 1
+
+            if result['label'] != 'person' or result['label'] != 'car':
+                non_vehicle_detections += 1
+
+        if cars_count == 0 and non_vehicle_detections == 0:
+            return 0, 0
+        elif people_count == 0 and non_vehicle_detections == 0:
+            return 0, 0
+        else:
+            return cars_count, people_count
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return None, None
+
+cars_count, people_count = count_vehicle_on_tracks("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg")
+print(f"Cars: {cars_count}, People: {people_count}")
+print('<final_result>', final_result)
+
+Solution: 0

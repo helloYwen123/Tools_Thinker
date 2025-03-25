@@ -1,0 +1,68 @@
+------------- 24-12-56-01-593055 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+labels = ["baseball", "basket"]  # Replace with actual labels to detect
+threshold = 0.35  # Default threshold for detection
+model_size = "tiny"  # For tiny model, replace with "base"
+padding = 20
+
+final_result = []
+
+# Load the image with empty padding
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+padding = 20
+
+image = Image.open(image_path)
+image = image.convert("L")
+image = Image.blend(image, image, threshold=0.35)
+image = image.convert("RGB")
+image = image.resize((416, 960), Image.ANTIALIAS)
+
+# Detect objects
+objects = detect_objects_with_padding(image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+for object in objects:
+    if object["label"] in labels:
+        # Extract relevant coordinates
+        x1, y1, x2, y2 = object["bbox"]
+        x2 -= (padding * 2)
+        y2 -= (padding * 2)
+
+        x1 = int(x1 + ((x2 - x1) / 4))
+        y1 = int(y1 + ((y2 - y1) / 4))
+        x2 = int(x2 - ((x2 - x1) / 4))
+        y2 = int(y2 - ((y2 - y1) / 4))
+
+        # Add the coordinates to the list of detected objects
+        final_result.append([object["label"], object["confidence score"], (x1, y1), (x2, y2)])
+
+# Add detected objects as empty padding
+padding = 20  # default padding added
+for obj in objects:
+    obj["bbox"]["bbox"] = tuple(x + ( padding * 2) for x in obj["bbox"]["bbox"])
+
+# Convert to list and prepare output
+final_result = sorted(final_result, key=lambda x: x[1], reverse=True)
+
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 3

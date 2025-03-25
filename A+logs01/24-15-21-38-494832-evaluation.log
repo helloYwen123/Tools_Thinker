@@ -1,0 +1,62 @@
+------------- 24-15-21-38-494832 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 41, in <module>
+  File "<string>", line 19, in count_kids
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/torchvision/datasets/folder.py", line 328, in __init__
+    super().__init__(
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/torchvision/datasets/folder.py", line 149, in __init__
+    classes, class_to_idx = self.find_classes(self.root)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/torchvision/datasets/folder.py", line 234, in find_classes
+    return find_classes(directory)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/torchvision/datasets/folder.py", line 41, in find_classes
+    classes = sorted(entry.name for entry in os.scandir(directory) if entry.is_dir())
+                                             ^^^^^^^^^^^^^^^^^^^^^
+NotADirectoryError: [Errno 20] Not a directory: '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_16_image_1.jpg'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from torchvision import datasets, transforms
+
+def count_kids(image_path):
+    # Load the dataset
+    dataset = datasets.ImageFolder(image_path, transform=transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+    ]))
+
+    # Define the ground-truth labels for kids
+    ground_truth = ['baseball', 'basket', 'car', 'person']
+
+    # Load the images with labels
+    images, labels = zip(*[d[1][0] for d in dataset if d[0] in ground_truth])
+
+    # Detect the kids in each image
+    detections = {}
+    for idx, img in enumerate(images):
+        label = ground_truth[idx]
+        # Use a simple example to illustrate the detection process
+        detections[label] = [idx, float(detection[2]), None]
+
+    return {'num_kids': sum(detections.values())}
+
+# Calculate the number of kids in front of the yellow schoolbus
+result = count_kids("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_16_image_1.jpg")
+print("Number of kids in front of the schoolbus:", result["num_kids"])
+print('<final_result>', final_result)
+
+Solution: 4

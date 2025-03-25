@@ -1,0 +1,51 @@
+------------- 24-15-19-04-826020 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 39, in <module>
+  File "<string>", line 16, in baseball_count
+ModuleNotFoundError: No module named 'Image'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def baseball_count(image_path, labels):
+    import Image
+    import GroundingDINO
+    detection_tool = GroundingDINO.Object_Detector_Tool()
+
+    image = Image.open(image_path)
+    labels_for_detection = labels if labels is not None else [f"baseball"]  # Assuming basketball is not needed
+    threshold = 0.5  # Set the confidence threshold
+    model_size = "base"  # Use the base size of the model
+    padding = 15  # Add padding
+    detection_tool.threshold = threshold
+    detection_tool.model_size = model_size
+    detection_tool.padding = padding
+
+    if detection_tool.execute(image=image, labels=labels_for_detection) is not None:
+        detected_objects = detection_tool.execute(image=image, labels=labels_for_detection)
+        label_names = [det["label"] for det in detected_objects]
+        return "Detected Baseball", len(detected_objects)
+    else:
+        return "No Baseball detected", 0
+
+# Example usage: Replace "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_68_image_1.jpg" with the actual image_path
+image_path = "/path/to/your/image.jpg"
+labels = ["baseball"]
+result = baseball_count(image_path, labels)
+print(result)
+final_result = labels[0] if result[0] == "Detected Baseball" else "No Baseball detected"
+print("The number of people holding a baseball bat is", final_result)
+print('<final_result>', final_result)
+
+Solution: 1

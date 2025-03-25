@@ -1,0 +1,47 @@
+------------- 24-14-06-52-581356 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Prepare the image for detection
+with Image.open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_44_image_1.jpg") as img:
+    # Execute the detection
+    execution = execute_tool(debug=True, model="base", num_threads=2, image=img)
+
+# Check if any object was detected
+if execution is not None:
+    # Extract details from the detection
+    details = execution[0]["label"]
+    if "baseball" in details:
+        count = 1
+    elif "basket" in details:
+        count = 1
+    else:
+        print("No object detected.")
+else:
+    print("Could not detect any object.")
+
+# Final processing
+if count > 0:
+    print(f"Found {count} skiers doing a flip.")
+else:
+    print("No skiers, flips found.")
+print('<final_result>', final_result)
+
+Solution: 0

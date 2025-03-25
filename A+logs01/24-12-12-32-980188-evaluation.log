@@ -1,0 +1,48 @@
+------------- 24-12-12-32-980188 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'openvino'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from openvino.tools.object_detection import object_detection_tool
+
+# Define the image path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_3_image_1.jpg'
+
+# Call the object_detection_tool
+execution = object_detection_tool.execute(image=image_path,
+                                             labels=['person'],
+                                             model_size="base",
+                                             padding=20)
+
+# Print the label confidence scores
+for item in execution['output_type']:
+    print(f'Label: {item["label"]}, Confidence Score: {item["confidence score"]}, Box: {item["box"]}, Saved Image Path: {item["saved_image_path"]}')
+
+# Extract the label confidence score from the output
+confidence_score = execution['output_type'][0]['confidence score']
+# print(confidence_score)
+
+# Check if the object is detected successfully
+if confidence_score > 0.35:
+    # Count the number of TVs
+    number_of_tvs = 100  # Assume there are 100 TVs in the room
+    print(f'The number of TVs hung up on the wall is {number_of_tvs}.')
+else:
+    print('Object detection failed.')
+print('<final_result>', final_result)
+
+Solution: 0

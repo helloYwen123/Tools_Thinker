@@ -1,0 +1,105 @@
+------------- 24-14-25-00-759854 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import object_detection
+
+
+def detect_person(model_size="tiny"):
+    """Detect persons in the image using the specified model size."""
+    
+    # Load the model
+    _, model = object_detection()
+
+    # Create an input image dictionary
+    input_image = {
+        "image": "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg",
+        "model_size": model_size,
+        "padding": 20,
+        "labels": ["person"]
+    }
+
+    # Execute the object detection
+    detection = model.predict(input_image)
+
+    return detection
+
+
+def count_people_in_car(lane, detection):
+    """Count the number of people in the car based on the detected persons."""
+    
+    import numpy as np
+    from sklearn.cluster import KMeans
+    
+    # Load the detection results
+    detection_output = np.array(detection)
+    detection_labels = detection_output[:, 0] != 19
+    
+    # Convert the detection results to binary format
+    detection_labels = np.array(detection_output)[detection_labels] == 1
+    
+    # Split the detection results into two groups based on the carlane
+    car_lane = lane.astype('uint8')
+    people = np.where(car_lane!=271)
+    
+    # Count the number of people in each carlane
+    count = 0
+    for p in people:
+        for i in range(3):
+            if detection_labels[p[i]]==1:
+                count+=1
+    
+    return count
+
+
+def count_red_car_on_track(lane, detection):
+    """Count the number of red car on the track."""
+    
+    import numpy as np
+    from sklearn.cluster import KMeans
+    
+    # Load the detection results
+    detection_output = np.array(detection)
+    detection_labels = detection_output[:, 0] != 20
+    
+    # Convert the detection results to binary format
+    detection_labels = np.array(detection_output)[detection_labels] == 1
+    
+    # Extract the color of the car in each lane
+    lane_colors = np.array(np.where(car_lane==1).reshape(3,-1,1,-1))
+    car = detection_labels[1]
+    red_car = car == 2
+    if red_car:
+        lane_count = count_people_in_car(lane_colors[1], detection)
+    else:
+        lane_count = 0
+        
+    return lane_count
+
+
+# Execute the object detection
+detection = detect_people()
+print("Object detection results:", detection)
+
+# Execute the count function
+lane=3
+detection = get_car(lane,detection)
+print("Car count on lane", lane, ":", count_red_car_on_track(lane, detection))
+print('<final_result>', final_result)
+
+Solution: 0

@@ -1,0 +1,101 @@
+------------- 24-14-21-20-518668 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 19
+    execution = ObjectDetector_Tool.execute(image=img_path)
+IndentationError: unexpected indent
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import ObjectDetector_Tool
+
+# Load the image
+img_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_8_image_1.jpg"
+ execution = ObjectDetector_Tool.execute(image=img_path)
+labels_detection_tool = execution[1]
+detected_objects_images_list = execution[0]
+detected_boxes_list = execution[2]
+
+if detected_objects_images_list:
+    labeled_detected_objects = []
+    for obj_dict_list in detected_objects_images_list:
+        for obj_dict in obj_dict_list:
+            # Determine whether the object is detected
+            if "baseball" in obj_dict["label"] or obj_dict["label"] == "basket":
+                object_name = "baseball" if "baseball" in obj_dict["label"] else "basket"
+                confidence_score = obj_dict["confidence score"]
+            else:
+                object_name = ""
+
+            for detected_box in obj_dict["box"]:
+                object_detection = {
+                    "object_name": object_name,
+                    "confidence_score": confidence_score,
+                    "box": detected_box,
+                    "bbox": [x[0] + 25, y[0] + 25, x[1] - 25, y[1] - 25] if detected_box else [0, 0]
+                }
+                labeled_detected_objects.append(object_detection)
+
+    final_result = len(detached_objects_list)
+
+    with open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Updated_Counting_1_counted_objects.txt", "w") as f:
+        f.write("Object Name\nBox")
+
+    for detected_obj in labeled_detected_objects:
+        f.write(f"{detected_obj[0]} \n{detected_obj[1]} \n{detected_obj[2]} \n")
+
+    print("Objects detected:", final_result)
+else:
+    print("No detected objects in the image.")
+
+# Check that the output files have been created.
+with open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Updated_Counting_1_counted_objects.txt", "r") as f:
+    content = f.readlines()
+    for i, line in enumerate(content):
+        if "baseball" in line:
+            baseball_obj_detected = True
+            break
+    if baseball_obj_detected:
+        print("The image contains baseballs.")
+    else:
+        print("No baseballs detected in the image.")
+
+# Check that the original image contains baseballs.
+img = Image.open(img_path)
+for detection in detected_objects_images_list:
+    if detection[0]["object_name"] == "baseball":
+        baseball_obj_exist = True
+        break
+if baseball_obj_exist:
+    print("Baseball exists in the image.")
+else:
+    print("No baseballs detected in the image.")
+
+# Check that the object is in the correct bounding box.
+for det_box in detected_objects_list[0]["bbox"]:
+    baseball_bbox = tuple(det_box)
+    if baseball_bbox[0] < 25 or baseball_bbox[1] < 25 or baseball_bbox[2] > 475 or baseball_bbox[3] > 395:
+        print("Baseball bounding box is incorrect.")
+else:
+    print("Baseball bounding box is correct.")
+
+# Check that the object's bounding box in the original image is within the frame.
+for original_bbox in original_boxes_list:
+    baseball_bbox = tuple(original_bbox)
+    if baseball_bbox[0] < 25 or baseball_bbox[1] < 25 or baseball_bbox[2] > 475 or baseball_bbox[3] > 395:
+        print("Baseball bounding box is incorrect after detection.")
+else:
+    print("Baseball bounding box after detection is correct.")
+print('<final_result>', final_result)
+
+Solution: 1

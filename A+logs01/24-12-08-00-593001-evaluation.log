@@ -1,0 +1,50 @@
+------------- 24-12-08-00-593001 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def get_umbrellas_left():
+    path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg"
+    labels_to_find = ["umbrellas"]
+    threshold = 0.35
+    model_size = "base"
+    padding = 20
+
+    detection = detection_path(path_to_image, labels_to_find, threshold, model_size, padding)
+    
+    if detections is not None:
+        for obj in detections:
+            if obj['label'] == 'umbrellas':
+                total_umbrellas = obj['confidence'] * detection_obj_count_per_img.size(3)
+                
+                # Assuming there is one umbrella per object
+                umbrellas_on_left = int(total_umbrellas)
+                
+                right_umbrellas = objects.countobj("umbrellas")
+                
+                umbrella_count_difference = umbrellas_on_left - umbrella_count_initial
+                return umbrella_count_difference
+    else:
+        return "No umbrellas detected"
+    
+umbrella_count_difference = get_umbrellas_left()
+print(f"Number of white umbrellas on the left side: {umbrella_count_difference}")
+print('<final_result>', final_result)
+
+Solution: 3

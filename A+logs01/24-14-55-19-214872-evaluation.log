@@ -1,0 +1,55 @@
+------------- 24-14-55-19-214872 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import Detect
+
+def count_banners(canvas):
+    # Load the canvas image
+    image_path = "path/to/canvas_image.jpg"
+    model_name = "tiny"
+    threshold = 0.35
+    pad_size = 20
+
+    # Detect the banners
+    detection = Detect(image_path, labels=["banners"], threshold=threshold, model_size=model_name, padding=pad_size)
+
+    # Find the index of the first banner
+    banner_index = None
+    found_banners = []
+    for index, object in detection:
+        box = object["box"]
+        _, confidence = object["confidence"], object["confidence"]
+        if "banners" in box and confidence > threshold:
+            if banner_index is None:
+                banner_index = index
+            elif confidence > found_banners[0][1]:
+                banner_index = index
+                found_banners = [box, confidence]
+
+    if banner_index is not None:
+        # Count the number of banners based on the index
+        return len(found_banners)
+    else:
+        return 0
+
+final_result = count_banners("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_86_image_1.jpg")
+print("Number of banners:", final_result)
+print('<final_result>', final_result)
+
+Solution: 6

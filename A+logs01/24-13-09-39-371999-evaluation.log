@@ -1,0 +1,39 @@
+------------- 24-13-09-39-371999 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import execute
+
+def _stop(sign):
+    return sign == 'STOP'
+
+def count_black_letters_on_sign(sign):
+    black_letters = {char: 1 for char in sign if ord(char) >= 97}
+    return len(black_letters)
+
+def count_signs_with_black_letters(image, labels, threshold, model_size, padding):
+    data = execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    signs = [sign for sig in data['output_type'] if _stop(sig)]
+    count = sum(_stop(sig) for sig in signs)
+    return count
+
+final_result = count_signs_with_black_letters('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg', ['stop'], 0.35, 'tiny', 20)
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2

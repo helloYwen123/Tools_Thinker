@@ -1,0 +1,50 @@
+------------- 24-15-14-54-538473 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import tool
+
+# Step 1: Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_32_image_1.jpg"
+
+# Step 2: Detect objects
+execution = tool.execute(image=image_path, labels=["baseball", "basket"])
+
+# Step 3: Get detected objects paths
+detected_objects = execution["output_type"]
+
+# Step 4: Count baseball and basket objects
+num_baseball = [obj["label"] for obj in detected_objects if "baseball" in obj["label"]]
+num_basket = [obj["label"] for obj in detected_objects if "basket" in obj["label"]]
+
+# Step 5: Calculate total number of objects
+total_objects = len(detected_objects)
+
+# Step 6: Calculate number of green frogs
+num_green_frogs = 0
+for i in range(len(num_baseball)):
+    if "green" in num_baseball[i]:
+        num_green_frogs += 1
+
+num_baseball_sum = sum(num_baseball)
+num_basket_sum = sum(num_basket)
+
+final_result = {"num_green_frogs": num_green_frogs, "total_objects": total_objects, "num_baseball_sum": num_baseball_sum, "num_basket_sum": num_basket_sum}
+print('<final_result>', final_result)
+
+Solution: 0

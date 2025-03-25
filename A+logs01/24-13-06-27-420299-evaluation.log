@@ -1,0 +1,61 @@
+------------- 24-13-06-27-420299 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 16, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+import numpy as np
+from object_detector_tool import execute
+
+def count_objects(image_path, labels, threshold=None, model_size="tiny", padding=20):
+    detections = execute(image_path, labels, threshold, model_size, padding)
+    detected_objects = []
+    for object in detections:
+        if np.any(object['label'] == labels):
+            object_name = object['label'] + '_' + str(object['confidence score'])
+            detected_objects.append(object_name)
+    return detected_objects
+
+# Specify image path, labels, threshold, model size, and padding
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_93_image_1.jpg"
+labels = ['baseball', 'basket', 'car', 'person']
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+# Detect and count objects
+object_labels = count_objects(image_path, labels, threshold, model_size, padding)
+
+# Function to calculate how many people are washing their hands
+def calculate_people_washing_hands(object_labels):
+    washing_people = 0
+    if 'person' in object_labels:
+        washing_people += 1
+    if 'baseball' in object_labels:
+        washing_people += 2
+    if 'basket' in object_labels:
+        washing_people += 1
+    return washing_people
+
+# Calculate number of people washing their hands
+washing_people = calculate_people_washing_hands(object_labels)
+
+# Example usage
+final_result = washing_people
+print("The number of people washing their hands is:", final_result)
+print('<final_result>', final_result)
+
+Solution: 0

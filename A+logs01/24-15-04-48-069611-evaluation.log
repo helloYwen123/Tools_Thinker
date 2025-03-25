@@ -1,0 +1,46 @@
+------------- 24-15-04-48-069611 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'Object_Detector_Tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from Object_Detector_Tool import *
+
+# Load the image
+image = Image.open('val_Counting_61_image_1.jpg')
+
+# Detect objects using the Grounding DINO model
+execution = detection(image=image, labels=['motorcycle'], threshold=0.35, model_size="tiny", padding=20)
+
+# Define variables
+object_labels = [
+    *execution['output_type'][0][0],  # baseball
+    *execution['output_type'][1][0],  # basket
+    'person'  # add a new key to include the person based on their bounding box
+
+]
+
+# Check if the bike is in the image
+if 'motorcycle' in object_labels:
+    num_people_sitting_near_bike = len(object_labels) - 2  # Remove the 'baseball' and 'basket' as placeholders
+    final_result = num_people_sitting_near_bike
+else:
+    final_result = "not enough people"
+
+print("Number of people sitting near the motorcycle:", final_result)
+print('<final_result>', final_result)
+
+Solution: 0

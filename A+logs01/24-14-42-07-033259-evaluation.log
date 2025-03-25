@@ -1,0 +1,46 @@
+------------- 24-14-42-07-033259 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import detect_objects
+
+def count_people_with_white_hat(image, labels=['baseball'], threshold=0.35, model_size='tiny', padding=20):
+    detected_objects = detect_objects(image, labels, threshold, model_size, padding)
+    
+    if detected_objects:
+        people_with_white_hat = [obj for obj in detected_objects if obj['label'] == 'baseball' and 'person' not in obj]
+        num_people_with_white_hat = len(people_with_white_hat)
+        
+        return num_people_with_white_hat
+    else:
+        return 0
+
+# Provided data
+label_list = ['baseball']
+threshold = 0.35
+model_size = 'tiny'
+padding = 20
+
+# Image path (change as needed)
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_84_image_1.jpg'
+
+num_people_with_white_hat = count_people_with_white_hat(image_path, labels=label_list, threshold=threshold, model_size=model_size, padding=padding)
+final_result = num_people_with_white_hat
+print('<final_result>', final_result)
+
+Solution: 4

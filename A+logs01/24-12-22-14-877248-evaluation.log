@@ -1,0 +1,75 @@
+------------- 24-12-22-14-877248 Process Error: 1 -------------
+Error in code execution: 
+File "<string>", line 35
+    label_b-boxes = {}
+    ^^^^^^^^^^^^^
+SyntaxError: cannot assign to expression here. Maybe you meant '==' instead of '='?
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from PIL import Image, ImageFilter
+
+# Load the image
+image = Image.open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_1_image_1.jpg")
+
+# Define the number of blank pixels to add as empty padding
+pad_size = 20
+
+# Apply the padding
+padding_image = image.convert('1')  # Convert to 1-bit mode (clear/gray)
+padding_image = padding_image.filter(ImageFilter.BoxFilter(size=pad_size, size=(3, 3)))  # Apply the padding filter
+
+# Convert back to RGB mode
+padding_image = padding_image.convert('RGBA')
+
+# Extract the labels from the original image
+original_image = image.convert('RGB')
+labels = image.split()
+
+# Initialize a dictionary to store the bounding boxes for each label
+label_b-boxes = {}
+
+# Iterate over the labels to extract and process the bounding boxes
+for label in labels:
+    # Extract bounding box from the label
+    (xmin, ymin, xmax, ymax) = label.getbbox()
+
+    # Store the bounding box in the dictionary
+    if label in label_b-boxes:
+        bbox = (label_b-boxes[label])
+        bbox[0].x = min(xmin, bbox[0].x)
+        bbox[0].y = min(ymin, bbox[0].y)
+        bbox[1].x = max(xmax, bbox[1].x)
+        bbox[1].y = max(ymax, bbox[1].y)
+        label_b-boxes[label] = bbox
+
+# Iterate over the detected boxes to find the blue floats
+for label in label_b-boxes:
+    (xmin, ymin, xmax, ymax) = label_b-boxes[label]
+
+    # Find the blue float in the bounding box
+    for color in color_bboxes:
+        if is_label_in_color_box((0, 255, 0), (xmin, ymin, xmax, ymax), (color[2] * 255, color[1] * 255, color[0] * 255)):
+            # Find the bounding box of the blue float
+            float_bbox = (xmin, ymin, xmax, ymax)
+
+            # Add up the count of blue floats
+            blue_float_count += 1
+
+# Output the final result
+final_result = f"There are {blue_float_count} blue floats in the image"
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 1

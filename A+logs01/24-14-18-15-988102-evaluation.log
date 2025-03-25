@@ -1,0 +1,60 @@
+------------- 24-14-18-15-988102 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+def detect_objects(labels, threshold, model_size, padding):
+    # Initialize empty list to store detected objects and their paths
+    detection_list = []
+
+    # Load the image
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_62_image_1.jpg"
+
+    # Detect objects using the Grounding DINO model with specified labels and confidence threshold
+    execution = detection(image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+    # Check for objects and their path
+    for obj_label in [label["label"] for label in execution]:
+        box = label["bbox"]
+        path = label["path"]
+        if "baseball" in obj_label:
+            object_name = "baseball"
+        elif "person" in obj_label:
+            object_name = "person"
+        else:
+            object_name = "unidentified object"
+        box = [f'{bbox[0]}', f'{bbox[1]}', f'{bbox[0]+padding}', f'{bbox[1]+padding}']
+        bbox = " ".join(box)
+        box = " ".join(box)
+        detection_list.append([object_name, f"{bbox}" + " " + str(int(float(box.split()[1]) * 100)) + "%", bbox, f"{path}"])
+
+    return detection_list
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_62_image_1.jpg"
+labels = ["baseball"]
+threshold = 0.35
+model_size = "tiny"
+padding = 20
+
+final_result = detect_objects(labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+print("Number of men looking through a camera:", len(final_result))  # Replace with the actual path to the image
+print('<final_result>', final_result)
+
+Solution: 1

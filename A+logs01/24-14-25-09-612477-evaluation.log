@@ -1,0 +1,68 @@
+------------- 24-14-25-09-612477 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 28, in <module>
+NameError: name 'Detection_Model' is not defined
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+def count_tennis_rackets(frame):
+    # Load the ground detection model with a default padding of 20 pixels
+    detection_model = Detection_Model(threshold=0.35, padding=20)
+
+    # Detect tennis rackets in the image with the base model
+    tennis_rackets = detection_model.detect(frame)
+
+    # Count the number of tennis rackets detected in the image
+    count_tennis_rackets = len(tennis_rackets)
+
+    return count_tennis_rackets
+
+# Load the ground detection model with a default padding of 20 pixels
+detection_model = Detection_Model(threshold=0.35, padding=20)
+
+# Initialize an empty list to store the detected tennis rackets
+tennis_rackets = []
+
+# Loop through all the objects in the image
+for bounding_box, confidence_score, saved_image_path in detection_model.detect(frame):
+    # Add the bounding box of the tennis racket to the list
+    tennis_rackets.append({"bounding_box": bounding_box, "confidence_score": confidence_score})
+
+# Filter the tennis rackets to only those with bounding box size greater than 20 pixels
+tennis_rackets = [tennis_racket for tennis_racket in tennis_rackets if len(tennis_racket["bounding_box"]) > 20]
+
+# Print the number of tennis rackets detected in the image
+print(count_tennis_rackets)
+
+# Save the detected tennis racket bbox data to a json file
+tennis_rackets_json = {"tennis_rackets": tennis_rackets}
+
+# Load the tennis racket bbox data from the json file
+tennis_rackets = tennis_rackets_json['tennis_rackets']
+
+# Convert the tennis racket bbox data from a list of tuples to a dictionary
+tennis_rackets_dict = {"tennis_rackets": tennis_rackets}
+
+# Define a function to calculate the number of people currently carrying tennis rackets
+def calculate_number_carrying_tennis_rackets(object_type):
+    if object_type == "people":
+        # Count the number of people carrying tennis rackets
+        return count_tennis_rackets
+    else:
+        # If not a person, throw an error
+        raise ValueError(f"Expected an object of type {object_type} for calculating the number of people carrying tennis rackets, found '{type(object_type)}'")
+print('<final_result>', final_result)
+
+Solution: 2

@@ -1,0 +1,46 @@
+------------- 24-13-38-14-904182 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import DetectImages
+
+# Load the images
+images = DetectImages.load_images("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_84_image_1.jpg", ["baseball", "basket"])
+
+# Get the bounding box coordinates of the baseball and the basket
+bbox_baseball = images[0]['bbox']
+bbox_basket = images[1]['bbox']
+
+print(bbox_baseball, bbox_basket)
+
+# Calculate the intersection area of the bounding boxes
+intersection_area = bbox_baseball['area'] * bbox_basket['area']
+
+# Calculate the overlap percentage between the baseball and the basket
+overlap_percentage = intersection_area / (bbox_baseball['area'] * bbox_basket['area'])
+
+# Check if the overlap percentage is greater than a certain threshold
+if overlap_percentage > 0.35:
+    num_people_wearing_white_hats = 2
+else:
+    num_people_wearing_white_hats = 0
+
+final_result = num_people_wearing_white_hats
+print('<final_result>', final_result)
+
+Solution: 4

@@ -1,0 +1,45 @@
+------------- 24-12-59-22-120298 Process Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+Code: 
+import sys
+import os
+import time
+import torch
+from transformers import pipeline
+sys.path.insert(0, "/home/stud/wxie/Tools_Thinker")
+from tools.base import BaseTool
+from PIL import Image, ImageOps
+import os
+import sys
+import warnings
+from tools.object_detector.tool import Object_Detector_Tool
+
+from object_detector_tool import *
+
+# Function to count people wearing yellow shirt
+def count_yellow_shirt():
+    people = []
+    # Load the image
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_119_image_1.jpg"
+    # Execute the tool
+    execution = tool.execute(image=image_path, labels=["person", "yellow_shirt"], threshold=0.5, model_size="base", padding=20)
+    
+    # Iterate through the returned labels
+    for item in execution:
+        # Check if "yellow_shirt" is present
+        if "yellow_shirt" in item["label"]:
+            # Increment the count
+            people.append((item["label"], item["confidence score"], item["box"], item["saved_image_path"]))
+
+    # Return the count of people wearing yellow shirt
+    return len(people)
+
+# Call the function and print the result
+final_result = count_yellow_shirt()
+print("Count of people wearing yellow shirt:", final_result)
+print('<final_result>', final_result)
+
+Solution: 0
