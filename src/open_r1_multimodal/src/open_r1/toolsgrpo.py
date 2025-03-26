@@ -103,7 +103,6 @@ def code_exec_acc_reward(completions, solution, **kwargs):
     os.makedirs(log_dir_path, exist_ok=True)
     ### debug subprocess 
     def run_async_from_sync(coro):
-        
         global global_loop
         if global_loop.is_closed():
             global_loop = asyncio.new_event_loop()
@@ -209,7 +208,7 @@ def code_exec_acc_reward(completions, solution, **kwargs):
                 f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
                 f.write(f"Solution: {solution}\n")
             return 0.0
-            
+        
         reward = 0.0
         # try to parse the output and solution to do symbolic verification
         try:
@@ -219,15 +218,14 @@ def code_exec_acc_reward(completions, solution, **kwargs):
                 reward = 1.0
         except Exception:
             pass
-
-        # 
+        # Symbolic verification failed, then Do common verification
         if reward == 0.0:
             # get Ground Truth from solution
             ground_truth = solution
             student_answer = output
             if student_answer == ground_truth:
                 reward = 1.0
-                
+
         end_time = time.perf_counter()  # Timer Stop
         elapsed = end_time - start_time
         log_path = os.path.join(log_dir_path, f"{current_time}-evaluation.log")

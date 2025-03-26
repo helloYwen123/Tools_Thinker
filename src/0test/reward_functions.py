@@ -69,7 +69,6 @@ def code_exec_acc_reward(completions, solution, **kwargs):
 
             buffer = StringIO()
             with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
-                
                 # here add external tool module
                 exec_globals = { 
                     "Object_Detector_Tool": Object_Detector_Tool,  
@@ -126,6 +125,7 @@ def code_exec_acc_reward(completions, solution, **kwargs):
             signal.alarm(0)  
 
     def check_correctness(task: dict, log_path) -> float:
+        start_time = time.perf_counter() # timer start
         manager = multiprocessing.Manager()
         result = manager.list()
         p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], task["solution"], 60, result, log_path))
@@ -137,10 +137,13 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         reward, output = result[0] if result else (0.0, "timeout")
 
         evaluation_log_path = os.path.join(log_path, f"evaluation.log")
+        end_time = time.perf_counter()  # 结束计时
+        elapsed = end_time - start_time
         with open(evaluation_log_path, "a") as f:
             f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
             f.write(f"Final Result: {output}\n\n")
             f.write(f"Solution: {task['solution']}\n")
+            f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
             f.write(f"Code: {task['code']}\n\n")
         return reward
     
@@ -353,7 +356,7 @@ def unsafe_execute(code, solution, timeout, result, log_path):
     signal.signal(signal.SIGALRM, timeout_handler)
     signal.alarm(int(timeout))
     try: # if the code is bugfree
-        reliability_guard()
+        reliability_guard() # follow human-eval evaluation script
         buffer = StringIO()
         with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
             # TODO # here add external tool module and can be better
@@ -413,8 +416,9 @@ def check_correctness(task: dict, log_path, current_time) -> float:
     
     evaluation_log_path = os.path.join(log_path, "evaluation.log")  # in evaluation includes all cased in reward computation
                                                     # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
-    if not task["code"] or task["code"] == "":  # 
+    if task["code"] == None:  # 
         with open(evaluation_log_path, "a") as f:
+            
             f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
             f.write(f"Reward: 0.0\n")
             f.write(f"Solution: {task['solution']}\n")
@@ -452,6 +456,7 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
 ####################################################################
 ##################CODE ACCURACY and EXECUTION REWARD################
 def code_exec_acc_reward(completions, solution, **kwargs):
+    
     # based on completions type to constuct
     if isinstance(completions[0], str):
         contents = [completion for completion in completions]
@@ -463,14 +468,14 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         if match:
             return match.group(1).strip()
         else:
-            raise ValueError("No command tag found!!")
+            raise ValueError("No Command Tag Found!!")
     
     tasks = []
     for content, sol in zip(contents, solution):
         try:
             code = extract_code(content)
         except Exception as e:
-            code = ""
+            code = None
         tasks.append({
             "code": code,
             "solution": sol
