@@ -69,6 +69,7 @@ def code_exec_acc_reward(completions, solution, **kwargs):
 
             buffer = StringIO()
             with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
+                
                 # here add external tool module
                 exec_globals = { 
                     "Object_Detector_Tool": Object_Detector_Tool,  
@@ -125,7 +126,6 @@ def code_exec_acc_reward(completions, solution, **kwargs):
             signal.alarm(0)  
 
     def check_correctness(task: dict, log_path) -> float:
-        start_time = time.perf_counter() # timer start
         manager = multiprocessing.Manager()
         result = manager.list()
         p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], task["solution"], 60, result, log_path))
@@ -137,13 +137,10 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         reward, output = result[0] if result else (0.0, "timeout")
 
         evaluation_log_path = os.path.join(log_path, f"evaluation.log")
-        end_time = time.perf_counter()  # 结束计时
-        elapsed = end_time - start_time
         with open(evaluation_log_path, "a") as f:
             f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
             f.write(f"Final Result: {output}\n\n")
             f.write(f"Solution: {task['solution']}\n")
-            f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
             f.write(f"Code: {task['code']}\n\n")
         return reward
     
@@ -357,7 +354,7 @@ def unsafe_execute(code, solution, timeout, result, log_path):
     signal.alarm(int(timeout))
     try: # if the code is bugfree
         reliability_guard() # follow human-eval evaluation script
-        buffer = StringIO()
+        buffer = StringIO() # save all output when execution
         with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
             # TODO # here add external tool module and can be better
             exec_globals = {
@@ -399,7 +396,6 @@ def unsafe_execute(code, solution, timeout, result, log_path):
         else:
                 with open(debug_log_path, "a") as df:
                     df.write("\n[None RESULT]\n\n")
-                    
                     reward = 0.0
         result.append((reward, output))
     except Exception as e: # if the code problematic
@@ -413,7 +409,7 @@ def unsafe_execute(code, solution, timeout, result, log_path):
         signal.alarm(0)
 
 def check_correctness(task: dict, log_path, current_time) -> float:
-    
+    start_time = time.perf_counter()  # timer start
     evaluation_log_path = os.path.join(log_path, "evaluation.log")  # in evaluation includes all cased in reward computation
                                                     # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
     if task["code"] == None:  # 
@@ -434,9 +430,12 @@ def check_correctness(task: dict, log_path, current_time) -> float:
         if p.is_alive():
             p.kill()
         reward, output = result[0] if result else (0.0, "timeout")
+        end_time = time.perf_counter()  # timer stop
+        elapsed = end_time - start_time
         with open(evaluation_log_path, "a") as f:
             f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
             f.write(f"Final Result: {output}\n\n")
+            f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n\n")
             f.write(f"Solution: {task['solution']}\n")
             f.write(f"Code: {task['code']}\n\n")
     return reward
@@ -482,7 +481,7 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         })
     
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_root_dir = os.path.join(f"{root_dir}/src/open_r1_multimodal/src/open_r1/LOGS", f"{current_time}-logs")
+    log_root_dir = os.path.join(f"{root_dir}/LOGS", f"{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     
     rewards = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
