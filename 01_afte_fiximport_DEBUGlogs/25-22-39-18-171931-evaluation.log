@@ -1,0 +1,72 @@
+------------- 25-22-39-18-171931 Exception in creating subproess -------------
+Exception: in creating subproess 
+
+Traceback:
+Traceback (most recent call last):
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/subprocess.py", line 200, in communicate
+    stdin, stdout, stderr = await tasks.gather(stdin, stdout, stderr)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/subprocess.py", line 180, in _read_stream
+    output = await stream.read()
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/streams.py", line 704, in read
+    block = await self.read(self._limit)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/streams.py", line 711, in read
+    await self._wait_for_data('read')
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/streams.py", line 543, in _wait_for_data
+    await self._waiter
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/stud/wxie/Tools_Thinker/src/open_r1_multimodal/src/open_r1/toolsgrpo.py", line 164, in run_code_async
+    if proc.returncode != 0:
+                     ^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+Timeout after 20 seconds.
+Code: from object_detector.tool import Object_Detector_Tool
+
+def count_fingers():
+    # Define the input file paths
+    input_file_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_18_image_1.jpg"
+    labels = ["basilike", "counting", "hiding", "tubeglass"]
+    threshold = 0.35
+    model_size = "base"
+    padding = 20
+
+    # Create the detection object
+    detector = Object_Detector_Tool(input_file_path, labels, threshold, model_size, padding)
+
+    # Detect basilike and tubeglass
+    results = [[label, confidence_score, (x1, y1, x2, y2)] for label, confidence_score, (x1, y1, x2, y2) in detector.output]
+    
+    # Check for tubeglass and count fingers
+    tubeglass_bbox = [result[2] for result in results if result[0] == "tubeglass"]
+    if tubeglass_bbox:
+        for bbox in tubeglass_bbox:
+            width, height = bbox
+            x1, y1, x2, y2 = bbox
+            detected_finger = False
+            # Check if the tubeglass is at the fingertips and calculate the number of fingers
+            for finger in [x1 + width / 2, y1 + height / 2, x2 + width / 2, y2 + height / 2]:
+                if finger != x1 + width / 2 and finger != y1 + height / 2 and finger != x2 + width / 2 and finger != y2 + height / 2:
+                    detected_finger = True
+            if detected_finger:
+                finger_count = 1
+            else:
+                finger_count = 0
+            # Return the count of fingers detected
+            return finger_count
+
+final_result = count_fingers()
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 3

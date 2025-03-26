@@ -1,0 +1,42 @@
+------------- 25-22-01-26-964673 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+TypeError: Object_Detector_Tool.execute() missing 2 required positional arguments: 'self' and 'labels'
+
+Code: from object_detector.tool import Object_Detector_Tool
+
+# Convert the image path provided as a command line argument to a tool
+image_path = "path/to/your/image.jpg"
+
+# Load the image
+execution = Object_Detector_Tool.execute(image=image_path)
+
+# Access necessary information from the returned tool
+labels = execution['labels']
+threshold = execution['threshold']
+model_size = execution['model_size']
+padding = execution['padding']
+
+# Convert pixel values to integer for detection confidence score
+for i, label in enumerate(labels):
+    if threshold in labels[i][1]:
+        confidence = int(labels[i][1] * (1 - (int(labels[i][1]) / 100)))
+    else:
+        confidence = None
+    labels[i][1] = confidence
+
+# Calculate the number of people wearing hats in the image
+num_hats = 0
+for i, label in enumerate(labels):
+    if 'hat' in label[1]:
+        num_hats += 1
+
+# Convert the number of hats to a string to match the user's expectation
+final_result = f"{num_hats}"
+
+print(f"Number of people wearing hats: {final_result}")
+print('<final_result>', final_result)
+
+
+Solution: 1

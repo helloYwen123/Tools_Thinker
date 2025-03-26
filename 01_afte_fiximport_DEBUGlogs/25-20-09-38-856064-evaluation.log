@@ -1,0 +1,38 @@
+------------- 25-20-09-38-856064 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 11, in <module>
+TypeError: Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+
+Code: from object_detector.tool import Object_Detector_Tool
+
+# Parameters
+image_path = "path/to/image.jpg"  # Adjust path accordingly
+labels = ["toilet", "floor"]  # Adjust labels accordingly
+threshold = 0.35  # Adjust threshold as needed
+model_size = "tiny"  # Adjust model_size as needed
+padding = 20  # Adjust padding as needed
+
+# Create object detector tool instance
+detectors = Object_Detector_Tool(image_path=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+
+# Detect toilets and print bounding box coordinates for each one, including empty padding
+detectors.predict()
+for _, label, box in detectors.output_type:
+    if label == "toilet":
+        x1, y1, x2, y2 = box["bbox"]
+        detector_details = {
+            "toilet": (x1, y1, x2, y2),
+            "padding": box["bbox"].extend((padding, 0, 0, padding)),
+        }
+
+# Filter detected toilets only
+filtered_toilets = {label: [(detector["toilet"][0], detector["toilet"][1], detector["toilet"][2])]
+                    for label, detector in detector_details.items() if label == "toilet"}
+
+final_result = len(filtered_toilets.keys())
+print(f"Number of toilets: {final_result}")
+print('<final_result>', final_result)
+
+
+Solution: 2

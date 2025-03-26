@@ -1,0 +1,40 @@
+------------- 25-21-00-38-606581 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 28, in <module>
+  File "<string>", line 11, in question_one
+NameError: name 'Image' is not defined
+
+Code: from object_detector.tool import Object_Detector_Tool
+
+class Ski_Flip(object):
+    def __init__(self):
+        self.labels = ['skier']
+        self.threshold = 0.5
+        self.model_size = 'tiny'
+        self.padding = 20
+
+    def question_one(self):
+        snow_ski = Image.open('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_44_image_1.jpg')
+        detector = Object_Detector_Tool()
+        skier_boxes = detector.query_boxes(snow_ski, self.labels, self.threshold, self.model_size, self.padding)
+        skier_confidence_scores = detector.query_confidence_scores(snow_ski, self.labels, self.threshold, self.model_size, self.padding)
+        skier_boxes, skier_confidence_scores = skier_boxes[skier_confidence_scores.argsort()[-10:]], skier_confidence_scores[:10]
+        skier_confidence_score_sum = sum([box[1] for box in skier_confidence_scores])
+        skier_confidenc = skier_confidence_score_sum / 10
+        skier_confidenc = max(0.1, skier_confidenc)
+        if skier_confidenc > 0.9 and skier_confidenc < 1.0:
+            final_result = {'skiers doing a flip': 0.9}
+        elif skier_confidenc < 0.8 and skier_confidenc >= 0.1:
+            final_result = {'skiers doing a flip': 1}
+        else:
+            final_result = {'skiers doing a flip': 0}
+        return final_result
+
+s = Ski_Flip()
+question_result = s.question_one()
+print(question_result)
+print('<final_result>', final_result)
+
+
+Solution: 0

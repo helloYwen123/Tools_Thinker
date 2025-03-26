@@ -1,0 +1,37 @@
+------------- 25-20-13-49-737923 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 9, in <module>
+TypeError: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+Code: from object_detector.tool import Object_Detector_Tool
+
+# Read input image
+input_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.jpg"
+input_labels = ["baseball", "basket"]
+
+
+# Detect objects
+result = Object_Detector_Tool.execute(image=input_path, labels=input_labels, threshold=0.5, model_size="base", padding=15)
+
+# Extract object paths
+objects = [object["label"] for object in result["output_type"]]
+
+# Calculate number of "one way" signs pointing to the left
+num_left = sum([object == "one way" and "left" in object.split(",").pop() for object in objects])
+
+# Calculate number of "one way" signs pointing to the right
+num_right = sum([object == "one way" and "right" in object.split(",").pop() for object in objects])
+
+# Calculate number of "one way" signs pointing to the left and right
+num_both = num_left + num_right
+
+# Calculate percentage of "one way" signs pointing to the left
+left_percentage = num_left / num_both
+final_result = {"percentage_left": left_percentage}
+
+print(final_result)
+print('<final_result>', final_result)
+
+
+Solution: 3

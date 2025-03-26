@@ -170,79 +170,62 @@ def code_exec_acc_reward(completions, solution, **kwargs):
     """
     running code snippets in completions and if result is correct return the rewards.
     If an error occurs during execution, return "0".
-    Use asyncio.run to automatically create and manage event loops.
+    Use asyncio to automatically create and manage event loops.
     """
+    start_time = time.perf_counter()
     if isinstance(completions[0],str):
         contents = [completion for completion in completions]
     else:
         contents = [completion[0]["content"] for completion in completions]
-
-    ### deubg subprocess 
+    current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+    log_dir_path = os.path.join(root_dir, "src/open_r1_multimodal/DEBUGlogs")
+    #log_dir_path = os.path.join(root_dir, "src/open_r1_multimodal/Trainlogs")
+    os.makedirs(log_dir_path, exist_ok=True)
+    ### debug subprocess 
     def run_async_from_sync(coro):
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            # No loop exists
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
         
-        if loop.is_closed():
-            # Previously closed loop
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-        return loop.run_until_complete(coro)
+        global global_loop
+        if global_loop.is_closed():
+            global_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(global_loop)
+        return global_loop.run_until_complete(coro)
     
     def extract_code(completion):
         match = re.search(r"<command>(.*?)</command>", completion , re.DOTALL)
         if match:
-            extracted_code = match.group(1).strip()  
+            extracted_code = match.group(1).strip()
             return extracted_code
         else:
-            raise ValueError("No command tag found!!")
-    api_methods = { # python environment in subprocess is isolated from mainprocess
-    "object_detector":
-"""
-import sys
-import os
-import time
-import torch
-from transformers import pipeline
-sys.path.insert(0, "{root_dir}")
-from tools.base import BaseTool
-from PIL import Image, ImageOps
-import os
-import sys
-import warnings
-from tools.object_detector.tool import Object_Detector_Tool
-"""
-}
-    async def run_all_codes(contents, solutions):
+            return None
+    async def run_all_codes(contents, solutions, log_dir_path, current_time):
         """
         Asynchronously run multiple code snippets.
         """
-        sema = asyncio.Semaphore(4)  # max 4 ubprocess
-        
+        sema = asyncio.Semaphore(8)  # max n ubprocess
         tasks = []
         for content, sol in zip(contents, solutions):
             async def limited_task(content=content, sol=sol):
-                try:
-                    extracted_code = extract_code(content)  
-                except Exception as e:
-                    print(f"[ERROR] extract_code failed: {e}")
+                extracted_code = extract_code(content)
+                if extracted_code is None:
+                    end_time = time.perf_counter()  # Timer Stop
+                    elapsed = end_time - start_time
+                    log_path = os.path.join(log_dir_path ,f"{current_time}-evaluation.log")
+                    with open(log_path, "a") as f:
+                        f.write(f"------------- {current_time} Extract Code Error -------------\n")
+                        f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
+                        f.write(f"\nSolution: {solution}\n")
                     return 0.0
-                
+
                 async with sema:
                     code_to_run = (
-                        f"{api_methods['object_detector'].format(root_dir=root_dir)}\n"
                         f"{extracted_code}\n"
                         "print('<final_result>', final_result)"
                         )
-                    return await run_code_async(code_to_run, sol, 60)
+                    return await run_code_async(code_to_run, sol, log_dir_path, current_time, 30) ## would be better
             tasks.append(limited_task())
         return await asyncio.gather(*tasks)
     
-    async def run_code_async(code, solution, exec_timeout: int = 10) -> float:
+    async def run_code_async(code, solution, log_dir_path, current_time, exec_timeout: int=10) -> float:
         """
         Run a code snippet asynchronously and evaluate the result.
         """
@@ -261,24 +244,29 @@ from tools.object_detector.tool import Object_Detector_Tool
             )
             stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=exec_timeout)
             if proc.returncode != 0:
-                current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-                log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
-                os.makedirs(os.path.dirname(log_path), exist_ok=True)
-                with open(log_path, "w") as f:
-                    f.write(f"------------- {current_time} Process Error: {proc.returncode} -------------\n")
+                end_time = time.perf_counter()  # Timer Stop
+                elapsed = end_time - start_time
+                log_path = os.path.join(log_dir_path ,f"{current_time}-evaluation.log")
+                with open(log_path, "a") as f:
+                    f.write(f"------------- {current_time} Execution Error: {proc.returncode} -------------\n")
                     f.write(f"Error in code execution: \n{stderr.decode().strip()}\n")
-                    f.write(f"Code: {code}\n\n")
-                    f.write(f"Solution: {solution}\n")
+                    f.write(f"\nCode: {code}\n\n")
+                    f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
+                    f.write(f"\nSolution: {solution}\n")
                 return 0.0
             output_raw = stdout.decode().strip()
         except Exception as e:
-            current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-            log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
-            os.makedirs(os.path.dirname(log_path), exist_ok=True)
-            with open(log_path, "w") as f:
+            end_time = time.perf_counter()  # Timer Stop
+            elapsed = end_time - start_time
+            log_path = os.path.join(log_dir_path ,f"{current_time}-evaluation.log")
+            with open(log_path, "a") as f:
                 f.write(f"------------- {current_time} Exception in creating subproess -------------\n")
                 f.write(f"Exception: in creating subproess \n{str(e)}\n")
+                f.write("Traceback:\n")
+                f.write(traceback.format_exc())
+                f.write(f"Timeout after {exec_timeout} seconds.\n")
                 f.write(f"Code: {code}\n\n")
+                f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
                 f.write(f"Solution: {solution}\n")
             return 0.0
         
@@ -290,20 +278,22 @@ from tools.object_detector.tool import Object_Detector_Tool
                     output = line[len("<final_result>"):].strip()
                     break
         except Exception as e:
-            current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-            log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
+            end_time = time.perf_counter()  # Timer Stop
+            elapsed = end_time - start_time
+            log_path = os.path.join(log_dir_path, f"{current_time}-evaluation.log")
             os.makedirs(os.path.dirname(log_path), exist_ok=True)
-            with open(log_path, "w") as f:
-                f.write(f"------------- {current_time} Exception in run_code_async -------------\n")
+            with open(log_path, "a") as f:
+                f.write(f"------------- {current_time} Exception in extract final result-------------\n")
                 f.write(f"Exception in extract final result: \n{str(e)}\n")
                 f.write(f"Code: {code}\n\n")
+                f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
                 f.write(f"Solution: {solution}\n")
             return 0.0
             
         reward = 0.0
         # try to parse the output and solution to do symbolic verification
         try:
-            answer = parse(output)
+            answer = parse(output) # follow Visual Thinker accuracy
             sol_parsed = parse(solution)
             if float(verify(answer, sol_parsed)) > 0:
                 reward = 1.0
@@ -312,26 +302,28 @@ from tools.object_detector.tool import Object_Detector_Tool
 
         # 
         if reward == 0.0:
-            try:
-                # get Ground Truth from solution
-                ground_truth = solution
-                student_answer = output
-                if student_answer == ground_truth:
-                    reward = 1.0
-            except Exception:
-                raise Exception("Error in comparison for ground truth!")
-        current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-        log_path = os.path.join(root_dir, "logs", f"{current_time}-evaluation.log")
+            # get Ground Truth from solution
+            ground_truth = solution
+            student_answer = output
+            if student_answer == ground_truth:
+                reward = 1.0
+                
+        end_time = time.perf_counter()  # Timer Stop
+        elapsed = end_time - start_time
+        log_path = os.path.join(log_dir_path, f"{current_time}-evaluation.log")
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         with open(log_path, "a") as f:
-            f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
+            f.write(f"------------- {current_time} Sucessful Execution; Reward: {reward} -------------\n")
+            f.write("Traceback:\n")
+            f.write(traceback.format_exc())
             f.write(f"Code: {code}\n\n")
             f.write(f"Final Result: {output}\n\n")
+            f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
             f.write(f"Solution: {solution}\n")
         return reward
-    
-  
-    return run_async_from_sync(run_all_codes(contents=contents,solutions=solution))
+
+    return run_async_from_sync(run_all_codes(contents=contents,solutions=solution, log_dir_path=log_dir_path, current_time=current_time))
+
 
 
 #################################################################

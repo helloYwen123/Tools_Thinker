@@ -1,0 +1,38 @@
+------------- 25-22-22-05-816931 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 25, in <module>
+  File "<string>", line 6, in count_vowels_in_glowing_letters
+  File "<frozen codecs>", line 322, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+
+Code: from object_detector.tool import Object_Detector_Tool
+
+def count_vowels_in_glowing_letters():
+    # Read the image at the given path
+    with open('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg', 'r') as file:
+        image = file.read()
+
+    # Initialize an Object_Detector_Tool to detect glowing letters in the image
+    detector = Object_Detector_Tool()
+
+    # Perform object detection on the image
+    detections = detector.detect(image, ["block", "keystone", "XL"])
+
+    # Calculate the total number of common vowels in the visible letters on the bridge
+    vowels_count = 0
+    for detection in detections:
+        visible_character = detection['box'][2]
+        for letter in detection['label']:
+            vowel = 'a' if letter.lower() in 'aeiou' else 'z' if letter.lower() in 'zbcdfghjklmnpqrstvwxyz' else 'X'
+            if len(visible_character) >= vowel:
+                vowels_count += visible_character[visible_character.index(vowel):].count(vowel)
+
+    return vowels_count
+
+final_result = count_vowels_in_glowing_letters()
+print("The total number of common vowels is:", final_result)
+print('<final_result>', final_result)
+
+
+Solution: 4

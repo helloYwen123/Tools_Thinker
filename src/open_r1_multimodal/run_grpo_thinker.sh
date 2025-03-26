@@ -13,7 +13,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 2 \
     --logging_steps 1 \
-    --bf16 true \
+    --bf16 \
     --torch_dtype bfloat16 \
     --gradient_checkpointing true \
     --attn_implementation flash_attention_2 \
@@ -24,6 +24,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --save_only_model true \
     --report_to wandb \
     --use_cpu false
+
 # netstat -tulnp | grep 29507
 #"flash_attention_2",  #  "eager" / "sdpa"
 # jidegaihuilai

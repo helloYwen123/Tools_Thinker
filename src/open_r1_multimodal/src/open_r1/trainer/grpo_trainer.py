@@ -51,6 +51,7 @@ import json
 
 # from InternVL2 import load_image
 
+import time # computation time log
 
 if is_peft_available():
     from peft import PeftConfig, get_peft_model
@@ -386,7 +387,8 @@ class Qwen2VLGRPOTrainer(Trainer):
         if self.max_prompt_length is not None:
             prompt_ids = prompt_ids[:, -self.max_prompt_length :] # task last several tokens
             prompt_mask = prompt_mask[:, -self.max_prompt_length :]
-
+        
+        start_gen = time.perf_counter() # start inference
         # Generate completions
         with unwrap_model_for_generation(model, self.accelerator) as unwrapped_model:
             # prompt_completion_ids = unwrapped_model.generate(**prompt_inputs, generation_config=self.generation_config)
@@ -401,7 +403,9 @@ class Qwen2VLGRPOTrainer(Trainer):
                 completion = unwrapped_model.generate(**prompt_inputs, generation_config=temp_generation_config)
                 # here prompt is complete and putted into model's inference pipeline
                 all_completions.append(completion)
-            
+            end_gen = time.perf_counter()
+            generation_time = end_gen - start_gen
+            self._metrics["Inference_Time_For_1_Group"].append(generation_time)
             # Stack all completions and pad if needed
             max_length = max(completion.size(1) for completion in all_completions)
             padded_completions = []
@@ -452,7 +456,6 @@ class Qwen2VLGRPOTrainer(Trainer):
 
         # Compute the KL divergence between the model and the reference model
         per_token_kl = torch.exp(ref_per_token_logps - per_token_logps) - (ref_per_token_logps - per_token_logps) - 1
-        
         # Decode the generated and truncated completions
         completions = self.processing_class.batch_decode(completion_ids, skip_special_tokens=True)
         ##################################################################################################################
@@ -468,7 +471,7 @@ class Qwen2VLGRPOTrainer(Trainer):
         for i, (reward_func, reward_processing_class) in enumerate(
             zip(self.reward_funcs, self.reward_processing_classes)
         ):
-            if isinstance(reward_func, PreTrainedModel):
+            if isinstance(reward_func, PreTrainedModel): # use model as judge
                 if is_conversational(inputs[0]):
                     messages = [{"messages": p + c} for p, c in zip(prompts, completions)]
                     texts = [apply_chat_template(x, reward_processing_class)["text"] for x in messages]
@@ -511,7 +514,7 @@ class Qwen2VLGRPOTrainer(Trainer):
                 json.dump({
                     'trajectories': [{"messages": {"prompt": p[0], "response": c[0]} if len(p) == 1 else {"prompt": p[1]['text'], "response":c}, "solution": inputs[0]['solution'], "reward": r} for p, c, r in zip(prompts, completions, rewards.view(self.num_generations).tolist())],
                 }, f, indent=2)
-                
+
         # x - x.detach() allows for preserving gradients from x
         per_token_loss = torch.exp(per_token_logps - per_token_logps.detach()) * advantages.unsqueeze(1)
         per_token_loss = -(per_token_loss - self.beta * per_token_kl)

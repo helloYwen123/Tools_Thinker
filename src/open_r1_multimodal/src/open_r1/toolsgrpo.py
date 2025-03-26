@@ -31,7 +31,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor , as_comp
 import signal
 import runpy
 from math_verify import parse, verify
-import asyncio
+
 import subprocess
 from io import StringIO
 import contextlib
@@ -92,6 +92,7 @@ def code_exec_acc_reward(completions, solution, **kwargs):
     If an error occurs during execution, return "0".
     Use asyncio to automatically create and manage event loops.
     """
+    start_time = time.perf_counter()
     if isinstance(completions[0],str):
         contents = [completion for completion in completions]
     else:
@@ -102,19 +103,12 @@ def code_exec_acc_reward(completions, solution, **kwargs):
     os.makedirs(log_dir_path, exist_ok=True)
     ### debug subprocess 
     def run_async_from_sync(coro):
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            # No loop exists
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
         
-        if loop.is_closed():
-            # Previously closed loop
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-        return loop.run_until_complete(coro)
+        global global_loop
+        if global_loop.is_closed():
+            global_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(global_loop)
+        return global_loop.run_until_complete(coro)
     
     def extract_code(completion):
         match = re.search(r"<command>(.*?)</command>", completion , re.DOTALL)
@@ -123,46 +117,31 @@ def code_exec_acc_reward(completions, solution, **kwargs):
             return extracted_code
         else:
             return None
-#     api_methods = { # python environment in subprocess is isolated from mainprocess
-#     "object_detector":  ""# must import one by one to keep more robust
-# # """
-# # import sys
-# # import os
-# # import time
-# # import torch
-# # from transformers import pipeline
-
-# # from tools.base import BaseTool
-# # from PIL import Image, ImageOps
-# # import os
-# # import sys
-# # import warnings
-# # """
-# }
     async def run_all_codes(contents, solutions, log_dir_path, current_time):
         """
         Asynchronously run multiple code snippets.
         """
         sema = asyncio.Semaphore(8)  # max n ubprocess
-        
         tasks = []
         for content, sol in zip(contents, solutions):
             async def limited_task(content=content, sol=sol):
-                extracted_code = extract_code(content)  
+                extracted_code = extract_code(content)
                 if extracted_code is None:
+                    end_time = time.perf_counter()  # Timer Stop
+                    elapsed = end_time - start_time
                     log_path = os.path.join(log_dir_path ,f"{current_time}-evaluation.log")
-                    with open(log_path, "w") as f:
+                    with open(log_path, "a") as f:
                         f.write(f"------------- {current_time} Extract Code Error -------------\n")
+                        f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
                         f.write(f"\nSolution: {solution}\n")
                     return 0.0
 
                 async with sema:
                     code_to_run = (
-                        #f"{api_methods['object_detector']}\n" # no need maybe
                         f"{extracted_code}\n"
                         "print('<final_result>', final_result)"
                         )
-                    return await run_code_async(code_to_run, sol, log_dir_path,current_time, 120) ## would be better
+                    return await run_code_async(code_to_run, sol, log_dir_path, current_time, 30) ## would be better
             tasks.append(limited_task())
         return await asyncio.gather(*tasks)
     
@@ -185,20 +164,29 @@ def code_exec_acc_reward(completions, solution, **kwargs):
             )
             stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=exec_timeout)
             if proc.returncode != 0:
+                end_time = time.perf_counter()  # Timer Stop
+                elapsed = end_time - start_time
                 log_path = os.path.join(log_dir_path ,f"{current_time}-evaluation.log")
-                with open(log_path, "w") as f:
+                with open(log_path, "a") as f:
                     f.write(f"------------- {current_time} Execution Error: {proc.returncode} -------------\n")
                     f.write(f"Error in code execution: \n{stderr.decode().strip()}\n")
                     f.write(f"\nCode: {code}\n\n")
+                    f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
                     f.write(f"\nSolution: {solution}\n")
                 return 0.0
             output_raw = stdout.decode().strip()
         except Exception as e:
+            end_time = time.perf_counter()  # Timer Stop
+            elapsed = end_time - start_time
             log_path = os.path.join(log_dir_path ,f"{current_time}-evaluation.log")
-            with open(log_path, "w") as f:
+            with open(log_path, "a") as f:
                 f.write(f"------------- {current_time} Exception in creating subproess -------------\n")
                 f.write(f"Exception: in creating subproess \n{str(e)}\n")
+                f.write("Traceback:\n")
+                f.write(traceback.format_exc())
+                f.write(f"Timeout after {exec_timeout} seconds.\n")
                 f.write(f"Code: {code}\n\n")
+                f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
                 f.write(f"Solution: {solution}\n")
             return 0.0
         
@@ -210,12 +198,15 @@ def code_exec_acc_reward(completions, solution, **kwargs):
                     output = line[len("<final_result>"):].strip()
                     break
         except Exception as e:
+            end_time = time.perf_counter()  # Timer Stop
+            elapsed = end_time - start_time
             log_path = os.path.join(log_dir_path, f"{current_time}-evaluation.log")
             os.makedirs(os.path.dirname(log_path), exist_ok=True)
-            with open(log_path, "w") as f:
+            with open(log_path, "a") as f:
                 f.write(f"------------- {current_time} Exception in extract final result-------------\n")
                 f.write(f"Exception in extract final result: \n{str(e)}\n")
                 f.write(f"Code: {code}\n\n")
+                f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
                 f.write(f"Solution: {solution}\n")
             return 0.0
             
@@ -236,7 +227,9 @@ def code_exec_acc_reward(completions, solution, **kwargs):
             student_answer = output
             if student_answer == ground_truth:
                 reward = 1.0
-
+                
+        end_time = time.perf_counter()  # Timer Stop
+        elapsed = end_time - start_time
         log_path = os.path.join(log_dir_path, f"{current_time}-evaluation.log")
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         with open(log_path, "a") as f:
@@ -245,10 +238,10 @@ def code_exec_acc_reward(completions, solution, **kwargs):
             f.write(traceback.format_exc())
             f.write(f"Code: {code}\n\n")
             f.write(f"Final Result: {output}\n\n")
+            f.write(f"[Reward computation time(for one completion): {elapsed:.4f} seconds]\n\n")
             f.write(f"Solution: {solution}\n")
         return reward
-    
-  
+
     return run_async_from_sync(run_all_codes(contents=contents,solutions=solution, log_dir_path=log_dir_path, current_time=current_time))
 
 ####################################################################
@@ -264,12 +257,17 @@ def format_reward(completions, **kwargs):
     return [1.0 if match else 0.0 for match in matches]
 ####################################################################
 ####################################################################
-
 reward_funcs_registry = {
     "code": code_exec_acc_reward, # execution and accuracy reward
     "format": format_reward # format reward
 }
-
+########global asyncio to avoid frequently open-close#######
+import asyncio
+try:
+    global_loop = asyncio.get_event_loop()
+except RuntimeError:
+    global_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(global_loop)
 ######################################################
 ######################MAIN############################
 def main(script_args, training_args, model_args):
@@ -316,23 +314,23 @@ def main(script_args, training_args, model_args):
 \n Write a Python program to answer the question related to images : {question}.
 Enclose the generated code and comments in <command> </command> tags,
 i.e. <command> generated python code </command>.
-You can include your thoughts on the code and analysis about how to solve the problem as comments between code line.
-You need to use the following available tools, which are very helpful for you.
-\n Available Tools: {available_tools}
-\n Tools Metadata: {toolbox_metadata}
-\n In each tool module folder, there is a `python` script `tool.py` containing the class that implements the tool logic.
+You may include your thought process and analysis as inline comments within the code.
+You should make full use of the following available tools, which are very helpful:
+Available Tools: {available_tools}
+Tools Metadata: {toolbox_metadata}
+In each tool module folder, there is a `python` script `tool.py` containing the class that implements the tool logic.
 \n Rules:
-\n1.The command MUST be valid Python code.
-\n2.If listed available tools are insufficient to obtain the answer, you can use functions from Python's standard library as needed.
-\n3.Use the exact parameter names as specified in the tool's input_types.
-\n4.If you need, please directly use the PATHs of images: {image_paths}, which are related to Question
-\n5.Always make sure to define variables and functions before using them to keep your Python code syntactically correct
-\n6.Ensure that the code execution yields a result that directly answers the question.
+1.The command MUST be valid Python code.
+2.If listed available tools are insufficient to obtain the answer, you can use functions from Python's standard library as you need.
+3.Use the exact parameter names as specified in the tool's input_types.
+4.Always make sure to define variables and functions before using them to keep your Python code syntactically correct
+5.Ensure that the code execution yields a result that directly answers the question.
+6.If you need, please directly use the PATHs of images: {image_paths}, which are related to Question
 \n Note:
-\nYou must put your code and your thought comments within the tag <command> </command>.
-Please assign the final answer to a variable named "final_result".
-If needed, please add the following in the libheader: from <tool_module_name>.tool import <tool_class_name>.
-please remember to replace <tool_module_name> and <tool_class_name> with their actual names.
+\n- You must put your code and your thought comments within the tag <command> </command>.
+\n- Please assign the final answer to a variable named `final_result`.
+\n- If needed, please add the following in the libheader: from <tool_module_name>.tool import <tool_class_name>.
+please remember to replace `<tool_module_name>` and `<tool_class_name>` with their actual names.
 """
     # for Blink Dataset
     def make_conversation_sat(example, prefix, base_model_prompt=False):
@@ -357,7 +355,7 @@ please remember to replace <tool_module_name> and <tool_class_name> with their a
             message_content.append({
                 "type": "text" , "text": "<image>" + prompt
             })
-            return {"image": images,
+            return {"image": images, # images
                 "prompt": message_content,
                 "solution":  answer,  ###
             }
@@ -374,7 +372,7 @@ please remember to replace <tool_module_name> and <tool_class_name> with their a
                                 toolbox_metadata=toolbox_metadata
                             )
                         })
-            return {"image": images,
+            return {"image": images, # images
                 "image_path": image_paths,
                 "prompt": [
                     {
@@ -392,7 +390,7 @@ please remember to replace <tool_module_name> and <tool_class_name> with their a
     with open(dataset_prefix + dataset_path, 'r') as f:
         dataset = json.load(f)
 
-    dataset = [make_conversation_sat(sample, base_model_prompt, dataset_prefix) for sample in dataset]
+    dataset = [make_conversation_sat(sample, dataset_prefix, base_model_prompt) for sample in dataset]
     dataset = {'train': dataset} #####
 
     
@@ -427,13 +425,9 @@ please remember to replace <tool_module_name> and <tool_class_name> with their a
     if training_args.push_to_hub:
         trainer.push_to_hub(dataset_name=script_args.dataset_name)
     
+    global_loop.close()  # close Global loop 
     
 if __name__ == "__main__":
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
     main(script_args, training_args, model_args)
-    # gc.collect()
-    # for i in range(torch.cuda.device_count()):
-    #     with torch.cuda.device(i):
-    #         torch.cuda.empty_cache()
-        

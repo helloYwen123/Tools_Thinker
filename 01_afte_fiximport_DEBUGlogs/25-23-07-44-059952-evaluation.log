@@ -1,0 +1,66 @@
+------------- 25-23-07-44-059952 Exception in creating subproess -------------
+Exception: in creating subproess 
+
+Traceback:
+Traceback (most recent call last):
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/subprocess.py", line 200, in communicate
+    stdin, stdout, stderr = await tasks.gather(stdin, stdout, stderr)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/subprocess.py", line 180, in _read_stream
+    output = await stream.read()
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/streams.py", line 704, in read
+    block = await self.read(self._limit)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/streams.py", line 711, in read
+    await self._wait_for_data('read')
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/streams.py", line 543, in _wait_for_data
+    await self._waiter
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/stud/wxie/Tools_Thinker/src/open_r1_multimodal/src/open_r1/toolsgrpo.py", line 164, in run_code_async
+    if proc.returncode != 0:
+                     ^^^^^^^^
+  File "/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/asyncio/tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+Timeout after 20 seconds.
+Code: from object_detector.tool import Object_Detector_Tool
+
+def count_signs(image: str, labels: list, threshold: float = 0.35, model_size: str = 'tiny', padding: int = 20):
+    sign_count = 0
+    detection_results = Object_Detector_Tool.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    
+    if detection_results:
+        for detection in detection_results:
+            if "base" in detection['label'] and 'face' in detection['label'] or "basket" in detection['label'] and 'face' in detection['label'] or 'car' in detection['label'] and 'person' in detection['label'] or 'person' in detection['label'] and 'head' in detection['label']:
+                sign_count += 1
+                
+    return sign_count
+
+def count_facial_features(image: str) -> int:
+    face_count = 0
+    detection_results = Object_Detector_Tool.execute(image=image, labels=['face'], threshold=0.35, model_size='tiny', padding=20)
+    for detection in detection_results:
+        face_count += len(detection['bbox'])
+    
+    return face_count
+
+def is_question_answered(count_face, count_sign):
+    if count_sign == 0 and count_face == 1:
+        return True
+    if count_face == 0:
+        return True
+    return False
+
+final_result = is_question_answered(count_signs('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg'), count_facial_features('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg'))
+print(final_result)
+print('<final_result>', final_result)
+
+Solution: 2
