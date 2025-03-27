@@ -1,0 +1,231 @@
+------------- 26-21-33-31-078406 Extract Code Error -------------
+[Reward computation time(for one completion): 0.0320 seconds]
+
+
+Solution: ['0', '0', '0', '0', '0', '0', '0', '0']
+------------- 26-21-33-31-078406 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ImportError: cannot import name 'Object_Detector_Tool' from 'object_detector' (/home/stud/wxie/Tools_Thinker/tools/object_detector/__init__.py)
+
+Code: from object_detector import Object_Detector_Tool
+
+def count_people(image_path, model_size="base", threshold=0.35, labels=("baseball", "basket")):
+    import cv2
+    import numpy as np
+
+    image = cv2.imread(image_path)
+    binary_threshold = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 10)
+    _, contours, _ = cv2.findContours(binary_threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    for c in contours:
+        contours = np.array(c, dtype=np.int)
+        if all(np.all(cv2.isMatchTemplate(image, cv2.imread(c[0], cv2.IMREAD_GRAYSCALE)) == True) for c, i in zip(contours, labels)):
+            return 1
+    return 0
+
+def count_people_based_on_image(image_path, labels=("baseball", "basket")):
+    import cv2
+    image = cv2.imread(image_path)
+    binary_threshold = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 21, 10)
+    _, contours, _ = cv2.findContours(binary_threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    for c in contours:
+        contours = np.array(c, dtype=np.int)
+        if np.all(np.all(cv2.isMatchTemplate(image, cv2.imread(c[0], cv2.IMREAD_GRAYSCALE)) == True) for c, i in zip(contours, labels)):
+            return 1
+    return 0
+
+def get_people_from_image(image_path):
+    with open('/path/to/image.txt', 'r') as file:
+        people_count = int(file.read().strip())
+    return people_count
+
+def get_library_items() -> object:
+    import object_detector
+
+    return object_detector
+
+final_result = count_people(image_path="/path/to/image.png")
+if final_result:
+    print(f"The image with path '{image_path}' contains {final_result} people")
+else:
+    print("No people detected in the image with path '{image_path}'")
+
+
+count_people_based_on_image("/path/to/image.png", ["baseball", "basket"])
+count_people("/path/to/image.png", model_size="base", labels=("car", "person"), threshold=0.5)
+count_people_based_on_image("/path/to/image.png", labels=("baseball", "basket"))
+get_people_from_image("/path/to/image.png")
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1012 seconds]
+
+
+Solution: 0
+------------- 26-21-33-31-078406 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'object_detector.Object_Detector_Tool'
+
+Code: from object_detector.Object_Detector_Tool import *
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1142 seconds]
+
+
+Solution: 0
+------------- 26-21-33-31-078406 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ImportError: cannot import name 'Object_Detector_Tool' from 'object_detector' (/home/stud/wxie/Tools_Thinker/tools/object_detector/__init__.py)
+
+Code: from object_detector import Object_Detector_Tool
+
+def find_candles(image_path, labels, threshold, model_size="tiny", padding=20):
+    detection = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    if detection:
+        for object in detection['output_type']:
+            if 'birthday' in object['label']:
+                return object['label'], object['confidence score']
+
+def count_people(in_image_path, people_label="name"):
+    people = []
+    with open(in_image_path, 'rb') as image_file:
+        for page in open(image_file, 'r').iter_lines():
+            page_split = page.split(',')
+            if page_split[1] == people_label:
+                people.append({"name": page_split[0], "confidence score": float(page_split[2])})
+            else:
+                continue
+    if not people:
+        return 0
+    return len(people)
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1177 seconds]
+
+
+Solution: 0
+------------- 26-21-33-31-078406 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'object_detector.Object_Detector_Tool'
+
+Code: from object_detector.Object_Detector_Tool import Object_Detector_Tool
+
+def count_people(image_path, labels=['person'], threshold=0.5, model_size="base", padding=20):
+    execution = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, padding=padding)
+    if len(execution):
+        return len(set(tuple(x[2] for x in execution) for x in execution))
+    else:
+        return 0
+
+# Function to count people in the image based on bounding box labels
+def count_people_in_image(image_path):
+    objects = count_people(image_path)
+    if objects:
+        return objects[0][1] * 2  # Assuming each person occupies 2 boxes
+    else:
+        return 0
+
+# Function to check the correctness of the count_people_in_image function
+def check_result():
+    expected_results = [0, 2, 4, 7]
+    test_cases = [
+        ("image_path_1.jpg", expected_results),
+        ...
+    ]
+    for test_case in test_cases:
+        result = count_people_in_image(*test_case[0])
+        if result == test_case[1]:
+            print(f"Correct result for test_case: {test_case}")
+        else:
+            print(f"Error for test_case: {test_case}, expected {test_case[1]}, got {result}")
+
+# Uncomment the following line to run the test case
+#check_result()
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1236 seconds]
+
+
+Solution: 0
+------------- 26-21-33-31-078406 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'object_detector.object_detector'
+
+Code: from object_detector.object_detector import Object_Detector_Tool
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1979 seconds]
+
+
+Solution: 0
+------------- 26-21-33-31-078406 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'object_detector_tool'
+
+Code: from object_detector_tool import Object_Detector_Tool
+
+def get_num_people(image_path):
+    detected_objects = Object_Detector_Tool.execute(image=image_path, labels=["hand"])
+    hand_positions = [obj["bbox"] for obj in detected_objects]
+    hand_positions_2 = [(x1, y1, x2, y2) for x1, y1, x2, y2 in hand_positions if x2 - x1 > 50]
+    person_positions = [hand_positions_2[i][0].tolist() + [(height, width)] for i in range(len(hand_positions_2))]
+    if len(person_positions) > 0:
+        left_person_x = min([item[0][0] for item in person_positions])
+        left_person_y = min([item[0][1] for item in person_positions])
+        right_person_x = max([item[2][0] for item in person_positions])
+        right_person_y = max([item[2][1] for item in person_positions])
+        hand_height = max([item[2][3] for item in person_positions])
+        hand_width = max([item[2][4] for item in person_positions])
+        hand_width_adjusted = hand_width + (hand_height * 0.05)
+        hand_y = max([item[1][1] for item in person_positions]) + (hand_height + 10) / 2
+        return int((hand_y - left_person_y) / hand_y) - 1
+    return 0
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.2055 seconds]
+
+
+Solution: 0
+------------- 26-21-33-31-078406 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ImportError: cannot import name 'Object_Detector_Tool' from 'object_detector' (/home/stud/wxie/Tools_Thinker/tools/object_detector/__init__.py)
+
+Code: from object_detector import Object_Detector_Tool
+
+question = 'How many people are reading book?'
+
+label_type, label_path, threshold, model_size, padding = question.split(' ')
+label_type = label_type.split('.')[0].lower()
+
+padding = int(padding)
+
+execution = Object_Detector_Tool.execute(image="path_to_image.jpg", labels=[label_type], threshold=threshold, model_size=model_size, padding=padding)
+
+count = sum((obj['confidence score'] > 0.5 for obj in execution if obj['label'] == label_type))
+
+final_result = {'person_count': count}
+
+if 'person_count' in final_result:
+    final_result['people_reading_book'] = final_result['person_count']
+else:
+    final_result['people_reading_book'] = False
+
+print(final_result)
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.2109 seconds]
+
+
+Solution: 0

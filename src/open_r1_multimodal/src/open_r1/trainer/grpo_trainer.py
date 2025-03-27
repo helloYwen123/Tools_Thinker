@@ -192,6 +192,12 @@ class Qwen2VLGRPOTrainer(Trainer):
             model_init_kwargs["use_cache"] = (
                 False if args.gradient_checkpointing else model_init_kwargs.get("use_cache")
             )
+            #####try to fix flash atten 2 bug#####
+            default_dtype = torch.get_default_dtype()
+            print(f"torch_dtype{model_init_kwargs.get("torch_dtype")}")
+            torch_dtype = getattr(torch, model_init_kwargs.get("torch_dtype"))
+            torch.set_default_dtype(torch_dtype)
+            ######################################
             if "Qwen2-VL" in model_id:
                 model = Qwen2VLForConditionalGeneration.from_pretrained(model, **model_init_kwargs)
             elif "Aria" in model_id:
@@ -202,6 +208,7 @@ class Qwen2VLGRPOTrainer(Trainer):
                 model = AutoModel.from_pretrained(model, trust_remote_code=True, **model_init_kwargs)
             else:
                 model = AutoModelForCausalLM.from_pretrained(model, **model_init_kwargs)
+            torch.set_default_dtype(default_dtype) # reset
         else:
             model_id = model.config._name_or_path
             if args.model_init_kwargs is not None:
@@ -403,9 +410,16 @@ class Qwen2VLGRPOTrainer(Trainer):
                 completion = unwrapped_model.generate(**prompt_inputs, generation_config=temp_generation_config)
                 # here prompt is complete and putted into model's inference pipeline
                 all_completions.append(completion)
-            end_gen = time.perf_counter()
+            ###################################################################
+            end_gen = time.perf_counter() #Timer Group Inference Stop 
             generation_time = end_gen - start_gen
-            self._metrics["Inference_Time_For_1_Group"].append(generation_time)
+            # record inference time for one device
+            local_time = torch.tensor([generation_time], device=self.accelerator.device)
+            
+            # gather_for_metrics `local_time` tensor
+            global_times = self.accelerator.gather_for_metrics(local_time)
+            self._metrics["avg_inference_time"].append(global_times.mean().item())
+            ###################################################################
             # Stack all completions and pad if needed
             max_length = max(completion.size(1) for completion in all_completions)
             padded_completions = []
@@ -483,15 +497,43 @@ class Qwen2VLGRPOTrainer(Trainer):
                 reward_inputs = super()._prepare_inputs(reward_inputs)
                 with torch.inference_mode():
                     rewards_per_func[:, i] = reward_func(**reward_inputs).logits[:, 0]  # Shape (B*G,)
-            else:
-                # Repeat all input columns (but "prompt" and "completion") to match the number of generations
-                reward_kwargs = {key: [] for key in inputs[0].keys() if key not in ["prompt", "completion"]}
-                for key in reward_kwargs:
-                    for example in inputs:
-                        # Repeat each value in the column for `num_generations` times
-                        reward_kwargs[key].extend([example[key]] * self.num_generations)
-                output_reward_func = reward_func(prompts=prompts, completions=completions, **reward_kwargs)
-                rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
+            else: # Here add execution reward and accuracy reward coupled logic
+                if hasattr(reward_func, "reward_type") and reward_func.reward_type == "execution":
+                    reward_kwargs = {key: [] for key in inputs[0].keys() if key not in ["prompt", "completion"]}
+                    for key in reward_kwargs:
+                        for example in inputs:
+                            # Repeat each value in the column for `num_generations` times
+                            reward_kwargs[key].extend([example[key]] * self.num_generations)
+                    # execution reward 
+                    reward_outputs = reward_func(prompts=prompts, completions=completions, **reward_kwargs) # completions
+                    # return a list of (exec_reward, exec_result)
+                    exec_reward_list = [item[0] for item in reward_outputs]
+                    exec_result_list = [item[1] for item in reward_outputs]
+                    rewards_per_func[:, i] = torch.tensor(exec_reward_list, dtype=torch.float32, device=device)
+                elif hasattr(reward_func, "reward_type") and reward_func.reward_type == "accuracy":
+                    # Repeat all input columns (but "prompt" and "completion") to match the number of generations
+                    reward_kwargs = {key: [] for key in inputs[0].keys() if key not in ["prompt", "completion"]}
+                    for key in reward_kwargs:
+                        for example in inputs:
+                            # Repeat each value in the column for `num_generations` times
+                            reward_kwargs[key].extend([example[key]] * self.num_generations)
+                    # ensure there is execution reward
+                    if exec_reward_list is None or exec_result_list is None:
+                        raise ValueError("No Execution Reward Found before Accuracy Reward!!")
+                    acc_reward_list = reward_func(
+                                      exec_reward_list=exec_reward_list,
+                                      exec_result_list=exec_result_list,
+                                      **reward_kwargs)
+                    rewards_per_func[:, i] = torch.tensor(acc_reward_list, dtype=torch.float32, device=device)
+                else:
+                    # Repeat all input columns (but "prompt" and "completion") to match the number of generations
+                    reward_kwargs = {key: [] for key in inputs[0].keys() if key not in ["prompt", "completion"]}
+                    for key in reward_kwargs:
+                        for example in inputs:
+                            # Repeat each value in the column for `num_generations` times
+                            reward_kwargs[key].extend([example[key]] * self.num_generations)
+                    output_reward_func = reward_func(prompts=prompts, completions=completions, **reward_kwargs)
+                    rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
 
         # Sum the rewards from all reward functions
         rewards = rewards_per_func.sum(dim=1)

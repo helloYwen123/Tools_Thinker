@@ -1,0 +1,324 @@
+------------- 26-19-16-09-859281 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ImportError: cannot import name 'Object_Detector_Tool' from 'object_detector' (/home/stud/wxie/Tools_Thinker/tools/object_detector/__init__.py)
+
+Code: from object_detector import Object_Detector_Tool
+
+input_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_14_image_1.jpg"
+label_list = ["baseball", "basket"]
+threshold = 0.35  # threshold for the confidence of the object detection
+model_size = "tiny"  # size of the used model ('tiny' or 'base')
+padding = 20  # number of pixels to add as empty padding to the image
+
+detector = Object_Detector_Tool(input_path, label_list, threshold, model_size, padding)
+
+bbox_list = detector.execute()
+bbox_list
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1010 seconds]
+
+
+Solution: 0
+------------- 26-19-16-09-859281 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'object_detector.object_detector'
+
+Code: from object_detector.object_detector import Object_Detector_Tool
+
+def find_museums():
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_14_image_1.jpg"
+    labels = ['museum']
+    threshold = 0.35
+    model_size = 'tiny'
+    padding = 20
+    metadata = {'threshold':threshold, 'model_size':model_size, 'padding':padding}
+
+    # Execute object detection
+    execution = Object_Detector_Tool.execute(image=image_path, labels=labels, **metadata)
+
+    # Get the predicted bounding boxes
+    predicted_boxes=[]
+    for detection in execution.output:
+        predicted_boxes.append([detection['bbox'][0], detection['bbox'][1], detection['bbox'][2], detection['bbox'][3] + detection['bbox'][2], detection['bbox'][3] + detection['bbox'][3]])
+
+    # Filter the predicted boxes based on the label
+    valid_boxes = [bbox for bbox in predicted_boxes if bbox[0] >= 0 and bbox[1] >= 0]
+
+    # Check if there are any museums within the bounding box
+    num_museums = 0
+    for bbox in valid_boxes:
+        if 'museum' in bbox[4]:
+            num_museums += 1
+
+    # Calculate area of the predicted object
+    object_area = sum([bbox[2] * bbox[3] for bbox in valid_boxes])
+
+    # Calculate area of predicted object multiplied by 4 (for side)
+    side_area = 4 * (object_area / 1000000)^0.5 # 4 for each of the four sides
+
+    # Calculate total area of the sculpture
+    total_area = sum([bbox[4][-2]*bbox[4][-1] for bbox in valid_boxes])
+
+    # Calculate height of the sculpture
+    height = side_area / total_area * 100  # Area/height
+
+    # Calculate angle
+    theta = math.acos(((sum([(bbox[4][-1] - bbox[2] - bbox[3]) for bbox in valid_boxes]))**2 + (sum([(bbox[2]*bbox[4][-1]**2 - bbox[4][-2]**2)**2 for bbox in valid_boxes]))**0.5)**0.5)
+
+    # Calculate center
+    position_center = sum([(bbox[0] + bbox[1], bbox[2]) for bbox in valid_boxes]) / len(valid_boxes)
+
+    return round(height * 100), theta, position_center
+
+result = find_museums()
+print("The number of museums within the predicted area is: ", result[0])
+print("The angle at the center of the predicted object is: ", result[1] * (180 / math.pi), " degrees")
+(x, y, width, height) = tuple(result[2])
+final_result = round(abs(x) - round(abs(y)), 2)
+print("The distance from the center of the sculpture to the ground is: ", final_result, " cm")
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1140 seconds]
+
+
+Solution: 0
+------------- 26-19-16-09-859281 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'object_detector.object_detector'
+
+Code: from object_detector.object_detector import Object_Detector_Tool
+
+# Code execution to obtain the number of motors near the wood horse
+
+def count_motors(needs_corrected=0):
+    # Initialize the object detector tool
+    detection_tool = Object_Detector_Tool()
+
+    # Define input parameters
+    input_type = 'image'
+    labels_to_detect = ['magnet']
+    threshold = 0.8
+    model_size = 'tiny'
+    padding = 20
+
+    # Execute the tool
+    execution = detection_tool.execute(
+        image='path/to/morsetoon10.jpg',
+        labels=labels_to_detect,
+        threshold=threshold,
+        model_size=model_size,
+        padding=padding
+
+    )
+
+    # Convert the detection results into a list of detected object dictionaries
+    detections = execution[output_type]
+
+    # Check if motors are detected
+    if len(detections[0]['label']) >= 2:
+        needs_corrected = 1  # Motor detection succeeded
+    else:
+        needs_corrected = 0  # Motor detection not possible
+
+    return needs_corrected
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1429 seconds]
+
+
+Solution: 0
+------------- 26-19-16-09-859281 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ImportError: cannot import name 'Object_Detector_Tool' from 'object_detector' (/home/stud/wxie/Tools_Thinker/tools/object_detector/__init__.py)
+
+Code: from object_detector import Object_Detector_Tool
+
+# Define the image file path
+image_path = "path/to/image.jpg"
+
+# Detect objects in the image with default empty padding
+execution = Object_Detector_Tool().execute(image=image_path, labels=["wood horse"], threshold=0.35, model_size="tiny")
+
+# Initialize a variable to store the num of motors near the wood horse
+num_of_motors = 0
+
+# Iterate through the detected objects
+for obj in execution['output_type']:
+    # Check if the object's label is 'base' and 'motor' in the detected object dictionary
+    if obj['label'] == 'base' and 'motor' in obj['box']:
+        num_of_motors += 1
+
+# Print the final result
+final_result = num_of_motors
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1553 seconds]
+
+
+Solution: 0
+------------- 26-19-16-09-859281 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 27, in <module>
+  File "<string>", line 10, in find_museums
+AttributeError: module 'object_detector' has no attribute 'execute'
+
+Code: def find_museums(image_path):
+    import object_detector
+
+    detection_params = {
+        "label": "museums",
+        "threshold": 0.2,
+        "model_size": "base",
+        "padding": 20,
+    }
+    objects = object_detector.execute(image_path=image_path, labels=[detection_params["label"]], **detection_params)
+    Museums = [obj["box"] for obj in objects]
+    return Museums
+
+def find_bicycles(image_path):
+    import object_detector
+
+    detection_params = {
+        "label": "museums",
+        "threshold": 0.2,
+        "model_size": "base",
+        "padding": 20,
+    }
+    objects = object_detector.execute(image_path=image_path, labels=[detection_params["label"]], **detection_params)
+    Bicycles = [obj["box"] for obj in objects]
+    return Bicycles
+
+museums = find_museums("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_14_image_1.jpg")
+bicycles = find_bicycles("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_14_image_1.jpg")
+
+result = len(bicycles)
+print(f"The number of bicycles near the wooden horse is {result}.")
+final_result = {"motors_nearest_wooden_horse": 0}
+if result == 0:
+    final_result["motors_nearest_wooden_horse"] = "0"
+print(final_result)
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.1961 seconds]
+
+
+Solution: 0
+------------- 26-19-16-09-859281 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'object_detector.Object_Detector_Tool'
+
+Code: from object_detector.Object_Detector_Tool import Object_Detector_Tool
+
+# Step 1: Define the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_14_image_1.jpg"
+
+# Step 2: Call the Object_Detector_Tool class
+detector = Object_Detector_Tool()
+output = detector.execute(image_path, labels=["horse", "bike"])
+
+# Step 3: Count the motors in the image (in this case, only one motor is present)
+# The labels should not include other objects not present in the image
+motor_count = len(output[output['label'] == "motor"])
+
+# Step 4: Return the final result
+final_result = motor_count
+print(f"Number of motors near the wood horse: {final_result}")
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.2269 seconds]
+
+
+Solution: 0
+------------- 26-19-16-09-859281 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ImportError: cannot import name 'Object_Detector_Tool' from 'object_detector' (/home/stud/wxie/Tools_Thinker/tools/object_detector/__init__.py)
+
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image
+execution = Object_Detector_Tool.execute(image="path/to/image.jpg", labels=["horse"], threshold=0.35, model_size="tiny", padding=20)  
+labels = execution[0]
+labels
+
+horse = [0.46, 0.19, 0.47, 0.39] #confidence score
+mouse = [0.57, 0.31, 0.61, 0.36]   #confidence score
+final_result = [horse, mouse]
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.2367 seconds]
+
+
+Solution: 0
+------------- 26-19-16-09-859281 Execution Error: 1 -------------
+Error in code execution: 
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'object_detector.Tool'
+
+Code: from object_detector.Tool import object_detector_tool
+import numpy as np
+from PIL import Image
+from numpy import array
+
+class HorseDetector:
+    def _set_horse_image(self, horse_image_path, horse_box):
+        self.horse_image = Image.open(horse_image_path)
+        self.horse_bbox = horse_box
+        self.image = self.horse_image
+        self.bbox = [self.horse_bbox['x0'], self.horse_bbox['y0'], self.horse_bbox['x1'], self.horse_bbox['y1']]
+
+    def _get_mosors_info(self, horse_bbox):
+        # Define the bounding box of motors to search for
+        bboxes = (self.bbox[1], self.bbox[2], self.bbox[1])  # Detecting all motors, including the horse
+        motors = []
+
+        def search_motors(image, bboxes):
+            # Finding all motor detections
+            results = object_detector_tool.execute(image=image, labels=['motor', 'wheels'], threshold=.35, model_size="tiny")
+            for bbox in bboxes:
+                for res in results:
+                    if res['bbox'] == [bbox] or res['bbox'][0] <= bbox[0] and res['bbox'][2] >= bbox[2] or res['bbox'][1] <= bbox[1] and res['bbox'][3] >= bbox[3]:
+                        motors.append(res)
+
+        return motors
+
+    def _plot_motors_info(self, bboxes):
+        # Convert list of bounding box tuples to a numpy array
+        bboxes = np.array(bboxes)
+        
+        # Display the motor detections in the image
+        img = np.array(self.image.resize((400, 300)))
+        font = ImageFont.truetype('arial.ttf', 30)
+        for (bbox, text) in zip(bboxes, ["Horse"] + ["M1-M3"] * (3 - motors['boxes'].shape[0])):
+            text_coord = (bbox[0] - 10, bbox[1] - 10)
+            cv2.rectangle(img, box=bbox, color=(0, 0, 255), thickness=2, lineType=8)
+            cv2.putText(img, "Horse", text=text_coord, font=font, color=(0, 255, 0), thickness=5, lineType=8)
+        return img
+
+horse_bbox = {"bbox": [(80, 30, 400, 300)]}
+
+horse_detector = HorseDetector()
+horse_detector._set_horse_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_14_image_1.jpg", horse_bbox)  # Load horse image and bounding box
+horse_detector._get_mosors_info(horse_bbox)  # Search for and print motor detections
+final_result = horse_detector._plot_motors_info(horse_detector._get_horse_motors_info())  # Plot the motor detections in the image
+print(final_result)
+print('<final_result>', final_result)
+
+[Reward computation time(for one completion): 0.2388 seconds]
+
+
+Solution: 0

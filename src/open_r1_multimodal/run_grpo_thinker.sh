@@ -3,7 +3,10 @@ export LOG_PATH="./debug_log_2b.txt"
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 # export MAIN_PROCESS_PORT=29507  # Change this to an available port
 export NCCL_P2P_DISABLE=1
-
+# netstat -tulnp | grep 29507
+#"flash_attention_2",  #  "eager" / "sdpa"
+# jidegaihuilai
+# --max_prompt_length 1024 \
 accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src/open_r1/toolsgrpo.py \
     --output_dir outputs/Qwen2-VL-2B-Instruct-GRPO-BLINK \
     --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
@@ -13,7 +16,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 2 \
     --logging_steps 1 \
-    --bf16 \
+    --bf16 true\
     --torch_dtype bfloat16 \
     --gradient_checkpointing true \
     --attn_implementation flash_attention_2 \
@@ -24,8 +27,3 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --save_only_model true \
     --report_to wandb \
     --use_cpu false
-
-# netstat -tulnp | grep 29507
-#"flash_attention_2",  #  "eager" / "sdpa"
-# jidegaihuilai
-# --max_prompt_length 1024 \

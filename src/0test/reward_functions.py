@@ -178,7 +178,7 @@ def code_exec_acc_reward(completions, solution, **kwargs):
     else:
         contents = [completion[0]["content"] for completion in completions]
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_dir_path = os.path.join(root_dir, "src/open_r1_multimodal/DEBUGlogs")
+    log_dir_path = os.path.join(root_dir, "src/open_r1_multimodal/A+DEBUGlogs")
     #log_dir_path = os.path.join(root_dir, "src/open_r1_multimodal/Trainlogs")
     os.makedirs(log_dir_path, exist_ok=True)
     ### debug subprocess 
@@ -230,11 +230,6 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         Run a code snippet asynchronously and evaluate the result.
         """
         try:
-            # proc = await asyncio.create_subprocess_exec(
-            #     'python3', '-c', code,
-            #     stdout=asyncio.subprocess.PIPE,
-            #     stderr=asyncio.subprocess.PIPE,
-            # )
             python_exec = sys.executable
             # print("Python Exec Path:", python_exec)
             proc = await asyncio.create_subprocess_exec(
@@ -414,7 +409,6 @@ def check_correctness(task: dict, log_path, current_time) -> float:
                                                     # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
     if task["code"] == None:  # 
         with open(evaluation_log_path, "a") as f:
-            
             f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
             f.write(f"Reward: 0.0\n")
             f.write(f"Solution: {task['solution']}\n")
@@ -443,7 +437,7 @@ def check_correctness(task: dict, log_path, current_time) -> float:
 async def run_all_checks_async(tasks, log_root_dir, current_time):
     loop = asyncio.get_event_loop()
     rewards = []
-    with ProcessPoolExecutor(max_workers=4) as pool:
+    with ProcessPoolExecutor(max_workers=4) as pool:  # max num Processes 
         futures = [
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
             for task in tasks
@@ -481,8 +475,199 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         })
     
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_root_dir = os.path.join(f"{root_dir}/LOGS", f"{current_time}-logs")
+    log_root_dir = os.path.join(f"{root_dir}/src/open_r1_multimodal/DEBUGlogs/A+MLOGS", f"{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     
     rewards = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
     return rewards
+
+#############################################################################################3
+#########################Split into 2 functions##############################################
+#################Preparation For Execution#######################
+#Prepare Function for Code reward
+def reliability_guard():
+    faulthandler.disable()
+    import builtins
+    builtins.exit = None
+    builtins.quit = None
+    import os
+    os.kill = None
+    os.system = None
+    os.remove = None
+    os.rmdir = None
+    import shutil
+    shutil.rmtree = None
+    import subprocess
+    subprocess.Popen = None
+    import sys
+    sys.modules["ipdb"] = None
+
+def unsafe_execute(code, timeout, result, log_path):
+    def timeout_handler(signum, frame):
+        raise TimeoutError("Execution timed out")
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(int(timeout))
+    try: # if the code is bugfree
+        reliability_guard() # follow human-eval evaluation script
+        buffer = StringIO() # save all output when execution
+        with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
+            # TODO # here add external tool module and can be better
+            exec_globals = {
+                "Object_Detector_Tool": Object_Detector_Tool,
+                "final_result": None
+            }
+            exec(code, exec_globals)  # # python dynamic execution environment
+        output_raw = buffer.getvalue() # seems to get all output/print in code execution
+        output = exec_globals.get("final_result", None)
+        
+        debug_log_path = os.path.join(log_path, "debug_exec.log")
+        with open(debug_log_path, "a") as df:
+            df.write("\n" + "=" * 30 + " NEW EXECUTION " + "=" * 30 + "\n")
+            df.write("[EXEC CODE]\n")
+            df.write(code + "\n")
+            df.write("[THE PRINT OUTPUT]\n")
+            df.write(output_raw + "\n")
+            df.write("[GENERATE FINAL_RESULT]\n")
+            df.write(str(output) + "\n")
+        
+        reward = 0.0
+        if output != None: # otherwise `parse error` occur
+            reward = 1.0
+        else:
+            with open(debug_log_path, "a") as df:
+                df.write("\n[None RESULT]\n\n")
+        result.append((reward, output))
+    except Exception as e: # if the code problematic
+        debug_log_path = os.path.join(log_path, "debug_exec.log")
+        with open(debug_log_path, "a") as df:
+            df.write("\n[EXECUTION EXCEPTION]\n")
+            df.write(str(e) + "\n")
+            df.write(f"code:{code}\n")
+        result.append((0.0, None))
+    finally:
+        signal.alarm(0)
+
+def check_correctness(task: dict, log_path, current_time) -> float:
+    start_time = time.perf_counter()  # timer start
+    evaluation_log_path = os.path.join(log_path, "evaluation.log")  # in evaluation includes all cased in reward computation
+                                                    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
+    if task["code"] == None:  # 
+        with open(evaluation_log_path, "a") as f:
+            
+            f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
+            f.write(f"Reward: 0.0\n")
+            f.write(f"Solution: {task['solution']}\n")
+            f.write(f"Code: [EMPTY]\n\n")
+        result = (0.0, None)  # code reward is 0.0
+    else:
+        manager = multiprocessing.Manager()
+        result = manager.list()
+        ########################################################################################
+        p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], 60, result, log_path)) 
+        # here unsafe execute part could be replaced with communication between Executor Server and Reward function(Evaluator Client)
+        ###########################################################################################
+        p.start()
+        p.join(61)
+        if p.is_alive():
+            p.kill()
+        result = result[0] if result else (0.0, None)
+        end_time = time.perf_counter()  # timer stop
+        elapsed = end_time - start_time
+        with open(evaluation_log_path, "a") as f:
+            f.write(f"------------- {current_time} Execution reward: {reward} -------------\n")
+            f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n\n")
+            f.write(f"QAid: {task['QAid']}\n")
+            f.write(f"Code: {task['code']}\n\n")
+    return result
+
+async def run_all_checks_async(tasks, log_root_dir, current_time):
+    loop = asyncio.get_event_loop()
+    rewards = []
+    with ProcessPoolExecutor(max_workers=4) as pool:  # max num Processes 
+        futures = [
+            loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
+            for task in tasks
+        ]
+        rewards = await asyncio.gather(*futures) # keep same sequence as tasks(completions code)
+    reward_list = [r for r, _ in rewards] 
+    reward_list = [res for _, res in rewards]
+    return (reward_list, reward_list)
+##########################################################################
+##########EXECUTION REWARD#############################
+def execution_reward(completions,QAid,**kwargs):
+    # based on completions type to constuct
+    if isinstance(completions[0], str):
+        contents = [completion for completion in completions]
+    else:
+        contents = [completion[0]["content"] for completion in completions]
+
+    def extract_code(completion):
+        match = re.search(r"<command>(.*?)</command>", completion, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        else:
+            raise ValueError("No Command Tag Found!!")
+    
+    tasks = []
+    for content, id in zip(contents, QAid):
+        try:
+            code = extract_code(content)
+        except Exception as e:
+            code = None
+        tasks.append({
+            "code": code,
+            "QAid": id
+        })
+    
+    current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+    log_root_dir = os.path.join(f"{root_dir}/A+MLOGS/Execution", f"{current_time}-logs")
+    os.makedirs(log_root_dir, exist_ok=True)
+    
+    reward_result = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
+    return reward_result
+execution_reward.reward_type = "execution"
+##############################2. ANSWER_CORRECTNESS_REWARD######################
+def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs):
+    """
+    """
+    current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+    log_root_dir = os.path.join(f"{root_dir}/A+MLOGS/Accuracy", f"{current_time}-logs")
+    acc_log_path = os.path.join(log_root_dir, "accuracy.log")
+    os.makedirs(log_root_dir, exist_ok=True)
+    rewards = []
+    for exec_r, result, sol, id in zip(exec_reward_list, exec_result_list, solutions, QAid):
+        if exec_r == 0:
+            with open(acc_log_path, "a") as f:
+                f.write(f"\n[QAid]{id}\n\n")
+                f.write("\n[EXECUTION EXCEPTION]\n\n")
+            rewards.append(0.0)
+        else:
+            try:
+                # try to verify symbolic calculation
+                parsed_result = parse(result)
+                parsed_solution = parse(sol)
+                if float(verify(parsed_result, parsed_solution)) > 0:
+                    rewards.append(1.0)
+                    with open(acc_log_path, "a") as f:
+                        f.write(f"\n[QAid]{id}\n\n")
+                        f.write("\n[Verification Correct Result]\n\n")
+                else:
+                    rewards.append(0.0)
+                    with open(acc_log_path, "a") as f:
+                        f.write(f"\n[QAid]{id}\n\n")
+                        f.write("\n[Verification Wrong Result]\n\n")
+            except Exception:
+                pass
+            
+            if result == sol:
+                rewards.append(1.0)
+                with open(acc_log_path, "a") as f:
+                    f.write(f"\n[QAid]{id}\n\n")
+                    f.write("\n[Correct Result]\n\n")
+            else:
+                rewards.append(0.0)
+                with open(acc_log_path, "a") as f:
+                    f.write(f"\n[QAid]{id}\n\n")
+                    f.write("\n[Wrong Result]\n\n")
+    return rewards
+accuracy_reward.reward_type = "accuracy"

@@ -1,8 +1,9 @@
-# octotools/tools/text_detector/tool.py
-
 import os
 import time
-from octotools.tools.base import BaseTool
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(os.path.dirname(current_dir))
+sys.path.insert(0, root_dir)
+from tools.base import BaseTool
 
 import warnings
 warnings.filterwarnings("ignore")
