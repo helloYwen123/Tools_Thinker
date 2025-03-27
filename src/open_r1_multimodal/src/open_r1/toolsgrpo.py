@@ -46,7 +46,7 @@ from tools.object_detector.tool import Object_Detector_Tool
 
 from datasets import load_dataset, load_from_disk, concatenate_datasets
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-from src.open_r1.trainer import Qwen2VLGRPOTrainer
+from src.open_r1.trainer import Qwen2VLGRPOTrainer, Qwen2VLGRPOVLLMTrainerModified
 from trl import GRPOConfig, GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
 from PIL import Image
 import traceback
@@ -61,7 +61,7 @@ class GRPOScriptArguments(ScriptArguments):
             List of reward functions. Possible values: 'accuracy', 'format'.
     """
     reward_funcs: list[str] = field(
-        default_factory=lambda: ["code","format"], #########记得加回来code
+        default_factory=lambda: ["code","format"], #########
         metadata={"help": "List of reward functions. Possible values: 'code', 'format'"},
     )
     max_pixels: Optional[int] = field(
@@ -290,7 +290,7 @@ def main(script_args, training_args, model_args):
                 "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
                 "padding": "int - The number of pixels to add as empty padding around detected objects (default: 20)."
             },
-            "output_type":"list - A list of detected objects dictionaries with ('label';'confidence score';'box';'saved_image_path')keys and their corresponding values",
+            "output_type":"list - A list of detected objects dictionaries with ('label';'confidence score';'box';'saved_image_path') keys and their corresponding values",
             "demo_commands":[
                 {
                     "command": 'execution = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"])', # little modify
@@ -400,7 +400,7 @@ Please replace <tool_module_name> and <tool_class_name> with the actual module a
     # with open(save_path, "w") as f:
     #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
         
-    trainer_cls = Qwen2VLGRPOTrainer
+    trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
 
     # Initialize the GRPO trainer
     trainer = trainer_cls(
