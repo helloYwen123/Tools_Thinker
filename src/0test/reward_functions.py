@@ -635,7 +635,7 @@ def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs
     acc_log_path = os.path.join(log_root_dir, "accuracy.log")
     os.makedirs(log_root_dir, exist_ok=True)
     rewards = []
-    for exec_r, result, sol, id in zip(exec_reward_list, exec_result_list, solutions, QAid):
+    for exec_r, result, sol, id in zip(exec_reward_list, exec_result_list, solution, QAid):
         if exec_r == 0:
             with open(acc_log_path, "a") as f:
                 f.write(f"\n[QAid]{id}\n\n")

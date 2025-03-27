@@ -511,20 +511,21 @@ class Qwen2VLGRPOTrainer(Trainer):
                     exec_result_list = [item[1] for item in reward_outputs]
                     rewards_per_func[:, i] = torch.tensor(exec_reward_list, dtype=torch.float32, device=device)
                 elif hasattr(reward_func, "reward_type") and reward_func.reward_type == "accuracy":
+                    # ensure there is execution reward
+                    if exec_reward_list is None or exec_result_list is None:
+                        raise ValueError("No Execution Reward Found before Accuracy Reward!!")
+                    
                     # Repeat all input columns (but "prompt" and "completion") to match the number of generations
                     reward_kwargs = {key: [] for key in inputs[0].keys() if key not in ["prompt", "completion"]}
                     for key in reward_kwargs:
                         for example in inputs:
                             # Repeat each value in the column for `num_generations` times
                             reward_kwargs[key].extend([example[key]] * self.num_generations)
-                    # ensure there is execution reward
-                    if exec_reward_list is None or exec_result_list is None:
-                        raise ValueError("No Execution Reward Found before Accuracy Reward!!")
-                    acc_reward_list = reward_func(
+                    output_reward_func = reward_func(  # exec_reward list, exec result and QAid
                                       exec_reward_list=exec_reward_list,
                                       exec_result_list=exec_result_list,
                                       **reward_kwargs)
-                    rewards_per_func[:, i] = torch.tensor(acc_reward_list, dtype=torch.float32, device=device)
+                    rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
                 else:
                     # Repeat all input columns (but "prompt" and "completion") to match the number of generations
                     reward_kwargs = {key: [] for key in inputs[0].keys() if key not in ["prompt", "completion"]}
