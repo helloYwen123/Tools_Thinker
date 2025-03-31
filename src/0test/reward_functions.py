@@ -354,24 +354,26 @@ def unsafe_execute(code, solution, timeout, result, log_path):
             # TODO # here add external tool module and can be better
             exec_globals = {
                 "Object_Detector_Tool": Object_Detector_Tool,
+                "__name__": "__main__",  # in oreder to fix `failed to execute if __name__==__main__`
                 "final_result": None
             }
             exec(code, exec_globals)  # # python dynamic execution environment
         output_raw = buffer.getvalue() # seems to get all output/print in code execution
         output = exec_globals.get("final_result", None)
         
-        debug_log_path = os.path.join(log_path, "debug_exec.log")
+        debug_log_path = os.path.join(log_path, "debug_exec.log")  # if code extraction falied, it would not be recorded in this log
+        os.makedirs(os.path.dirname(debug_log_path), exist_ok=True)
         with open(debug_log_path, "a") as df:
             df.write("\n" + "=" * 30 + " NEW EXECUTION " + "=" * 30 + "\n")
             df.write("[EXEC CODE]\n")
             df.write(code + "\n")
-            df.write("[THE PRINT OUTPUT]\n")
+            df.write("[THE PRINT ALL OUTPUT]\n")
             df.write(output_raw + "\n")
             df.write("[GENERATE FINAL_RESULT]\n")
             df.write(str(output) + "\n")
         
         reward = 0.0
-        if output != None: # otherwise `parse error` occur
+        if output != None and isinstance(output, str): # otherwise `parse error` occur
             try:
                 answer = parse(output)
                 sol_parsed = parse(solution)
@@ -395,7 +397,9 @@ def unsafe_execute(code, solution, timeout, result, log_path):
         result.append((reward, output))
     except Exception as e: # if the code problematic
         debug_log_path = os.path.join(log_path, "debug_exec.log")
+        os.makedirs(os.path.dirname(debug_log_path), exist_ok=True)
         with open(debug_log_path, "a") as df:
+            df.write("\n" + "=" * 30 + " NEW EXECUTION " + "=" * 30 + "\n")
             df.write("\n[EXECUTION EXCEPTION]\n")
             df.write(str(e) + "\n")
             df.write(f"code:{code}\n")
@@ -405,9 +409,11 @@ def unsafe_execute(code, solution, timeout, result, log_path):
 
 def check_correctness(task: dict, log_path, current_time) -> float:
     start_time = time.perf_counter()  # timer start
-    evaluation_log_path = os.path.join(log_path, "evaluation.log")  # in evaluation includes all cased in reward computation
-                                                    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
+    evaluation_log_path = os.path.join(log_path, "evaluation.log")
+    # In evaluation includes all cased in reward computation 
+    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
     if task["code"] == None:  # 
+        os.makedirs(os.path.dirname(evaluation_log_path), exist_ok=True)
         with open(evaluation_log_path, "a") as f:
             f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
             f.write(f"Reward: 0.0\n")
@@ -426,6 +432,7 @@ def check_correctness(task: dict, log_path, current_time) -> float:
         reward, output = result[0] if result else (0.0, "timeout")
         end_time = time.perf_counter()  # timer stop
         elapsed = end_time - start_time
+        os.makedirs(os.path.dirname(evaluation_log_path), exist_ok=True)
         with open(evaluation_log_path, "a") as f:
             f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
             f.write(f"Final Result: {output}\n\n")
@@ -437,7 +444,7 @@ def check_correctness(task: dict, log_path, current_time) -> float:
 async def run_all_checks_async(tasks, log_root_dir, current_time):
     loop = asyncio.get_event_loop()
     rewards = []
-    with ProcessPoolExecutor(max_workers=4) as pool:  # max num Processes 
+    with ProcessPoolExecutor(max_workers=5) as pool:  # max num Processes 
         futures = [
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
             for task in tasks
@@ -446,6 +453,7 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
             result = await future
             rewards.append(result)
     return rewards
+
 ####################################################################
 ##################CODE ACCURACY and EXECUTION REWARD################
 def code_exec_acc_reward(completions, solution, **kwargs):
@@ -475,8 +483,9 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         })
     
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+    log_path = os.getenv("LOG_PATH") ### later modify
     log_root_dir = os.path.join(f"{root_dir}/src/open_r1_multimodal/DEBUGlogs/A+MLOGS", f"{current_time}-logs")
-    os.makedirs(log_root_dir, exist_ok=True)
+   
     
     rewards = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
     return rewards

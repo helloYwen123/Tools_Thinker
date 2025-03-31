@@ -1,5 +1,6 @@
 # Grounding DINO Object Detection Tool
 # https://huggingface.co/IDEA-Research/grounding-dino
+
 import sys
 import os
 import time
@@ -32,20 +33,28 @@ class Object_Detector_Tool(BaseTool):
                 "image": "str - The path to the image file.",
                 "labels": "list - A list of object labels to detect.",
                 "threshold": "float - The confidence threshold for detection (default: 0.45).",
-                "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'base').",
+                "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
                 "save_object": "bool - Whether to save the detected objects as images (default: False).",
                 "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects').",
             },
-            output_types= "tuple - A tuple containing two elements: a list of dictionaries for each detected object (each with keys 'label', 'confidence score', 'box', and 'saved_image_path'), and a dictionary mapping each label to its total count in the image.",
+            output_types = "tuple - A tuple containing two elements: \
+                            (1) a dictionary mapping each detected label to its grouped detection results, \
+                            where each value is a dictionary with keys 'boxes', 'confidence_scores', and 'saved_image_paths'; \
+                            (2) a dictionary mapping each label to its total count in the image.",
             demo_commands=[
                 {
                     "command": 'detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")',
-                    "description": ("Detects 'baseball' and 'basket' in an image using the default base model and threshold. ",
-                                    "It returns a tuple where the first element is a list of detection dictionaries and the second element is a dictionary with the total count for each label. (enable saved_image_path)The detected object images are saved in the 'detected_objects' directory.")
+                    "description": (
+                            "Detects 'baseball' and 'basket' in the image. "
+                            "Returns a tuple: (1) a dictionary grouping results by label with boxes, scores, and image paths; "
+                            "(2) a dictionary with counts for each label. "
+                            "Detected objects are saved to 'detected_objects' if 'save_object' is True."
+                        )
                 },
             ],
             user_metadata={
-                "limitation": "The model may not always detect objects accurately."
+                "limitation": "The model may not always detect objects accurately.",
+                "potential usage": "The tool can be used for locating interest-objects in images."
             }
         )
 
@@ -55,7 +64,7 @@ class Object_Detector_Tool(BaseTool):
             return result
         return result + "."
 
-    def build_tool(self, model_size='base'):
+    def build_tool(self, model_size='tiny'):
         model_name = f"IDEA-Research/grounding-dino-{model_size}"
         device = "cuda" if torch.cuda.is_available() else "cpu"
         try:
@@ -76,7 +85,9 @@ class Object_Detector_Tool(BaseTool):
         padded_image.save(save_path)
         return save_path
 
-    def execute(self, image, labels, threshold=0.45, model_size='base', max_retries=10, retry_delay=2, clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images"):
+    def execute(self, image, labels, threshold=0.45, model_size='tiny', max_retries=10, retry_delay=2, clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images"):
+        
+        # default padding value
         padding=20
         for attempt in range(max_retries):
             try:
@@ -89,13 +100,13 @@ class Object_Detector_Tool(BaseTool):
                 preprocessed_labels = [self.preprocess_caption(label) for label in labels]
                 results = pipe(image, candidate_labels=preprocessed_labels, threshold=threshold)
                 
-                formatted_results = []
                 original_image = Image.open(image)
                 image_name = os.path.splitext(os.path.basename(image))[0]
                 
                 object_counts = {}
-
+                grouped_results = {}
                 for result in results:
+                    # pick box， label, and score
                     box = tuple(result["box"].values())
                     label = result["label"]
                     score = round(result["score"], 2)
@@ -108,15 +119,20 @@ class Object_Detector_Tool(BaseTool):
                     save_path = None
                     if save_object:
                         save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
-            
-                    formatted_results.append({
-                        "label": label,
-                        "confidence score": score,
-                        "box": box,
-                        "saved_image_path": save_path
-                    })
+                    
+                    if label not in grouped_results:
+                        grouped_results[label] = {
+                            "boxes": [],
+                            "confidence_scores": [],
+                            "saved_image_paths": [],
+                        }
+                    # label is the key，box, score, and save_path are the values
+                    grouped_results[label]["boxes"].append(box)
+                    grouped_results[label]["confidence_scores"].append(score)
+                    grouped_results[label]["saved_image_paths"].append(save_path)
 
-                return formatted_results, object_counts 
+
+                return grouped_results, object_counts
             
             except RuntimeError as e:
                 if "CUDA out of memory" in str(e):

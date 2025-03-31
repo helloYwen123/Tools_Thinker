@@ -505,10 +505,7 @@ class Qwen2VLGRPOTrainer(Trainer):
                             # Repeat each value in the column for `num_generations` times
                             reward_kwargs[key].extend([example[key]] * self.num_generations)
                     # execution reward 
-                    reward_outputs = reward_func(prompts=prompts, completions=completions, **reward_kwargs) # completions
-                    # return a list of (exec_reward, exec_result)
-                    exec_reward_list = [item[0] for item in reward_outputs]
-                    exec_result_list = [item[1] for item in reward_outputs]
+                    exec_reward_list,exec_result_list = reward_func(prompts=prompts, completions=completions, **reward_kwargs) # completions
                     rewards_per_func[:, i] = torch.tensor(exec_reward_list, dtype=torch.float32, device=device)
                 elif hasattr(reward_func, "reward_type") and reward_func.reward_type == "accuracy":
                     # ensure there is execution reward

@@ -69,8 +69,8 @@ class GRPOScriptArguments(ScriptArguments):
             "help": "relative or absolute path to the configuration file"},
     )
     reward_funcs: list[str] = field(
-        default_factory=lambda: ["code","format"], #########
-        metadata={"help": "List of reward functions. Possible values: 'code', 'format'"},
+        default_factory=lambda: ["format","execution"], #########
+        metadata={"help": "List of reward functions. Possible values: 'code', 'format', 'execution, 'accuracy'"},
     )
     max_pixels: Optional[int] = field(
         default=12845056,
@@ -89,7 +89,7 @@ class GRPOScriptArguments(ScriptArguments):
         metadata={"help": "Whether to freeze the vision model parameters during training"},
     )
 ###########################################################
-#Prepare Function for Code reward
+#################Preparation For Execution#######################
 #Prepare Function for Code reward
 def reliability_guard():
     faulthandler.disable()
@@ -108,7 +108,7 @@ def reliability_guard():
     import sys
     sys.modules["ipdb"] = None
 
-def unsafe_execute(code, solution, timeout, result, log_path):
+def unsafe_execute(code, timeout, result, log_path):
     def timeout_handler(signum, frame):
         raise TimeoutError("Execution timed out")
     signal.signal(signal.SIGALRM, timeout_handler)
@@ -120,110 +120,87 @@ def unsafe_execute(code, solution, timeout, result, log_path):
             # TODO # here add external tool module and can be better
             exec_globals = {
                 "Object_Detector_Tool": Object_Detector_Tool,
-                "__name__": "__main__",  # in oreder to fix `failed to execute if __name__==__main__`
                 "final_result": None
             }
             exec(code, exec_globals)  # # python dynamic execution environment
         output_raw = buffer.getvalue() # seems to get all output/print in code execution
         output = exec_globals.get("final_result", None)
         
-        debug_log_path = os.path.join(log_path, "debug_exec.log")  # if code extraction falied, it would not be recorded in this log
-        os.makedirs(os.path.dirname(debug_log_path), exist_ok=True)
+        debug_log_path = os.path.join(log_path, "debug_exec.log")
         with open(debug_log_path, "a") as df:
-            df.write("\n" + "=" * 30 + " NEW EXECUTION " + "=" * 30 + "\n")
+            df.write("\n" + "=" * 30 + " NEW SCCESSFUL EXECUTION " + "=" * 30 + "\n")
             df.write("[EXEC CODE]\n")
             df.write(code + "\n")
-            df.write("[THE PRINT ALL OUTPUT]\n")
+            df.write("[THE PRINT OUTPUT]\n")
             df.write(output_raw + "\n")
             df.write("[GENERATE FINAL_RESULT]\n")
             df.write(str(output) + "\n")
         
         reward = 0.0
-        if output != None and isinstance(output, str): # otherwise `parse error` occur
-            try:
-                answer = parse(output)
-                sol_parsed = parse(solution)
-                if float(verify(answer, sol_parsed)) > 0:
-                    reward = 1.0
-            except Exception:
-                with open(debug_log_path, "a") as df:
-                    df.write("\n[PARSE/VERIFY FAILED]\n\n")
-            if output == solution:
-                with open(debug_log_path, "a") as df:
-                    df.write("\n[CORRECT RESULT]\n\n")
-                reward = 1.0
-            else:
-                with open(debug_log_path, "a") as df:
-                    df.write("\n[WRONG RESULT]\n\n")
-                reward = 0.0
+        if output != None: # OUTPUT exist then reward is 1.0
+            reward = 1.0
         else:
-                with open(debug_log_path, "a") as df:
-                    df.write("\n[None RESULT]\n\n")
-                    reward = 0.0
+            with open(debug_log_path, "a") as df:
+                df.write("\n[None RESULT]\n\n")
         result.append((reward, output))
     except Exception as e: # if the code problematic
         debug_log_path = os.path.join(log_path, "debug_exec.log")
-        os.makedirs(os.path.dirname(debug_log_path), exist_ok=True)
         with open(debug_log_path, "a") as df:
-            df.write("\n" + "=" * 30 + " NEW EXECUTION " + "=" * 30 + "\n")
             df.write("\n[EXECUTION EXCEPTION]\n")
             df.write(str(e) + "\n")
             df.write(f"code:{code}\n")
-        result.append((0.0, str(e)))
+        result.append((0.0, None))
     finally:
         signal.alarm(0)
 
 def check_correctness(task: dict, log_path, current_time) -> float:
     start_time = time.perf_counter()  # timer start
-    evaluation_log_path = os.path.join(log_path, "evaluation.log")
-    # In evaluation includes all cased in reward computation 
-    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
+    evaluation_log_path = os.path.join(log_path, "evaluation.log")  # in evaluation includes all cased in reward computation
+                                                    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
     if task["code"] == None:  # 
-        os.makedirs(os.path.dirname(evaluation_log_path), exist_ok=True)
         with open(evaluation_log_path, "a") as f:
+            
             f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
             f.write(f"Reward: 0.0\n")
-            f.write(f"Solution: {task['solution']}\n")
+            f.write(f"QAid: {task['QAid']}\n")
             f.write(f"Code: [EMPTY]\n\n")
-        result = (0.0,"Extraction Failed")  # code reward is 0.0 
-        reward, output = result
+        result = (0.0, None)  # code reward is 0.0
     else:
         manager = multiprocessing.Manager()
         result = manager.list()
-        p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], task["solution"], 60, result, log_path))
+        ########################################################################################
+        p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], 60, result, log_path)) 
+        # here unsafe execute part could be replaced with communication between Executor Server and Reward function(Evaluator Client)
+        ###########################################################################################
         p.start()
         p.join(61)
         if p.is_alive():
             p.kill()
-        reward, output = result[0] if result else (0.0, "timeout")
+        result = result[0] if result else (0.0, None)
         end_time = time.perf_counter()  # timer stop
         elapsed = end_time - start_time
-        os.makedirs(os.path.dirname(evaluation_log_path), exist_ok=True)
         with open(evaluation_log_path, "a") as f:
-            f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
-            f.write(f"Final Result: {output}\n\n")
+            f.write(f"------------- {current_time} Execution reward: {result[0]} -------------\n")
             f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n\n")
-            f.write(f"Solution: {task['solution']}\n")
+            f.write(f"QAid: {task['QAid']}\n")
             f.write(f"Code: {task['code']}\n\n")
-    return reward
+    return result
 
 async def run_all_checks_async(tasks, log_root_dir, current_time):
     loop = asyncio.get_event_loop()
     rewards = []
-    with ProcessPoolExecutor(max_workers=5) as pool:  # max num Processes 
+    with ProcessPoolExecutor(max_workers=4) as pool:  # max num Processes 
         futures = [
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
             for task in tasks
         ]
-        for future in asyncio.as_completed(futures):
-            result = await future
-            rewards.append(result)
-    return rewards
-
-####################################################################
-##################CODE ACCURACY and EXECUTION REWARD################
-def code_exec_acc_reward(completions, solution, **kwargs):
-    
+        rewards = await asyncio.gather(*futures) # keep same sequence as tasks(completions code)
+    reward_list = [r for r, _ in rewards] 
+    result_list = [res for _, res in rewards]
+    return (reward_list, result_list)
+##########################################################################
+##########EXECUTION REWARD#############################
+def execution_reward(completions,QAid,**kwargs):
     # based on completions type to constuct
     if isinstance(completions[0], str):
         contents = [completion for completion in completions]
@@ -238,23 +215,24 @@ def code_exec_acc_reward(completions, solution, **kwargs):
             raise ValueError("No Command Tag Found!!")
     
     tasks = []
-    for content, sol in zip(contents, solution):
+    for content, id in zip(contents, QAid):
         try:
             code = extract_code(content)
         except Exception as e:
             code = None
         tasks.append({
             "code": code,
-            "solution": sol
+            "QAid": id
         })
     
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_path = os.getenv("LOG_PATH") ### later modify
-    log_root_dir = os.path.join(f"{root_dir}/src/open_r1_multimodal/DEBUGlogs/A+MLOGS", f"{current_time}-logs")
-   
+    log_root_dir = os.path.join(f"{root_dir}/A+M_SPLIT_LOGS/Execution", f"{current_time}-logs")
+    os.makedirs(log_root_dir, exist_ok=True)
     
-    rewards = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
-    return rewards
+    reward_result = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
+    return reward_result
+
+execution_reward.reward_type = "execution"
 
 ####################################################################
 #############################FORMAT REWARD##########################
@@ -270,9 +248,9 @@ def format_reward(completions, **kwargs):
 ####################################################################
 ####################################################################
 reward_funcs_registry = {
-    "code": code_exec_acc_reward, # execution and accuracy reward
-    # "execution": execution_reward, # note here sequency
-    # "accuracy": accuracy_reward,
+    #"code": code_exec_acc_reward, # execution and accuracy reward
+    "execution": execution_reward, # note here sequency
+    #"accuracy": accuracy_reward,
     "format": format_reward # format reward
 }
 ########global asyncio to avoid frequently open-close#######
@@ -300,11 +278,9 @@ def main(script_args, training_args, model_args,conf):
     PROMPT_TEMPLATE = conf.get("prompt_template")
     # for Blink Dataset
     def make_conversation_sat(example, prefix, base_model_prompt=False):
-        answer_key = example["answer"].strip("()")
-        # Answer Index Map
-        index_map = {chr(65 + i): i for i in range(len(example["choices"]))}
-        # Get Answer
-        answer = example["choices"][index_map[answer_key]]
+        # get answer
+        answer = example["answer"].strip("()")
+        
         if base_model_prompt:
             image_paths = [os.path.join(prefix, img_path) for img_path in example["image_paths"]]
             images = [Image.open(path) for path in image_paths ]
@@ -369,33 +345,33 @@ def main(script_args, training_args, model_args,conf):
     #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
         
     # trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
-    # trainer_cls = Qwen2VLGRPOTrainer
+    trainer_cls = Qwen2VLGRPOTrainer
     
-    # # Initialize the GRPO trainer
-    # trainer = trainer_cls(
-    #     model=model_args.model_name_or_path,
-    #     reward_funcs=reward_funcs,
-    #     args=training_args,
-    #     train_dataset=dataset[script_args.dataset_train_split],
-    #     eval_dataset=dataset[script_args.dataset_test_split] if training_args.eval_strategy != "no" else None,
-    #     peft_config=get_peft_config(model_args),
-    #     attn_implementation=model_args.attn_implementation,
-    #     torch_dtype = model_args.torch_dtype,  # Debug: origianlly parameters can not passed 
-    #     max_pixels=script_args.max_pixels,
-    #     min_pixels=script_args.min_pixels,
-    # )
+    # Initialize the GRPO trainer
+    trainer = trainer_cls(
+        model=model_args.model_name_or_path,
+        reward_funcs=reward_funcs,
+        args=training_args,
+        train_dataset=dataset[script_args.dataset_train_split],
+        eval_dataset=dataset[script_args.dataset_test_split] if training_args.eval_strategy != "no" else None,
+        peft_config=get_peft_config(model_args),
+        attn_implementation=model_args.attn_implementation,
+        torch_dtype = model_args.torch_dtype,  # Debug: origianlly parameters can not passed 
+        max_pixels=script_args.max_pixels,
+        min_pixels=script_args.min_pixels,
+    )
     
-    # if script_args.freeze_vision:
-    #     trainer.model.visual.requires_grad_ = False
-    # elif script_args.freeze_llm:
-    #     trainer.model.model.requires_grad_ = False
-    # # Train and push the model to the Hub
-    # trainer.train()
+    if script_args.freeze_vision:
+        trainer.model.visual.requires_grad_ = False
+    elif script_args.freeze_llm:
+        trainer.model.model.requires_grad_ = False
+    # Train and push the model to the Hub
+    trainer.train()
 
-    # # Save and push to hub
-    # trainer.save_model(training_args.output_dir)
-    # if training_args.push_to_hub:
-    #     trainer.push_to_hub(dataset_name=script_args.dataset_name)
+    # Save and push to hub
+    trainer.save_model(training_args.output_dir)
+    if training_args.push_to_hub:
+        trainer.push_to_hub(dataset_name=script_args.dataset_name)
     
     # global_loop.close()  # close Global loop for `Asyncio` approach
     
