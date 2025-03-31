@@ -1,0 +1,332 @@
+------------- 31-20-39-01-930823 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.1890 seconds]
+
+Solution: 2
+Code: import numpy as np
+
+class Object_Detector_Tool:
+    def execute(self, image, labels, save_object=True, saved_image_path='detected_objects'):
+        labels_list = [{'label': 'baseball', 'confidence score': 0.5}, {'label': 'basket', 'confidence score': 0.6}]
+        
+        # Load the image
+        image_array = np.array(image)
+        
+        # Detect objects
+        detections = self.detect_objects(image_array, labels_list)
+        
+        # Save detection images
+        for det in detections['detections']:
+            if save_object:
+                img_path = saved_image_path + '/' + det['label'] + '.jpg'
+                self.save_object(img_path)
+        return {'detections': detections, 'labels_list': labels_list}
+
+    def detect_objects(self, image_array, labels_list):
+        import object_detector
+        # Load the training model
+        model = object_detector.TinyModel()
+        model.load()
+        # Make predictions
+        predictions = model.predict(image_array)
+        # Detect objects
+        detections = self.detect_objects_from_model(image_array, predictions)
+        return {'detections': detections}
+
+    def detect_objects_from_model(self, image_array, predictions):
+        labels = predictions['labels']
+        detections = []
+
+        for det in labels_dict:
+            # Get bounding box and confidence
+            b_box = [det['bbox'][0], det['bbox'][1], det['bbox'][2], det['bbox'][3]]
+            confidence = det['confidence']
+            
+            # Apply threshold
+            if confidence > 0.45:
+                x1, y1, x2, y2 = b_box
+                detections.append({'label': det['label'], 'confidence': confidence, 'box': (x1, y1, x2, y2)})
+
+        return {'detections': detections}
+
+def save_object(img_path):
+    import os
+    if os.path.exists(img_path):
+        os.remove(img_path)
+
+def count_objects(image_path):
+    import numpy as np
+    detections_matrix = []
+    labels_list = []
+    final_result = {}
+    
+    image_array = np.array(image_path)
+    detections = Object_Detector_Tool.execute(image_path, labels_list, save_object=True, saved_image_path=image_path)
+    detections_matrix = detections['detections']
+    labels_list = detections['labels_list']
+    
+    for det in detections_matrix:
+        total_count = len(labels_list[det['label']])
+        final_result[det['label']] = total_count
+    
+    return final_result
+
+------------- 31-20-39-01-930823 Accuracy reward: 0.0 -------------
+Final Result: maximum recursion depth exceeded
+
+[Reward computation time: 1.2099 seconds]
+
+Solution: 2
+Code: def count_players_with_face_guards(image_path: str, labels: list, save_object: bool, saved_image_path: str) -> tuple:
+    """
+    Counts the number of players wearing face guards based on the given labels.
+
+    Args:
+    - image_path: str - The path to the image file.
+    - labels: list - A list of object labels to detect.
+    - save_object: bool - Whether to save the detected objects as images (default: False).
+    - saved_image_path: str - The path to save the detected object images (default: 'detected_objects').
+
+    Returns:
+    - tuple - A tuple containing two elements: a list of dictionaries for each detected object (each with keys 'label', 'confidence score', 'box', and 'saved_image_path'), and a dictionary mapping each label to its total count in the image.
+    """
+    Detection_Tool = object_detector.Object_Detector_Tool
+    object_detector_kwargs = {
+        'tool_module_name': 'object_detector',
+        'tool_class_name': 'Object_Detector_Tool',
+        'tool_description': 'A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.',
+        'tool_version': '1.0.0',
+        'input_types': {'image': 'str - The path to the image file.', 'labels': 'list - A list of object labels to detect.', 'threshold': 'float - The confidence threshold for detection (default: 0.45).', 'model_size': "str - The size of the model to use ('tiny' or 'base', default: 'tiny').", 'save_object': 'bool - Whether to save the detected objects as images (default: False).', 'saved_image_path': "str - The path to save the detected object images (default: 'detected_objects')."},
+        'output_type': tuple,
+        'user_metadata': {
+            'limitation': 'The model may not always detect objects accurately.'
+        },
+    }
+
+    detection_results = Detection_Tool.execute(image=image_path, labels=labels, save_object=save_object, model_size="tiny", saved_image_path=saved_image_path)
+    count_result = {
+        'labels': [],
+        'percentage': []
+    }
+    for result in detection_results:
+        if 'class_name' in result['detected_objects'][0] and result['detected_objects'][0]['class_name'] in labels:
+            count_result['labels'].append(result['detected_objects'][0]['class_name'])
+            count_result['percentage'].append(float(result['conf_score']) / 10)
+
+    return (count_result, result)
+
+def count_players_with_face_guards(image_path: str, labels: list, save_object: bool, saved_image_path: str) -> tuple:
+    """
+    Counts the number of players wearing face guards based on the given labels.
+
+    Args:
+    - image_path: str - The path to the image file.
+    - labels: list - A list of object labels to detect.
+    - save_object: bool - Whether to save the detected objects as images (default: False).
+    - saved_image_path: str - The path to save the detected object images (default: 'detected_objects').
+
+    Returns:
+    - tuple - A tuple containing two elements: a list of dictionaries for each detected object (each with keys 'label', 'confidence score', 'box', and 'saved_image_path'), and a dictionary mapping each label to its total count in the image.
+    """
+    label, percentage = count_players_with_face_guards("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_C_County_57_image_1.jpg", ["face guard"], False, "detected_objects")
+    return {"label": label, "percentage": percentage}
+
+# Example usage:
+label, percentage = count_players_with_face_guards("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_C_County_57_image_1.jpg", ["face guard"], True, "detected_objects")
+print(f"Number of players wearing face guards: {label} ({percentage:.2f}% of the total)")
+
+------------- 31-20-39-01-930823 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.3675 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+def calculate_players_with_face_guards(image_path, labels=["baseball", "basket"], save_object=False, threshold=0.45, model_size="tiny", saved_image_path="detected_objects"):
+    model_name = "tiny"
+
+    if model_size == "base":
+        model_name = "base"
+
+    tool = Object_Detector_Tool(image_path=image_path, save_object=save_object, saved_image_path=saved_image_path)
+    labels = labels + ["face guard"]
+    
+    results_per_object = tool.execute(labels=labels, threshold=threshold, model_size=model_name)
+    
+    player_count = {label: [num for _, num in results_per_object[1].items() if label in results_per_object[1].keys()] for label in labels}
+    
+    return player_count
+  
+   # Read the path of the image file
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+
+    # Set the model name and other parameters
+    model_name = "base"
+    labels = ["baseball"]
+    threshold = 0.45
+    save_object = False
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+    model_size = "tiny"
+
+    player_count = calculate_players_with_face_guards(image_path, labels, save_object, threshold, model_size)
+
+    # Check that more than one player is recognized as having a face guard
+    if player_count["face guard"] > 1:
+        print("More than one player is recognized as wearing a face guard.")
+    else:
+        print("No players are recognized as having a face guard.")
+  
+    final_result = player_count["face guard"]
+    return final_result
+
+------------- 31-20-39-01-930823 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.3606 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+# Image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+
+# Labels to detect
+labels = ["baseball", "basket"]
+
+# Confidence threshold
+threshold = 0.45
+
+# Model size
+model_type = "tiny"
+
+# Save object images as detected_objects
+save_image = True
+
+# Set default model confidence threshold to 0.45
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_type, save_object=save_image)
+
+# Calculate total count for each label
+label_count = {}
+
+# Count the objects for each label
+for detected_object in detected_objects:
+    label = detected_object['label']
+    confidence_score = detected_object['confidence score']
+    if label in label_count:
+        label_count[label] += 1
+    else:
+        label_count[label] = 1
+
+final_result = {label: object_number[label] for label in labels if label in label_count}
+
+------------- 31-20-39-01-930823 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+
+[Reward computation time: 1.4672 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg'
+detector = Object_Detector_Tool(image_path)
+
+# Initialize the label counts dictionary
+label_counts = {}
+label_counts["baseball"] = 0
+label_counts["basket"] = 0
+
+# Iterate through the detected objects and count instances
+for obj in detected_objects:
+    label = obj['label']
+    count = obj['totalCount']
+    if label == "baseball":
+        label_counts["baseball"] += count
+    elif label == "basket":
+        label_counts["basket"] += count
+
+# Print the total counts
+print("Total baseball instances:", label_counts["baseball"])
+print("Total basket instances:", label_counts["basket"])
+
+------------- 31-20-39-01-930823 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.1784 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+# Load the script
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.45
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Execute the object detection task
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size, saved_image_path=saved_image_path)
+
+# Count the object labels
+num_baseball = object_number[0]["label"].count("baseball")
+num_basket = object_number[0]["label"].count("basket")
+
+final_result = num_baseball, num_basket
+final_result[0], final_result[1]
+
+------------- 31-20-39-01-930823 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() got an unexpected keyword argument 'image_path'
+
+[Reward computation time: 1.2322 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image and apply the labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+detected_objects, object_number = Object_Detector_Tool.execute(image_path=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Count the total appearance of the specified objects
+total_count = object_number["baseball"] + object_number["basket"]
+
+total_count
+
+------------- 31-20-39-01-930823 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.2095 seconds]
+
+Solution: 2
+Code: def get_number_of_players_with_face_guards(image_path, labels, threshold, model_size, save_object):
+    detected_objects = []
+    detector_tool = Object_Detector_Tool()
+    object_number = {}
+    labels_to_check = ['baseball', 'catcher', 'pitcher']
+    
+    for label in labels_to_check:
+        for i, object in enumerate(detector_tool.execute(image=image_path, labels=labels, save_object=save_object, model_size=model_size)):
+            if label in object['label'] and i > 0 and label != 'catcher' and object['confidence score'] > 0.4:
+                detected_objects.append(object)
+                object['label'] = f"{label}_{i}"
+                object_number[label] = object_number.get(label, 0) + 1
+
+    total_count_labels = {label: count for label, count in object_number.items()}
+    total_count_labels['total'] = sum(total_count_labels.values())
+    
+    if saved_object:
+        for label, obj_dict in detected_objects:
+            saved_obj_dict = {label: {'confidence score': obj_dict['confidence score'], 'bbox': obj_dict['bbox']}}
+            saved_obj_dict['label'] = f"{label}_{len(detected_objects)}"
+            if 'pitcher' in obj_dict['bbox']:
+                saved_obj_dict['pitcher'] = True
+            os.makedirs('detected_objects', exist_ok=True)
+            with open(os.path.join('detected_objects', f"{label}_{i}.png"), 'wb') as f:
+                f.write(obj_dict['image'].tobytes())
+            print(f"Detected {label} ({obj_dict['bbox']}); saved as {label}_{i}.png.")
+    
+    print(f"Number of players wearing face guards: {total_count_labels['total']}")
+    return total_count_labels
+

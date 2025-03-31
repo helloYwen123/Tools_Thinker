@@ -1,0 +1,198 @@
+------------- 31-19-21-56-314155 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.2324 seconds]
+
+Solution: 1
+Code: from object_detector import Object_Detector_Tool
+
+def count_ball_game():
+    # Load the image file
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_7_image_1.jpg"
+
+    # Set the input parameters
+    labels = ["baseball"]
+    save_object = True
+    saved_image_path = "detected_objects"
+
+    # Use the object_detector tool function
+    detected_objects, object_number = Object_Detector_Tool.execute(image_path=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+    # Calculate the total number of detected objects
+    total_count = object_number[0][1]
+
+    return total_count
+
+------------- 31-19-21-56-314155 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.4065 seconds]
+
+Solution: 1
+Code: Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_7_image_1.jpg", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+------------- 31-19-21-56-314155 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.5080 seconds]
+
+Solution: 1
+Code: from object_detector import Object_Detector_Tool
+
+# Assuming the image path is set appropriately
+image_path = 'path/to/image.jpg'
+labels = ['baseball']
+threshold = 0.45
+model_size = 'tiny'
+save_object = True
+
+from_module: 'object_detector'
+import_name: 'Object_Detector_Tool'
+
+# Execute the tool with the provided parameters
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, model_size=model_size, threshold=threshold)
+detected_objects, detected_objects_labels_count = result
+
+------------- 31-19-21-56-314155 Accuracy reward: 0.0 -------------
+Final Result: [Errno 2] No such file or directory: 'labels.npy'
+
+[Reward computation time: 1.5322 seconds]
+
+Solution: 1
+Code: import numpy as np
+from object_detector import Object_Detector_Tool
+
+# Read image and load detection labels
+image_path = "val_Counting_7_image_1.jpg"
+labels = np.load("labels.npy")
+
+# Initialize object detector tool with specific settings
+tool_options = {
+    'object_label': 'baseball',  # Label to detect
+    'confidence_threshold': 0.45,  # Threshold for confidence score
+    'model_size': 'tiny',  # Model size (e.g., 'tiny', 'base') 
+    'save_object': True,  # Whether to save detected object images
+    'saved_image_path': 'detected_objects',  # Path to save detected object images
+}
+
+# Execute object detection
+detected_objects, object_number = Object_Detector_Tool.execute(image_path, labels[:2], **tool_options)
+
+# Count basebal and basket detected
+baseball_count = np.sum([detected_objects['label'] == 'baseball'][0])
+basket_count = np.sum([detected_objects['label'] == 'basket'][0])
+
+final_result = {
+    'baseball': baseball_count,
+    'basket': basket_count,
+    'total_detected': baseball_count + basket_count  
+}
+
+------------- 31-19-21-56-314155 Code Extraction Failed -------------
+Reward: 0.0
+Solution: 1
+Code: [EMPTY]
+
+------------- 31-19-21-56-314155 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 0.7177 seconds]
+
+Solution: 1
+Code: from object_detector import Object_Detector_Tool
+
+def find_bat_position(image_path="val_Counting_7_image_1.jpg"):
+    # Replace "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_7_image_1.jpg" with the actual path of your image
+    image = image_path
+    bat_position = [
+        {"label": "glove", "confidence score": 0.8, "box": [0, 0, 110, 70]},  # Player glove in front of the batter (left or right)
+        {"label": "hands", "confidence score": 0.8, "box": [460, 280, 520, 350]},  # Batter's hands glove out to the field (only one visible out to the field)
+        {"label": "glove", "confidence score": 0.3, "box": [390, 250, 470, 410]},  # Center fielder glove behind the batter, right-side
+        {"label": "glove", "confidence score": 0.8, "box": [660, 250, 720, 410]},  # Home plate catcher glove
+        {"label": "glove", "confidence score": 0.7, "box": [0, 70, 100, 280]}  # Outfielders glove behind the batter, left-side
+    ]
+    det_obj, det_label_counts = Object_Detector_Tool.execute(image=image, labels=bat_position, threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+    return det_label_counts
+
+# Check function, should return the bat position count for the image
+det_label_counts = find_bat_position()
+print(f"Number of bat positions detected: {det_label_counts['count']}")
+
+def find_position_positions(image_path="val_Counting_7_image_2.jpg"):
+    # Replace "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_7_image_2.jpg" with the actual path of your image
+    image = image_path
+    position_positions = {
+        {"label": "batter", "confidence score": 0.92, "box": [200, 290, 420, 390]},  # Batter at home plate.
+        {"label": "pitcher", "confidence score": 0.85, "box": [600, 297, 825, 390]},  # Left-hander pitcher.
+        {"label": "catcher", "confidence score": 0.46, "box": [380, 618, 746, 728]}  # Catcher, catching the pitch.
+    }
+    det_obj, det_label_counts = Object_Detector_Tool.execute(image=image, labels=position_positions, threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+    return det_label_counts
+
+# Check function, should return the positions count by label
+det_label_counts = find_position_positions()
+print(f"Number of positions detected by each label: {det_label_counts}")
+
+final_result = {
+    "bat_position": det_label_counts,
+    "position_positions": det_label_counts
+}
+
+final_result[0].sort(key=lambda x: x["confidence score"])  # Sort by confidence score
+final_result[1].sort(key=lambda x: x["confidence score"])  # Sort by confidence score
+
+final_result
+
+------------- 31-19-21-56-314155 Accuracy reward: 0.0 -------------
+Final Result: list index out of range
+
+[Reward computation time: 2.8100 seconds]
+
+Solution: 1
+Code: from object_detector import Object_Detector_Tool
+
+# Function to count the total number of baseball players
+def count_baseball_players(image_path):
+    object_detector_tool = Object_Detector_Tool()
+
+    # Detect baseball players
+    detected_baseball_players = object_detector_tool.execute(image_path[:-4], ["baseball"])
+
+    # Count total number of baseball players
+    total_baseball_players = detected_baseball_players[0]['labels'].count('baseball')
+
+    return total_baseball_players
+
+# Image path
+image_path = "/path/to/val_Counting_7_image_1.jpg"
+
+# Count baseball players in the image
+total_baseball_players = count_baseball_players(image_path)
+
+print(f"Total number of baseball players in the image: {total_baseball_players}")
+
+------------- 31-19-21-56-314155 Accuracy reward: 0.0 -------------
+Final Result: non-default argument follows default argument (<string>, line 8)
+
+[Reward computation time: 1.1145 seconds]
+
+Solution: 1
+Code: from object_detector import Object_Detector_Tool
+
+def count_baller_addresses(image_path: str, labels: list, save_object: bool, saved_image_path: str):
+    with Object_Detector_Tool(image_path, labels, threshold=0.75, model_size="tiny", save_object=save_object) as detector:
+        labels_count = {label: detector.labels[label + "_conf"] for label in labels}
+        return labels_count
+
+def count_baseball_player_count(image_path: str, model_name="base", save_object: bool, saved_image_path: str):
+    with Object_Detector_Tool(image_path, labels=[f"{model_name}_{_}" for _ in range(10)], save_object=save_object, model_name=model_name) as detector:
+        labels_count = {label: detector.labels[label + "_conf"] for label in labels if "_conf" in detector.labels[label] and "baseball" in detector.labels[label]}
+        return labels_count
+
+def count_baller_address(accumulator, label):
+    label_count = count_baseball_player_count(f"../val/Counting_7_image_1.jpg", model_name=label)
+    accumulator[label] += label_count["baseball"]
+
+final_result = {label: count_baller_address({" accumulator": {"baseball": 0}}, label) for label in ["baseball", "base"] if "baller_address" in label}
+final_result
+

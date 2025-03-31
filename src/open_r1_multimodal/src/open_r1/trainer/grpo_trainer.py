@@ -194,11 +194,6 @@ class Qwen2VLGRPOTrainer(Trainer):
             model_init_kwargs["use_cache"] = (
                 False if args.gradient_checkpointing else model_init_kwargs.get("use_cache")
             )
-            # #####try to fix flash atten 2 & DataType Bug#####
-            # default_dtype = torch.get_default_dtype()
-            # print(f"torch_dtype{model_init_kwargs.get('torch_dtype')}")
-            # torch_dtype = getattr(torch, model_init_kwargs.get("torch_dtype"))
-            # torch.set_default_dtype(torch_dtype)
             ######################################
             if "Qwen2-VL" in model_id:
                 model = Qwen2VLForConditionalGeneration.from_pretrained(model, **model_init_kwargs)
@@ -210,7 +205,6 @@ class Qwen2VLGRPOTrainer(Trainer):
                 model = AutoModel.from_pretrained(model, trust_remote_code=True, **model_init_kwargs)
             else:
                 model = AutoModelForCausalLM.from_pretrained(model, **model_init_kwargs)
-            # torch.set_default_dtype(default_dtype) # reset
         else:
             model_id = model.config._name_or_path
             if args.model_init_kwargs is not None:
@@ -392,7 +386,6 @@ class Qwen2VLGRPOTrainer(Trainer):
         pixel_values = prompt_inputs["pixel_values"]
         image_grid_thw = prompt_inputs["image_grid_thw"]
 
-        
         if self.max_prompt_length is not None:
             prompt_ids = prompt_ids[:, -self.max_prompt_length :] # task last several tokens
             prompt_mask = prompt_mask[:, -self.max_prompt_length :]

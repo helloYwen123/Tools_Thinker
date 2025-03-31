@@ -1,0 +1,308 @@
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'image_path'
+code:def number_of_non_blue_hat_people(image_path='val_Counting_118_image_1.jpg'):
+    """
+    This function takes the path to an image as input and returns the count of people not wearing a blue hat based on the specified labels.
+    """
+    # Load the image
+    object_detector_tool = Object_Detector_Tool()
+    labels = ["baseball", "basket", "helmet"]  # Example labels to detect
+    threshold = 0.45  # Confidence threshold for detection
+    model_size = "tiny"  # Size of the model to use
+    save_objects = True  # Whether to save the detected objects as images
+    saved_image_path = 'Detected_Objects'  # Path to save the detected object images
+    if not object_detector_tool.execute(image_path=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_objects, saved_image_path=saved_image_path):
+        raise Exception("Error executing the object detector tool")
+    
+    # Detect objects in the image using the Grounding DINO model
+    object_labels = object_detector_tool.output_type[0]
+    if not all(label in object_labels for label in ["baseball", "basket", "helmet"]) and "all" not in labels:
+        raise Exception("Object labels are not all detected")
+    
+    # Count people not wearing a blue hat
+    total_count = 0
+    for label in object_labels:
+        count = 0
+        for person in object_detector_tool.output_type[1].values():
+            if person['label'] == label and person['color'] != 'blue':
+                count += 1
+        total_count += count
+    
+    return total_count
+
+final_result = number_of_non_blue_hat_people()
+print("Number of people not wearing a blue hat:", final_result)
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 2 required positional arguments: 'self' and 'labels'
+code:from object_detector import Object_Detector_Tool
+
+# Define variable to hold the list of flags
+flags = []
+
+# Load image
+image = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg")
+
+# Convert dictionary to list of dictionaries
+detections = object_detector_tool.to_list_of_dicts(image)
+
+# Initialize dictionary to hold object counts and locations
+obj_count_loc = {det['label']: {'count': 0, 'position': None}}  # Initialize
+
+# Iterate over detected objects
+for det in detections:
+    # Check if the object matches the expected labels
+    if det['label'] in obj_count_loc:
+        obj_count_loc[det['label']]['count'] += 1  # Increment count
+    else:
+        obj_count_loc[det['label']] = {'count': 1, 'position': det['box']}  # Initialize object count and position
+
+    # Add flag image if flag flag is present
+    if det['label'] == 'baseball':
+        flags.append(det)
+
+print(obj_count_loc)
+
+# Count the number of people not wearing a blue hat
+total_count = len(obj_count_loc)
+
+# Filter out people who are wearing the blue hat from the total count
+total_count = filtered_count - filtered_flags_count
+total_count
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+name 'object_detector_tool' is not defined
+code:def analyze_image(image_path, labels):
+    object_number = {}
+    # Load the object detector using the specified tool
+    tool_name = 'object_detector'
+    tool_module = tool_name + '_tool'
+    object_detector_tool = eval(tool_module)()
+    
+    # Execute the tool on the image and save the results
+    detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, threshold=0.45, save_object=True, saved_image_path="detected_objects")
+    
+    # Calculate the total number of different labels
+    total_labels = sum(len(x) for x in object_number.values())
+    
+    return object_number, total_labels
+
+# Define the labels for analysis
+label_labels = ['baseball', 'basket', 'baseball base', 'crescent moon', 'cherry', 'sun', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap', 'baseball cap']
+
+# Analyze the image
+object_number, total_labels = analyze_image("path/to/image.png", labels=label_labels)
+
+# Calculate the number of people not wearing a blue hat
+not_wearing_blue_hats = len([x for x in object_number if x['label'] == 'baseball cap'] - [x for x in object_number if x['label'] == 'baseball cap'])
+
+# Calculate the number of people not wearing a blue hat in the form of an integer
+not_wearing_blue_hats_int = sum(1 for x in object_number if x['label'] == 'baseball cap')
+
+final_result = {'not_wearing_blue_hats': not_wearing_blue_hats, 'total_labels': total_labels}
+
+final_result
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+unexpected indent (<string>, line 2)
+code:# Load the image
+    obj_detector = Object_Detector_Tool()
+
+    # Load the labels
+    labels = ["baseball", "basket"]
+
+    # Check if the threshold is provided
+    if "threshold" in locals():
+        threshold = float(locals()["threshold"])
+
+    # Check if the model size is provided
+    if "model_size" in locals() and locals()["model_size"] == "tiny":
+        model_size = "tiny"
+    else:
+        model_size = "large"
+    
+    # Check if the save_object is provided
+    if "save_object" in locals():
+        save_object = bool(locals()["save_object"])
+        saved_image_path = "detected_objects"
+    else:
+        save_object = False
+        saved_image_path = ""
+
+    # Try to detect objects
+    try:
+        detected_objects = obj_detector.execute(image="val_Counting_118_image_1.jpg", labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path= saved_image_path)
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return []
+
+    # Get the total count for each label
+    label_counts = {}
+    for obj in detected_objects:
+        if obj.get("label") in label_counts:
+            label_counts[obj.get("label")] += obj.get("count")
+        else:
+            label_counts[obj.get("label")] = obj.get("count")
+
+    # Find the number of people not wearing a blue hat
+    blue_hat_count = 0
+    for label, count in label_counts.items():
+        if label != "baseball" and label != "basket":
+            if count > 0:
+                blue_hat_count += count
+
+    # Calculate the number of people not wearing a blue hat
+    not_blue_hat_count = len(detected_objects) - blue_hat_count
+
+    return final_result
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:def average_height(heights):
+    total_height = 0
+    count = 0
+    for height in heights:
+        total_height += height
+        count += 1
+    return total_height / count
+
+def find_missing_right(size, total_height, count):
+    n_left = total_height * count
+    n_right = (size + 1) * (2 * count - 1)
+    return n_right - n_left
+
+def calculate_total(height, count):
+    total = height * count
+    return total
+
+def count_right_sides(size, total_height, count, missing_right):
+    total_height_without_missing_right = total_height * count - missing_right
+    total_height_with_missing_right = total_height - (count - missing_right) * (2 * count - 1)
+    return total_height_without_missing_right + (2 * count - 1) * (total_height_with_missing_right - total_height_without_missing_right)
+
+def main(heights):
+    # Average height of the group
+    avg_height = 0
+    count = len(heights)
+    for height in heights:
+        avg_height += height
+    avg_height /= count
+    
+    # Average height of the total population
+    avg_height_total = calculate_total(avg_height, count)
+    missing_right = find_missing_right(count, avg_height_total, count)
+    total_right = find_total_right(missing_right, count)
+    
+    # Number of missing sides in the group
+    missing_left = calculate_total(avg_height, count) - avg_height_total
+    
+    # Number of sides that are represented in the total population and missing
+    total_right_in_population = total_right - calculate_total(avg_height_total, count)
+    missing_right_in_population = missing_right - total_right_in_population
+    
+    # Total missing right sides in the group
+    total_missing_right = count - (total_height - (total_right + missing_right))
+    return total_missing_right
+
+# Test the function with the data provided in the image
+# Import the object detector tool
+detect = Object_Detector_Tool()
+# Load the image
+loaded_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg"
+detected_objects, _ = detect.execute(image=loaded_image_path, labels=["baseball"], threshold=0.45, save_object=True, saved_image_path="detected_objects")
+labels = [bbox['label'] for _, bbox in detected_objects]
+# Calculate the total number of sides for the group
+total_sides = 2 * (count + find_total_right(0, count))
+# Calculate the missing sides of the group
+missing_sides_group = total_sides - total_missing_right
+# Calculate the number of sides represented in the total population
+total_sides_pop = find_total_right(0, count) - total_missing_right
+# Calculate the missing sides of the group in the total population
+missing_sides_population = count - total_sides_pop
+final_result = missing_sides_group + missing_sides_population
+print("Number of missing right sides in the group: ", final_result)
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+def count_non_blue_hats(image_path):
+    detected_objects = Object_Detector_Tool.execute(image=image_path, labels=["blue_hats"], save_object=True, saved_image_path="detected_objects")
+    blue_hats_data = []
+    non_blue_hats_data = []
+    total_blue_hats_count = 0
+
+    for object_data in detected_objects:
+
+        # Check if the object is wearing a blue hat
+        if object_data["label"] == "blue_hats" and float(object_data["confidence_score"]) >= 0.5:
+            total_blue_hats_count += 1  # Increase the count for blue hats
+        else:
+            non_total_blue_hats = float(object_data["confidence_score"])  # If the object is not a blue hat, convert to a float
+
+            if not non_total_blue_hats:
+                non_blue_hats_count = len(non_blue_hats_data) + 1  # If the object is not wearing a blue hat and there's one already, increment count
+            else:
+                non_blue_hats_data.append(object_data)
+
+    if total_blue_hats_count > 0:
+        non_blue_hats = len(non_blue_hats_data)  # Calculate the total count of non-blue hats
+
+        if total_blue_hats_count > non_blue_hats:
+            non_blue_hats_count = total_blue_hats_count - non_blue_hats
+        total_count = non_blue_hats_count + total_blue_hats_count
+    else:
+        total_count = 0
+
+    return (total_count, non_blue_hats_count)
+
+count_non_blue_hats("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg")
+(total_count, non_blue_hats_count) = count_non_blue_hats("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg")  # Calculate the total count
+
+# Assign the final result to a variable
+final_result = (total_count, non_blue_hats_count)
+print(final_result)
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 16)
+code:from object_detector import Object_Detector_Tool
+
+# Define input data
+input_image = "path/to/image.png"
+labels = ["baseball", "basket"]
+threshold = 0.45  # Adjust according to your image confidence threshold
+model_size = "tiny"  # Available options: 'base', 'tiny'
+save_object = True  # Boolean indicating whether to save detected object images
+saved_image_path = "detected_objects/"  # Output path for detected object images
+
+# Initialize object detector tool
+detector_tool = Object_Detector_Tool(input_image=input_image, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+# Check whether a label is present
+if len(labels) > 0:
+    for i in range(len(detector_tool):
+        detection_info = detector_tool[i]
+        if "label" in detection_info and "confidence score" in detection_info:
+            total_count = int(detection_info["labels"][detection_info["label"]])
+else:
+    final_result = 0  # Return the number of people not wearing a blue hat
+
+# Extract the number of people not wearing a blue hat
+num_not_wearing_blue_hat = len([object for object in saved_image_path if "blue hat" in object])  # Adjust to your object label that is not the blue hat
+
+final_result = num_not_wearing_blue_hat

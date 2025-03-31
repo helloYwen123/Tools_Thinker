@@ -1,0 +1,147 @@
+
+============================== NEW EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+def count_signs_with_arrows():
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_105_image_1.jpg"
+
+    # Detect signs with arrows
+    # We can't directly pass these to Object_Detector_Tool because they come as lists without labels
+    # We need to create a new label 'ARROWS' with a confidence score of 10 for every detect
+    # and add it to our labels list
+    labels = ["BASEBALL", "BASKET", "ARROWS"]
+    for label in labels:
+        detector_tool = Object_Detector_Tool(image_path)
+        conf_scores = detector_tool.detect_label(label=label, threshold=0.45, model_size="tiny", save_object=True)
+
+    return len(labels) - 1
+[THE PRINT ALL OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+
+[None RESULT]
+
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+name 'object_detector_tool' is not defined
+code:def count_arrows(image_path):
+    # Load the image
+    image = object_detector_tool.image_to_array(path=image_path)
+
+    # Create a list to store the detected objects and their counts
+    detected_objects = []
+    object_number = {}
+
+    # Detect and count the objects
+    if object_detector_tool.detect_objects(image, labels=["arrows"], threshold=0.45, model_size="base", save_object=True, saved_image_path="detected_objects"):
+        detected_objects = object_detector_tool.detected_objects
+        object_number = detected_objects[0]
+
+    return detected_objects, object_number
+
+result = count_arrows("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_105_image_1.jpg")
+
+count_arrows(result[1]["count"])
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 2 required positional arguments: 'image' and 'labels'
+code:from object_detector import Object_Detector_Tool
+
+# Given parameters
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_105_image_1.jpg" # Path to file
+labels = ["baseball", "basket"] # Labels to detect
+threshold = 0.45 # Confidence threshold
+model_size = 'tiny' # Size of the model (default: 'tiny')
+
+# Function call to check for a string for saving object images
+saved_object = True
+
+# Execution of the tool (assuming it works as expected)
+detected_objects, object_number = Object_Detector_Tool.execute({
+    "image": image_path,
+    "labels": labels,
+    "threshold": threshold,
+    "model_size": model_size,
+    "save_object": saved_object
+})
+
+# Checking if "one way" is among the detected labels
+one_way = "one way" in detected_objects
+
+final_result = one_way
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+count_signs() missing 1 required positional argument: 'label'
+code:def count_signs(image_path, label):
+    """Counts the number of signs based on the label given in the path."""
+    # Initialize a empty array to store detected signs
+    signs = []
+    
+    # Load the object detector model
+    model = torch.hub.load('ultralytics/yolov5', 'ultralytics.yolo_v5')
+    
+    # Load the image
+    image = Image.open(image_path)
+    
+    # Detect the signs
+    bboxes = model(image=image, conf_thres=0.2)[0].bbox
+    for box in bboxes:
+        # Get the sign label from the box
+        label_from_box = box.xywh[4]
+        label_from_bbox = label[label_from_box[2]:label_from_box[3]]
+        if label_from_bbox[1] < 100 and label_from_bbox[0] >= 100:
+            # If the label is within the image boundaries and not in the top or left regions, it's a sign
+            if label_from_box[2] < 100 and label_from_box[1] < 100 and label_from_box[3] > 100 and label_from_box[4] > 100:
+                sign = {
+                    'label': label_from_bbox[1],
+                    'bbox': [label_from_bbox[1], label_from_box[2], label_from_bbox[3], label_from_box[4]],
+                }
+                signs.append(sign)
+    
+    return signs
+
+# Count the signs using the predefined image
+# The image name is 'val_Counting_105_image_1.jpg'
+signs = count_signs("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_105_image_1.jpg")
+
+# The total number of signs
+total_signs = len(signs)
+
+final_result = total_signs
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+name 'listdir' is not defined
+code:def has_archives(directory_path):
+    return len(listdir(directory_path)) > 2
+
+final_result = has_archives("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_105_image_1.jpg") 
+if final_result:
+    print("Image has archives.")
+else:
+    print("Image does not have archives.")
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_105_image_1.jpg"
+labels = ["greenwich", "street"]
+
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=False)
+
+# Summarize the number of signs with arrows
+total_signs_with_arrows = sum(detected_objects['obj'][7] == 'yes' for detected_objects in detected_objects.values())
+total_signs_with_arrows

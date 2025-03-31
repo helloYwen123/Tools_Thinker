@@ -1,0 +1,227 @@
+------------- 31-18-59-05-852728 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.3553 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+def count_black_letters(image_path):
+    """
+    Counts the number of black letters in an image.
+    """
+    image = Object_Detector_Tool.execute(image=image_path, model_size="tiny", labels=["black"], threshold=0.45, save_object=True, saved_image_path="detected_objects")
+    
+    object_details = []
+    for detection in image["detector_output"]["detections"]:
+        if detection["label"] == "black":
+            coordinates = detection["bbox"]
+            label = "black"
+        else:
+            continue
+            
+        bounding_box = (int(coordinates[0]), int(coordinates[1]), int(coordinates[2]), int(coordinates[3]))
+        object_details.append({"label": label, "bbox": bounding_box})
+        
+    black_objects = {"count": {"black": image.get("object_count", 0)}, label: {"black": {"count": len(image["objects"]), "bbox": [0, 0, 0, 0]}}, label: {"black": {"count": len(image["objects"]), "bbox": [0, 0, 0, 0]}}}
+    
+    return black_objects
+
+def main():
+    # Replace with your actual path to the image
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg"
+    black_letters_count = count_black_letters(image_path)
+    print(black_letters_count["label"]["black"])
+
+if __name__ == "__main__":
+    main()
+
+------------- 31-18-59-05-852728 Accuracy reward: 0.0 -------------
+Final Result: {}
+
+[Reward computation time: 1.4063 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+def count_black_letter_signs(image_path: str, labels: list['str'] = None, save_object: bool = False, saved_image_path: str = 'detected_objects', threshold: float = 0.45, model_size: str = 'tiny'):
+    result = {}
+
+    try:
+        object_detector = Object_Detector_Tool(image_path, labels, saved_image_path=saved_image_path, model_size=model_size, threshold=threshold)
+        detected_objects = object_detector.execute(image_path)
+
+        for obj in detected_objects:
+            if obj['label'] == 'STOP' and obj['confidence'] > 0.25:
+                if 'black' in obj['label']:
+                    result['STOP' in obj['label']] = result.get('STOP', 0) + 1
+
+        return result
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return {}
+
+stop_sign_count = count_black_letter_signs("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg", labels=["STOP"])
+final_result = stop_sign_count
+
+for k, v in stop_sign_count.items():
+    print(f"{k}: {v}")
+
+------------- 31-18-59-05-852728 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.4180 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+# Example: To count the number of baseball signs in a specific image:
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg" 
+labels = ["baseball"]
+label_count = Object_Detector_Tool.execute(image=image_path, labels=labels)
+print(f"The image contains {label_count[0]} baseball signs.")
+
+if not all(label['label'] == "baseball" for label in label_count[0]):
+    print("There are signs with other labels in the image.")
+
+if label_count[0]['label'] == "baseball":
+    total_count = sum(1 for _ in label_count[0][1])
+    if total_count > 1:
+        print(f"The image contains {total_count} baseball signs, but the count might have been underestimated due to mislabeling.")
+
+------------- 31-18-59-05-852728 Accuracy reward: 0.0 -------------
+Final Result: 'Object_Detector_Tool' object has no attribute 'load_model'
+
+[Reward computation time: 1.5141 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+def count_black_letters(numbers):
+    """Count the number of black letters with a certain style."""
+    num_black_letters = 0
+    for number in numbers:
+        for letter in number:
+            if letter == 'B' or letter == 'D' or letter == 'Z':
+                num_black_letters += 1
+    return num_black_letters
+
+def number_of_signs(image_path, labels, threshold, model_size, save_object, saved_image_path):
+    # Load the image
+    object_detector_tool = Object_Detector_Tool()
+    object_detector_tool.load_model(model_size, save_objects=True)
+    image = object_detector_tool.execute(image_path, labels=labels, save_object=False, saved_image_path="")
+
+    # Count the number of stop signs
+    stop_sign_count = 0
+    for letter in image:
+        if letter == 'S' or letter == 'S' or letter == 'P':
+            stop_sign_count += 1
+
+    # Count the number of other signs
+    other_sign_count = 0
+    for letter in image:
+        if letter not in ['S', 'STOP', 'STOP', 'STOP', 'S']:
+            other_sign_count += 1
+
+    # Add signs to the string to separate them based on letter frequency
+    signs = ''
+    if stop_sign_count > other_sign_count:
+        signs += 'STOP'
+    if other_sign_count > stop_sign_count:
+        signs += 'STOP'
+    signs += 'STOP' * 100
+
+    # Count black letters in the sign
+    black_letters = count_black_letters(signs.split())
+
+    # Add the total number of signs to the string
+    signs += '-' + str(sum(label['confidence score'] for label in black_letters))
+
+    # Return the final count
+    return black_letters + signs
+
+# Convert the street signs into a string
+street_signs = 'GRANDVITERR.DRK' + '- STOP ' + '-' + '- STOP - STOP'
+
+# Count the number of black letters
+black_letters = number_of_signs(image_path='path/to/image.png', labels=list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), threshold=0.45, model_size='tiny', save_object=False, saved_image_path='')
+
+# Append the final result
+street_signs += black_letters
+
+# print the final result
+print('Final result:', street_signs)
+
+------------- 31-18-59-05-852728 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.5776 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+def count_signs_in_foggy_image(image_path, labels=("sign",), save_object=False, saved_image_path="detected_objects"):
+    # Detect objects in a foggy image
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=0.45)
+
+    # Print the count of signs
+    sign_count = len([obj for obj in detected_objects if obj['label'] == 'sign'])
+
+    # Optionally, save the detected object images
+    if save_object:
+        for obj in detected_objects:
+            obj_path = f"{saved_image_path}/{obj['label']}_{obj['image_id']}.jpg"
+            image_path = f"{image_path}/images_{obj['image_id']}/{obj['label']}_{obj['image_id']}.jpg"
+            if obj['confidence'] >= 0.45 and obj['label'] == 'sign':
+                image_resultPath = f"{image_path}/detected_objects{i}.jpg" if save_object else None
+                object_name = f"{obj['label']} ({obj['confidence']:.2f})"
+                print(f"Saving image of {object_name} ({label_count})")
+                image_detector_tool.save_object(
+                    image=image_resultPath, labels=labels, object_names=object_name, image_id=obj['image_id'], threshold=0.45)
+
+    return sign_count
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg"
+final_result = count_signs_in_foggy_image(image_path)
+
+------------- 31-18-59-05-852728 Code Extraction Failed -------------
+Reward: 0.0
+Solution: 2
+Code: [EMPTY]
+
+------------- 31-18-59-05-852728 Code Extraction Failed -------------
+Reward: 0.0
+Solution: 2
+Code: [EMPTY]
+
+------------- 31-18-59-05-852728 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'labels'
+
+[Reward computation time: 0.7471 seconds]
+
+Solution: 2
+Code: from object_detector import Object_Detector_Tool
+
+# Define image path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_90_image_1.jpg'
+
+# Create Objectdetector_Tool instance with default settings
+tool = Object_Detector_Tool()
+
+# Execute the tool to detect objects in the image
+detected_objects, total_objects = tool.execute(image=image_path)
+
+# Count the object labels with black lettering
+black_letter_labels = [obj['label'] for obj in detected_objects if obj['confidence score'] > 0.45 and obj['label'] != 'STOP']
+
+# Calculate the number of black letter objects
+black_letter_objects = len(black_letter_labels)
+
+# Print the result
+print(f"The number of signs with black lettering is: {black_letter_objects}")
+final_result = {
+    "number of black letter signs": black_letter_objects,
+}
+

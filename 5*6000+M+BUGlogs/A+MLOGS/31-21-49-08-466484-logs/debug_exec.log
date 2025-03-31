@@ -1,0 +1,210 @@
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg"
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["white pillow"], save_object=True, saved_image_path="detected_objects")
+
+# Count white pillows
+total_white_pillows = object_number.get("white pillow")
+final_result = total_white_pillows
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 46)
+code:from object_detector import Object_Detector_Tool
+
+# Check if the image file is part of the dataset
+if '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg' in __file__:
+    image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg'
+else:
+    image_path = 'example_image.jpg'
+
+# Load the image using OpenCV
+image = cv2.imread(image_path)
+
+# Convert image to grayscale for simpler object detection
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Detection model
+model = 'tiny'  # Use 'base' if your training is still on 'tiny'
+detector = Object_Detector_Tool(model=model, threshold=0.45, saved_image_path='detected_objects')
+
+# Detection function
+predicted_labels, confidence_scores = detector.detect_objects(image)
+
+# Detect objects in the image
+objects = [[{"label": label, "confidence": conf}, obj] for label, conf, obj in detected_objects]
+
+# Show objects detections
+for label, conf, obj in objects:
+    cv2.rectangle(image, (obj['bbox'][0] + 10, obj['bbox'][1] + 10), (obj['bbox'][0] - 10, obj['bbox'][1] - 10), (0, 255, 0), 2)
+    cv2.putText(image, f'{label}: {round(conf * 100, 2)}%', (obj['bbox'][0] + 30, obj['bbox'][1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+# Save the detected objects as images
+for label, conf, obj in objects:
+    image_path = 'detected_objects/' + label.strip() + f'_{round(conf * 100, 2)}%.' + ".jpg"
+    cv2.imwrite(image_path, obj['image'])
+
+# Display the image with detected objects
+cv2.imshow('Detected Objects', image)
+cv2.waitKey(0)
+
+# Get the total number of white pillows
+white_pillows = 0
+for label, conf, obj in objects:
+    if label.strip() + '_white' in label:
+        white_pillows += 1
+
+final_result = [white_pillows]
+else:
+    print("In image path:", image_path)
+
+print("The total number of white pillows in the image is:", final_result)
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 7 were given
+code:from object_detector import Object_Detector_Tool
+
+# Function to calculate the number of white pillows in an image
+def calculate_white_pillows(image_path):
+    labels = ["white pillows"]
+    threshold = 0.45
+    model_size = "tiny"
+    save_object = True
+    saved_image_path = "detected_objects"
+
+    detector_tool = Object_Detector_Tool(image_path, labels, threshold, model_size, save_object, saved_image_path)
+    detections = detector_tool.detection()
+
+    total_count = len(detections)
+    if total_count == 0:
+        print("No white pillows detected.")
+    else:
+        print(f"Number of white pillows in the image: {total_count}")
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg"
+
+# Call the function with the path to the image
+calculate_white_pillows(image_path)
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image'
+code:from object_detector import Object_Detector_Tool
+
+# Convert the path to the image file to a Python string
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg"
+
+# Create the Object_Detector_Tool instance with the required parameters
+tool_instance = Object_Detector_Tool(image=image_path, labels=["baseball", "basket"], save_object=True)
+
+# Get the detection dictionaries
+detection_dict_list = tool_instance.output_list
+
+# Count the total number of detected pillows
+total_pillows = detection_dict_list[0].get("total_count", 0)
+
+final_result = total_pillows  # Replace with the actual result
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'labels'
+code:def detect_objects(image_path, labels, threshold, model_size):
+    # Initialize the object detector tool
+    detector = Object_Detector_Tool(image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=True)
+
+    # Execute the object detection tool
+    detected_objects, total_label_count = detector.execute()
+
+    # Return the number of white pillows
+    return detected_objects[0]["label"].count("pillow")
+
+# Example usage
+final_result = detect_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg", ["pillow"], 0.45, "tiny")
+print("Number of white pillows:", final_result)
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+label_list = ["sofa", "sidetable", "bed", "pillow"]
+with open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg") as img_file:
+    image_data = img_file.read()
+
+# Detect objects using the ground-truth labels
+object_number_dict = Object_Detector_Tool.execute(image=image_data, labels=label_list, save_object=True, saved_image_path="detected_objects")
+
+# Print the object names and their count in the image
+final_result = {"object_names": ["pillow"], "count": 1}
+for obj_data in object_number_dict:
+    if obj_data["label"] in ["pillow"]:
+        final_result["object_names"].append(obj_data["label"])
+        final_result["count"] += obj_data["count"]
+
+final_result
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+'Object_Detector_Tool' object has no attribute 'load_image'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+tool = Object_Detector_Tool()
+image = tool.load_image('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg')
+label_list = ['baseball', 'basket']
+
+# Detect objects
+det_dict_list, object_count = tool.execute(image, label_list, save_object=True, saved_image_path="detected_objects")
+
+# Print the detection count
+print(len(det_dict_list))
+
+============================== NEW EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+# Get the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_33_image_1.jpg"
+
+# Create an object detector tool instance
+detector_tool = Object_Detector_Tool()
+
+# Detect objects in the image using a base model and a confidence threshold
+object_labels = detector_tool.execute(image_path, labels=['baseball', 'basket'], save_object=True)
+
+# Calculate the total count of 'baseball' objects
+baseball_count = 0
+for label in object_labels:
+    count_label = label['confidence_score'] / detector_tool.model_size
+    if count_label > 0.45:
+        if label['label'] == 'baseball':
+            baseball_count += int(label['confidence_score'] * 1.0)
+
+final_result = baseball_count
+print("Total baseball objects in the image: ", final_result)
+[THE PRINT ALL OUTPUT]
+Error building the Object Detection tool: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+Error detecting objects: Failed to build the Object Detection tool.
+Failed to detect objects after 10 attempts.
+Total baseball objects in the image:  0
+
+[GENERATE FINAL_RESULT]
+0
+
+[None RESULT]
+

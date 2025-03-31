@@ -1,0 +1,216 @@
+------------- 31-20-45-32-018371 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.5240 seconds]
+
+Solution: 3
+Code: from object_detector import Object_Detector_Tool
+
+# Get confidence threshold
+confidence_threshold = 0.45
+
+# Use the object_detection tool to find the numbers of wheels on the engine
+for image_path in ['/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg']:
+    deteted_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["baseball", "basket"], save_object=True, threshold=confidence_threshold, model_size="base")
+    if len(deteted_objects) == 0:
+        # If there are no detected objects, no wheels. Return 0. 
+        final_result.append(0)
+        break
+    else:
+        # Count the number of objects
+        for object_info in deteted_objects:
+            if object_info["label"] == "baseball":
+                for i, item in enumerate(object_info["bbox"]):
+                    # Find the index of the left edge of each wheel in the bounding box
+                    for j in range(len(item)):
+                        if item[j] > -30 and item[j] < 30 and j == 0:
+                            wheel_offset = item[j] - 60  # Assuming the wheel is 60 pixels wide
+                            if item[j] >= -50 and item[j] <= 70:
+                                # Get wheel number based on the x-coordinate of the center of the bounding box
+                                wheel_number = sum(i for i in range(1, len(item)) if abs(item[j] - item[i]) < 10) - 1
+                                final_result.append(wheel_number)
+                                break
+                        elif item[j] < 0 and j == 0:
+                            break
+
+        break
+
+------------- 31-20-45-32-018371 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+
+[Reward computation time: 1.5583 seconds]
+
+Solution: 3
+Code: from object_detector import Object_Detector_Tool
+
+# Read the image path from the variable
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg'
+
+# Set up the object detector
+object_detector = Object_Detector_Tool(image_path=image_path, labels=["engine"], threshold=0.65, save_object=True, saved_image_path="detected_objects")
+
+# Get the list of detected objects and retrieve the object count for the engine label
+total_engine_objects = list(object_detector['object_number'].values())
+
+# Calculate the number of drive wheels
+drive_wheels = len(total_engine_objects)
+
+# Output the result
+final_result = {"num_drive_wheels": drive_wheels}
+print("The number of drive wheels on the engine is:", final_result)
+
+------------- 31-20-45-32-018371 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.5440 seconds]
+
+Solution: 3
+Code: from object_detector import Object_Detector_Tool
+
+def count_drive_wheels(image_path, save_object=False, saved_image_path="detected_objects", labels=["rail"], threshold=0.45, model_size="tiny"):
+    with Object_Detector_Tool(
+        image_path=image_path,
+        labels=labels,
+        save_object=save_object,
+        saved_image_path=saved_image_path,
+        model_size=model_size,
+        threshold=threshold
+    ) as tool:
+        object_number = tool.execute()
+        return object_number
+
+def count_drive_wheels(image_path):
+    object_number = count_drive_wheels(image_path)
+    return object_number["label_names"][0], object_number["label_counts"][0]
+
+def count_drive_wheels(image_path):
+    object_number = count_drive_wheels(image_path)
+    return object_number["label_names"][0], object_number["label_counts"][0]
+
+object_number = {"label_names": ["engine"], "label_counts": [5]}
+engine_wheels = object_number["label_names"][0]
+print(f"The engine has {engine_wheels} drive wheels.")
+
+------------- 31-20-45-32-018371 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.5509 seconds]
+
+Solution: 3
+Code: from object_detector import Object_Detector_Tool
+
+# Provide the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg"
+
+# Create the object detection tool
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["engine"], save_object=True, saved_image_path="detected_objects")
+
+# Extract and count the wheels
+wheel_count = 0
+for detection in detected_objects:
+    if "engine" in detection['label']:
+        wheel_count += len(detection['box']['points'][0]['points']) / 4
+
+final_result = wheel_count
+
+------------- 31-20-45-32-018371 Accuracy reward: 0.0 -------------
+Final Result: 'list' object is not callable
+
+[Reward computation time: 2.5666 seconds]
+
+Solution: 3
+Code: from object_detector import Object_Detector_Tool
+
+def how_many_wheels(engine):
+    engine_label = "engine"
+    detections = detections_objects(engine)
+    count = 0
+    for obj in detections:
+        if obj["label"] == engine_label:
+            count += obj["count"]
+    return count
+
+# Initialize the Object_Detector_Tool object
+object_detector_tool = Object_Detector_Tool()
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg"
+engine_image = image_path
+
+# Detect the objects in the image
+detections_objects = object_detector_tool.execute(image=image_path, labels=["baseball", "basket"], save_object=False)
+
+# Call the function to calculate the number of wheels
+number_of_wheels = how_many_wheels(engine_image)
+
+print(f"Engine has {number_of_wheels} drive wheels.")
+
+------------- 31-20-45-32-018371 Accuracy reward: 0.0 -------------
+Final Result: name 'labels' is not defined
+
+[Reward computation time: 0.8764 seconds]
+
+Solution: 3
+Code: from object_detector import Object_Detector_Tool
+
+# Assuming the image path is the path to the image file you want to analyze
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg"
+
+# Detectors by default use 'tiny', this is probably a good assumption unless other sizes are needed
+model_size = "tiny"
+
+# Check if save_object is 'True'
+detect_obj, labels_count = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path="detected_objects", model_size=model_size)
+
+# The result list contains two elements:
+# 1. list of dictionaries for each detected object (one per label)
+# 2. dictionary mapping each label to its total count in the image
+
+if len(detect_obj) == 2:
+    total_detection_count = len(detect_obj[0])
+else:
+    total_detection_count = 0
+
+total_detection_count
+
+------------- 31-20-45-32-018371 Accuracy reward: 0.0 -------------
+Final Result: name 'engine_count' is not defined
+
+[Reward computation time: 1.0209 seconds]
+
+Solution: 3
+Code: def calculate_drive_wheels(engine_label, engine_count):
+    # Calculate the number of drive wheels for the train car as per the given label
+    if engine_label == 'Locomotive':
+        # Locomotives have 4 drive wheels
+        return 4
+    else:  # Assuming it's a passenger train, the number of drive wheels is 0
+        return 0
+
+# Given to identify the engine
+engine_label = 'Locomotive' if engine_count == 2 else 'Carriage'
+drive_wheels_count = calculate_drive_wheels(engine_label, engine_count)
+print(f"The train engine has {drive_wheels_count} drive wheels.")
+
+------------- 31-20-45-32-018371 Accuracy reward: 0.0 -------------
+Final Result: not enough values to unpack (expected 2, got 0)
+
+[Reward computation time: 1.4825 seconds]
+
+Solution: 3
+Code: from object_detector import Object_Detector_Tool
+
+def detect_railway_signs(path_to_image, labels, save_object=False, saved_image_path="detected_objects"):
+    detection_tool = Object_Detector_Tool()
+    detected_objects, object_number = detection_tool.execute(image=path_to_image, labels=labels)
+    
+    # Calculate the number of drive wheels on the engine
+    num_wheels_on_engine = len(detected_objects[0]["class_name"]) - 1 if 'class_name' in detected_objects[0] else 2
+    return num_wheels_on_engine
+
+final_result = detect_railway_signs("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_58_image_1.jpg", 
+                                    ["train", "locomotive"], 
+                                    save_object=True, 
+                                    saved_image_path="detected_objects")
+print(final_result)
+

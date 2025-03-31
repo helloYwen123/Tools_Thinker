@@ -1,0 +1,251 @@
+------------- 31-21-17-17-151238 Accuracy reward: 0.0 -------------
+Final Result: invalid syntax (<string>, line 7)
+
+[Reward computation time: 1.4759 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Example image file path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg'
+
+# Define labels to detect
+.labels = ['salad', 'rice', 'meat']
+
+# Set confidence threshold
+threshold = 0.5
+
+# Set the model size to 'tiny'
+model_size = 'tiny'
+
+# Load the detection tool with default settings
+detected_objects_tool = Object_Detector_Tool(image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=True, saved_image_path="detected_objects")
+
+# Calculate the object number
+total_objects = len(detected_objects_tool[0])
+total_objects
+
+------------- 31-21-17-17-151238 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() takes 1 positional argument but 7 were given
+
+[Reward computation time: 1.5810 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_people():
+    # Load the image
+    image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg'
+    
+    # Detect people
+    labels = ["basil"]
+    threshold = 0.45
+    model_name = 'tiny'
+    save_object = True
+    saved_image_path = 'detected_objects'
+    
+    # Load the object detector tool
+    tool = Object_Detector_Tool(image_path, labels, threshold, model_name, save_object, saved_image_path)
+    
+    # Detect objects in the image
+    detected_objects, object_labels_count = tool.execute()
+    
+    # Find the person in the image
+    for person in detected_objects:
+        if 'basil' in person['label']:
+            person['box'].append('basil')
+            break
+    
+    detected_person = [obj for _, person in detected_objects for obj in person['box'] if obj == 'basil'][0]
+    
+    # Get the total number of basil (person) from the detected objects
+    total_count = sum([det['label'] == "basil" for det in detected_objects])
+    
+    return total_count
+
+total_count = count_people()
+print("Total number of basil (person) detected in the image:", total_count)
+
+------------- 31-21-17-17-151238 Accuracy reward: 0.0 -------------
+Final Result: invalid syntax (<string>, line 30)
+
+[Reward computation time: 1.5598 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+class Solution:
+    def count_people_eating_food(self, image_path, labels, save_object=False, saved_image_path="detected_objects"):
+        """
+
+        Parameters:
+        ----
+        image_path: str
+            The path to the image file.
+        labels: list
+            A list of object labels to detect.
+        save_object: bool
+            Whether to save the detected objects as images (default: False).
+        saved_image_path: str
+            The path to save the detected object images (default: 'detected_objects').
+
+        Returns:
+        ----
+        int
+            The total count of people eating food in the image.
+        """
+        # Load the image and detect the objects using the Grounding DINO model
+        detector_tool = Object_Detector_Tool(image_path, labels)
+        detected_objects, labels_count = detector_tool.execute()
+
+        # Count the people eating food
+        people_eating = 0
+        for detected_object in detected_objects:
+            if 'pizza', 'sandwich', 'egg', 'salad' in detected_object['labels']:
+                people_eating += detected_object['confidence_score']
+        
+        if save_object:
+            # Save detected objects as images
+            for i, object in enumerate(detected_objects):
+                if object['label'] in ['pizza', 'sandwich', 'egg', 'salad']:
+                    saved_image_path_object = os.path.join(os.path.dirname(image_path), object['label'] + '_image_' + str(i) + '.jpg')
+                    try:
+                        with Image.open(os.path.join(saved_image_path, os.path.basename(saved_image_path_object))) as img:
+                            img = img.convert('RGB')
+                            img.save(saved_image_path_object)
+                        print(f"Detected object {object['label']} has been saved as {saved_image_path_object}.")
+                    except Exception as e:
+                        print(f"Error saving detected object {object['label']} as {saved_image_path_object}: {e}")
+        
+        # Return the count of people eating food
+        return people_eating
+
+------------- 31-21-17-17-151238 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() got an unexpected keyword argument 'labels'
+
+[Reward computation time: 1.6070 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+import numpy as np
+
+def count_people(image_path):
+    # Load the detection model and threshold
+    detector_model = 'tiny'
+    threshold = 0.45
+    result = {'total_count': 0, 'person_boxes': []}
+    detector_tool = Object_Detector_Tool(image_path, labels=["person"], model_size='tiny', save_object=True, threshold=threshold, saved_image_path="detected_objects")
+    detected_people = detector_tool.execute()
+    person_boxes = [bbox for bbox in detected_people[0] if 'person' in bbox['label']]
+    result['person_boxes'] = person_boxes
+    result['total_count'] = len(person_boxes)
+
+    return result
+
+# Use the path of your image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg'
+result = count_people(image_path)
+final_result = {
+    'number_of_people': result['total_count']
+}
+print(final_result)
+
+------------- 31-21-17-17-151238 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.6706 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Detect objects in the image
+Detected_objects = Object_Detector_Tool.execute(image="path/to/image.jpg", labels=["salad", "fruit", "rice"], save_object=True, saved_image_path="detected_objects")
+
+# Process the detected objects to count individuals
+final_result = {}
+for object in Detected_objects:
+    for label in object:
+        if label == "salad":
+            if object["label"] not in final_result:
+                final_result[object["label"]] = {}
+            final_result[object["label"]][object["label"]] = object["number"]
+
+print(final_result)
+
+------------- 31-21-17-17-151238 Accuracy reward: 0.0 -------------
+Final Result: expected '(' (<string>, line 3)
+
+[Reward computation time: 0.9011 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def determine PersonenEating():
+	# Load the image and detect objects
+	print(f"Detected Objects:\n\n{Object_Detector_Tool.execute(image='./images/val_Counting_11_image_1.jpg', labels=['food'], save_object=True, saved_image_path='./'))")
+
+if __name__ == "__main__":
+	determine_PersonenEating()
+
+------------- 31-21-17-17-151238 Accuracy reward: 0.0 -------------
+Final Result: expected an indented block after function definition on line 3 (<string>, line 9)
+
+[Reward computation time: 1.0253 seconds]
+
+Solution: 0
+Code: def get_number_of_people():
+    # Function to detect the number of people
+    def detect_people():
+        # Detect people using the ground_dino model
+        # Save object detection to file
+        # Return the count of people detected
+
+    # Define search path for images
+    search_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg'
+
+    # Use object_detector tool to detect people
+    detected_objects = Object_Detector_Tool.execute(image=search_path, labels=["person"], save_object=True, saved_image_path="detected_objects")
+    total_count = len(detected_objects["object_number"])[0]
+
+    return total_count
+
+# Call the function to get the number of people
+number_of_people = get_number_of_people()
+print(f"The number of people eating food is {number_of_people}")
+
+------------- 31-21-17-17-151238 Accuracy reward: 0.0 -------------
+Final Result: 'Object_Detector_Tool' object has no attribute 'object_detection'
+
+[Reward computation time: 1.0480 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_people_in_image(image_path, labels, threshold, model_size, save_objects=False, saved_image_path="detected_objects"):
+    """
+    Counts the number of people present in an image.
+    
+    Parameters:
+    - image_path: The path to the image file.
+    - labels: A list of object labels to detect.
+    - threshold: The confidence threshold for detection (default: 0.45).
+    - model_size: The size of the model to use ('tiny' or 'base', default: 'tiny').
+    - save_objects: Whether to save the detected objects as images (default: False).
+    - saved_image_path: The path to save the detected object images (default: 'detected_objects').
+    """
+    tool = Object_Detector_Tool()
+    tool.object_detection(image=image_path, labels=labels, model_size=model_size, threshold=threshold, save_objects=save_objects, saved_image_path=saved_image_path)
+
+    # Check if any object is detected
+    if tool.number_of_objects_detected() > 0:
+        # Retrieve labels and object count
+        label_count = tool.object_count(tool.detection_result())
+    else:
+        label_count = False
+
+    return label_count
+
+# Example usage
+label_count = count_people_in_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg", ["baseball"], 0.45, "base", True)
+print(f"The number of people present in the image is: {label_count}")
+

@@ -1,0 +1,135 @@
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'model_name'
+code:from object_detector import Object_Detector_Tool
+
+# Image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_48_image_1.jpg"
+
+# Labels to detect
+labels = ["toilet"]
+
+# Threshold
+threshold = 0.45
+
+# Load the DINO model
+detector = Object_Detector_Tool(model_name="tiny")
+
+# Perform object detection
+detected_objects, object_number = detector.execute(image=image_path, labels=labels, save_object=True, saved_image_path="detected_objects")
+
+# Count the number of toilets detected
+toilets_count = object_number["baseball"][0]
+final_result = [{"label": "toilet", "count": toilets_count}]
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+'Object_Detector_Tool' object is not iterable
+code:object_detector = Object_Detector_Tool()
+
+def find_lid_detected_objects(image_path, labels, threshold, model_size, save_object=True, saved_image_path="detected_objects"):
+    object_results = object_detector.execute(image_path, labels, save_object, saved_image_path)
+    return object_results
+
+def count_lids_object_results(object_results, labels):
+    total_lid_count = 0
+    for label, count in object_results:
+        if label.lower() in labels:
+            total_lid_count += count
+    return total_lid_count
+
+def answer_image_question(image_path):
+    lid_count = count_lids_object_results(object_detector, ["lid"])
+    return f"How many toilets have lids? {lid_count}."
+
+final_result = answer_image_question("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_48_image_1.jpg")
+print(final_result)
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code:from object_detector_tool import Object_Detector_Tool
+
+# Load the image
+detector_tool = Object_Detector_Tool()
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_48_image_1.jpg"
+detected_objects, labels_count = detector_tool.execute(image=image_path, labels=["toilet"])
+
+# Calculate the total number of detected toilets
+total_toilets = 0
+for label in detected_objects:
+    total_toilets += label.get('confidence').get('bbox')[0]
+
+final_result = [True if toilets <= 75 else False for toilets in detected_objects.values()]
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+name 'ImageDINO' is not defined
+code:final_result = 0
+for toilets in ImageDINO.toilets:
+    if toilets['lid'] is True:
+        final_result += 1
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+list index out of range
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_48_image_1.jpg"
+
+# Create an Object_Detector_Tool object
+tool = Object_Detector_Tool()
+
+# Execute the tool and save the bounding boxes
+detected_objects = tool.execute(image=image_path, labels=["toilet with lid"], save_object=True, saved_image_path="detected_objects")
+
+# Initialize a counter variable to keep track of toilets with lids
+toilets_with_lids_count = 0
+
+# Iterate over the detected objects and count toilets with lids
+for detected_object in detected_objects[0]:
+    if detected_object['label'] == "toilet with lid":
+        toilets_with_lids_count = toilets_with_lids_count + 1
+
+final_result = toilets_with_lids_count
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+closing parenthesis '}' does not match opening parenthesis '[' (<string>, line 25)
+code:from object_detector import Object_Detector_Tool
+
+label_list = ["toilet with lid", "toilet without lid"]
+
+with open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_48_image_1.jpg", "rb") as image_file:
+    image_content = image_file.read()
+input_labels = [l.lower().replace(" ", "") for l in label_list]  # Convert labels to lowercase and remove spaces
+
+# Load model
+object_detector_tool = Object_Detector_Tool()
+
+# Detect an object in the image
+detections, object_category_count = object_detector_tool.execute(image=image_content, labels=input_labels)
+
+# Print total count of detected objects
+total_object_count = sum(
+    [x['confidence score'] for x in detections[0]['object detection']]
+)
+
+final_result = [
+    {"label": "toilet with lid", "count": count},
+    {"label": "toilet without lid", "count": (total_object_count - count)},
+]
+
+final_result.append({"label": "lids", "count": sum([int(x['box'][1]) for x in detections[0]['objects']}))
+
+print("The number of toilet lids is", final_result[0]["count"])
+print("The number of toilet with lids is", final_result[1]["count"])
+print("The number of toilet lids accounted for in toilet with lids is", final_result[2]["count"])

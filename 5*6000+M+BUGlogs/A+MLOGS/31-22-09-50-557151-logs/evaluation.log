@@ -1,0 +1,195 @@
+------------- 31-22-09-50-557151 Accuracy reward: 0.0 -------------
+Final Result: name 'self' is not defined
+
+[Reward computation time: 1.4719 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+class Image:
+    def __init__(self, image_path):
+        self.image_path = image_path
+        self.object_detector = Object_Detector_Tool()
+
+    def get_object_labels(self):
+        labels = self.object_detector.execute(image_path=self.image_path, labels=["baseball", "basket"], save_object=True)
+        return labels
+    
+    def get_object_count(self):
+        labels = self.object_detector.get_labels()
+        return labels['object_count']
+
+final_result = self.get_object_count()
+if final_result > 0:
+    print(f"There are {final_result} red buildings.")
+else:
+    print("There are no red buildings.")
+
+------------- 31-22-09-50-557151 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.5169 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.jpg", labels=["baseball", "basket"], threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+detected_objects, object_number = result
+detected_objects
+
+------------- 31-22-09-50-557151 Accuracy reward: 0.0 -------------
+Final Result: invalid syntax (<string>, line 16)
+
+[Reward computation time: 1.5929 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Define labels and threshold
+labels = ["clock"]
+threshold = 0.5
+
+# Call the tool
+detected_objects, object_count = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.jpg", labels=labels, threshold=threshold)
+
+# Check if there are any detected objects
+if detected_objects is not None:
+    print("The clock tower has", detected_objects[0]['label'], "objects detected.")
+else:
+    print("No objects detected.")
+    final_result = 0
+else:
+    print("Could not find the clock tower in the image.")
+    final_result = 0
+
+# Print the number of red buildings
+for label, count in sorted(object_count.items(), key=lambda item: item[1]):
+    print(f"The {label} building is {count} times detected.")
+
+------------- 31-22-09-50-557151 Accuracy reward: 0.0 -------------
+Final Result: 0
+
+[Reward computation time: 2.1664 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_red_buildings(file_path, labels, threshold=0.45, model_size='tiny', save_object=False):
+    tool = Object_Detector_Tool()
+    detections_list = tool.execute(image=file_path, labels=(labels, model_size) if model_size != 'large' else 'large', threshold=threshold, saved_image_path='detected_objects' if save_object else None)
+    
+    total_count = 0
+    for detection in detections_list:
+        for det in detection:
+            if det['label'] == 'red_building':
+                total_count += 1
+                
+    return total_count
+
+# Provided image path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.jpg'
+
+# Labels to detect
+labels = ["baseball", "basket"]
+
+# Threshold and model size
+threshold = 0.45
+model_size = 'tiny'
+
+# Optionally, save detection image(s) after detection is complete
+save_object = True
+
+# Call the function
+total_red_buildings = count_red_buildings(image_path, labels, threshold, model_size, save_object)
+final_result = total_red_buildings
+
+------------- 31-22-09-50-557151 Accuracy reward: 0.0 -------------
+Final Result: not enough values to unpack (expected 2, got 0)
+
+[Reward computation time: 2.2405 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.jpg"
+detector_tool = Object_Detector_Tool()
+object_numbers, labels = detector_tool.execute(image=image_path, labels=["baseball"], saved_image_path="detected_objects")
+
+# Count the number of baseballs detected in the image
+baseball_count = len(labels["baseball"])
+
+final_result = {"total_count": baseball_count}
+
+------------- 31-22-09-50-557151 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 0.9465 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Function to count how many red buildings are present in a given image
+def count_red_buildings(image_path, labels, threshold = 0.45, model_size='tiny', save_object = True, saved_image_path = 'detected_objects', limit_to_label_count = False):
+    # Initialize the object detector tool
+    detected_objects, object_number = Object_Detector_Tool.execute(image = image_path, labels = labels, save_object = save_object, saved_image_path = saved_image_path)
+
+    # Loop through the detected objects dictionary
+    for idx, obj in enumerate(detected_objects):
+        # Check if the object is red and not black
+        if obj['label'] in {'baseball'} and obj['color'] != 'black':
+            print(f"Number of red bases: {obj['number_of_bases']}")
+
+    if limit_to_label_count:
+        # Check the total number of detected objects for the red_label
+        total = sum([int(obj['number_of_bases']) for obj in detected_objects])
+        print(f"Total red buildings: {total}")
+
+------------- 31-22-09-50-557151 Accuracy reward: 0.0 -------------
+Final Result: count_red_buildings() missing 1 required positional argument: 'saved_image_path'
+
+[Reward computation time: 0.9973 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_red_buildings(image_path, labels, model_size, save_object, saved_image_path):
+    # Load the image
+    detector_tool = Object_Detector_Tool(image=image_path)
+    # Detect the red buildings in the image
+    detected_objects = detector_tool.execute(labels=labels, model_type=model_size, save_object=save_object, saved_image_path=saved_image_path)
+    # Count the red buildings
+    red_count = detected_objects[0].count('red')
+    return red_count
+
+# Define variables
+red_count = count_red_buildings('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.jpg', ['baseball', 'basket'], 'tiny', True)
+
+# Print the result
+final_result = red_count
+print(final_result)
+
+------------- 31-22-09-50-557151 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.0096 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_red_buildings(image_file, labels=("baseball", "basket"), save_object=False, saved_image_path="detected_objects") -> dict:
+    # Load the image and extract relevant information.
+    image = image_file
+    object_detector_tool = Object_Detector_Tool(image, labels, threshold=0.45, model_size="base", save_object=save_object, saved_image_path=saved_image_path)
+    result = object_detector_tool.execute()
+
+    # Analyze the distribution of red buildings.
+    red_building_count = len([obj for obj in result[0][1][0]["box"] for box in box for area in box for color in [box["color"]] if color == "red"])
+
+    return {"Red Buildings": red_building_count}
+
+# Provided image file
+# path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_101_image_1.jpg"
+# results = count_red_buildings(image_file, labels=("baseball", "basket"), save_object=False, saved_image_path="detected_objects")
+# print(results)
+

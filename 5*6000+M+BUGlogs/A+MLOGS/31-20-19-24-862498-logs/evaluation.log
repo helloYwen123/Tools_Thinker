@@ -1,0 +1,211 @@
+------------- 31-20-19-24-862498 Accuracy reward: 0.0 -------------
+Final Result: invalid syntax (<string>, line 1)
+
+[Reward computation time: 1.4745 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector.Tool as od, ImageTool as it
+
+# Load object detection model
+object_detection_tool = od.Object_Detector_Tool()
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+# Initialize image tool
+image_tool = it.ImageTool(image_path)
+
+# Detect objects in the image
+labels = ["baseball", "basket"]
+labels_count = object_detection_tool.detect(image_path, labels)
+obj_detection_keys = list(labels_count.keys())
+
+# Check if any objects are detected
+if len(obj_detection_keys) > 0:
+    obj_labels, obj_confidences = it.detect_obj(image_path, labels, obj_detection_keys, threshold=0.45)
+
+    # Count people without hats
+    people_without_hats = 0
+    for label in obj_labels:
+        if label != "baseball" and label != "basket":
+            confidence_score = object_detection_tool.get_confidences_on_object(obj_detection_keys, label)
+            if confidence_score[0][0] > 0.1:
+                people_without_hats += 1
+
+    final_result = people_without_hats
+else:
+    final_result = 0
+
+------------- 31-20-19-24-862498 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.5162 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_people_without_hats(image_path, show_result=True):
+    tool = Object_Detector_Tool(image_path, save_object=True, model_size='tiny')
+
+    if show_result:
+        for _, labels, prediction in tool:
+            for obj in labels:
+                if prediction['label'] == 'baseball':
+                    result = {'label': obj['label'], 'confidence': obj['confidence'], 'box': obj['box']}
+                    if 'total_people_without_hats' not in result:
+                        result['total_people_without_hats'] = prediction['box']['total_people_without_hats']
+                    else:
+                        result['total_people_without_hats'] += prediction['box']['total_people_without_hats']
+
+    return result
+
+------------- 31-20-19-24-862498 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.6137 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_people_without_hats(image_path):
+    tool_args = {"image": image_path, "labels": ["hat"], "threshold": 0.75, "model_size": "tiny", "save_object": False}
+    tool = Object_Detector_Tool(**tool_args)
+    result = tool.execute()
+    people_with_hats = result[0]["labels"]
+    count_people = len(list(filter(lambda x: 'hat' not in x, people_with_hats)))
+    return count_people
+
+------------- 31-20-19-24-862498 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() got an unexpected keyword argument 'labels'
+
+[Reward computation time: 1.5970 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_people_without_hats(image_path, **kwargs):
+    # Use the Grounding DINO model to detect people
+    detector = Object_Detector_Tool(image_path, labels=["baseball", "basket"], **kwargs)
+    person_outputs = detector.execute()
+
+    people_without_hats = [
+        detection for _, confidence, box, _ in person_outputs if "baseball" not in box and "basket" not in box and "hat" not in box
+    ]
+    total_count = sum(confidence for _, confidence, box, _ in person_outputs)
+
+    return people_without_hats, total_count
+
+# Define an example with the Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+# Call the function
+people_without_hats, total_people = count_people_without_hats(image_path)
+print(f"Number of people without hats: {people_without_hats}")
+print(f"Total number of people: {total_people}")
+
+------------- 31-20-19-24-862498 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() got an unexpected keyword argument 'image'
+
+[Reward computation time: 1.6469 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_people_without_hats(image):
+    # Create an instance of the Object_Detector_Tool class
+    tool = Object_Detector_Tool(image=image, labels=["Santa hat"])
+    
+    # Get the number of people with hats
+    hat_detection = tool.execute()
+    
+    # Get the number of people without hats
+    without_hats_detection = tool.execute(labels=["No Santa hat"])
+    
+    # Calculate the percentage of people without hats
+    without_hats_percentage = (without_hats_detection[0][-1][:][0]/[1][-1]) * 100
+    
+    # Return the percentage of people without hats
+    return without_hats_percentage
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+result = count_people_without_hats(image_path)
+print(f"There are {result:.2f} people without Santa hat.")
+
+------------- 31-20-19-24-862498 Accuracy reward: 0.0 -------------
+Final Result: name 'count_peapl_no_hats' is not defined
+
+[Reward computation time: 0.7918 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_peopl_no_hats(image_path, labels=['baseball', 'basket'], save_object=True):
+    # Load the Image_1 in the current directory
+    original_image = image_path
+
+    # Open and read the image (assumed in RGB order for this example)
+    original_image = Image.open(original_image)
+    resized_image = ImageOps.fit(original_image, (500, 500))  # Resize the image to 500x500 pixels
+    resized_image.save("resize_original_image.png")
+
+    # Detect objects
+    tool_args = {"image": "resize_original_image.png", "labels": labels, "model_size": "tiny", "threshold": 0.45, "save_object": save_object}
+    detector = Object_Detector_Tool(tool_args)
+    objects_and_counts = detector.execute()
+
+    # Count people without hats
+    count_people_no_hats = sum(1 for obj_group in objects_and_counts['detect_out'][0]['category'].values() if obj_group['label'] == 'baseball')
+
+    return count_people_no_hats
+
+count_people_no_hats = count_peapl_no_hats("path/to/image.jpg")
+final_result = count_people_no_hats
+
+------------- 31-20-19-24-862498 Accuracy reward: 0.0 -------------
+Final Result: invalid syntax (<string>, line 13)
+
+[Reward computation time: 0.9603 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image and labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+labels = ["baseball", "basket"]
+
+# Call the tool with specified parameters
+detected_objects, total_labels = Object_Detector_Tool.execute(image_path, labels)
+final_result = detected_objects
+
+# Print the final result
+print("Number of people without hats: ", final_result[0]["bbox"][1])
+else:
+    print(final_result)
+
+------------- 31-20-19-24-862498 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 2 required positional arguments: 'self' and 'labels'
+
+[Reward computation time: 1.0537 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Assume the image is located at the path specified by "val_Counting_95_image_1.jpeg"
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpeg"
+
+# Use the object_detector tool to detect and count the objects in the image
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path)
+
+# Calculate the total number of people without hats (excluding those wearing bows)
+total_people_without_hats = object_number["baseball"] + object_number["basket"] - object_number["bow"]
+
+detected_object_labels = Detected_Object_Labels(detected_objects)
+bow_count = detected_object_labels.filter(lambda x: x["label"] == "bow").count()
+baseball_count = detected_object_labels.filter(lambda x: x["label"] == "baseball").count()
+basket_count = detected_object_labels.filter(lambda x: x["label"] == "basket").count()
+total_people_without_bow_and_balls = baseball_count + bathtub_count - 2 * baseball_count
+total_people_without_hats = total_people_without_bow_and_balls
+
+final_result = total_people_without_hats
+

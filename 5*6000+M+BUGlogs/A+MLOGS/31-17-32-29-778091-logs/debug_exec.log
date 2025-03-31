@@ -1,0 +1,125 @@
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+name 'Image_Detector_Tool' is not defined
+code:from object_detector import Object_Detector_Tool
+final_result = Image_Detector_Tool.execute(image="path/to/image.jpg", labels=["green"], save_object=False, saved_image_path="detected_objects")
+
+============================== NEW EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+def count_people(image_path, labels, threshold=0.45, model_size='tiny', save_object=False, saved_image_path="detected_objects"):
+
+    # Use the object_detector module to process the image
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size, saved_image_path=saved_image_path)
+
+    # Count the people based on the labels
+    people_count = int(object_number['baseball']) + int(object_number['basket'])
+    
+    return people_count
+[THE PRINT ALL OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+
+[None RESULT]
+
+
+============================== NEW EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+def count_green_jackets(image_path, labels=('baseball', 'basket'), save_object=False, saved_image_path="detected_objects"):
+    obj_detector = Object_Detector_Tool(image_path, labels=labels, save_object=save_object, thresholds=(0.45, 0.5))
+    detected_objects = obj_detector.execute()
+    
+    label_counts = {}
+    for detected_object in detected_objects["detected_objects"]:
+        label_count = detected_object["label"]
+        if label_count in label_counts:
+            label_counts[label_count] += 1
+        else:
+            label_counts[label_count] = 1
+            
+    total_count = {label: count for label, count in label_counts.items() if any(label in "baseball" + "basket" for label in label_counts)}
+    
+    return total_count
+
+def get_green_jackets(image_path, labels=("baseball", "basket")):
+    # Load image path
+    print(f"Loading image path: {image_path}")
+    
+    if os.path.exists(image_path):
+        image = Image.open(image_path)
+        image.show()
+        
+        # Use the image in Detecting objects...
+        # count_green_jackets_image = count_green_jackets(image_path, labels={"baseball": 0, "basket": 0})  # Original code line
+    else:
+        print(f"Error: Could not find image with path {image_path}")
+    
+    return count_green_jackets_image
+[THE PRINT ALL OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+
+[None RESULT]
+
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:from_module: 'object_detector', import_name: 'Object_Detector_Tool',
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+name 'detected_objects' is not defined
+code:from object_detector import Object_Detector_Tool
+
+# Input parameters
+input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_30_image_1.jpg"
+labels = ["snowy"]
+threshold = 0.45
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Initialize object detection tool
+image = open(input_image_path, 'rb')
+labels = labels  # Change "snowy" to label that represents the desired object
+
+try:
+    if save_object:
+        # Call the tool to detect objects in the image
+        detected_objects, object_number = Object_Detector_Tool.execute(image=image, labels=labels, model_size=model_size, threshold=threshold)
+
+        # Assuming we encounter a "basket" in the image
+        basket_info = [
+            {"label": "basket", "confidence": detected_objects[0]["confidence score"], "box": detected_objects[0]["bbox"], "count": object_number["count"]},  # Adjusted label name
+            {"label": "basket", "confidence": detected_objects[1]["confidence score"], "box": detected_objects[1]["bbox"], "count": object_number["count"]}
+        ]
+        detected_objects_data = [{"label": label, "confidence": round(detector_object["confidence"].numpy() * 100, 2), "bbox": detector_object["bbox"].numpy()} for label, detector_object in basket_info]
+        print(detected_objects_data)
+    
+        # Save the detected object images
+        saved_image_path = "detected_objects"
+        if os.path.exists(saved_image_path):
+            if not os.path.exists(os.path.join(saved_image_path, "basket_image.png")):
+                new_image_path = os.path.join(saved_image_path, "basket_image.png")
+                Image.open(image_path).save(new_image_path, save_format, quality)
+
+    else:
+        print("No object detected.")
+
+except Exception as e:
+    print(f"Error: {str(e)}")
+finally:
+    image.close()
+
+final_result = bool(detected_objects)
+print(final_result)

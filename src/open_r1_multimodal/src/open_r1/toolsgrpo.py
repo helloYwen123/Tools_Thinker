@@ -312,7 +312,7 @@ def main(script_args, training_args, model_args,conf):
             prompt = f"""A conversation between User and Assistant. 
             The user asks a question about the image, and the Assistant solves it. 
             The assistant first thinks about the reasoning process in the mind and then provides the user with the answer.
-            \nUser: {PROMPT_TEMPLATE.format(question=example["question"],
+            \nUser: {PROMPT_TEMPLATE.format(question=example["prompt"],
                                             image_paths = ", ".join(image_paths),
                                             available_tools=available_tools,
                                             toolbox_metadata = toolbox_metadata
@@ -322,7 +322,7 @@ def main(script_args, training_args, model_args,conf):
                 "type": "text" , "text": "<image>" + prompt
             })
             idx = example["idx"]
-            return {"image": images, # images # jidegai
+            return {"image": images, # images
                 "prompt": message_content,
                 "solution": answer,  ###
                 "QAid": idx
@@ -334,7 +334,7 @@ def main(script_args, training_args, model_args,conf):
             message_content.append({
                             "type": "text",
                             "text": PROMPT_TEMPLATE.format(
-                                question=example["question"],
+                                question=example["prompt"],
                                 image_paths=", ".join(image_paths),  
                                 available_tools=available_tools,
                                 toolbox_metadata=toolbox_metadata
@@ -369,33 +369,33 @@ def main(script_args, training_args, model_args,conf):
     #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
         
     # trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
-    trainer_cls = Qwen2VLGRPOTrainer
+    # trainer_cls = Qwen2VLGRPOTrainer
     
-    # Initialize the GRPO trainer
-    trainer = trainer_cls(
-        model=model_args.model_name_or_path,
-        reward_funcs=reward_funcs,
-        args=training_args,
-        train_dataset=dataset[script_args.dataset_train_split],
-        eval_dataset=dataset[script_args.dataset_test_split] if training_args.eval_strategy != "no" else None,
-        peft_config=get_peft_config(model_args),
-        attn_implementation=model_args.attn_implementation,
-        torch_dtype = model_args.torch_dtype,  # Debug: origianlly parameters can not passed 
-        max_pixels=script_args.max_pixels,
-        min_pixels=script_args.min_pixels,
-    )
+    # # Initialize the GRPO trainer
+    # trainer = trainer_cls(
+    #     model=model_args.model_name_or_path,
+    #     reward_funcs=reward_funcs,
+    #     args=training_args,
+    #     train_dataset=dataset[script_args.dataset_train_split],
+    #     eval_dataset=dataset[script_args.dataset_test_split] if training_args.eval_strategy != "no" else None,
+    #     peft_config=get_peft_config(model_args),
+    #     attn_implementation=model_args.attn_implementation,
+    #     torch_dtype = model_args.torch_dtype,  # Debug: origianlly parameters can not passed 
+    #     max_pixels=script_args.max_pixels,
+    #     min_pixels=script_args.min_pixels,
+    # )
     
-    if script_args.freeze_vision:
-        trainer.model.visual.requires_grad_ = False
-    elif script_args.freeze_llm:
-        trainer.model.model.requires_grad_ = False
-    # Train and push the model to the Hub
-    trainer.train()
+    # if script_args.freeze_vision:
+    #     trainer.model.visual.requires_grad_ = False
+    # elif script_args.freeze_llm:
+    #     trainer.model.model.requires_grad_ = False
+    # # Train and push the model to the Hub
+    # trainer.train()
 
-    # Save and push to hub
-    trainer.save_model(training_args.output_dir)
-    if training_args.push_to_hub:
-        trainer.push_to_hub(dataset_name=script_args.dataset_name)
+    # # Save and push to hub
+    # trainer.save_model(training_args.output_dir)
+    # if training_args.push_to_hub:
+    #     trainer.push_to_hub(dataset_name=script_args.dataset_name)
     
     # global_loop.close()  # close Global loop for `Asyncio` approach
     

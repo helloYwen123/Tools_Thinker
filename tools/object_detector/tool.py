@@ -116,7 +116,7 @@ class Object_Detector_Tool(BaseTool):
                         "saved_image_path": save_path
                     })
 
-                return formatted_results, object_counts
+                return formatted_results, object_counts 
             
             except RuntimeError as e:
                 if "CUDA out of memory" in str(e):

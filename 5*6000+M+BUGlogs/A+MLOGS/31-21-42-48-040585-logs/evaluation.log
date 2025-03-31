@@ -1,0 +1,278 @@
+------------- 31-21-42-48-040585 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() got an unexpected keyword argument 'labels'
+
+[Reward computation time: 1.1911 seconds]
+
+Solution: 6
+Code: def count_banners(image_path, labels=['serving', 'lunch', 'dinner', 'saturday'], save_object=True, saved_image_path="detected_objects"):
+    """
+    Counts the number of banners in the awning based on specified labels.
+    
+    Parameters:
+    - image_path: The path to the image file.
+    - labels: A list of object labels to detect.
+    - save_object: Whether to save the detected objects as images.
+    - saved_image_path: The path to save the detected object images.
+    
+    Returns:
+    A tuple containing the number of banners.
+    """
+    detector_tool = Object_Detector_Tool(image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+    detection_list = detector_tool.execute()
+    total_count = sum(int(detection['labels'][0][0]) for detection in detection_list)
+    return total_count
+
+# Sample image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_86_image_1.jpg"
+
+# Count banners
+total_banners = count_banners(image_path)
+print(f"The image contains {total_banners} banners.")
+
+------------- 31-21-42-48-040585 Accuracy reward: 0.0 -------------
+Final Result: name 'get_model_dimensions' is not defined
+
+[Reward computation time: 1.2326 seconds]
+
+Solution: 6
+Code: from object_detector import Object_Detector_Tool
+
+# Define parameters
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_86_image_1.jpg"  # Replace with actual image path
+labels = ["baseball", "basket"]  # Replace with actual labels to detect
+threshold = 0.45  # Default confidence threshold
+model_size = "tiny"  # Use 'base' for a base sized model
+save_object = True  # Save detected objects
+saved_image_path = "detected_objects"  # Save object images path
+
+# Image parameters
+width, height = 600, 400  # Adjust size for better detection accuracy
+model, weights = get_model_dimensions(model_size)  # Load necessary model
+
+# Load model and threshold
+model = load_model_and_threshold(model_model=model, weight_path=weights, score=threshold)
+detect_objects = detect_objects(model=model, image_path=image_path)
+
+# Check model accuracy
+accuracy = accuracy_detections(detections=detect_objects, labels=labels)
+print(f"Accuracy: {accuracy*100:.2f}%")
+
+# Count objects
+total_objects = count_objects(detections=detect_objects)
+
+# Find most frequent label
+majority_label = most_frequent_label(detections=detect_objects)
+
+# Display results
+print(f"Total objects: {len(detect_objects):,}")
+print(f"Majority label: {majority_label}")
+print(f"Label count:")
+for object in detect_objects:
+    print(f"{object['label']}: {object['count']}")
+
+# Create objects list with bounding box data
+objects_list = [{"bbox": det["bbox"], "label": det["label"], "confidence": det["conf"]} for det in detect_objects]
+
+# Save detected object images
+if save_object:
+    saved_object()
+
+print("Objects List:")
+print(objects_list)
+if save_object:
+    saved_object()
+
+------------- 31-21-42-48-040585 Accuracy reward: 0.0 -------------
+Final Result: unexpected indent (<string>, line 2)
+
+[Reward computation time: 1.4365 seconds]
+
+Solution: 6
+Code: # Import the necessary object detector tool
+        from object_detector import Object_Detector_Tool
+
+        # Define the parameters
+        image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_86_image_1.jpeg'
+        labels = ['baseball', 'basket']
+        threshold = 0.45
+        model_size = 'tiny'
+        save_object = True
+
+        # Create the object detection tool
+        detector_tool = Object_Detector_Tool(image_path, labels, threshold, model_size, save_object)
+
+        # Get the results
+        detections = detector_tool.execute()
+        
+        # Get the total number of detections
+        total_detections = len(detections['detected_objects'])
+
+        # Print the result
+        print(f"The image has {total_detections} distinct banners.")
+        
+        # Define a message for the final result
+        final_result = f"The image has {total_detections} distinct banners.\n"
+
+------------- 31-21-42-48-040585 Accuracy reward: 0.0 -------------
+Final Result: None
+
+[Reward computation time: 1.6265 seconds]
+
+Solution: 6
+Code: def count_banners(image_path):
+    # Load the image
+    image = detect_image_objects(image_path)
+
+    # Initialize a dictionary to count each banner label
+    banner_count = {"Serving Lunch & Dinner": 0, "Dinner": 0, "Monday-Thru Saturday": 0}
+
+    # Iterate over each object detected
+    for label in image["objects"]:
+        if label["label"] in ["Serving Lunch & Dinner", "Dinner", "Monday-Thru Saturday"]:
+            banner_count[label["label"]] += 1
+
+    # Summarize the results
+    total_number_of_banners = sum(banner_count.values())
+    
+    return total_number_of_banners
+
+------------- 31-21-42-48-040585 Accuracy reward: 0.0 -------------
+Final Result: not enough values to unpack (expected 2, got 0)
+
+[Reward computation time: 2.3960 seconds]
+
+Solution: 6
+Code: from object_detector import Object_Detector_Tool
+
+def count_banners():
+    # Load the image
+    image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_86_image_1.jpg'
+    detector_tool = Object_Detector_Tool()
+    labels_to_detect = ["furniture","banners","lights","trees","person"]
+    threshold = 0.4
+    model_size = "tiny"
+    save_object = True
+    saved_image_path = "detected_objects"
+
+    # Execute the object detection tool
+    detected_objects, object_number = detector_tool.execute(image=image_path, labels=labels_to_detect, save_object=save_object, threshold=threshold, model_size=model_size)
+
+    # Access the object information and count the banners
+    for detection in detected_objects:
+        if detection['label'] == "banners":
+            print(f"Banners count: {detection['count']}")
+
+count_banners()
+
+------------- 31-21-42-48-040585 Accuracy reward: 0.0 -------------
+Final Result: unterminated string literal (detected at line 29) (<string>, line 29)
+
+[Reward computation time: 1.0168 seconds]
+
+Solution: 6
+Code: from object_detector import Object_Detector_Tool
+
+# Check if the tool module and class are successfully imported
+tool_module = 'object_detector'
+tool_class_name = 'Object_Detector_Tool'
+object_detector_tool = getattr(eval(tool_module), tool_name)
+
+# Image file path for demonstration
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_86_image_1.jpg"
+
+# Parameters for detecting objects (assuming labels, confidence threshold, and model size)
+labels = ['baseball', 'basket']
+confidence_threshold = 0.35
+model_size = 'tiny'
+
+# Function to calculate the count of banners in the awning
+def count_banners():
+    # Initialize an empty object list
+    object_list = []
+
+    # Load the specified tool
+    tool = eval(f'getattr({tool_module}, f"{tool_class_name}")')
+    tool_path = tool(image_file_path=image_path, labels=labels, confidence_threshold=confidence_threshold, model_size=model_size, save_object=True, saved_image_path="detected_objects")
+
+    # Iterate through the detected objects
+    for detected_object in tool:
+        # Save detected object images based on the specified argument
+        save_image_path = eval(f'detected_object[saved_image_path];'
+                               f'es = {detected_object[saved_image_path]}"
+                               f'detected_object[' + saved_image_path + '] = str(es["{}"] != "[]").str() + ' + " [" + str(detected_object[' + saved_image_path + ']["{}"]) + "]";')
+        object_list.append(detected_object)
+
+    # Calculate the number of banners in the awning (only the "baseball" label)
+    n_baseball = [len([obj for obj in object_list if obj['label'] == 'baseball'])]
+    return n_baseball[0]
+
+final_result = count_banners()
+print("Found banners:", final_result)
+
+------------- 31-21-42-48-040585 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() got an unexpected keyword argument 'save_object'
+
+[Reward computation time: 0.9751 seconds]
+
+Solution: 6
+Code: def find_banners(image_path):
+    # Load the image using the Object_Detector_Tool tool
+    detector_tool = Object_Detector_Tool(image_path, save_object=True)
+
+    # Get list of object labels
+    labels = ["Lunch", "Dinner", "Monday", "Wednesday", "Friday", "Saturday"]
+    objects = detector_tool.execute(labels=labels, threshold=0.45, saved_object=True)
+
+    # Count the number of banners
+    total_banners = 0
+    for label in labels:
+        banner_count = len([obj for obj in objects if obj['label'] == label])
+        total_banners += banner_count
+
+    return total_banners
+
+# Path to the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_86_image_1.jpg'
+
+# Count the number of banners
+total_banners = find_banners(image_path)
+
+total_banners
+
+------------- 31-21-42-48-040585 Accuracy reward: 0.0 -------------
+Final Result: list index out of range
+
+[Reward computation time: 1.6929 seconds]
+
+Solution: 6
+Code: from object_detector import Object_Detector_Tool
+
+# Load the object detector model
+object_detector_tool = Object_Detector_Tool()
+
+# Load the image file (replace 'image_path' with the actual image path)
+# Note: We'll assume 'labels' is a list of object labels
+# and 'save_object' is a boolean to save the detected objects
+# The 'threshold' is set to 0.45 (default) and the 'model_size' is 'tiny' (default)
+result = object_detector_tool.execute(image='path/to/image.jpg', labels=['baseball'], save_object=True, threshold=0.45, model_size='tiny')
+labels = result[0]
+
+# Count the total number of 'baseball' objects
+total_baseball_count = len(labels)
+
+# For each detected 'baseball' object, calculate its remaining pixels and add it to the score for 'baseball'
+for label, score in result[1].items():
+    for i in range(len(label)):
+        # Subtract the remaining pixels from the detected object
+        remaining_pixels = 500 if label[i] else score[1] if score else 0
+        remaining_score = score[0] if label[i] else score
+        result[1]['baseball'] += remaining_score
+
+# Output the final result
+final_result = {
+    'total_baseball_count': total_baseball_count
+}
+for label, score in result[1].items():
+    final_result[f'baseball {label}'] = score
+print(final_result)
+

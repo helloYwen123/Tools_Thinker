@@ -1,0 +1,295 @@
+------------- 31-22-31-04-013187 Accuracy reward: 0.0 -------------
+Final Result: name 'Image' is not defined
+
+[Reward computation time: 1.1029 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Convert the image path string to a PIL image object
+def convert_image_to_image_object(image_path):
+    return Image.open(image_path)
+
+def get_object_count(labels, image_objects):
+    object_count = {}
+    for label in labels:
+        count = 0
+        for obj in image_objects:
+            if obj.labels if obj.labels else label == obj.label:
+                count += 1
+        object_count[label] = count
+    return object_count
+
+# Load image objects
+def load_image_objects(image_path):
+    image_objects = []
+    for obj in Image.open(image_path).objects:
+        if obj.type and obj.type == 'box':
+            image_objects.append(obj)
+    return image_objects
+
+# Convert image objects to PIL image objects for detection
+def convert_image_objects_to_image_objects(image_objects):
+    image_objects = []
+    for obj in image_objects:
+        if obj.type and obj.type == 'box':
+            image_objects.append(convert_image_to_image_objects(obj))
+    return image_objects
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+
+# Detect and convert image objects
+image_objects = load_image_objects(image_path)
+image_objects = convert_image_objects_to_image_objects(image_objects)
+
+# Load labels
+labels = ["baseball", "basket"]
+
+# Detect specific objects using the Object_Detector_Tool
+object_detector_tool = Object_Detector_Tool()
+
+# Detect 'baseball'
+baseball_detection = object_detector_tool.execute(image=image_objects, labels=labels, saved_image_path="detected_objects", model_size="tiny")["object_number"]
+
+# Detect 'basket'
+basket_detection = object_detector_tool.execute(image=image_objects, labels=labels, saved_image_path="detected_objects", model_size="tiny")["object_number"]
+
+# Combine both detections and update the object count
+base_and_basket_detections = baseball_detection.union(basket_detection)
+base_and_basket_detection_objects = object_detector_tool.execute(image=image_objects, labels=base_and_basket_detections, saved_image_path="detected_objects", model_size="tiny")["object_number"]
+final_result = get_object_count(labels, base_and_basket_detection_objects)
+final_result
+
+------------- 31-22-31-04-013187 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+
+[Reward computation time: 1.1960 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Read image
+image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+
+# Detect objects using default base model and threshold
+detected_objects, object_number = Object_Detector_Tool.execute(image=image, labels=["baseball", "basket"], threshold=0.5, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+
+# Print final result
+final_result = [{"label": "baseball", "count": object_number}]
+
+# Print status
+print("Image successfully detected:")
+print("-Detected objects count:", object_number)
+print("-Detected object labels:", detected_objects)
+
+------------- 31-22-31-04-013187 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() got an unexpected keyword argument 'save_object'
+
+[Reward computation time: 1.5967 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def find_purple_planes():
+    # Assuming the image path is already defined and the labels for purple planes are ['purple'].
+    # Example labels may not exactly match and could vary from dataset to dataset.
+
+    # Initialize the Object_Detector_Tool with a base model, without specifying a threshold or size.
+    td = Object_Detector_Tool('base', save_object=True, saved_image_path="detected_objects")
+
+    # Load the image using cv2 for demonstration.
+    # Assuming the image is in the file path 'path/to/your/image.jpg'.
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+    
+    # Image demo command function.
+    def demo_command(command, input):
+        # Convert the string to a numpy array using cv2, assuming the image is in RGB format. 
+        # image = cv2.imread(input)
+        # Convert the image to GRB format using the GRB_DTM format, where all colors are purple 
+        # and thus only the purple planes are detected.
+        # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # Apply thresholding to filter out all other colors and focus on the purple planes.
+        thresholded = cv2.threshold(image, 120, 255, cv2.THRESH_BINARY)[1]
+        
+        # Apply the specified labels to detect only purple planes.
+        purple_planes = np.zeros_like(thresholded, dtype=np.uint8)
+        cv2.adaptiveThreshold(thresholded, purple_planes, 1, cv2.ADAPTIVE_THRESH_MEAN_C, 7, 21)
+
+        # Return the purple planes.
+        return purple_planes
+
+    # Execute the demo command and get the results.
+    results = td.execute(image=image_path, labels=['purple'], thresholds=False, save_object=True, saved_image_path="detected_objects")
+    
+    # Since all planes are purple, the total count will be 36 regardless of the number of purple planes actually detected.
+    total_count = results[0][0]["total_count"]
+    
+    return total_count
+
+# Call the function to count the purple planes.
+final_result = find_purple_planes()
+print("Total purple planes:", final_result)
+
+------------- 31-22-31-04-013187 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+
+[Reward computation time: 1.8314 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+def count_purple_planes(image_path):
+    detected_objects = {}
+    total_count = 0
+    plane_images = []
+
+    plane_detector = Object_Detector_Tool(image_path)
+    planers = plane_detector.execute(labels=["purple"], threshold=0.45, model_size="base", save_object=True)
+
+    for plane_detection in planers[0]:
+        if plane_detection['label'] == "purple":
+            colored_planes = plane_detection['label'] + " plane"
+            colored_planes_label = colored_planes.replace(' ', '_')
+            total_count += plane_detection['confidence score']
+            plane_images.append({
+                'label': colored_planes_label,
+                'confidence score': plane_detection['confidence score'],
+                'box': plane_detection['box']
+            })
+
+    detected_objects.append({"plane objects": total_count, "purple planes": len(planers[0])})
+
+    return detected_objects
+
+total_count_result = count_purple_planes('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg')
+final_result = total_count_result[1]
+
+print("There are", final_result, "purple planes in this image.")
+
+------------- 31-22-31-04-013187 Accuracy reward: 0.0 -------------
+Final Result: list index out of range
+
+[Reward computation time: 2.4196 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Replace '1.jpg' with the actual image filename
+image_file = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+
+# Use the object_detector class to detect objects in the image
+tool = Object_Detector_Tool()
+result = tool.execute(image_file, labels=["baseball"], threshold=0.45, save_object=True, saved_image_path="detected_objects")
+
+# Convert the result data into a dictionary
+detected_objects = result[0]
+label_count = len(detected_objects['object_number'])
+
+final_result = label_count
+print("There are", final_result, "purple planes in the image.")
+
+------------- 31-22-31-04-013187 Accuracy reward: 0.0 -------------
+Final Result: name 'labels' is not defined
+
+[Reward computation time: 1.2403 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Define command with given variables and arguments
+image_file = "path_to_image_file.jpg"  # Replace with the actual image file path
+class_labels = ["baseball", "basket"]  # Replace with the actual labels to detect
+save_object = True  # Replace with a boolean value (True for saving detected objects)
+threshold = 0.45  # Replace with a float value for the confidence threshold
+model_size = "base"  # Replace with "tiny" or "base"
+save_object = False  # Replace with a boolean value (False for not saving detected objects)
+
+# Initialize the Object_Detector_Tool
+detector = Object_Detector_Tool(image_file, labels, save_object, saved_image_path="detected_objects")
+
+# Detect the objects in the image
+objects_detected = detector.detection_engine.detect_objects(image_file)
+
+# Calculate the count of the specified purple planes
+purple_planes_count = len([obj for obj in objects_detected if "purple" in obj["label"]])
+
+final_result = {"count": purple_planes_count}
+
+------------- 31-22-31-04-013187 Accuracy reward: 0.0 -------------
+Final Result: Object_Detector_Tool.__init__() takes 1 positional argument but 7 were given
+
+[Reward computation time: 1.4177 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# 1. Read the image file path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+
+# 2. Set the labels: "baseball", "basket". You can add more labels if needed.
+labels = ["baseball", "basket"]
+
+# 3. Set the threshold for detection confidence (default: 0.45)
+threshold = 0.45
+
+# 4. Set the size of the model (default: 'base')
+model_size = "tiny"
+
+# 5. Set the save flag for detecting objects as images (default: False)
+save_objects = True
+
+# 6. Set the path to save the detected object images as 'detected_objects'.
+saved_image_path = "detected_objects"
+
+# 7. Create an instance of the Object_Detector_Tool class
+detector_tool = Object_Detector_Tool(image_path, labels, threshold, model_size, save_objects, saved_image_path)
+
+# 8. Make an empty dictionary to store the object counts
+object_counts = {}
+
+# 9. Loop over different object categories and count their occurrences
+for label in detector_tool.labels:
+    object_counts[label] = detector_tool.object_number(labels, label)
+
+# 10. Determine the number of purple planes
+purple_count = object_counts["baseball"] - object_counts["basket"]
+
+final_result = purple_count
+
+------------- 31-22-31-04-013187 Accuracy reward: 0.0 -------------
+Final Result: unterminated string literal (detected at line 10) (<string>, line 10)
+
+[Reward computation time: 1.0639 seconds]
+
+Solution: 0
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image and ground truth labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_72_image_1.jpg"
+labels = ["purple"]
+
+# Check for the presence of the Image_Detector_Tool tool
+tool_present = True
+try:
+    detector_tool = object_detector.object_detector/Object_Detector_Tool(tool_module_name='object_detector', tool_class_name='Object_Detector_Tool', tool_description='Detects objects in the image using the Grounding DINO model and saves individual object images with empty padding.', tool_version='1.0.0', input_types={'image': 'str - The path to the image file.', 'labels': 'list - A list of object labels to detect.', 'threshold': 'float - The confidence threshold for detection (default: 0.45).', 'model_size': "str - The size of the model to use ('tiny' or 'base', default: 'tiny').", 'save_object': 'bool - Whether to save the detected objects as images (default: False).', 'saved_image_path': "str - The path to save the detected object images (default: 'detected_objects').'})
+except Exception as e:
+    tool_present = False
+
+if tool_present:
+    # Create a list to hold detected objects
+    detected_obj = []
+    
+    # Run the object detector tool
+    detected_obj = detector_tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path="detected_objects")
+else:
+    detected_obj = ""
+    
+# Count the number of purple planes detected
+purple_planes_count = len(detected_obj['detected_objects']) 
+    
+f1 = f"How many purple planes are there: {purple_planes_count}"
+final_result = f1
+
+print(final_result)
+

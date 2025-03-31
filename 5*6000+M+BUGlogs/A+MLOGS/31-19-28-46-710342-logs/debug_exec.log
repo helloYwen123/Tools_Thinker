@@ -1,0 +1,152 @@
+
+============================== NEW EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+def count_people(image_path, labels, threshold, model_size, save_object=True, saved_image_path="detected_objects"):
+    # Load the image and perform label detection using the ground-truth labels
+    object_data = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, save_object=save_object, model_size=model_size)
+    
+    # Count the people based on the bounding box coordinates of detected objects
+    people_counter = sum(labels['label'] in "baseball" for labels in object_data['total_detection'])
+    
+    return people_counter
+[THE PRINT ALL OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+
+[None RESULT]
+
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 28)
+code:def detect_objects(image_path, labels=["baseball", "basket"], save_object=False, saved_image_path="detected_objects"):
+    obj_detector_tool = Object_Detector_Tool(image=image_path, labels=labels)
+    detected_objects = obj_detector_tool.execute()
+    results_dict = obj_detector_tool.execute()
+    if save_object:
+        for obj_dict in detected_objects:
+            img_path = os.path.join(saved_image_path, obj_dict['label'] + "_" + str(obj_dict['confidence']) + "_" + obj_dict['box'])
+            img = obj_dict['image']
+            draw_objects(img, obj_dict, img_path)
+    return results_dict, detected_objects
+
+def draw_objects(image, obj_dict, img_path, color=(255, 0, 255)):
+    img = copy.deepcopy(image)
+    draw.text(((obj_dict['bbox'][2] - 30) * 10, (obj_dict['bbox'][3] - 10)), obj_dict['label'], transform=ax.transAxes, ha="center", va="center", color=color)
+    img = draw.bounding_box(img, (obj_dict['bbox'][0], obj_dict['bbox'][1]))
+    cv2.imwrite(img_path, img)
+
+# Load the image with object detector
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg"
+results, detected_objects = detect_objects(path_to_image)
+final_result = {}
+for obj_dict in detected_objects:
+    obj_name = obj_dict['label']
+    if obj_name in final_result:
+        final_result[obj_name] += 1
+    else:
+        final_result[obj_name] = 1
+finally:
+    final_result_sorted = sorted(final_result.items(), key=lambda x: x[1], reverse=True)
+    print("Count of detected objects is: ", final_result_sorted[:5])
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+def count_sitting_people():
+    # Load the image
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg"
+    detector_tool = Object_Detector_Tool(image_path)
+
+    # Detect objects
+    detected_objects, labels = detector_tool.execute()
+
+    # Count sitting people
+    total_sitting_people = 0
+    sitting_people_image_path = "detected_objects"
+    sitting_people_labels = ["sitting", "people"]
+    total_sitting_people = sum([len(detected_objects[label]) for label in sitting_people_labels if label in labels])
+
+    return {"total_sitting_people": total_sitting_people}
+
+final_result = count_sitting_people()
+print(final_result)
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+name 'image_path' is not defined
+code:def calculate_people_sitting_on_bed(image_path):
+    """
+    This function calculates the number of people sitting on the bed based on the visible parts of their bodies.
+    """
+    object_detector_tool = Object_Detector_Tool()  # Import the tool and instantiate it
+    
+    # Load the image
+    image_path = 'path/to/image.jpg'  # Replace with the actual image path
+        
+    # Find people in the image using the grounded DINO model
+    detected_objects = object_detector_tool.execute(image_path, labels=["human", "baseball", "basket"], save_object=True)
+    
+    if not detected_objects:
+        return "No people found"
+    
+    # Count people sitting on the bed
+    total_people_sitting_on_bed = len(detected_objects)
+    
+    return total_people_sitting_on_bed
+
+# Assuming the image_path is provided
+total_people_sitting_on_bed = calculate_people_sitting_on_bed(image_path)
+print(f"Total people sitting on the bed: {total_people_sitting_on_bed}")
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:def count_people_in_bed(image_path, save_detected_objects=True, saved_image_path="detected_objects"):
+    # Load the objects detector tool
+    import object_detector
+    object_detect_tool = object_detector.Object_Detector_Tool()
+
+    # Load the image
+    image = image_path
+
+    # Detect objects and return the results
+    detected_objects, total_count = object_detect_tool.execute(image=image, labels=["bed"], save_object=save_detected_objects, saved_image_path=saved_image_path)
+
+    # Return the detected bed and total count
+    return detected_objects, total_count[0]
+
+# Check if there are any people sitting on the bed
+final_result, bed_count = count_people_in_bed("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg", save_detected_objects=False)
+
+# Print the result if there are people on the bed
+if bed_count[1] > 0:
+    print(f"There are {bed_count[1]} people sitting on the bed.")
+else:
+    print("There are no people sitting on the bed.")
+
+============================== NEW EXECUTION ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'image'
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg"
+
+# Model size (tiny)
+model_size = "tiny"
+
+# Execute the command and process the output
+final_result = Object_Detector_Tool.execute(image_path, labels=["baseball", "basket", "foot"], save_object=True, saved_image_path="detected_objects")
+
+print(final_result)
