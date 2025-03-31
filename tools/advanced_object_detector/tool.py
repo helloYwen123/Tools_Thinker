@@ -4,7 +4,7 @@
 import os
 import time
 
-from base import BaseTool
+from octotools.tools.base import BaseTool
 from PIL import Image, ImageOps
 
 import os
@@ -26,17 +26,18 @@ class Advanced_Object_Detector_Tool(BaseTool):
                 "image": "str - The path to the image file.",
                 "labels": "list - A list of object labels to detect.",
                 "threshold": "float - The confidence threshold for detection (default: 0.35).",
-                "padding": "int - The number of pixels to add as empty padding around detected objects (default: 20)."
+                "save_object": "bool - Whether to save the detected objects as images (default: False).",
+                "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects').",
             },
-            output_type="list - A list of detected objects with their scores, bounding boxes, and saved image paths.",
+            output_types="list - A list of detected objects with their scores, bounding boxes, and saved image paths.",
             demo_commands=[
                 {
                     "command": 'execution = tool.execute(image="path/to/image.png", labels=["baseball", "basket"])',
                     "description": "Detect baseball and basket in an image, save the detected objects with default empty padding, and return their paths."
                 },
                 {
-                    "command": 'execution = tool.execute(image="path/to/image.png", labels=["car", "person"], threshold=0.5, model_size="base", padding=15)',
-                    "description": "Detect car and person in an image using the base model, save the detected objects with 15 pixels of empty padding, and return their paths."
+                    "command": 'execution = tool.execute(image="path/to/image.png", labels=["car", "person"], threshold=0.5, model_size="base", save_object=False)',
+                    "description": "Detect car and person in an image using the base model, don't save the detected objects, and set the confidence threshold to 0.5."
                 }
             ],
             user_metadata={
@@ -81,8 +82,13 @@ class Advanced_Object_Detector_Tool(BaseTool):
         padded_image.save(save_path)
         return save_path
 
-    def execute(self, image, labels, threshold=0.35, padding=20, max_retries=10, retry_delay=5):
+    def execute(self, image: str, labels, threshold=0.35,save_object=False, saved_image_path="detected_objects", padding=20, retry_delay=1):
         retry_count = 0
+        self.output_dir = saved_image_path
+        
+        # Set the maximum number of retries and delay between retries
+        max_retries=10
+        
         params = self.build_tool(threshold)
 
         def process_image(input_str):
@@ -120,7 +126,7 @@ class Advanced_Object_Detector_Tool(BaseTool):
         body['prompts'] =  [{"type": "text", "text": preprocessed_prompt}]
 
         # send request
-        resp = requests.post(
+        resp = requests.post(   # post object detection request
             'https://api.deepdataspace.com/tasks/dinox',
             json=body,
             headers=params['headers']
@@ -145,7 +151,7 @@ class Advanced_Object_Detector_Tool(BaseTool):
 
                 if json_resp["data"]["status"] not in ["waiting", "running"]:
                     break
-                time.sleep(1)#retry_delay)
+                time.sleep(retry_delay) #retry_delay)
                 retry_count += 1
 
             if json_resp["data"]["status"] == "failed":
@@ -171,8 +177,10 @@ class Advanced_Object_Detector_Tool(BaseTool):
                     
                     object_counts[label] = object_counts.get(label, 0) + 1
                     index = object_counts[label]
-
-                    save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
+                    
+                    save_path = None
+                    if save_object:
+                        save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
             
                     formatted_results.append({
                         "label": label,
@@ -181,7 +189,7 @@ class Advanced_Object_Detector_Tool(BaseTool):
                         "saved_image_path": save_path
                     })
 
-                return formatted_results
+                return formatted_results, object_counts
             else:
                 print(f'get task resp: {resp.status_code} - {resp.text}')
         else:
