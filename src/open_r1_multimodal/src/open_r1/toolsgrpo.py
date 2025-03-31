@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 import cv2
 import numpy as np
-#### free resource after training
+
 import gc
 import torch
 import shutil
@@ -32,6 +32,7 @@ import signal
 import runpy
 from math_verify import parse, verify
 
+import asyncio
 import subprocess
 from io import StringIO
 import contextlib
@@ -39,17 +40,19 @@ import signal
 import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))))
-sys.path.insert(0, root_dir)
+# sys.path.insert(0, root_dir)
 
 #External Tools Modules
-from tools.object_detector.tool import Object_Detector_Tool
+from object_detector import Object_Detector_Tool
 
 from datasets import load_dataset, load_from_disk, concatenate_datasets
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-from src.open_r1.trainer import Qwen2VLGRPOTrainer, Qwen2VLGRPOVLLMTrainerModified
+# from src.open_r1.trainer import Qwen2VLGRPOTrainer, Qwen2VLGRPOVLLMTrainerModified
+from src.open_r1.trainer import Qwen2VLGRPOTrainer
 from trl import GRPOConfig, GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
 from PIL import Image
 import traceback
+import yaml,argparse
 
 @dataclass
 class GRPOScriptArguments(ScriptArguments):
@@ -60,6 +63,11 @@ class GRPOScriptArguments(ScriptArguments):
         reward_funcs (`list[str]`):
             List of reward functions. Possible values: 'accuracy', 'format'.
     """
+    confile: str = field(
+        default=None,
+        metadata={
+            "help": "relative or absolute path to the configuration file"},
+    )
     reward_funcs: list[str] = field(
         default_factory=lambda: ["code","format"], #########
         metadata={"help": "List of reward functions. Possible values: 'code', 'format'"},
@@ -79,7 +87,7 @@ class GRPOScriptArguments(ScriptArguments):
     freeze_vision: bool = field(
         default=False,
         metadata={"help": "Whether to freeze the vision model parameters during training"},
-    ) 
+    )
 ###########################################################
 #Prepare Function for Code reward
 #Prepare Function for Code reward
@@ -112,24 +120,26 @@ def unsafe_execute(code, solution, timeout, result, log_path):
             # TODO # here add external tool module and can be better
             exec_globals = {
                 "Object_Detector_Tool": Object_Detector_Tool,
+                "__name__": "__main__",  # in oreder to fix `failed to execute if __name__==__main__`
                 "final_result": None
             }
             exec(code, exec_globals)  # # python dynamic execution environment
         output_raw = buffer.getvalue() # seems to get all output/print in code execution
         output = exec_globals.get("final_result", None)
         
-        debug_log_path = os.path.join(log_path, "debug_exec.log")
+        debug_log_path = os.path.join(log_path, "debug_exec.log")  # if code extraction falied, it would not be recorded in this log
+        os.makedirs(os.path.dirname(debug_log_path), exist_ok=True)
         with open(debug_log_path, "a") as df:
             df.write("\n" + "=" * 30 + " NEW EXECUTION " + "=" * 30 + "\n")
             df.write("[EXEC CODE]\n")
             df.write(code + "\n")
-            df.write("[THE PRINT OUTPUT]\n")
+            df.write("[THE PRINT ALL OUTPUT]\n")
             df.write(output_raw + "\n")
             df.write("[GENERATE FINAL_RESULT]\n")
             df.write(str(output) + "\n")
         
         reward = 0.0
-        if output != None: # otherwise `parse error` occur
+        if output != None and isinstance(output, str): # otherwise `parse error` occur
             try:
                 answer = parse(output)
                 sol_parsed = parse(solution)
@@ -153,7 +163,9 @@ def unsafe_execute(code, solution, timeout, result, log_path):
         result.append((reward, output))
     except Exception as e: # if the code problematic
         debug_log_path = os.path.join(log_path, "debug_exec.log")
+        os.makedirs(os.path.dirname(debug_log_path), exist_ok=True)
         with open(debug_log_path, "a") as df:
+            df.write("\n" + "=" * 30 + " NEW EXECUTION " + "=" * 30 + "\n")
             df.write("\n[EXECUTION EXCEPTION]\n")
             df.write(str(e) + "\n")
             df.write(f"code:{code}\n")
@@ -163,9 +175,11 @@ def unsafe_execute(code, solution, timeout, result, log_path):
 
 def check_correctness(task: dict, log_path, current_time) -> float:
     start_time = time.perf_counter()  # timer start
-    evaluation_log_path = os.path.join(log_path, "evaluation.log")  # in evaluation includes all cased in reward computation
-                                                    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
+    evaluation_log_path = os.path.join(log_path, "evaluation.log")
+    # In evaluation includes all cased in reward computation 
+    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
     if task["code"] == None:  # 
+        os.makedirs(os.path.dirname(evaluation_log_path), exist_ok=True)
         with open(evaluation_log_path, "a") as f:
             f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
             f.write(f"Reward: 0.0\n")
@@ -184,6 +198,7 @@ def check_correctness(task: dict, log_path, current_time) -> float:
         reward, output = result[0] if result else (0.0, "timeout")
         end_time = time.perf_counter()  # timer stop
         elapsed = end_time - start_time
+        os.makedirs(os.path.dirname(evaluation_log_path), exist_ok=True)
         with open(evaluation_log_path, "a") as f:
             f.write(f"------------- {current_time} Accuracy reward: {reward} -------------\n")
             f.write(f"Final Result: {output}\n\n")
@@ -195,7 +210,7 @@ def check_correctness(task: dict, log_path, current_time) -> float:
 async def run_all_checks_async(tasks, log_root_dir, current_time):
     loop = asyncio.get_event_loop()
     rewards = []
-    with ProcessPoolExecutor(max_workers=4) as pool:  # max num Processes 
+    with ProcessPoolExecutor(max_workers=5) as pool:  # max num Processes 
         futures = [
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
             for task in tasks
@@ -234,8 +249,9 @@ def code_exec_acc_reward(completions, solution, **kwargs):
         })
     
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+    log_path = os.getenv("LOG_PATH") ### later modify
     log_root_dir = os.path.join(f"{root_dir}/src/open_r1_multimodal/DEBUGlogs/A+MLOGS", f"{current_time}-logs")
-    os.makedirs(log_root_dir, exist_ok=True)
+   
     
     rewards = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
     return rewards
@@ -255,20 +271,21 @@ def format_reward(completions, **kwargs):
 ####################################################################
 reward_funcs_registry = {
     "code": code_exec_acc_reward, # execution and accuracy reward
-    "execution": execution_reward, # note here sequency
-    "accuracy": accuracy_reward,
+    # "execution": execution_reward, # note here sequency
+    # "accuracy": accuracy_reward,
     "format": format_reward # format reward
 }
 ########global asyncio to avoid frequently open-close#######
-import asyncio
-try:
-    global_loop = asyncio.get_event_loop()
-except RuntimeError:
-    global_loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(global_loop)
+# import asyncio
+# try:
+#     global_loop = asyncio.get_event_loop()
+# except RuntimeError:
+#     global_loop = asyncio.new_event_loop()
+#     asyncio.set_event_loop(global_loop)
+
 ######################################################
 ######################MAIN############################
-def main(script_args, training_args, model_args):
+def main(script_args, training_args, model_args,conf):
     # Get reward functions
     reward_funcs = [reward_funcs_registry[func] for func in script_args.reward_funcs]
     
@@ -277,59 +294,10 @@ def main(script_args, training_args, model_args):
     if model_args.model_name_or_path.split("/")[-1] == "Qwen2-VL-2B" or "Base" in model_args.model_name_or_path:
         base_model_prompt = True
     
-    toolbox_metadata = {
-    "Object_Detector_Tool":{ 
-            "tool_module_name": "object_detector", # a little modify
-            "tool_class_name":"Object_Detector_Tool",
-            "tool_description":"A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.",
-            "tool_version":"1.0.0",
-            "input_types":{
-                "image": "str - The path to the image file.",
-                "labels": "list - A list of object labels to detect.",
-                "threshold": "float - The confidence threshold for detection (default: 0.35).",
-                "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
-                "padding": "int - The number of pixels to add as empty padding around detected objects (default: 20)."
-            },
-            "output_type":"list - A list of detected objects dictionaries with ('label';'confidence score';'box';'saved_image_path') keys and their corresponding values",
-            "demo_commands":[
-                {
-                    "command": 'execution = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"])', # little modify
-                    "description": "Detect baseball and basket in an image, save the detected objects with default empty padding, and return their paths."
-                },
-                {
-                    "command": 'execution = Object_Detector_Tool.execute(image="path/to/image.png", labels=["car", "person"], threshold=0.5, model_size="base", padding=15)',
-                    "description": "Detect car and person in an image using the base model, save the detected objects with 15 pixels of empty padding, and return their paths."
-                }
-            ],
-            "user_metadata":{
-                "limitation": "The model may not always detect objects accurately, and its performance can vary depending on the input image and the associated labels. It typically struggles with detecting small objects, objects that are uncommon, or objects with limited or specific attributes. For improved accuracy or better detection in certain situations, consider using supplementary tools or image processing techniques to provide additional information for verification."
-            }
-    }
-}
-    available_tools = ["Object_Detector_Tool"]
+    toolbox_metadata = conf.get("toolbox_metadata")
+    available_tools = conf.get("available_tools")
     
-    PROMPT_TEMPLATE = """
-\n Write a Python program to answer the question related to images : {question}.
-Enclose the generated code and comments in <command> </command> tags,
-i.e. <command> generated python code </command>.
-You may include your thought process and analysis as inline comments within the code.
-You should make full use of the following available tools, which are very helpful:
-Available Tools: {available_tools}
-Tools Metadata: {toolbox_metadata}
-In each tool module folder, there is a `python` script `tool.py` containing the class that implements the tool logic.
-\n Rules:
-1.The command MUST be valid Python code.
-2.If listed available tools are insufficient to obtain the answer, you can use functions from Python's standard library as you need.
-3.Use the exact parameter names as specified in the tool's input_types.
-4.Always make sure to define variables and functions before using them to keep your Python code syntactically correct
-5.Ensure that the code execution yields a result that directly answers the question.
-6.If you need, please directly use the PATHs of images: {image_paths}, which are related to Question
-\n Note:
-\n- You must put your code and your thought comments within the tag <command> </command>.
-\n- Please assign the final answer to a variable named `final_result`.
-\n- If needed, please include the import path based on this: "from_module": "<tool_module_name>", "import_name": "<tool_class_name>".
-Please replace <tool_module_name> and <tool_class_name> with the actual module and class names.
-"""
+    PROMPT_TEMPLATE = conf.get("prompt_template")
     # for Blink Dataset
     def make_conversation_sat(example, prefix, base_model_prompt=False):
         answer_key = example["answer"].strip("()")
@@ -354,7 +322,7 @@ Please replace <tool_module_name> and <tool_class_name> with the actual module a
                 "type": "text" , "text": "<image>" + prompt
             })
             idx = example["idx"]
-            return {"image": images, # images
+            return {"image": images, # images # jidegai
                 "prompt": message_content,
                 "solution": answer,  ###
                 "QAid": idx
@@ -372,8 +340,8 @@ Please replace <tool_module_name> and <tool_class_name> with the actual module a
                                 toolbox_metadata=toolbox_metadata
                             )
                         })
-            idx = example["idx"]
-            return {"image": images, # images
+            idx = example["idx"] 
+            return {"image": images, # images 
                 "image_path": image_paths,
                 "prompt": [
                     {
@@ -384,7 +352,7 @@ Please replace <tool_module_name> and <tool_class_name> with the actual module a
                 "solution": answer, ###
                 "QAid": idx
             }
-            
+
     dataset_prefix = "/home/stud/wxie/"
     dataset_path = "BLINK_Dataset/Counting/val/Counting_val.json"
     
@@ -395,13 +363,14 @@ Please replace <tool_module_name> and <tool_class_name> with the actual module a
     dataset = [make_conversation_sat(sample, dataset_prefix, base_model_prompt) for sample in dataset]
     dataset = {'train': dataset} #####
 
-    
+    # test template and arg
     # save_path = "processed_dataset.json"
     # with open(save_path, "w") as f:
     #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
         
-    trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
-
+    # trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
+    trainer_cls = Qwen2VLGRPOTrainer
+    
     # Initialize the GRPO trainer
     trainer = trainer_cls(
         model=model_args.model_name_or_path,
@@ -411,6 +380,7 @@ Please replace <tool_module_name> and <tool_class_name> with the actual module a
         eval_dataset=dataset[script_args.dataset_test_split] if training_args.eval_strategy != "no" else None,
         peft_config=get_peft_config(model_args),
         attn_implementation=model_args.attn_implementation,
+        torch_dtype = model_args.torch_dtype,  # Debug: origianlly parameters can not passed 
         max_pixels=script_args.max_pixels,
         min_pixels=script_args.min_pixels,
     )
@@ -427,9 +397,15 @@ Please replace <tool_module_name> and <tool_class_name> with the actual module a
     if training_args.push_to_hub:
         trainer.push_to_hub(dataset_name=script_args.dataset_name)
     
-    global_loop.close()  # close Global loop 
+    # global_loop.close()  # close Global loop for `Asyncio` approach
     
 if __name__ == "__main__":
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
-    main(script_args, training_args, model_args)
+    #print("Parsed training_args:", training_args)
+    #print("Parsed model_args:", model_args)
+   
+    configuration_file = script_args.confile
+    with open(configuration_file, "r") as stream:
+        conf = yaml.safe_load(stream)
+    main(script_args, training_args, model_args, conf)

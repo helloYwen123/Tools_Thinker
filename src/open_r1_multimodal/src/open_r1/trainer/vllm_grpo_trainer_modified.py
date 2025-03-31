@@ -61,6 +61,7 @@ from trl.trainer.utils import generate_model_card, get_comet_experiment_url, pad
 from trl import GRPOTrainer
 
 import copy
+import time # computation time log
 
 if is_peft_available():
     from peft import PeftConfig, get_peft_model
@@ -470,7 +471,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
             all_images = gather_object(images)
             # group into pairs
             all_multimodal_inputs = []
-
+            start_gen = time.perf_counter() # start inference
             use_naive_loop_sampling = False
             if use_naive_loop_sampling:
                 # in this implementation, one sample will repeat `self.num_generations` times
@@ -517,7 +518,18 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                 completion_ids = [out.token_ids for completion in outputs for out in completion.outputs]
             else:
                 completion_ids = [None] * len(all_multimodal_inputs) * self.num_generations
+            ###################################################################
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+            end_gen = time.perf_counter() #Timer Group Inference Stop 
+            generation_time = end_gen - start_gen
+            # record inference time for one device
+            local_time = torch.tensor([generation_time], device=self.accelerator.device)
             
+            # gather_for_metrics `local_time` tensor
+            global_times = self.accelerator.gather_for_metrics(local_time)
+            self._metrics["avg_inference_time"].append(global_times.mean().item())
+            ###################################################################
             # broadcast and slice
             completion_ids = broadcast_object_list(completion_ids, from_process=0)
             process_slice = slice(

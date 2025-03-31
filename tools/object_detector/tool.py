@@ -8,7 +8,7 @@ from transformers import pipeline
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(os.path.dirname(current_dir))
 sys.path.insert(0, root_dir)
-from tools.base import BaseTool
+from basetool import BaseTool
 from PIL import Image, ImageOps
 
 import os
@@ -19,38 +19,35 @@ import os
 import sys
 # sys.stderr = open(os.devnull, 'w')
 
-import warnings
 
 
 class Object_Detector_Tool(BaseTool):
     def __init__(self):
         super().__init__(
-            tool_name="Object_Detector_Tool",
+            tool_module_name="object_detector",
+            tool_class_name="Object_Detector_Tool",
             tool_description="A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.",
             tool_version="1.0.0",
             input_types={
                 "image": "str - The path to the image file.",
                 "labels": "list - A list of object labels to detect.",
-                "threshold": "float - The confidence threshold for detection (default: 0.35).",
-                "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
-                "padding": "int - The number of pixels to add as empty padding around detected objects (default: 20)."
+                "threshold": "float - The confidence threshold for detection (default: 0.45).",
+                "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'base').",
+                "save_object": "bool - Whether to save the detected objects as images (default: False).",
+                "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects').",
             },
-            output_type="list - A list of detected objects dictionaries with keys('label';'confidence score';'box';'saved_image_path') and their values",
+            output_types= "tuple - A tuple containing two elements: a list of dictionaries for each detected object (each with keys 'label', 'confidence score', 'box', and 'saved_image_path'), and a dictionary mapping each label to its total count in the image.",
             demo_commands=[
                 {
-                    "command": 'execution = tool.execute(image="path/to/image.png", labels=["baseball", "basket"])',
-                    "description": "Detect baseball and basket in an image, save the detected objects with default empty padding, and return their paths."
+                    "command": 'detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")',
+                    "description": ("Detects 'baseball' and 'basket' in an image using the default base model and threshold. ",
+                                    "It returns a tuple where the first element is a list of detection dictionaries and the second element is a dictionary with the total count for each label. (enable saved_image_path)The detected object images are saved in the 'detected_objects' directory.")
                 },
-                {
-                    "command": 'execution = tool.execute(image="path/to/image.png", labels=["car", "person"], threshold=0.5, model_size="base", padding=15)',
-                    "description": "Detect car and person in an image using the base model, save the detected objects with 15 pixels of empty padding, and return their paths."
-                }
             ],
             user_metadata={
-                "limitation": "The model may not always detect objects accurately, and its performance can vary depending on the input image and the associated labels. It typically struggles with detecting small objects, objects that are uncommon, or objects with limited or specific attributes. For improved accuracy or better detection in certain situations, consider using supplementary tools or image processing techniques to provide additional information for verification."
+                "limitation": "The model may not always detect objects accurately."
             }
         )
-        self.output_dir = os.path.join(root_dir,"tools","object_detector","detected_objects")
 
     def preprocess_caption(self, caption):
         result = caption.lower().strip()
@@ -58,7 +55,7 @@ class Object_Detector_Tool(BaseTool):
             return result
         return result + "."
 
-    def build_tool(self, model_size='tiny'):
+    def build_tool(self, model_size='base'):
         model_name = f"IDEA-Research/grounding-dino-{model_size}"
         device = "cuda" if torch.cuda.is_available() else "cpu"
         try:
@@ -79,21 +76,21 @@ class Object_Detector_Tool(BaseTool):
         padded_image.save(save_path)
         return save_path
 
-    def execute(self, image, labels, threshold=0.35, model_size='tiny', padding=20, max_retries=10, retry_delay=5, clear_cuda_cache=False):
+    def execute(self, image, labels, threshold=0.45, model_size='base', max_retries=10, retry_delay=2, clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images"):
+        padding=20
         for attempt in range(max_retries):
             try:
-                saved_files = []
+                self.output_dir = saved_image_path
 
                 pipe = self.build_tool(model_size)
                 if pipe is None:
                     raise ValueError("Failed to build the Object Detection tool.")
                 
                 preprocessed_labels = [self.preprocess_caption(label) for label in labels]
-                original_image = Image.open(image)
-                results = pipe(original_image, candidate_labels=preprocessed_labels, threshold=threshold)
+                results = pipe(image, candidate_labels=preprocessed_labels, threshold=threshold)
                 
                 formatted_results = []
-                
+                original_image = Image.open(image)
                 image_name = os.path.splitext(os.path.basename(image))[0]
                 
                 object_counts = {}
@@ -108,7 +105,9 @@ class Object_Detector_Tool(BaseTool):
                     object_counts[label] = object_counts.get(label, 0) + 1
                     index = object_counts[label]
                     
-                    save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
+                    save_path = None
+                    if save_object:
+                        save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
             
                     formatted_results.append({
                         "label": label,
@@ -117,7 +116,7 @@ class Object_Detector_Tool(BaseTool):
                         "saved_image_path": save_path
                     })
 
-                return formatted_results
+                return formatted_results, object_counts
             
             except RuntimeError as e:
                 if "CUDA out of memory" in str(e):
@@ -157,7 +156,6 @@ if __name__ == "__main__":
 
     # Example usage of the Object_Detector_Tool
     tool = Object_Detector_Tool()
-    tool.set_custom_output_dir("detected_objects")
 
     # Get tool metadata
     metadata = tool.get_metadata()
@@ -169,9 +167,9 @@ if __name__ == "__main__":
 
     # Execute the tool
     try:
-        execution = tool.execute(image=image_path, labels=["baseball", "basket"], padding=20)
+        objs, labels_num = tool.execute(image=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
         print("Detected Objects:")
-        for obj in execution:
+        for obj in objs:
             print(f"Detected {obj['label']} with confidence {obj['confidence score']}")
             print(f"Bounding box: {obj['box']}")
             print(f"Saved image (with padding): {obj['saved_image_path']}")

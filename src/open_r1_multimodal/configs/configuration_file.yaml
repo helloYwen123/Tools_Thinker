@@ -1,0 +1,50 @@
+prompt_template: |
+  Write a Python program to answer the question related to images: {question}.
+  Enclose the generated code and comments in <command> </command> tags,
+  i.e. <command> generated python code </command>.
+  You may include your thought process and analysis as inline comments within the code.
+  You should make full use of the following available tools, which are very helpful:
+
+  Available Tools: {available_tools}
+  Tools Metadata: {toolbox_metadata}
+
+  Rules:
+  1. The command MUST be valid Python code.
+  2. If listed available tools are insufficient to obtain the answer, you can use functions from Python's standard library as needed.
+  3. Use the exact parameter names as specified in the tool's input_types.
+  4. Always make sure to define variables and functions before using them to keep your Python code syntactically correct.
+  5. Ensure that the code execution yields a result that directly answers the question.
+  6. If you need, please directly use the PATHs of images: {image_paths}, which are related to the question.
+
+  Note:
+  - You must put your code and your thought comments within the tag <command> </command>.
+  - Please assign the final answer to a variable named `final_result`.
+  - If needed, include import paths like: from_module: `<tool_module_name>`, import_name: `<tool_class_name>`. Replace those with actual values.
+
+# {question}；{available_tools}；{available_tools}；{image_paths}
+
+# metadata for available tools
+toolbox_metadata:
+  Object_Detector_Tool:
+    tool_module_name: "object_detector"
+    tool_class_name: "Object_Detector_Tool"
+    tool_description: "A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding."
+    tool_version: "1.0.0"
+    input_types:
+      image: "str - The path to the image file."
+      labels: "list - A list of object labels to detect."
+      threshold: "float - The confidence threshold for detection (default: 0.45)."
+      model_size: "str - The size of the model to use ('tiny' or 'base', default: 'tiny')."
+      save_object: "bool - Whether to save the detected objects as images (default: False)."
+      saved_image_path: "str - The path to save the detected object images (default: 'detected_objects')."
+    output_type: "tuple - A tuple containing two elements: a list of dictionaries for each detected object (each with keys 'label', 'confidence score', 'box', and 'saved_image_path'), and a dictionary mapping each label to its total count in the image."
+    demo_commands:
+      - command: 'detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")'
+        description: ("Detects 'baseball' and 'basket' in an image using the default base model and threshold. ",
+                     "It returns a tuple where the first element is a list of detection dictionaries and the second element is a dictionary with the total count for each label. The detected object images are saved in the 'detected_objects' directory.")
+    user_metadata:
+      limitation: "The model may not always detect objects accurately."
+  ######################
+
+# available_tools for usage
+available_tools: "Object_Detector_Tool"

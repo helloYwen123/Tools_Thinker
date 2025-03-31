@@ -27,7 +27,8 @@ from math_verify import parse, verify
 from open_r1.trainer import Qwen2VLGRPOTrainer
 from trl import GRPOConfig, GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
 from PIL import Image
-
+import argparse
+import yaml
 @dataclass
 class GRPOScriptArguments(ScriptArguments):
     """
@@ -140,7 +141,7 @@ reward_funcs_registry = {
     "length": length_reward,
 }
 
-def main(script_args, training_args, model_args):
+def main(script_args, training_args, model_args, conf):
     # Get reward functions
     reward_funcs = [reward_funcs_registry[func] for func in script_args.reward_funcs]
 
@@ -224,4 +225,6 @@ def main(script_args, training_args, model_args):
 if __name__ == "__main__":
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
-    main(script_args, training_args, model_args)
+
+
+    main(script_args, training_args, model_args,conf)

@@ -163,6 +163,7 @@ class Qwen2VLGRPOTrainer(Trainer):
         max_pixels: Optional[int] = 12845056,
         min_pixels: Optional[int] = 3136,
         attn_implementation: str = "flash_attention_2",
+        torch_dtype: str = None  # Debug
     ):
         # Args
         if args is None:
@@ -174,6 +175,7 @@ class Qwen2VLGRPOTrainer(Trainer):
         # Trained model
         model_init_kwargs = args.model_init_kwargs or {}
         model_init_kwargs["attn_implementation"] = attn_implementation
+        model_init_kwargs["torch_dtype"] = torch_dtype # Debug
         if isinstance(model, str):
             model_id = model
             torch_dtype = model_init_kwargs.get("torch_dtype")
@@ -192,11 +194,11 @@ class Qwen2VLGRPOTrainer(Trainer):
             model_init_kwargs["use_cache"] = (
                 False if args.gradient_checkpointing else model_init_kwargs.get("use_cache")
             )
-            #####try to fix flash atten 2 bug#####
-            default_dtype = torch.get_default_dtype()
-            print(f"torch_dtype{model_init_kwargs.get("torch_dtype")}")
-            torch_dtype = getattr(torch, model_init_kwargs.get("torch_dtype"))
-            torch.set_default_dtype(torch_dtype)
+            # #####try to fix flash atten 2 & DataType Bug#####
+            # default_dtype = torch.get_default_dtype()
+            # print(f"torch_dtype{model_init_kwargs.get('torch_dtype')}")
+            # torch_dtype = getattr(torch, model_init_kwargs.get("torch_dtype"))
+            # torch.set_default_dtype(torch_dtype)
             ######################################
             if "Qwen2-VL" in model_id:
                 model = Qwen2VLForConditionalGeneration.from_pretrained(model, **model_init_kwargs)
@@ -208,7 +210,7 @@ class Qwen2VLGRPOTrainer(Trainer):
                 model = AutoModel.from_pretrained(model, trust_remote_code=True, **model_init_kwargs)
             else:
                 model = AutoModelForCausalLM.from_pretrained(model, **model_init_kwargs)
-            torch.set_default_dtype(default_dtype) # reset
+            # torch.set_default_dtype(default_dtype) # reset
         else:
             model_id = model.config._name_or_path
             if args.model_init_kwargs is not None:
@@ -217,14 +219,14 @@ class Qwen2VLGRPOTrainer(Trainer):
                     "This argument can only be used when the `model` argument is a string."
                 )
 
-        if peft_config is not None:
+        if peft_config is not None: # LoRA
             model = get_peft_model(model, peft_config)
 
         # Reference model
         if is_deepspeed_zero3_enabled():
             if "Qwen2-VL" in model_id:
                 self.ref_model = Qwen2VLForConditionalGeneration.from_pretrained(model_id,**model_init_kwargs)
-                self.ref_model = Qwen2VLForConditionalGeneration.from_pretrained(model_id,torch_dtype = "bfloat16" ,**model_init_kwargs)
+                self.ref_model = Qwen2VLForConditionalGeneration.from_pretrained(model_id,**model_init_kwargs)
             elif "Aria" in model_id:
                 self.ref_model = AriaForConditionalGeneration.from_pretrained(model_id, **model_init_kwargs)
             elif "InternVL2" in model_id:
@@ -394,8 +396,9 @@ class Qwen2VLGRPOTrainer(Trainer):
         if self.max_prompt_length is not None:
             prompt_ids = prompt_ids[:, -self.max_prompt_length :] # task last several tokens
             prompt_mask = prompt_mask[:, -self.max_prompt_length :]
-        
+        #####################################
         start_gen = time.perf_counter() # start inference
+        #####################################
         # Generate completions
         with unwrap_model_for_generation(model, self.accelerator) as unwrapped_model:
             # prompt_completion_ids = unwrapped_model.generate(**prompt_inputs, generation_config=self.generation_config)
@@ -411,6 +414,10 @@ class Qwen2VLGRPOTrainer(Trainer):
                 # here prompt is complete and putted into model's inference pipeline
                 all_completions.append(completion)
             ###################################################################
+            # cuda synchronize
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+
             end_gen = time.perf_counter() #Timer Group Inference Stop 
             generation_time = end_gen - start_gen
             # record inference time for one device

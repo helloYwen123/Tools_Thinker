@@ -1,14 +1,18 @@
 export DEBUG_MODE="true" # Enable Debug if you want to see the rollout of model during RL
 export LOG_PATH="./debug_log_2b.txt"
-export CUDA_VISIBLE_DEVICES= $CUDA_VISIBLE_DEVICES
-echo  "CUDA_VISIBLE_DEVICES:"$CUDA_VISIBLE_DEVICES
+export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
+echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
+
 # export MAIN_PROCESS_PORT=29507  # Change this to an available port
 export NCCL_P2P_DISABLE=1
 # netstat -tulnp | grep 29507
 #"flash_attention_2",  #  "eager" / "sdpa"
 # jidegaihuilai
 # --max_prompt_length 1024 \
+# Confusing Parameters
+# dataset_name: push_to_hub; 
 accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src/open_r1/toolsgrpo.py \
+    --confile configs/configuration_file.yaml \
     --output_dir outputs/Qwen2-VL-2B-Instruct-GRPO-BLINK \
     --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
     --dataset_name BLINK_visual_counting \

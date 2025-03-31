@@ -1,7 +1,7 @@
 import os
 import cv2
 from pydantic import BaseModel
-from octotools.tools.base import BaseTool
+from base import BaseTool
 from octotools.engine.openai import ChatOpenAI
 
 class PatchZoomerResponse(BaseModel):
