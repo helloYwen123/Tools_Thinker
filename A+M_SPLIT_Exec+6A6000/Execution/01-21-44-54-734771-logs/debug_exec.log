@@ -1,0 +1,59 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+final_result = Object_Detector_Tool.execute(image='/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.jpg', labels=["one way"], save_object=True, saved_image_path="detected_objects")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'image'
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.jpg"
+
+# Detection settings
+labels = ["baseball", "basket"]
+save_object = True
+saved_image_path = "detected_objects"
+
+# Execute object detection
+object_number = Object_Detector_Tool.execute(image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+# Check the number of "one way" signs pointing to the left
+left_one_way_count = 0
+for label in object_number['detected_object_labels']:
+    for result in label['boxes']:
+        if "left" in result['image_name'].strip('.png') and "baseball" in result['detected_objects']:
+            if "left" in result['category'] and result['count'] == 1:
+                left_one_way_count += 1
+
+if left_one_way_count == 2:
+    final_result = 2
+elif left_one_way_count == 3:
+    final_result = 3
+elif left_one_way_count >= 4:
+    final_result = 4
+else:
+    final_result = 0
+
+print("Final Result:", final_result)
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:import os
+from object_detector import Object_Detector_Tool
+
+# Load the image file
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_34_image_1.jpg"
+detector_tool = Object_Detector_Tool()
+
+# Detect the objects in the image
+detected_objects, object_number = detector_tool.execute(image=path_to_image, labels=["one way", "no turns"], save_object=True, saved_image_path="detected_objects")
+
+# Count the number of "one way" signs pointing to the left
+left_side_count = 0
+for detected_object in detected_objects["detected_objects"]:
+    if detected_object["labels"][0] == "one way" and detected_object["boxes"][0]["y"] < detected_object["boxes"][0]["h"] / 2:
+        left_side_count += 1
+
+final_result = left_side_count

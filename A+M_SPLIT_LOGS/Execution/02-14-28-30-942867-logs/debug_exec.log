@@ -1,0 +1,59 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Import the Object_Detector_Tool class from the provided tool library
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_97image_1.jpg",  # Replace with the path of your image
+                                          labels=["red"],
+                                          save_object=False,
+                                          )
+
+detected_objects, object_count = final_result
+print(detected_objects)
+print(object_count)
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+final_result = "A"
+
+# Convert image_path to absolute path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_97_image_1.jpg"
+
+# Create the object_detector_tool
+tool = Object_Detector_Tool(image_path=image_path)
+
+# Detect objects in the image
+detected_objects, object_number = tool.execute(labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Check the number of detected objects
+if object_number is not None:
+    total_count = object_number["detected_objects"]["counts"]['baseball']
+else:
+    total_count = None
+
+if total_count == 1:
+    final_result = "B"
+else:
+    final_result = total_count
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+# Function to count people wearing solid red shirts
+def count_red_shirts(image_path):
+    tool = Object_Detector_Tool(image_path)
+    labels_to_check = ["solid red", "solid red"]
+    labels = tool.labels_to_num_labels(labels_to_check).numpy()
+    counts = tool.execute(labels, save_object=False)
+    red_shirt_count = counts[1].groupby("label").sum()
+    return red_shirt_count.iloc[0][0]
+
+final_result = count_red_shirts("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Cool_Girls_with_book_2.jpg")
+print(final_result)

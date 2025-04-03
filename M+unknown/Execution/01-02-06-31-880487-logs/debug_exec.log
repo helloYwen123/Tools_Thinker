@@ -1,0 +1,306 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+def count_people_eating_sandwich(image_path):
+    # Load the image and save labels as list
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["sandwich"], save_object=True)
+    
+    # Calculate the number of sandwiches in the image
+    total_sandwiches = sum([len(detectors['boxes']) for detections in detected_objects.values() for detection in detections['boxes']])
+    
+    return total_sandwiches
+
+final_result = count_people_eating_sandwich("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg")
+print(f"The number of people eating sandwiches is {final_result}.")
+
+[EXECUTION EXCEPTION]
+No module named 'Image'
+code:from object_detector import Object_Detector_Tool
+import Image
+
+class Image:
+  def __init__(self, img_path):
+    self.img_path = img_path
+
+    with Image.open(img_path) as img:
+      img = img.convert('RGB')
+      self.img = img
+      self.boxes, self.confidence_scores, self.saved_image_paths = self.detect_object_image()
+
+  def detect_object_image(self):
+    # Load and preprocess the image
+    model = 'tiny'
+    size = 'base'
+    save_object = True
+
+    # Load object detector model
+    od_model = Object_Detector_Tool()
+    od_model.load_model(model=model, size=size, save_object=save_object)
+
+    # Preprocess image
+    im_arr = self.img.toArray()
+    im_h, im_w, _ = im_arr.shape
+    max_size = 500
+    min_size = 10
+    im = Image.fromarray(im_arr)
+    im = im.resize((max_size, max_size), Image.ANTIALIAS)
+    im = im.convert('RGB')
+    im = im.resize((min_size, min_size), Image.ANTIALIAS)
+    im = im.crop((0, 0, im_w, im_h))
+    im = im.resize((max_size, max_size), Image.ANTIALIAS)
+    im = im.crop((0, 0, im_w, im_h))
+    im = im.resize((max_size // 2, max_size // 2), Image.ANTIALIAS)
+
+    # Detect objects
+    detections = od_model.detect(im_arr=image_to_array(im), threshold=0.45)
+
+    # Group detections by image
+    results = dict()
+    for label, boxes in detections.items():
+      results[label] = [bbox for bbox in boxes if bbox[2] > 0.1]
+
+    # Save bounding boxes in an image
+    if save_object:
+      bounding_boxes = [(bbox[0] * (max_size // min_size), bbox[1] * (max_size // min_size), bbox[2] * (max_size // min_size), min_size) for bbox in results.values() + (results['baseball'],)]
+      image = Image.open(self.img_path)
+      image = image.convert('RGB') + Image.new('RGB', image.size) + Image.open('images/snowboard.png') + Image.open('images/snowboard.png').overlay(image, box=(bbox[0] * (max_size // min_size),bbox[1] * (max_size // min_size),bbox[2] * (max_size // min_size), min_size), mode='graclus', padding=(0, 0))
+      image = image.resize((max_size, max_size), Image.ANTIALIAS)
+      image = image.convert('RGB')
+      for box in bounding_boxes:
+        rect = [box[0], box[1], box[2] - box[0], box[3] - box[1]]
+        image.paste(image, rect, image)
+      image = image.convert('RGB')
+      image.save(self.img_path[:-4] + '_detections_{}.png'.format(label))
+
+    return results, self.confidence_scores, self.saved_image_paths
+
+  def show_image(self):
+    plt.imshow(self.img)
+    plt.show()
+
+  def save_image(self):
+    img_path = self.img_path[:-4] + '_detections_{}.png'.format(self.obj_labels[0])
+    Image.open(img_path).show()
+
+def bbox_to_widht_height(bbox):
+  return int(bbox[2] / (bbox[3] - bbox[1]), 32)
+
+def get_bbox_area(bbox):
+  return bbox[2] * bbox[3]
+
+def object_counter(img):
+  results, confidence_scores, saved_image_paths = img.detect_object_image()
+  data = []
+  for cls in results:
+    bboxes = np.array([[bbox[0], bbox[1], bbox[2], bbox[3]] for bbox in results[cls]])
+    width, height = bbox_to_widht_height(bboxes)
+    x, y, w, h = bbox_to_widht_height(bboxes[0])
+    label = results.keys()[0]
+    conf = confidence_scores[label]
+
+    if len(results) == 1:
+      label = 'baseball'
+
+    score = 1 / (1 + math.exp(conf * 900))
+    area = get_bbox_area(bboxes) * conf * 0.01
+    # score = 1 / (1 + math.exp(conf * 900000))
+    data.append({'cls': label, 'bbox': bbox, 'area': area, 'score': score})
+
+  # return ['baseball']
+  return data
+
+[EXECUTION EXCEPTION]
+list indices must be integers or slices, not str
+code:from object_detector import Object_Detector_Tool
+
+question = "How many people are eating sandwich."
+
+# Convert question into a list of object labels to detect
+labels = ['hotdog']  # Change this list to detect multiple hotdogs
+
+# Set the threshold to 0.45
+threshold = 0.45
+
+def get_image_path(path_to_image):
+    return path_to_image.replace('/wxie/BLINK_Dataset/Counting/val/images/', '.')  # Adjust this path accordingly
+
+# Detect the hotdogs
+detector_tool = Object_Detector_Tool()
+hotdogs = detector_tool.execute(image=get_image_path("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg"), labels=labels, threshold=threshold, model_size="base")
+final_result = set()
+
+for hotdog in hotdogs['detected_objects']:
+    if hotdog['label'] == 'hotdog':
+        final_result.add(hotdog['label'])
+
+# Find the type of people eating the sandwich
+people_types = ['hotdog', 'bread', 'cutlery']
+
+final_result.add(min(final_result, key=len))  # Use min() to return the name closest to or equal to the length of the results set
+
+result = {'hotdog': len(final_result)}
+result.update(detected_objects={'baseball': None, 'basket': None})  # Return None for 'baseball' and 'basket'
+
+print(result)
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+# Define the question parameters
+question = {
+    "number_to_answer": 4,
+    "labels": [
+        "hotdog"
+    ],
+    "threshold": 0.6,
+    "model_size": "base",
+    "save_object": True,
+    "saved_image_path": ""
+}
+
+# Use the Object_Detector_Tool to count the number of hotdogs in the image
+object_detector_tool = Object_Detector_Tool()
+result, hotdog_counts = object_detector_tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg", labels=question["labels"], threshold=question["threshold"], model_size=question["model_size"], save_object=question["save_object"], saved_image_path=question["saved_image_path"])
+hotdog_count = sum(hotdog_counts.values())
+
+final_result = hotdog_count
+print(final_result)
+
+[EXECUTION EXCEPTION]
+name 'cv2' is not defined
+code:from_object_detector_tool = Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg"
+image = cv2.imread(image_path)
+
+# Detect the objects in the image
+object_objects = object_detector_object(image=image)
+
+# Convert the results to a markdown table
+objects_results = object_objects['object_number']
+
+# Initialize the objects and their bounding boxes
+classes_to_objects = {}
+for obj in objects_results:
+    classes_to_objects[obj['label']] = obj
+
+    for box in obj['boxes']:
+        x, y, width, height = box['x'], box['y'], width, height
+        name = classes_to_objects[obj['label']]
+        cv2.rectangle(image, (x, y), (x + width, y + height), (0, 0, 255), 2)
+        cv2.putText(image, name, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+# Add bounding boxes to the image
+for label, results in classes_to_objects.items():
+    objects_results = object_objects[results['label']]['boxes']
+    cv2.rectangle(image, (results['bbox'][0], results['bbox'][1]), (results['bbox'][2], results['bbox'][3]), (0, 0, 255), 2)
+    cv2.putText(image, label, (results['bbox'][0], results['bbox'][1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+    for box in results['boxes']:
+        confidence = box['conf']
+        if confidence >= 0.45:  # Confidence threshold
+            cv2.rectangle(image, (box['x'], box['y']), (box['x'] + box['width'], box['y'] + box['height']), (0, 0, 255), 2)
+
+# Get bounding boxes of hot dogs
+hot_dogs_bounding_boxes = []
+for i in range(len(image)):
+    for j in range(len(image[0])):
+        if cv2.countNonZero(binary_image_ = image[i,j]) >= 50 and cv2.getTrackPoint(window_name="ROI", x = x - bounding_box.x, y = bounding_box.y, p2 = bounding_box.x + bounding_box.width, p1 = bounding_box.y+ bounding_box.height).get(): 
+            if x - bounding_box.left() < 0 and y - bounding_box.bottom() < 0 and x - bounding_box.left() + bounding_box.width + bounding_box.right() > 512 and y - bounding_box.top() + bounding_box.bottom() > 260:
+                x -= bounding_box.left() + bounding_box.width  # Adjust bounding box to cover one Hot Dog
+                for label, results in classes_to_objects.items():
+                    if results['label'] == "Hot Dog":
+                        hot_dogs_bounding_boxes.append(results)
+
+# Save images with bounding boxes highlighted
+for i in range(len(image)):  # For each hot dog
+    for j in range(len(image[0])):  # For each side of the hot dog
+        if cv2.countNonZero(binary_image_ = image[i,j]) >= 50:
+            cv2.rectangle(image, (x + bounding_box.left() - bounding_box.width + 2, y + bounding_box.bottom() - bounding_box.height + 2), (x + bounding_box.right() - bounding_box.width + bounding_box.left() + 4, y + bounding_box.top() + bounding_box.height + bounding_box.right() + 8), (0, 0, 255), 2)
+            cv2.imshow("Detecting hot dogs", image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+final_result = {"hot-dogs": hot_dogs_bounding_boxes}
+print(json.dumps(final_result))  # Assuming the code is wrapped in a try-except block for handling exceptions
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg'
+
+# Detecting labels
+labels =['baseball', 'basket']
+
+# Setting the threshold for detection
+threshold = 0.45
+
+# Setting the size of the model
+model_size = 'tiny'
+
+# Saving detected objects if requested
+save_object = True
+
+detected_objects, total_labels = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path="detected_objects")
+
+# Analyzing the numbers of people
+people_count = {label: detected_objects['object_number'][label] for label in detected_objects['object_number']}
+
+final_result = {'count': 1, 'categories': people_count}
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+# Step 1: Set up the object detector tool
+object_detector_tool = Object_Detector_Tool()
+
+# Step 2: Get a list of object labels to detect
+objects_to_focus = ["hot dog", "ketchup"]
+
+# Step 3: Set the threshold for detection
+# in this case, the threshold is at 0.45
+threshold = 0.45
+
+# Step 4: Create a list to store the object detection results
+object_detection_results = []
+
+# Step 5: Loop through each object to detect
+for object in objects_to_focus:
+    object_label = object
+    # Set the size of the model and whether to save the detected objects as images
+    model_size = "tiny"
+    save_object = True
+    save_image_path = "hot_dog"
+    
+    # Step 6: Call the object detector tool to detect the object and generate detection results
+    detected_objects, object_number = object_detector_tool.execute(
+        image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg", labels=[object_label], save_object=save_object, saved_image_path=save_image_path)
+
+    # Step 7: Check if the detection results contain enough information to determine if there are 3 people eating
+    # In this case, we'll check if there are at least 3 objects detected within the bounding box of each hot dog
+    hot_dogs_num = detected_objects[object_label]['boxes'][0][0]
+    hot_dog_containers = detected_objects[object_label]['boxes']
+    hot_dog_containers = hot_dog_containers[1]
+    hot_dog_buns = hot_dog_containers[1][0][0]
+    hot_dog_bun_containers = hot_dog_containers[1][1]
+    hot_dog_bun_containers = hot_dog_bun_containers[1]
+    hot_dog_containers = hot_dog_containers[0]
+    hot_dog_containers = hot_dog_containers[0]
+
+    # Verify if there are at least 3 hot dogs detected in the image
+    if hot_dogs_num >= 3:
+        final_result = object_label
+    else:
+        final_result = "C"
+        
+    # Store the detection results in the object_detection_results list
+    object_detection_results.append({"object_label": object_label, "final_result": final_result})
+    print(f"{object_label}: {hot_dogs_num}")
+
+print(f"Object detection results: {object_detection_results}")

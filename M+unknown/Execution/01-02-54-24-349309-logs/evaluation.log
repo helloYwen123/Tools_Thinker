@@ -1,0 +1,184 @@
+------------- 01-02-54-24-349309 Execution reward: 0.0 -------------
+[Reward computation time: 1.0561 seconds]
+
+QAid: val_Counting_20
+Code: from object_detector import Object_Detector_Tool
+
+# Function to count toilets
+def count_toilets(image_path):
+    # Load the image
+    tool = Object_Detector_Tool(image_path)
+    
+    # Process the labels based on their type
+    labels = ['basin', 'toilet'] if 'basin' in tool.labels else []
+    
+    # Initialize the toilet count
+    toilet_count = 0
+    for label in labels:
+        toilet_count += len(tool.objects[label])
+    
+    return toilet_count
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_1.jpg"  # Replace this path with your image
+final_result = count_toilets(image_path)
+print(final_result)
+
+------------- 01-02-54-24-349309 Execution reward: 0.0 -------------
+[Reward computation time: 1.3951 seconds]
+
+QAid: val_Counting_20
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_1.jpg"
+object_detector = Object_Detector_Tool()
+result = object_detector.execute(image_path=image_path)
+
+# Extract data from the result
+categories = result["output_types"][0][0]
+boxes = result["output_types"][0][1]
+scores = result["output_types"][0][2]
+detected_objects = {}
+
+# Count each detected object
+for i in range(len(categories)):
+    current_category_boxes = boxes[i]
+    current_category_boxes = list(filter(lambda x: x[1] > 0.45, current_category_boxes))
+    current_category_boxes = list(zip(*current_category_boxes))
+    current_category_score = scores[i]
+    current_category_count = len(current_category_boxes)
+    for k in range(len(current_category_boxes)):
+        detected_objects[current_category_boxes[k][0]] = current_category_count
+
+final_result = {k:v for k, v in detected_objects.items() if v > 3}
+
+------------- 01-02-54-24-349309 Execution reward: 0.0 -------------
+[Reward computation time: 1.4282 seconds]
+
+QAid: val_Counting_20
+Code: from object_detector import Object_Detector_Tool
+
+# Define the image path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_1.jpg'
+
+# Initialize the object detector tool
+detector_tool = Object_Detector_Tool(image_path=image_path)
+
+# Detect objects and get the detection results
+label_distribution, detection_results = detector_tool.execute(labels=["toilet", "basin"], save_object=False) 
+
+# Count the frequency of detected objects
+frequency_distribution = {label: len(results) for label, results in detection_results.values()}
+
+# Filter the labels with frequencies greater than 1
+filtered_labels = {label: count for label, count in frequency_distribution.items() if count > 1}
+
+# The answer is the number of toilets
+final_result = len(filtered_labels)
+
+------------- 01-02-54-24-349309 Execution reward: 0.0 -------------
+[Reward computation time: 2.0499 seconds]
+
+QAid: val_Counting_20
+Code: from object_detector import Object_Detector_Tool
+
+# Load the toilet and basins image
+tool = Object_Detector_Tool()
+res = tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_1.jpg", labels=["toilet", "basin"], save_object=True, saved_image_path="detected toilets")
+detected_objects = res[0]
+toilets = next(iter(detected_objects["toilet"]))
+basins = next(iter(detected_objects["basin"]))
+
+
+
+final_result = len(toilets["boxes"])  # How many toilets are to the left of the basins
+print(final_result)
+
+------------- 01-02-54-24-349309 Execution reward: 0.0 -------------
+[Reward computation time: 0.8582 seconds]
+
+QAid: val_Counting_20
+Code: from_object_detector_tool = object_detector.Object_Detector_Tool()
+
+------------- 01-02-54-24-349309 Execution reward: 0.0 -------------
+[Reward computation time: 1.3724 seconds]
+
+QAid: val_Counting_20
+Code: from object_detector import Object_Detector_Tool
+
+# Required image paths
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_1.jpg"
+labels = ["basin"]
+save_object = False
+
+# Execute the tool with the provided image and labels
+tool_results = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object)
+
+# Get the total count of basins from the tool results
+total_basins = len(tool_results['object_number']['basin'])
+
+print(f"The number of basins is {total_basins}")
+
+------------- 01-02-54-24-349309 Execution reward: 0.0 -------------
+[Reward computation time: 1.2376 seconds]
+
+QAid: val_Counting_20
+Code: from object_detector import Object_Detector_Tool
+
+# Convert image_path to absolute path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val.Counting.20.image.1.jpg'
+
+# Create an Object_Detector_Tool instance with some defaults
+tool = Object_Detector_Tool(image_path, threshold=0.45)
+
+# Run the object detection
+tools = tool.execute(labels=["basin", "toilet"], save_object=True, saved_image_path="basin_toilet_detections")
+
+# Print the results
+for label, detection_results in tools:
+    for box, score, image_paths in detection_results['boxes']:
+        if 'basin' in label:
+            print(f"Found basin at: {box}, score: {score}.")
+for count in tools['count'][:2]:
+    print(f"Found basin at: {count['boxes'][0]}, score: {count['confidence']}")
+print("Found basin at", tools['count'][1]['boxes'][0], "with a score of", tools['count'][1]['confidence'])
+
+# Check if basin was found in the image
+basin_id = tools['count'][2]['boxes'][0]
+basin_count = tools['count'][1]['boxes'][0]
+with open("basin_count.txt", 'w') as count_file:
+    count_file.write(str(basin_count))
+    count_file.write("\n")
+    count_file.write(str(basin_id))
+
+------------- 01-02-54-24-349309 Execution reward: 0.0 -------------
+[Reward computation time: 0.7805 seconds]
+
+QAid: val_Counting_20
+Code: from object_detector import Object_Detector_Tool
+
+# Path to the image or file object
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_20_image_1.jpg"
+
+label_list = ["toilet", "basin"]
+confidence_level = 0.45
+model_size = "tiny"
+
+# Initialize the object_detector tool
+object_detector = Object_Detector_Tool(image_path, labels=label_list, confidence_threshold=confidence_level, model_size=model_size, save_object=False)
+
+# Execute the detection
+detected_objects, object_number = object_detector.execute()
+
+# Filter the detected objects to only those related to basins
+basin_objects = [object for object in detected_objects["detected_objects"] if object["label"] == "basin"]
+
+# Filter the identified basins to return only those related to the sinks
+basin_objects = [basin_object for basin_object in basin_objects if basin_object["label"] == "basin"]
+
+# Count the number of basins
+basin_count = len(basin_objects)
+
+final_result = {"batteries": basin_count}
+

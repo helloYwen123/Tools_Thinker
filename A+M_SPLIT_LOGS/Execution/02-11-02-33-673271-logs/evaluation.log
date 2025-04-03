@@ -1,0 +1,152 @@
+------------- 02-11-02-33-673271 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_95
+Code: [EMPTY]
+
+------------- 02-11-02-33-673271 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_95
+Code: [EMPTY]
+
+------------- 02-11-02-33-673271 Execution reward: 0.0 -------------
+[Reward computation time: 0.9306 seconds]
+
+QAid: val_Counting_95
+Code: from object_detector.object_detector import Object_Detector_Tool
+
+# Convert tool_path to the absolute path
+tool_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+# Initialize Object_Detector_Tool
+obj_detector_tool = Object_Detector_Tool()
+
+# Detect objects in the image
+result = obj_detector_tool.execute(image=tool_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Get the counts for each label
+label_counts = result[1]
+category_counts = result[0]
+
+# Check if the result is a list (the result should be a list with length 1)
+if isinstance(result[1]['boxes'], list):
+    cat_with_counts = category_counts.items()
+    # Count the number of people without hats
+    count_without_hats = sum((i['box_count'] == 0) for i in cat_with_counts)
+    
+    
+    if count_without_hats == 1:
+        final_result = 'C'
+    elif count_without_hats > 1:
+        final_result = 'D'
+else:
+    final_result = 'A'
+
+------------- 02-11-02-33-673271 Execution reward: 0.0 -------------
+[Reward computation time: 0.9728 seconds]
+
+QAid: val_Counting_95
+Code: from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg'
+
+# Detect objects using the Grounding DINO model
+object_detector = Object_Detector_Tool(image_path, labels=['hat'], threshold=0.4, model_size='tiny', save_object=True)
+
+detected_obj_results = object_detector.execute()
+
+# Count the number of objects without hats ("baseball" and "basket" in this case)
+total_objects = {obj['label']: obj['count'] for obj in detected_obj_results['object_number'] if obj['label'] == 'baseball' or obj['label'] == 'basket'}
+
+total_objects
+
+------------- 02-11-02-33-673271 Execution reward: 0.0 -------------
+[Reward computation time: 1.0360 seconds]
+
+QAid: val_Counting_95
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+# Load the detected object list
+labels = [191, 216, 1, 308, 245, 286, 287, 14, 241, 120, 208, 159, 228, 298, 237, 8, 257, 235, 204, 244, 270, 271, 279, 256, 255, 317, 99, 246, 62, 98, 229, 201, 121, 282, 273, 78, 230, 103, 209, 93, 7, 200, 79, 109, 256, 249, 202, 156, 4, 104, 1, 250, 251, 232, 315, 240, 253, 205, 110, 202, 127, 13, 125, 64, 231, 105, 194, 66, 108, 135, 51, 221, 8, 108, 251, 63, 99, 162, 99, 252, 35, 223, 123, 102, 229, 14, 227, 150, 142, 115, 37, 5, 97, 67, 23, 101, 257, 15, 17, 60, 258, 93, 79, 258, 93, 113, 65, 112, 83, 68, 61, 171, 38, 61, 15, 80, 179, 31, 233, 77, 20], threshold=0.45, model_size="tiny")
+
+# Detect objects
+results = Object_Detector_Tool.execute(image=image_path, labels=labels, model_size="tiny", confidence_threshold=0.45)
+
+# Group results by object and calculate the count
+output = []
+for obj, results_list in results.items():
+    count = 0
+    for i in results:
+        count += len(i["boxes"])
+    output.append({"object_label": obj, "count": count})
+
+print(output)
+
+------------- 02-11-02-33-673271 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_95
+Code: [EMPTY]
+
+------------- 02-11-02-33-673271 Execution reward: 0.0 -------------
+[Reward computation time: 1.5808 seconds]
+
+QAid: val_Counting_95
+Code: from object_detector import Object_Detector_Tool
+
+# Load the tool
+detected_objects = Object_Detector_Tool()
+
+# Load the image
+with open('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg', 'rb') as f:
+    image = f.read()
+
+# Detect Christmas hat and non-hat objects
+labels = ['hat', 'no_hat']
+result = detected_objects.execute(image=image, labels=labels, save_object=True)
+total_hats = result["object_number"]["hat"]
+
+# Analyze the data
+non_hat_count = detected_objects[0]["total_count"]
+total_hats_count = total_hats + non_hat_count
+
+final_result = total_hats_count
+print(final_result)
+
+------------- 02-11-02-33-673271 Execution reward: 0.0 -------------
+[Reward computation time: 0.4223 seconds]
+
+QAid: val_Counting_95
+Code: from object_detector_tool import Object_Detector_Tool
+
+def find_people_without_hats(image_path):
+    # Load the image
+    image = Image.open(image_path)
+    # Detect hats and people
+    object_detector_tool = Object_Detector_Tool(image_path)
+    detected_objects, object_number = object_detector_tool.execute(labels=["hat"], save_object=False, saved_image_path="detected_objects")
+
+    # Count the number of detected people without hats
+    people_without_hats = 0
+    for label in object_number:
+        if object_number[label]["boxes"] != []:
+            for box in object_number[label]["boxes"]:
+                if box.get("label") == "person":
+                    continue
+                elif box.get("label") == "cloth_hat":
+                    continue
+                else:
+                    people_without_hats += 1
+
+    return people_without_hats
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+# Call the function
+people_without_hats = find_people_without_hats(image_path)
+
+final_result = people_without_hats
+

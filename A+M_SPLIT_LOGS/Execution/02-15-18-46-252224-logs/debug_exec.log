@@ -1,0 +1,35 @@
+
+[EXECUTION EXCEPTION]
+'Object_Detector_Tool' object has no attribute 'save_objects_to_image_path'
+code:from object_detector import Object_Detector_Tool
+
+final_result = ""
+try:
+    # Load the image using object_detector
+    tool = Object_Detector_Tool()
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_16_image_1.jpg"
+
+    # Execute the tool with the image path and labels ('baseball', 'basket').
+    tool.load_image(image_path)
+    tool.execute(labels=["baseball", "basket"])
+    tool.save_objects_to_image_path("/path/to/save/detected_objects")
+
+    # Get the objects and their bounding boxes.
+    detected_objects = tool.get_object_detection_results() ["detected_objects"]
+
+    # Get the object labels.
+    object_labels = [label["name"] for label in detected_objects ["all"]]
+
+    # Assuming the first detected object label is 'baseball'.
+    index = object_labels.index("baseball")
+
+    # Count the number of kids in front of the yellow schoolbus.
+    kids_count = tool.get_total_detection_counts()["count"][index]
+
+    final_result = f"Did you count {kids_count} kids in front of the yellow schoolbus?"
+except Exception as e:
+    final_result = str(e)
+finally:
+    tool.save_objects_to_image_path("/path/to/save/detected_objects")
+
+final_result

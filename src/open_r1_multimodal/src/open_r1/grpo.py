@@ -59,7 +59,6 @@ class GRPOScriptArguments(ScriptArguments):
         metadata={"help": "Whether to freeze the vision model parameters during training"},
     )
 
-
 def extract_letters(text): # for RAVEN
     pattern = r'(^|\s|\[|\()([A-H])(\s|\]|\)|$)'
     matches = re.findall(pattern, text)
@@ -93,7 +92,7 @@ def accuracy_reward(completions, solution, **kwargs):
                 # Extract answer from content if it has think/answer tags
                 content_match = re.search(r'<answer>(.*?)</answer>', content)
                 student_answer = content_match.group(1).strip() if content_match else content.strip()
-                
+
                 if student_answer == ground_truth:
                     reward = 1.0
 

@@ -1,0 +1,184 @@
+------------- 01-04-46-36-809699 Execution reward: 1.0 -------------
+[Reward computation time: 1.1944 seconds]
+
+QAid: val_Counting_11
+Code: from object_detector import Object_Detector_Tool
+
+final_result = 0
+
+def count_people_in_food(tray):
+    # Assuming there are three trays visible
+    total_food = len([tray[0]])
+    
+    for i in range(1,3):
+        if "salad" in tray[i]:
+            total_food += 1
+
+    return total_food
+
+------------- 01-04-46-36-809699 Execution reward: 0.0 -------------
+[Reward computation time: 1.3426 seconds]
+
+QAid: val_Counting_11
+Code: from object_detector import Object_Detector_Tool
+
+final_result = 0
+
+# Detect objects in the image
+detected_objects, object_count = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg", labels=["Baseball", "Basket"], save_object=True, saved_image_path="detected_objects")
+
+# Check if any objects are detected
+if detected_objects:
+    object_list = detected_objects.keys()
+    for object_name in object_list:
+        # Count each detected object
+        object_count[object_name] += detected_objects[object_name]['count']
+        
+    # Check for three detected objects
+    if object_count["Basket"] < 3:
+        final_result = 0
+    elif object_count["Basket"] > 3:
+        final_result = 2
+    else:
+        final_result = 1
+
+    # Print results
+    print("Number of detected objects:", final_result)
+else:
+    print("No objects detected in the image")
+
+------------- 01-04-46-36-809699 Execution reward: 0.0 -------------
+[Reward computation time: 1.4520 seconds]
+
+QAid: val_Counting_11
+Code: from object_detector import Object_Detector_Tool
+
+final_result = 0
+
+# Example: A and B are detected by the tool.
+label1 = "baseball"
+label2 = "basket"
+detected_results = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg", labels=[label1, label2], save_object=True, saved_image_path="detected_objects")
+if "BaseballBaseball" in detected_results[0]["labels"]:
+    final_result += 1
+if "Basketball" in detected_results[1]["labels"]:
+    final_result += 1
+print("Final result:", final_result)
+
+------------- 01-04-46-36-809699 Execution reward: 0.0 -------------
+[Reward computation time: 1.9151 seconds]
+
+QAid: val_Counting_11
+Code: from object_detector import Object_Detector_Tool
+
+def answer_question(image_path):
+    object_detector_tool = Object_Detector_Tool()
+
+    # Convert image path to string
+    image_path = str(image_path)
+
+    # Detect objects in the image
+    labels, object_number = object_detector_tool.execute(image=image_path, labels=["salad", "rice", "cups"], save_object=True, saved_image_path="output")
+
+    # Print total detection results
+    print(f"Total objects detected: {object_number}")
+
+    # Calculate probability values
+    probability_values = {label: round(confidence_score, 2) for label, confidence_score in object_number.items()}
+
+    # Collect labels in order of probability in descending order and print
+    for label in sorted(probability_values, key=probability_values.get, reverse=True):
+        print(f"Detected object: {label} with probability: {probability_values[label]}")
+
+# Use the function to answer the given question
+answer_question("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg")
+
+------------- 01-04-46-36-809699 Execution reward: 0.0 -------------
+[Reward computation time: 1.2148 seconds]
+
+QAid: val_Counting_11
+Code: from object_detector import Object_Detector_Tool
+
+output = None
+labels = ["orange", "grape", "olive"]  # Replace with your desired labels
+threshold = 0.5  # Replace with your desired confidence threshold
+model_size = "base"
+
+if model_size == "tiny":
+    output = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_2_counting_11_counting_1_image_1.jpg", labels=labels, save_object=True, saved_image_path="counting_11")
+else:  # Use model from the tool's metadata in the 'Object_Detector_Tool' object
+
+    def model_path():
+        return "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_2_counting_11_counting_1_models/"
+
+    if model_size == "base":
+        output =  Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_2_counting_11_counting_1_image_1.jpg", labels=labels, save_object=True, saved_image_path=model_path() + "counting_11")
+
+print(f"Final result: {output}")
+final_result = output
+
+------------- 01-04-46-36-809699 Execution reward: 0.0 -------------
+[Reward computation time: 1.2126 seconds]
+
+QAid: val_Counting_11
+Code: from object_detector import Object_Detector_Tool
+
+final_result = 0
+# Check if the image contains any 'baseball' or 'basket' objects
+label_names = ['baseball', 'basket']
+for label_name in label_names:
+    detected_count = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg", labels=[label_name], save_object=True, saved_image_path="detect_labels")
+    detected_count_per_label = {label_name: detected_count['object_number']}
+    final_result += detected_count_per_label
+
+final_result
+
+------------- 01-04-46-36-809699 Execution reward: 0.0 -------------
+[Reward computation time: 1.2297 seconds]
+
+QAid: val_Counting_11
+Code: from object_detector import Object_Detector_Tool
+
+# Generate a path for the image if not provided
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg'
+
+# Create an object detector tool instance
+detector_tool = Object_Detector_Tool(image_path, labels=["salad"], save_object=True) # 1. Define labels (in this case, 'salad' as an example)
+label_count=detector_tool.execute() # 2. Execute the tool with detected images
+
+print(label_count)
+
+------------- 01-04-46-36-809699 Execution reward: 0.0 -------------
+[Reward computation time: 1.1298 seconds]
+
+QAid: val_Counting_11
+Code: from object_detector import Object_Detector_Tool
+
+def answer_question(question):
+    # Get the image and labels
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_11_image_1.jpg"
+    labels = ["baseball", "basket"]
+    
+    # Create the object detector tool
+    ODT_Tool = Object_Detector_Tool(image_path=image_path, labels=labels, save_object=True)
+    
+    # Detect the objects
+    detector_result = ODT_Tool.execute()
+    
+    # Count the basketball and baseball
+    basketball_count = detector_result["object_number"]["basketball"]["boxes"].sum()
+    baseball_count = detector_result["object_number"]["baseball"]["boxes"].sum()
+    
+    # Return the result
+    if basketball_count > 0 and baseball_count > 0:
+        return f"{basketball_count} basketballs and {baseball_count} baseballs. There are {basketball_count + baseball_count} objects in total."
+    elif basketball_count < 0 and baseball_count < 0:
+        return f"{basketball_count} basketballs and {baseball_count} baseballs. There are {basketball_count + baseball_count} objects in total."
+    elif basketball_count < 0 and baseball_count < 0:
+        return f"{basketball_count} basketballs and {baseball_count} baseballs. There are {basketball_count + baseball_count} objects in total."
+    else:
+        return f"{basketball_count} basketballs and {baseball_count} baseballs. There are {basketball_count + baseball_count} objects in total."
+    
+final_result = answer_question("How many people are eating food?")
+print("Final result:", final_result)
+

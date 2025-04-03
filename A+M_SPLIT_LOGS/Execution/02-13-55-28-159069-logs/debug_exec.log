@@ -1,0 +1,95 @@
+
+[EXECUTION EXCEPTION]
+name 'E' is not defined
+code:E
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+# Load image file paths
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_38_image_1.jpg"
+
+# Load labels to detect
+labels_to_detect = ["baseball", "basket"]
+
+# Initialize the Object_Detector_Tool
+detector = Object_Detector_Tool()
+
+#Detect dogs in the image
+detected_objects, obj_num = detector.execute(image_path=path_to_image, labels=labels_to_detect, threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+
+#Print the detected objects and their counts
+for label, obj_result in sorted(detected_objects.items()):
+    print(f"{label}:")
+    for obj in obj_result['objects']:
+        print(f"  {obj['boxes']}: {obj['confidence_scores'][0]:.2f} => {obj_result['boxes'][0]}")
+    print("----------------------------------------------------")
+
+#Identify the number of blue collars (if exists)
+num_blue_collars = detector.labels_to_num_labels(detected_objects, "baseball")
+
+final_result = min(num_blue_collars, key=num_blue_collars.get)  # Select the minimum number of blue collars (0)
+
+print(f"The dog in the photo has {final_result} blue collar(s).")
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 6)
+code:from object_detector import Object_Detector_Tool
+
+final_result = "A"
+# Extract the count of blue collars from the image
+# The image_path is assumed to be in the same folder as this Python script
+for image_path in [image_path for image_path in ["/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_38_image_1.jpg", "/path/to/darker_image.jpg"], "/path/to/lighter_image.jpg"]:  # Add more image paths if needed
+    generated_detections = Object_Detector_Tool.execute(image=image_path, labels=["blue collar"], save_object=True)
+    for obj in generated_detections['output_results']['labels']:
+        if obj['name'] == "blue collar":
+            final_result = obj['name'].replace("_", " ")
+            break
+
+print(final_result)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+final_result = "2"
+
+# Load the object detector tool and the image
+detected_objects, object_number = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/inception_v3_image.jpg", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Print the number of detected objects
+print(deleted_objects["baseball"]["boxes"], deleted_objects["basket"]["boxes"])
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'saved_object_path'
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_38_image_1.jpg"
+
+# Initialize object detector tool
+object_detector_tool = Object_Detector_Tool()
+
+# Call the function to detect the blue collar
+detected_objects, object_number = object_detector_tool.execute(image_path, labels=["dog"], save_object=False, saved_object_path="detected_objects")
+
+# Check if the blue collar was detect and the count was recorded
+if detected_objects:
+    if object_number["baseball"] == 1 and object_number["basket"] == 1:
+        final_result = "A"
+    else:
+        final_result = "D"
+else:
+    final_result = "E"
+
+# Output relevant conclusion
+if final_result.lower() == "a":
+    print("There is only one blue collar in the photo.")
+elif final_result.lower() == "b":
+    print("There are no blue collars in the photo.")
+else:
+    print("There are both 'baseball' and 'basket' objects in the photo.")

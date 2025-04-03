@@ -1,0 +1,107 @@
+
+[EXECUTION EXCEPTION]
+name 'torch' is not defined
+code:from object_detector import Object_Detector_Tool
+
+# Convert a string image path to a PyTorch tensor image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+im = Image.open(image_path).to(device)
+
+# Set model size
+model_size = 'tiny'
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["baseball", "basket"], model_size=model_size, save_object=False, saved_image_path="detected_objects")
+
+# Determine the number of black suitcases
+total_black_cases = 0
+for detected_object in detected_objects['output'][0]:
+    if detected_object['name'] == 'basketcase':
+        black_case = detected_object['points']
+        for case in black_case:
+            if case[2] == 0 or case[2] == 1:
+                total_black_cases +=1
+
+# Assign final result
+final_result = {'total': detected_objects['output'][0]}
+final_result['black_cases'] = total_black_cases
+
+print('Total black cases:', black_case)
+print('Number of black suitcases:', final_result['black_cases'])
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg"
+
+# Create an Object_Detector_Tool instance
+detector_tool = Object_Detector_Tool(image_path)
+
+# Detect and count the suitcases
+suitcase_counts = detector_tool.execute(labels=True, labeled_image_path=image_path).pop('object_number')
+suitcase_counts
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'image'
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg'
+
+# Specify the label to detect: white shirt
+labels = ["white shirt"]
+
+# Set the confidence threshold for detection
+threshold = 0.45
+
+# Specify the size of the model
+model_size = "tiny"
+
+# Set the flag for saving object detection results
+save_object = True
+
+# Detect the labels in the image
+object_number, grouped_objects = Object_Detector_Tool.execute(image_path, labels = labels, save_object = save_object, threshold =threshold, model_size =model_size)
+
+# The final result is a dictionary mapping each detected label to its total count in the image
+final_result = object_number
+
+print("Final result:", final_result)
+
+[EXECUTION EXCEPTION]
+'Object_Detector_Tool' object has no attribute 'load_objects'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg"
+detector = Object_Detector_Tool()
+labels = detector.load_objects(image_path)
+label_to_count = {l: len(detected_objects) for l, detected_objects in labels.items()}
+final_result = label_to_count
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 9)
+code:from object_detector import Object_Detector_Tool
+# Reading the image and taking a screenshot
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_9_image_1.jpg'
+screenshot = object_detector.execute(image=image_path, labels=["baseball", "basket"])
+# Counting the detected objects
+objects = {"baseball": 1, "basket": 1}
+final_result = {"counted_objects": objects}
+
+<command>
+
+[EXECUTION EXCEPTION]
+name 'detected_objects' is not defined
+code:from object_detector import Object_Detector_Tool
+
+import_path = {
+    "tool_module_name": "object_detector",
+    "tool_class_name": "Object_Detector_Tool"
+}
+
+print(f"Detection results: {[dict(box=det_box, name=det_name) for det_name, (boxes, scores) in detected_objects.items()]}")

@@ -1,0 +1,81 @@
+
+[EXECUTION EXCEPTION]
+No module named 'opencv'
+code:from opencv import cv
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_103_image_1.jpg"
+image = cv.imread(image_path)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+final_result = {}
+labels = ["baseball", "basket"]
+
+# Assuming the image is 'val_Counting_103_image_1.jpg', no need to specify path
+object_number = Object_Detector_Tool.execute(image="val_Counting_103_image_1.jpg", labels=labels)
+
+for label in dict(list(enumerate(labels)) + sorted(object_number, key=lambda x: x[1])):
+    for key, value in object_number.items():
+        final_result[label] = value
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'confidence_threshold'
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_103_image_1.jpg"
+
+# Detect labels: ['baseball', 'basket']
+labels = ['baseball', 'basket']
+
+# Confidence threshold
+threshold = 0.45
+
+# Model size ('tiny' or 'base')
+model_size = 'tiny'
+
+# Save object detection results
+save_object = True
+
+final_result = Object_Detector_Tool.execute(image_path, labels=labels, model_size=model_size, confidence_threshold=threshold, save_object=save_object)
+
+for detection_result in final_result['output_types'][0]:
+    box = detection_result['boxes']
+    boxes = []
+    for box in box:
+        boxes.append(box)
+
+    confidence_scores = []
+    for box in box:
+        confidence_scores.append(box['confidence_scores'])
+
+    saved_image_paths = []
+    for box in box:
+        saved_image_paths.append(f"detected_objects/{box['label']}_{box['confidence_scores'].round(1)}.png")
+
+final_result['output_types'][1]['boxes'] = boxes
+final_result['output_types'][1]['confidence_scores'] = confidence_scores
+final_result['output_types'][1]['saved_image_paths'] = saved_image_paths
+
+for label in labels:
+    if final_result['output_types'][1].get(label, None):
+        final_result['output_types'][1][label]['count'] = final_result['output_types'][1][label].get('count', 0) + 1
+
+final_result['output_types'][1]
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+answer = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_103_image_1.jpg", labels=["yellow", "jacket"], save_object=True, saved_image_path="detected_objects")
+final_result = answer[1]
+
+if final_result["object_number"] == 1:
+    print("There is 1 person wearing a yellow jacket.")
+elif final_result["object_number"] > 1:
+    print("There are more than 1 person wearing a yellow jacket.")
+else:
+    print("There is 0 person wearing a yellow jacket.")

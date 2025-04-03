@@ -1,0 +1,147 @@
+------------- 02-13-23-33-450881 Execution reward: 0.0 -------------
+[Reward computation time: 0.4698 seconds]
+
+QAid: val_Counting_69
+Code: from object_detector import Object_Detector_Tool
+
+final_result = True  # Assuming the correct answer is one of the options.
+
+def get_vowel_count(img_path):
+    label_scores = {}  # Initialize a dictionary to store the score of each label.
+    detected_box = {}  # Initialize a dictionary to store the coordinates of detected objects.
+
+    # Load the image
+    image = Image.open(img_path)
+
+    # Detect the objects in the image
+    object_detector = Object_Detector_Tool(image=image, labels=["vowel"], model_size="tiny")
+    label_scores = object_detector.execute()
+
+    # Find the labels with the highest score
+    max_score_labels = sorted(label_scores.items(), key=lambda x: x[1], reverse=True)[:5]
+
+    # Sum up the scores of the top 5 labels
+    highest_score_label = max_score_labels[0][0]
+    for label in max_score_labels[1:]:
+        label_scores = {}
+        label_scores = object_detector.execute(label=label, labels=["vowel"], model_size="tiny")
+        max_score_labels.append([label[0], sum(label_scores)])
+
+    # Calculate the total count of the detected vowels
+    total_vowel_count = sum(highest_score_label['score'] for label in highest_score_labels for _, score in label['scores'])
+
+    return total_vowel_count
+
+# Test the function with the provided image path
+result = get_vowel_count("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg")
+final_result = (result == 6)
+
+print(final_result)
+
+------------- 02-13-23-33-450881 Execution reward: 0.0 -------------
+[Reward computation time: 0.5088 seconds]
+
+QAid: val_Counting_69
+Code: from object_detector import Object_Detector_Tool
+
+------------- 02-13-23-33-450881 Execution reward: 0.0 -------------
+[Reward computation time: 1.0665 seconds]
+
+QAid: val_Counting_69
+Code: from object_detector import Object_Detector_Tool
+
+# Assuming we have the image path to 'val_Counting_69_image_1.jpg'
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg'
+labels = ['ball', 'basket']  # labels to detect, assuming these are interest-objects in your image
+final_result = 'C' if Object_Detector_Tool.execute(image=image_path, labels=labels).get('detected_objects'), 4
+
+------------- 02-13-23-33-450881 Execution reward: 0.0 -------------
+[Reward computation time: 1.1490 seconds]
+
+QAid: val_Counting_69
+Code: from object_detector import Object_Detector_Tool
+
+
+# Set the image path and other parameters
+input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg"
+labels_to_detect = ["baseball", "basket"]
+
+# Apply object detection
+object_detection_tool = Object_Detector_Tool()
+object_detection_tool.execute(image=input_image_path, labels=labels_to_detect, save_object=True)
+detected_objects, _ = object_detection_tool.execute()
+detected_objects = detected_objects[0]
+
+# Count each visible label
+label_count = len(detected_objects)
+
+# Find common vowels
+vowel_counts = {}
+for obj, details in detected_objects.items():
+    detected_labels = details["boxes"]
+    for val in 'aeiou':
+        vowel_counts[val] = defaultdict(int)
+
+for _, obj_details in detected_objects.items():
+    for label in obj_details["boxes"]:
+        if label in "aeiou":
+            vowel_counts[label][val] += 1
+
+final_result = max(vowel_counts, key=vowel_counts.get, default='')
+print("Final result:", final_result)
+
+------------- 02-13-23-33-450881 Execution reward: 0.0 -------------
+[Reward computation time: 1.3659 seconds]
+
+QAid: val_Counting_69
+Code: from object_detector import Object_Detector_Tool
+
+# Sample usage (replace 'path/to/DISTANCE/IMAGE.jpg' with the actual path of the image)
+result = Object_Detector_Tool.execute(image='path/to/DISTANCE/IMAGE.jpg', labels=['block', 'key', 'STONE', 'XL'])
+final_result = 'B'
+for item in result['output_types'][0]['grouped_results']['boxes']:
+    for box in item['boxes']:
+        box_val = box['bbox'][2]  # Assuming 'bbox' in some detected object contains coordinates in this format
+        if 'block' in str(box_val):
+            final_result = 'A'
+
+------------- 02-13-23-33-450881 Execution reward: 0.0 -------------
+[Reward computation time: 1.5347 seconds]
+
+QAid: val_Counting_69
+Code: from object_detector import Object_Detector_Tool
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg"
+detector_tool = Object_Detector_Tool()
+detected_objects, object_number = detector_tool.execute(image_path)
+detected_objects
+
+------------- 02-13-23-33-450881 Execution reward: 0.0 -------------
+[Reward computation time: 1.4548 seconds]
+
+QAid: val_Counting_69
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image and process the labels
+tool = Object_Detector_Tool(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg", 
+                           labels=("baseball", "basket"),
+                           model_size="base",
+                           save_object=True,
+                           saved_image_path="detected_objects")  
+label_detections = tool.execute()
+
+# Check which labels are present
+labels_present = sorted(label_detections['label_number_dict'].keys()) 
+
+# Count the number of common vowels
+vowel_count = sum(1 for label in labels_present if set(label.split()).intersection(["a", "e", "i", "o", "u"]) != set())
+
+final_result = max(set(labels) - set(["a", "e", "i", "o"]), key=vowel_count)
+
+------------- 02-13-23-33-450881 Execution reward: 0.0 -------------
+[Reward computation time: 1.4460 seconds]
+
+QAid: val_Counting_69
+Code: import object_detector as OD
+

@@ -1,0 +1,173 @@
+
+[EXECUTION EXCEPTION]
+No module named 'matplotlib'
+code:from object_detector import Object_Detector_Tool
+
+import matplotlib.image as img
+import numpy as np
+
+detector_tool = Object_Detector_Tool()
+result, object_number = detector_tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg", labels=["urine_trouble"], save_object=True, saved_image_path="")
+output = {
+    "Detected Objects": result,
+    "Object Numbers": object_number
+}
+
+final_result = output
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+def guess_number_of_green_tiles(image_path):
+    """
+    detects and counts green tiles in an image.
+    :param image_path: str - File path to the image.
+    :return: int - Number of green tiles.
+    """
+    detector_tool = Object_Detector_Tool(image_path)
+    tile_colors = ["green"]
+
+    # Set the model size and save the objects as images
+    detector_tool.set_model_size("tiny")
+    detector_tool.set_save_object(True)
+    detector_tool.execute()
+
+    # Iterate through the image to count green tiles
+    detected_objects = {}
+    for label, groups in detector_tool.output_types[1]['detected_objects'].items():
+        if label in tile_colors:
+            detected_objects[label] = len(groups)
+
+    # Return the number of green tiles
+    return detected_objects["green"]
+
+final_result = guess_number_of_green_tiles("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg")
+final_result
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'labels'
+code:from object_detector import Object_Detector_Tool
+
+# Load labels and threshold
+labels = ['urine', 'cleanings', 'milk', 'water', 'car']
+threshold = 0.45
+
+# Read the image file path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg'
+
+# Create the Object_Detector_Tool object
+object_detector_tool = Object_Detector_Tool(image_path, labels=labels, threshold=threshold, model_size='tiny', save_object=False)
+
+# Get the results
+results = object_detector_tool.execute()
+
+# Get the number of green tiles
+green_tiles = len([tile for tile in results['total_result'][0]['boxes'] if tile['label'] == 'green'][0]['name'])
+final_result = {'green_tiles': green_tiles}
+
+[EXECUTION EXCEPTION]
+name 'object_detector_tool' is not defined
+code:from object_detector import Object_Detector_Tool
+
+# Read the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg"
+image = object_detector_tool.load_image(image_path)
+
+# Detect the objects
+labels = ['urine_tile']
+object_number = Object_Detector_Tool.execute(image=image, labels=labels, threshold=0.45, model_size="tiny", save_object=True)
+
+# Calculate the number of green tiles
+green_tiles = sum(image.height() for image in labels.values() if image["name"] == "green_tile")
+
+final_result = {"answer": f"Green tiles: {green_tiles}"}
+print(final_result)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+def count_green_tiles(image_path):
+    image = Object_Detector_Tool.execute(image=image_path, labels=["green_tile"], threshold=0.45, saved_image_path="green_tile detections")
+    total_green_tiles = {"count": 0}
+    for box in image["boxes"]:
+        for coord in box["coordinates"]:
+            for tile_color in ["green"]:
+                if tile_color in coord:
+                    total_green_tiles["count"] += 1
+                    break
+    return total_green_tiles
+
+total_green_tiles = count_green_tiles("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg")
+print("Number of green tiles:", total_green_tiles["count"])
+final_result = {"green_tiles_in_image": (total_green_tiles["count"] + 1)}
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+# Specify the image path and parameters
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg"
+
+# Create an Object_Detector_Tool object with the path to the image
+detector = Object_Detector_Tool(image_path)
+
+# Detect objects ('green' and 'tile') and their bounding box
+labels = ["green", "tile"]
+detected_objects = detector.detect_objects(labels, threshold=0.45)
+
+# Count total number of green tiles
+total_greens = len(detected_objects)
+
+# Determine the number of green tiles
+if total_greens > 0:
+    final_result = f"**Answer:** {total_greens} green tiles are on the wall."
+else:
+    final_result = f"**Answer:** There are no green tiles on the wall."
+
+# Print the results
+print(final_result)
+
+[EXECUTION EXCEPTION]
+name 'path' is not defined
+code:from object_detector import Object_Detector_Tool
+
+# Get the wall image
+wall_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg"
+
+# Create an object detector tool instance
+tool_instance = Object_Detector_Tool(image=path, labels=["urine"], save_object=False)
+
+# Get the labels and their counts
+labels, label_count = tool_instance.execute()
+
+# Filter out green labels
+labels = [label for label in labels if "green" not in label]
+
+# Calculate the number of green tiles
+if labels:
+    green_count = len([label for label in labels if "green" in label])
+
+else:
+    green_count = 0
+
+# Print the final result
+print("Number of green tiles:", green_count)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+def get_green_tiles(image_path):
+    # Load the image
+    detector = Object_Detector_Tool(image_path=image_path)
+    
+    # Detect the green tiles
+    green_tiles = detector.detect_objects(['green_tile'], only_gts=True, threshold=0.45)
+    
+    # Collect the green tiles detections and return count
+    return len(green_tiles)
+
+final_result = get_green_tiles("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg")
+print("Number of green tiles:", final_result)

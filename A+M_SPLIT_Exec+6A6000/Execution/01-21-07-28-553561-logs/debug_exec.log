@@ -1,0 +1,32 @@
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:generated python code
+
+[EXECUTION EXCEPTION]
+No module named 'Object_Detector_Tool'
+code:from Object_Detector_Tool import Object_Detector_Tool
+
+# Load the images and count the number of consonants
+def count_consonants(image_path):
+    detector = Object_Detector_Tool()
+    labels = ["a", "b", "c", "d", "e", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z"]
+    output = {}
+    
+    # Detect objects in the image
+    objects, _ = detector.execute(image_path, labels, 0.45, "tiny", save_object=True, saved_image_path="result_images/")
+    
+    for obj, results in objects.items():
+        count = 0
+        for result in results:
+            if result["class"] in labels and result["supervised_instance_count"] > 0:
+                count += 1
+        output[obj] = count
+    
+    return output
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_79_image_1.jpg"
+consonants = count_consonants(image_path)
+final_result = {k: v for k, v in sorted(consonants.items(), key=lambda item: item[1], reverse=True)}
+final_result

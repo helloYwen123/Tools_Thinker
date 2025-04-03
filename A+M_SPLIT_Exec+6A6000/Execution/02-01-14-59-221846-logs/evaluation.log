@@ -1,0 +1,132 @@
+------------- 02-01-14-59-221846 Execution reward: 0.0 -------------
+[Reward computation time: 1.1838 seconds]
+
+QAid: val_Counting_92
+Code: # Import the Object_Detection_Tool from its module
+from Object_Detector_Tool import Object_Detector_Tool
+
+
+# Set the image path and configuration parameters
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_92_image_1.jpg"
+labels = ["baseball", "basket"] 
+confidence_threshold = 0.45 
+show_objects = True 
+saved_image_path = "detected_objects"
+
+# Create the object detection tool
+detector_tool = Object_Detector_Tool(image_path=image_path, labels=labels, confidence_threshold=confidence_threshold, show_objects=show_objects, saved_image_path=saved_image_path, model_size="tiny")
+
+# Iterate through the predicted labels and count the ones detected in the image
+labels_with_boxes = detector_tool['output_types'][0]['1'][0]['boxes']
+label_counts = {label: value for label, value in detector_tool['output_types'][0]['2'].items() if label in labels_with_boxes.keys()}
+
+# The count of detected tennis rackets is given by the dictionary key for "baseball"
+final_result = label_counts.get("baseball")
+
+------------- 02-01-14-59-221846 Execution reward: 0.0 -------------
+[Reward computation time: 1.1663 seconds]
+
+QAid: val_Counting_92
+Code: from object_detector import Object_Detector_Tool
+
+------------- 02-01-14-59-221846 Execution reward: 0.0 -------------
+[Reward computation time: 1.2440 seconds]
+
+QAid: val_Counting_92
+Code: import object_detector as OD
+
+ # Load the image
+ image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_92_image_1.jpg"
+ image = OD.object_detection(image_path=image_path, labels=["baseball", "basket"])
+
+ # Extract information about the detected objects and their count
+ detected_objects = image['output_types'][0][1]
+
+ # Determine the number of people carrying tennis rackets
+ num_rackets = len(detected_objects['boxes'][0]['baseball'])
+
+ final_result = num_rackets
+
+# Display the final result
+print(final_result)
+
+------------- 02-01-14-59-221846 Execution reward: 0.0 -------------
+[Reward computation time: 1.3532 seconds]
+
+QAid: val_Counting_92
+Code: 1. Import the necessary libraries.
+import object_detector
+
+2. Call the object_detection function with the image path, labels, save_object parameter, and saved_image_path.
+result = object_detector.detected_objects(image_path, labels=['baseball', 'basket'], save_object=True, saved_image_path="detected_objects")
+result
+
+------------- 02-01-14-59-221846 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_92
+Code: [EMPTY]
+
+------------- 02-01-14-59-221846 Execution reward: 0.0 -------------
+[Reward computation time: 1.0503 seconds]
+
+QAid: val_Counting_92
+Code: from object_detector import Object_Detector_Tool
+
+class App:
+    def __call__(self, image, labels=['baseball'], threshold=0.45, model_size='tiny', save_object=True, saved_image_path="detected_objects"):
+        # Load model and labels
+        detected_objects, object_number = Object_Detector_Tool.execute(image=image, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+        # Print object number
+        print(f"Total {object_number} objects detected in the image.")
+
+        # Loop through each label and print the count
+        for label, count in object_number.items():
+            print(f"--- {label} --- Count: {count}")
+
+if __name__ == '__main__':
+    # Load image path
+    image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_92_image_1.jpg'
+
+    # Create App object
+    app = App()
+
+    # Check the number of athletes walking with tennis rackets
+    # Call the method to detect the specific objects in the image
+    app(image_path)
+
+------------- 02-01-14-59-221846 Execution reward: 0.0 -------------
+[Reward computation time: 1.2151 seconds]
+
+QAid: val_Counting_92
+Code: from object_detector import Object_Detector_Tool
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_92_image_1.jpg"
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Count presence of 'basket' in the image
+basket_in_image = object_number.get("basket")
+final_result = basket_in_image if basket_in_image > 0 else 1
+
+print(f"There are {final_result} people carrying a tennis racket.")
+
+------------- 02-01-14-59-221846 Execution reward: 0.0 -------------
+[Reward computation time: 1.1277 seconds]
+
+QAid: val_Counting_92
+Code: final_result = 0
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_92_image_1.jpg"
+
+# Call the object_detection tool
+result = Object_Detector_Tool.execute(image=image_path, labels=['tennis_racket'], save_object=True, saved_image_path="/tmp")
+
+# Check the results
+for _, label_counts in result["output"][0]['grouped_detection_results'].items():
+    if label_counts['boxes']:
+        final_result += len(label_counts['boxes'])
+
+print("Number of people carrying tennis rackets:", final_result)
+

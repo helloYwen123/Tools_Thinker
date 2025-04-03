@@ -1,0 +1,142 @@
+------------- 01-04-10-53-122455 Execution reward: 1.0 -------------
+[Reward computation time: 0.7412 seconds]
+
+QAid: val_Counting_57
+Code: from object_detector import Object_Detector_Tool
+
+final_result = 0
+# Function to check if the player is wearing a face guard
+def check_glove(player):
+    # Check if the player is wearing a face guard
+    if player is not None:
+        face_protector = object_detector
+        if face_protector is not None:
+            gloves = face_protector.detect("baseball glove")
+            if gloves is not None:
+                return True  # Face guard detected
+    return False
+
+------------- 01-04-10-53-122455 Execution reward: 0.0 -------------
+[Reward computation time: 0.7529 seconds]
+
+QAid: val_Counting_57
+Code: from object_detector import Object_Detector_Tool
+
+final_result = {"count": 3, "label": "Face Guard"}
+
+# Use the object detector tool to detect face guards in the image
+detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["face guard"], save_object=True, saved_image_path="detected_objects")
+
+# Check if face guards were detected
+if set(detected_objects["label"]) == {"Face Guard"}:
+    final_result["count"] = object_number
+    final_result["label"] = "Face Guard"
+
+# Print the final result
+print(final_result)
+
+------------- 01-04-10-53-122455 Execution reward: 1.0 -------------
+[Reward computation time: 0.8910 seconds]
+
+QAid: val_Counting_57
+Code: from object_detector import Object_Detector_Tool
+
+final_result = [{"number": 1, "labels": ["faceeguard2", "faceguard"]}, {"number": 1, "labels": ["faceguard"]}, {"number": 1, "labels": ["faceguard1"]}]
+
+------------- 01-04-10-53-122455 Execution reward: 0.0 -------------
+[Reward computation time: 1.2011 seconds]
+
+QAid: val_Counting_57
+Code: from object_detector import Object_Detector_Tool
+
+# Image file path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+
+# Detect objects
+detected_object_results = Object_Detector_Tool.execute(image_path, labels=["baseball", "basket"], threshold=0.5, save_object=True, saved_image_path="detected_objects")
+
+# Count the number of baseballs and baskets
+baseball_count = detected_object_results['detected_object_detection_results']['box_counts']["baseball"]
+basket_count = detected_object_results['detected_object_detection_results']['box_counts']["basket"]
+
+print(f"Number of baseballs: {baseball_count}")
+print(f"Number of baskets: {basket_count}")
+
+final_result = detect_baseball_and_basket(image_path)
+
+------------- 01-04-10-53-122455 Execution reward: 0.0 -------------
+[Reward computation time: 1.2432 seconds]
+
+QAid: val_Counting_57
+Code: from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="path/to/image.jpg", labels=["face guard"], save_object=True, saved_image_path="detected_objects")
+
+if "detected_objects" in final_result:
+    detected_objects = final_result['detected_objects']
+    label_counts = final_result['output_types'][1]
+    face_guards = {label: count for label, count in label_counts.items() if "face guard" in label}
+    if len(face_guards) == 2:
+        final_result = "2"
+    else:
+        final_result = str(len(face_guards))
+else:
+    final_result = "Error: Label not found."
+
+final_result
+
+------------- 01-04-10-53-122455 Execution reward: 0.0 -------------
+[Reward computation time: 1.1624 seconds]
+
+QAid: val_Counting_57
+Code: from object_detector import Object_Detector_Tool
+
+final_result = []
+# Extract relevant objects from image
+detected_objects, object_number = Object_Detector_Tool.execute(image="/path/to/image.png", labels=["baseball", "player face guard"], save_object=True, saved_image_path="detected_objects")
+final_result.append(object_number)
+final_result.append(detected_objects['total'])
+print(final_result)
+
+------------- 01-04-10-53-122455 Execution reward: 0.0 -------------
+[Reward computation time: 1.1842 seconds]
+
+QAid: val_Counting_57
+Code: Detected Objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+------------- 01-04-10-53-122455 Execution reward: 0.0 -------------
+[Reward computation time: 1.0434 seconds]
+
+QAid: val_Counting_57
+Code: from object_detector import Object_Detector_Tool
+
+# Set the required parameters
+input_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg'
+labels = ['baseball', 'basket']
+save_object = True
+saved_image_path = 'detected_objects'
+
+# Initialize the tool with the given parameters
+tool = Object_Detector_Tool(input_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+# Call the tool method
+result = tool.execute()
+
+# Get the detection results
+labels_count = result['output_types'][0]
+boxes_and_scores = result['output_types'][1]
+image_paths = []
+
+# Iterate through each detected label and check if it contains 'baseball' and 'basket' in its bounding box with confidence score > 0.45
+for label, boxes in boxes_and_scores.items():
+    if label == 'baseball' and 'basket' in boxes:
+        box = box for box, score in boxes.items() if score > 0.45
+        for box in box:
+            if 'basket' in box['bbox'] and box['bbox'] not in image_paths:
+                image_paths.append(box['bbox'])
+
+# Count the number of detected 'baseball' and 'basket' objects
+count_baseball = len([bbox for box in boxes_and_scores.values() for bbox in box if 'baseball' in bbox and 'basket' in bbox])
+count_basket = len([bbox for box in boxes_and_scores.values() for bbox in box if 'basket' in bbox])
+final_result = {'baseball_count': count_baseball, 'basket_count': count_basket}
+

@@ -102,6 +102,8 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
         max_pixels: Optional[int] = 12845056,
         min_pixels: Optional[int] = 3136,
         attn_implementation: str = "flash_attention_2",
+        torch_dtype: str = None  # Debug
+        
     ):
 
         # Args
@@ -114,6 +116,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
         # Trained model
         model_init_kwargs = args.model_init_kwargs or {}
         model_init_kwargs["attn_implementation"] = attn_implementation
+        model_init_kwargs["torch_dtype"] = torch_dtype # Debug
         if isinstance(model, str):
             model_id = model
             torch_dtype = model_init_kwargs.get("torch_dtype")

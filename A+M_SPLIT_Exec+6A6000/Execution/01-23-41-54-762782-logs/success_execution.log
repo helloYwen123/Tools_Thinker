@@ -1,0 +1,102 @@
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool 
+
+class Object_Detector_Tool:
+
+    def __init__(self, image, labels=None, threshold=0.5, model_size='tiny', save_object=True, saved_image_path='detected_objects'):
+        """
+        Initialize the object_detector_tool with the given image, labels, threshold, model_size, and save_object.
+        """
+        
+        # Check if the input types are provided
+        if len(self.input_types) != 1 or not isinstance(self.input_types[0], type(self.image)) or len(self.input_types[0].keys()) != 1 or not isinstance(self.labels, list) or not isinstance(self.threshold, float) or not isinstance(self.model_size, str) or not isinstance(save_object, bool) or (saved_image_path not in ['', None]) or not isinstance(self.labels, list) or (len(self.labels) != len(self.input_types[0])):
+            print("Invalid inputs.")
+            return
+
+        # Set the default values for save_object, if not provided
+        if save_object is None:
+            save_object = True
+        
+        self.detected_objects = self.detect_objects(self.threshold, model_size, labels, saved_image_path, image, save_object)
+        self.label_counts = self.label_to_counts( self.labels, threshold=self.threshold, image_type="image" , model_size=model_size)
+
+    def detect_objects(self, threshold, model_size, labels, saved_image_path, image, save_object):
+        """
+        Detect objects in the image based on the given labels, input type, threshold and saved image path.
+        """
+    
+        # Convert the input type to list
+        self.labels = self.labels or []
+        
+        # Detect the objects
+        detections = Object_Detector_Tool.execute(image=image, labels=labels, save_object=save_object, saved_image_path=saved_image_path, threshold=threshold)
+
+        # Generate a list of detected objects
+        self.detected_objects = [{"x1": detection["bbox"][0], "y1": detection["bbox"][1], "x2": detection["bbox"][2], "y2": detection["bbox"][3], "label": detection["label"]} for detection in detections]
+        
+        return self.detected_objects
+    
+    def label_to_counts(self, labels, threshold = None, image_type='image', model_size='tiny', save_object=True):
+        """
+        Convert label names to counts and return data.
+        """
+
+        d = {}
+        if threshold is None:
+            threshold = '50'
+        print('Calculating label counts...')
+        
+        # Parse labels into objects
+        objects = []
+        # This can be extended to handle multiple object types by changing labels
+        for label in labels:
+            objects.append([d[label], label, image])
+
+        # Create dictionary mapping each detection with total count
+        if image_type == 'image':
+            self.label_counts = self.label_counts.update({label: self.label_to_counts(objects, save_object=False, save_image_path='detected_objects')})
+        else:
+            raise NotImplementedError('Unknown image type.')
+              
+        # Calculate total count of each label
+        total_labels= [d.get('total',0) for d in self.label_counts.values()]
+        
+        return total_labels
+
+        
+if __name__ == '__main__':
+    Image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_82_image_1.jpg'
+    Labels = ["baseball", "basket"]
+    Threshold = 0.5
+    Model_size = 'tiny'
+
+    print(f"{'Detected Objects': <80} {'Label':<10} {'Bounding Box': <25}")
+    
+    if Labels:
+        Detector_Tool = Object_Detector_Tool
+        print("Results for labels in dataset")
+        
+        Detector_Tool.execute(image=image, labels=Labels)
+        Detector_Tool.execute(image=image, saved_image_path='detected_objects', threshold=Threshold, model_size=Model_size)
+        
+        Detector_Tool.execute(image=image)
+        
+        Detector_Tool.execute(image=False)
+    
+    print("Total Counts: ")
+    print(f"{'Label':<10}{'Total Labels':<10}{'Average Label Count':<20}{'StdDev of Label Count':<20}")
+    Detector_Tool.label_counts
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+1
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None

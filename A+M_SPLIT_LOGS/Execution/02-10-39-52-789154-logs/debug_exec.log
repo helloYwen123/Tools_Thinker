@@ -1,0 +1,64 @@
+
+[EXECUTION EXCEPTION]
+type object 'Object_Detector_Tool' has no attribute 'object_detector'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+with Object_Detector_Tool.object_detector.open("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_36_image_1.jpg") as detector:
+    detections = detector.execute()
+
+# Calculate the number of wooden beams on top of the person
+number_of_beams = detections[0]['boxes'].count('baseball')
+
+print(final_result)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool as detector_tool
+
+final_result = []
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_36_image_1.jpg"
+labels = ["baseball", "basket"]
+
+detector_tool.execute(image=image_path, labels=labels, saved_image_path="detected_objects")
+for label, results in detector_tool.output_types[0].items():
+    label_count = results['object_number']
+    for box in results['boxes']:
+        x1, y1, x2, y2 = box
+        confidence = results['confidence_scores'][box]
+        total_counts = detector_tool.output_types[1]['object_number'][label]
+
+        # Calculate the number of wooden beams on top of the person
+        num_beams = (x1 - confidence * total_counts) / (2 * y1 - x2)
+
+        # Add the number of wooden beams to the result variables
+        final_result.append({
+            "label": label,
+            "box": box,
+            "confidence": confidence,
+            "num_beams": num_beams
+            })
+
+# Output the result
+for label, box in final_result:
+    print(f"Detected {label}: {box} confidence: {confidence} num_beams: {num_beams}")
+
+[EXECUTION EXCEPTION]
+list index out of range
+code:from object_detector import Object_Detector_Tool
+
+# Load the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_36_image_1.jpg"
+
+# Create an instance of the Object_Detector_Tool class
+detector = Object_Detector_Tool()
+
+# Execute the tool to detect objects in the image
+detections = detector.execute(image_path, labels=["baseball", "basket"], save_object=True)[0]
+
+# Get the total number of detections
+total_detections = detections[1]['object_number']
+
+# Print the result
+print(f'Total detections: {total_detections}')

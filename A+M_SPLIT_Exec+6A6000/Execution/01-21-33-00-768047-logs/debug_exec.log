@@ -1,0 +1,34 @@
+
+[EXECUTION EXCEPTION]
+cannot import name 'detected_objects' from 'object_detector' (/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/object_detector/__init__.py)
+code:from object_detector import Object_Detector_Tool, detected_objects
+
+# Load the model and adjust labels
+detour_model = Object_Detector_Tool(model='tiny')
+detour_tool_label = detour_model.load_labels(detour_model.labels + ['baseball', 'basket'])
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_36_image_1.jpg"
+image = detour_tool_label.detect_objects(image_path)
+
+# Check the total count for the 'baseball' and 'basket'
+for label in detour_tool_label.labels:
+    final_count = 0
+    for det_result in detected_objects.get(label):
+        final_count += det_result["confidence_scores"]
+    final_result = detour_tool_label.labels[label].to_dict() + {"count": final_count}
+det_output = detected_objects.get(detour_tool_label.labels[0], final_result)
+
+for object_result in det_output:
+    box = object_result.get('boxes')
+    print(f"Box(s) of {detour_tool_label.labels[0]}: {box}")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_36_image_1.jpg"
+objects = Object_Detector_Tool.execute(image=image_path, labels=["baseball"], save_object=True, saved_image_path="detected_objects")
+
+final_result = objects[0]

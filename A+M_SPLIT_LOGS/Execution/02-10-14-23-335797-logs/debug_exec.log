@@ -1,0 +1,71 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_79_image_1.jpg"
+
+detector_tool = Object_Detector_Tool(image_path=image_path)
+object_number = detector_tool.execute()
+if object_number == 3:
+    detected_objects, object_number = detector_tool.execute(labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+else:
+    detected_objects, object_number = detector_tool.execute(labels=["baseball", "basket"], save_object=False, saved_image_path="")
+
+if object_number == 3:
+    letter_counts = {key: 0 for key in detected_objects[0]}
+    for (bbox, confidence, saved_image_path) in detected_objects[0][0]:
+        if 'baseball' in str(saved_image_path).split('.')[-1]:
+            if int(str(saved_image_path).split('/')[-1].split('.')[0]) in detected_objects[0]:
+                letter_counts['@'] += 1
+    final_result = letter_counts['@']
+else:
+    final_result = None
+
+if final_result is not None:
+    print("Number of letters: ", final_result)
+else:
+    print("Error occurred.")
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:generated python code
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:generated python code
+
+[EXECUTION EXCEPTION]
+list index out of range
+code:# This image is the object we want to analyze, which looks like a snowboard holder and its accompanying ski poles
+
+# Import the Object_Detector_Tool tool
+from object_detector import Object_Detector_Tool
+
+# Define the labels we are interested in (in this case, "ski pole holder" and "snowboard")
+labels = ["ski pole holder", "snowboard"]
+
+# Define the threshold
+threshold = 0.45
+
+# Set the size of the model to 'tiny'
+model_size = "tiny"
+
+# Define the model_type
+model_type = "tiny"
+
+# Set the save_object attribute to True
+save_object = True
+
+# Check if the Object_Detector_Tool tool was executed successfully
+if Object_Detector_Tool().execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_79_image_1.jpg", labels=labels, save_object=save_object)[0]["model_name"] == "Grounding DINO":
+    # Calculate the number of letters in the snowboard
+    num_consonants = 0
+    for label in labels:
+        # Find the number of characters with consonants in the labeled region
+        characters = Object_Detector_Tool().execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_79_image_1.jpg", labels=label, threshold=threshold, model_type=model_type)[0][label]["box_list"]
+        num_consonants += len([char for char in characters if char.isalpha() and char.is_consonant()])
+
+    final_result = str(num_consonants) + " (A)" if num_consonants < len(labels) else str(num_consonants) + " (C)"
+
+    print(final_result)

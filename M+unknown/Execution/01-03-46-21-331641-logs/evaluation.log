@@ -1,0 +1,177 @@
+------------- 01-03-46-21-331641 Execution reward: 0.0 -------------
+[Reward computation time: 0.8069 seconds]
+
+QAid: val_Counting_118
+Code: from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118.png"
+
+# Labels to detect
+labels = ["blue_hat", "blue_nose"]
+
+# Confidence threshold
+threshold = 0.45
+
+# Get predictions
+predicted_scores, predicted_labels = Object_Detector_Tool.execute(image_path, labels=labels, threshold=threshold)
+
+predicted_scores_filtered = predicted_scores[predicted_labels == 1]  # Filter for 'blue_hat' detection
+number_of_blue_hat_players = len(predicted_labels[predicted_scores_filtered >= predicted_scores.mean()])  # Count players wearing blue hats
+
+final_result = number_of_blue_hat_players  # Final result variable assignment
+
+------------- 01-03-46-21-331641 Execution reward: 0.0 -------------
+[Reward computation time: 1.0763 seconds]
+
+QAid: val_Counting_118
+Code: from object_detector import Object_Detector_Tool  # Import the Object_Detector_Tool tool
+
+# Set up the parameter dictionary
+params = {
+    'labels': ['baseball', 'basket'],
+    'threshold': 0.45,
+    'model_size': 'tiny',
+    'save_object': False,
+    'saved_image_path': 'detected_objects'
+}
+
+# Use the tool to detect objects and extract relevant information
+object_number = Object_Detector_Tool.execute(image="path_to_image", labels=params['labels'], model_size=params['model_size'], threshold=params['threshold'], save_object=params['save_object'], saved_image_path=params['saved_image_path'])
+
+# Extract the relevant information from the output tuple
+labels_and_counts = object_number['object_number']
+labels = labels_and_counts.keys()
+labels.sort()
+
+# Calculate the number of persons not wearing a blue hat
+blue_hat_count = labels.count('baseball')
+non_blue_hat_count = labels.count('basket') - blue_hat_count
+non_blue_hat_count
+
+------------- 01-03-46-21-331641 Execution reward: 0.0 -------------
+[Reward computation time: 1.0823 seconds]
+
+QAid: val_Counting_118
+Code: from object_detector import Object_Detector_Tool
+
+final_result = 0
+
+def count_unseen_people():
+    # Load the image
+    detector_tool = Object_Detector_Tool()
+    input_dir = "path_to_image_directory"
+    label_dict = {'baseball': 0, 'basket': 1}  # Convert labels to integers
+    save_object = True
+    saved_image_path = "detected_objects"
+
+    # Detect objects
+    image = detector_tool.get_object_image(input_dir, labels=['baseball', 'basket'], save_object=save_object, saved_image_path= saved_image_path)
+    
+    # Get the total count of the detected objects
+    count = len(detector_tool.execute(image=image, labels=['baseball', 'basket'], save_object=save_object, saved_image_path= saved_image_path))
+
+    # Calculate how many people aren't wearing a blue hat
+    unblue_hats = len([person for person in detector_tool.execute_image(image, labels=['baseball'], save_object=save_object, saved_image_path= saved_image_path) if not person['label'] in label_dict]) - count
+
+    return unblue_hats
+
+final_result = count_unseen_people()
+print("Number of people not wearing a blue hat:", final_result)
+
+------------- 01-03-46-21-331641 Execution reward: 0.0 -------------
+[Reward computation time: 1.3924 seconds]
+
+QAid: val_Counting_118
+Code: from object_detector import Object_Detector_Tool
+
+# Get the image and labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg"
+labels = ["blue"]
+
+# Create the Object_Detector_Tool object
+tool = Object_Detector_Tool(image_path, labels=labels, saved_object=False)
+
+# Get the object count
+object_count = tool.output_types[0].values()
+
+# Find the count of people not wearing a blue hat
+no_blue_hats = 0
+for count in object_count:
+    if count and "blue_hat" in str(count):
+        print(f"Found '{count}' people wearing a blue hat, but {str(count).rfind('blue')}' people have a blue hat")
+
+        break
+    else:
+        no_blue_hats += 1
+
+no_blue_hats
+
+------------- 01-03-46-21-331641 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_118
+Code: [EMPTY]
+
+------------- 01-03-46-21-331641 Execution reward: 0.0 -------------
+[Reward computation time: 1.2098 seconds]
+
+QAid: val_Counting_118
+Code: from object_detector import Object_Detector_Tool
+
+def calculate人数(persons):
+    total = 0
+    for person in persons:
+        if person.is_a_blue_cap:
+            total += 1
+    return total
+
+# Example usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.7
+model_size = "tiny"
+save_object = True
+
+result = Object_Detector_Tool.execute(image_path=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object)
+
+final_result = result["object_number"]
+print(f"{final_result} people are not wearing a blue hat.")
+
+------------- 01-03-46-21-331641 Execution reward: 0.0 -------------
+[Reward computation time: 1.1490 seconds]
+
+QAid: val_Counting_118
+Code: from object_detector import Object_Detector_Tool
+
+# Step 1: Define the labels to detect, saving the image
+labels = ["baseball"]
+image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg"
+
+# Step 2: Call the function and get the detected object and its count
+final_result = Object_Detector_Tool.execute(image=image, labels=labels, save_object=True, saved_image_path="detected_objects")
+
+# Step 3: Extract information from the final_result tuple
+class_list = final_result.output_types[0][0]
+labels_count = final_result.output_types[1]["label_count"]
+
+# Step 4: Determine the number of people not wearing a blue hat
+blue_hats = class_list["baseball"]
+not_wearing_blue_hats = labels_count - blue_hats
+
+print(f"The number of people not wearing a blue hat is: {not_wearing_blue_hats}")
+
+------------- 01-03-46-21-331641 Execution reward: 0.0 -------------
+[Reward computation time: 1.1765 seconds]
+
+QAid: val_Counting_118
+Code: from object_detector import Object_Detector_Tool
+
+detected_objects, object_count = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg", labels=["baseball", "basket"], save_object=False)
+final_result = 0
+
+for label in detected_objects:
+    if label.get("label") != "baseball" and label.get("label") != "basket":
+        final_result += detected_objects[label].get("quantity")
+
+final_result
+

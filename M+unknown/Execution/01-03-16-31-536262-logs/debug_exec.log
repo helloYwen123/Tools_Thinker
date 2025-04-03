@@ -1,0 +1,133 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import *
+
+result = {}
+
+# Path to image
+input_image = 'path/to/image.jpg'
+
+# Call object detector tool
+detected_objects, object_number = Object_Detector_Tool.execute(image=input_image, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Loop through detected objects and count them in the image
+for detected_object in detected_objects:
+    object_label = detected_object["object_labels"][0]
+    if object_label in result:
+        result["{} {}".format(object_label, detected_object["image_name"])] += 1
+    else:
+        result["{} {}".format(object_label, detected_object["image_name"])] = 1
+
+final_result = result
+print("Detected objects count: ", final_result)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'confidence_threshold'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image path
+image_path = "/path/to/image.png"
+
+# Define labels to detect
+labels = ["bus"]
+
+# Define the confidence threshold
+threshold = 0.45
+
+# Define the model size
+model_size = "base"
+
+# Detect the objects
+object_detected = Object_Detector_Tool.execute(image_path, labels=labels, confidence_threshold=threshold, model_size=model_size, saved_object=True)
+
+# Get the total counts for each label
+total_counts = {label: len(object_detected) for label, counts in object_detected.items()}
+
+final_result = {1: total_counts[1], 2: total_counts[2]}
+
+print(final_result)
+
+[EXECUTION EXCEPTION]
+No module named 'matplotlib'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+import matplotlib.pyplot as plt
+plt.figure(figsize=(10, 10))
+
+# Load the image
+file_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg"
+detected_objects, object_number = Object_Detector_Tool.execute(image=file_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+detected_objects
+
+[EXECUTION EXCEPTION]
+type object 'Object_Detector_Tool' has no attribute 'load_image_from_file'
+code:from object_detector import Object_Detector_Tool
+
+# Step 1: Load the image with LabelImg
+img_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg"
+image_desc = {"labels": ["red"], "threshold": 0.4, "model_size": "tiny", "save_object": True, "saved_image_path": "detected_objects"}
+labels = Object_Detector_Tool.load_image_from_file(img_path, image_desc=image_desc, tool_module_name="object_detector", tool_class_name="Object_Detector_Tool", tool_description="Detects 'red' in the image.")
+
+# Step 2: Find all labels
+bboxs = labels['object_number']
+
+# Step 3: Count the "red" label
+red_buses = {"red": [], "total": 0}
+for i in range(len(bbboxs)):
+    if bboxs[i, -1] == 4:
+        red_buses['red'] += 1
+        final_result = 1
+    else:
+        final_result = 0
+        
+red_buses.update([{"bbox": bboxs[i], "confidence": labels['boxes'][bboxs[i], -2], "total_count": final_result}])
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Read image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg'
+detected_objects = Object_Detector_Tool.execute(image=image_path, labels=["baseball", "basket"])
+total_bus_count = len(detected_objects["count"]["Total"])
+
+final_result = total_bus_count
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'image'
+code:from object_detector import Object_Detector_Tool
+
+# Assign image path and variable names
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg"
+labels = ["baseball", "basket"]
+
+final_result = {}
+
+# Execute the Object_Detector_Tool
+detected_objects, object_number = Object_Detector_Tool.execute(image_path, labels=labels, save_object=False, saved_image_path=None)
+
+for label in detected_objects['results']:
+    total_objects = detected_objects['results'][label]['boxes'].count()
+    final_result[label] = {'count': total_objects, 'boxes': detected_objects['results'][label]['boxes'], 'confidence_scores': detected_objects['results'][label]['confidence_scores']}
+
+# Print the result
+for label, details in final_result.items():
+    if 'count' in details and 'boxes' in details and 'confidence_scores' in details:
+        print(f"{label}: {details}")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+result = Object_Detector_Tool.execute(image="path/to/image.jpg", labels=["red"], threshold=0.45, model_size="base", save_object=True)
+
+# Example with actual image path: 
+result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg", labels=["red"], threshold=0.45, model_size="base", save_object=True)
+
+if result['object_number'] == 1:
+    final_result = 1  # count = 1
+else:
+    final_result = 0  # no red bus detected

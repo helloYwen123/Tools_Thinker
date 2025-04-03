@@ -1,0 +1,164 @@
+------------- 01-03-30-31-714610 Execution reward: 0.0 -------------
+[Reward computation time: 1.2744 seconds]
+
+QAid: val_Counting_102
+Code: from object_detector import Object_Detector_Tool
+
+# 1. Execute the tool and get the object detection results and labels
+final_result = Object_Detector_Tool.execute("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg", ["baseball"], save_object=True)
+labels = final_result['output_types'][1]
+boxes = final_result['output_types'][0]
+
+# 2. Count the labels
+total_labels = labels['object_number']
+
+# 3. Determine the number of people wearing blue shirts (2 in this case)
+people_wearing_blue_shirt = boxes['boxes_count'].get("blue_shirt", 0)
+final_result["output_types"][1]["total_labels"][total_labels['name']] = people_wearing_blue_shirt
+final_result.show()
+
+------------- 01-03-30-31-714610 Execution reward: 0.0 -------------
+[Reward computation time: 1.3488 seconds]
+
+QAid: val_Counting_102
+Code: from object_detector import Object_Detector_Tool
+
+def find_balls(in_path, labels=None, save_object=False, saved_image_path="detected_objects"):
+    obj_detector = Object_Detector_Tool()
+    return obj_detector.execute(in_path=in_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+------------- 01-03-30-31-714610 Execution reward: 0.0 -------------
+[Reward computation time: 1.3730 seconds]
+
+QAid: val_Counting_102
+Code: # Initialize the object detection tool
+import_path: 'object_detector'
+import_name: 'Object_Detector_Tool'
+
+# Initialize the question keywords
+keywords: ["number of people wearing blue shirt", "blue shirt"]
+final_result: 0
+
+# Generate the question and set the keywords
+question: f"How many people are wearing blue shirt?"
+keywords.append("blue shirt")
+
+# Execute the object detection and analysis
+object_number = Object_Detector_Tool.execute(image="path_to_image.jpg", labels=["blue shirt"])
+
+# Calculate the total number of people wearing blue shirt
+count := 0
+for person_info in object_number['output_types'][0]['count']:
+    if person_info['label'] == "blue shirt":
+        count += 1
+
+final_result := count
+
+# Print the final result
+print(f"The answer is {final_result}.")
+
+------------- 01-03-30-31-714610 Execution reward: 1.0 -------------
+[Reward computation time: 1.4275 seconds]
+
+QAid: val_Counting_102
+Code: from object_detector import Object_Detector_Tool
+
+# Example usage:
+final_result = 3
+
+------------- 01-03-30-31-714610 Execution reward: 0.0 -------------
+[Reward computation time: 1.0952 seconds]
+
+QAid: val_Counting_102
+Code: from object_detector import Object_Detector_Tool
+
+# Load image and detect objects
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg"
+labels = ["baseball", "basket"]
+threshold = 0.45
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+detected_objects, object_number = Object_Detector_Tool.execute(image_path, labels, threshold, model_size, save_object, saved_image_path)
+
+# Analyze the results
+min_counts = {label: 0 for label in labels}
+total_counts = {}  # To store total counts for each object
+
+# Count instances of detected objects
+for label in detected_objects["labels"]:
+    min_count = min(detected_objects["boxes"][label])
+    max_count = max(detected_objects["boxes"][label])
+    count = max_count - min_count + 1
+    min_counts[label] = min_count  # 0-based index for easy counting
+    total_counts[label] = count
+
+final_result = max(counts, key=counts.get)
+final_result
+
+------------- 01-03-30-31-714610 Execution reward: 0.0 -------------
+[Reward computation time: 1.0884 seconds]
+
+QAid: val_Counting_102
+Code: from object_detector import Object_Detector_Tool
+
+# Path of the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg"
+
+# Detect objects using Grounding DINO model
+object_number = Object_Detector_Tool.execute(image=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Extract count for base ball and basket
+count_base_ball = len(object_number['object_labels']["baseball"])
+count_basket = len(object_number['object_labels']["basket"])
+
+# Calculate the total number of objects in the image
+total_objects = count_base_ball + count_basket
+
+final_result = {"total_objects": total_objects}
+print("Final result:", final_result)
+
+------------- 01-03-30-31-714610 Execution reward: 0.0 -------------
+[Reward computation time: 1.0925 seconds]
+
+QAid: val_Counting_102
+Code: from object_detector import Object_Detector_Tool
+
+# Define the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg"
+
+# Create the tool instance with the confidence threshold set to 0.45
+detector = Object_Detector_Tool(image_path, labels=["baseball", "basket"], threshold=0.45, model_size="base", save_object=True, saved_image_path="detected_objects")
+
+# Get the detected objects and labels
+detected_objects, object_labels = detector.execute()
+object_number = len(detected_objects)
+
+print(f"Number of detected objects: {object_labels}")
+final_result = int(object_number)
+
+------------- 01-03-30-31-714610 Execution reward: 0.0 -------------
+[Reward computation time: 1.2606 seconds]
+
+QAid: val_Counting_102
+Code: from object_detector import Object_Detector_Tool
+
+# Initialize the object detector tool
+detected_objects, object_number = Object_Detector_Tool.execute(image="val_Counting_102.jpg", labels=["Baseball", "Basket"], save_object=True, saved_image_path="detected_objects")
+
+# Define the thresholds for different objects
+baseball_threshold = 0.45
+basket_threshold = 0.45
+
+# Calculate the count of each object
+baseball_count = len(detected_objects['baseball'])
+basket_count = len(detected_objects['basket'])
+
+# Filter the object detection results for the count of interest objects
+interest_objects = {key: count for key, count in object_number.items() if key in ["baseball", "basket"]}
+final_result = baseball_count, basket_count
+
+# Print the results
+print(f"Count of interest objects: {final_result[0]}, {final_result[1]}"
+

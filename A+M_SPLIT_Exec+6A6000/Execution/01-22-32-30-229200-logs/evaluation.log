@@ -1,0 +1,225 @@
+------------- 01-22-32-30-229200 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_80
+Code: [EMPTY]
+
+------------- 01-22-32-30-229200 Execution reward: 0.0 -------------
+[Reward computation time: 1.2112 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+tool = Object_Detector_Tool() 
+tools_metadata = tool.metadata
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+labels = ['baseball', 'basket']  
+threshold = 0.45
+model_size = 'tiny'
+save_object = True
+saved_image_path = "detected_objects"
+
+tools_metadata['input_types'][0]['image'] = image_path
+tools_metadata['input_types'][0]['labels'] = labels
+tools_metadata['input_types'][0]['threshold'] = threshold
+tools_metadata['input_types'][0]['model_size'] = model_size
+tools_metadata['input_types'][0]['save_object'] = save_object
+tools_metadata['input_types'][0]['saved_image_path'] = saved_image_path
+
+detected_objects, object_number = tools.execute(tools_metadata)
+
+output = tools.metadata['output_types'][0]#, ('tuple', (tuple))
+
+print(output)
+
+------------- 01-22-32-30-229200 Execution reward: 0.0 -------------
+[Reward computation time: 1.2375 seconds]
+
+QAid: val_Counting_80
+Code: detected_objects, object_number = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg", labels=["emptyBlueSeat"], save_object=True, saved_image_path="detected_objects")
+
+------------- 01-22-32-30-229200 Execution reward: 0.0 -------------
+[Reward computation time: 1.2666 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image and get the bounding boxes for the object with the highest confidence
+tool = Object_Detector_Tool()
+labels = "baseball,basket"
+objects_image = "path/to/image.png"
+
+# Initialize the object detection results dictionaries
+detected_object_results = {'baseball':={}, 'basket':{}}
+final_result = None
+
+# Execute the object detection
+for label in labels:
+    detected_object_results[label] = dict(box_data=[], confidence_score=[], saved_image_path=[])
+
+    bbox_results = tool.execute(image=objects_image, labels=labels,  thresholds=[0.45], save_object=False, saved_image_path="detected_objects")
+
+    if bbox_results:
+        detected_object_results[label]['bbox_results'] = bbox_results
+
+        # Get the list of bounding box rectangles from the object results
+        b_box_result_list = [bbox_result['bbox'] for bbox_result in detected_object_results[label]['bbox_results']]
+
+        # Get the bounding box coordinates of the bounding boxes which overlap a target object (baseball)
+        baseball_bboxes = []
+        for box in b_box_result_list:
+            if 'baseball' in str(box):
+                baseball_bboxes.append(box)
+
+        # Get the bounding box coordinates of the bounding boxes which overlap a target object (basket)
+        basket_bboxes = []
+        for box in b_box_result_list:
+            if 'basket' in str(box):
+                basket_bboxes.append(box)
+
+        # For every detected object in our labels list, check if there are overlaps between the bounding boxes of that object with the bounding boxes of one of the targets
+        for bounding_boxes in [baseball_bboxes, basket_bboxes]:
+            if bounding_boxes:
+
+                # Get the bounding box coordinates of these bounding boxes
+                for bounding_box in bounding_boxes:
+                    baseball_index = []
+                    basket_index = []
+                    for x in bounding_box:
+                        if 'baseball' in str(x):
+                            baseball_index.append(x)
+                        if 'basket' in str(x):
+                            basket_index.append(x)
+
+                # For each overlapping object, find its bounding box
+                overlap = [{'bbox': bounding_box, 'label': label} for bounding_box in baseball_index if any((bbox['bbox'] in x for x in basket_index))]
+
+                # Check if the first target is overlapping with any of the second ones
+                if overlap:
+                    for bounding_box in overlap[0]['bbox']:
+                        if any((bounding_box in bbox['bbox'] for bbox in overlap[1:])):
+                            for overlap_item in overlap:
+                                # Append the label to the list of object names in the final result
+                                if any(label in x for x in overlap[1:]):
+                                    final_result = detected_object_results[label]
+
+                                    for label_box in final_result:
+                                        if 'bbox_results' in label_box:
+                                            bbox_results = label_box['bbox_results']['bbox_results']
+                                            confidence_score = label_box['bbox_results']['confidence_score']
+                                            final_result_bbox = [[bbox_results[0]['x1'],bbox_results[0]['y1'],bbox_results[0]['width'],bbox_results[0]['height']],bbox_results[1]['x1'],bbox_results[1]['y1'],bbox_results[1]['width'],bbox_results[1]['height']],bbox_results[2]['x1'],bbox_results[2]['y1'],bbox_results[2]['width'],bbox_results[2]['height'] ]]
+
+                    break
+        else:
+            # Return the object list if there are no overlapping objects
+            final_result.append(detected_object_results)
+            final_result_bbox = detected_object_results["baseball"]
+
+for label in final_result:
+    if 'bbox_results' in label:
+        for bbox_box in label['bbox_results']['boxes']:
+            print(bbox_box)
+
+------------- 01-22-32-30-229200 Execution reward: 0.0 -------------
+[Reward computation time: 1.2833 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image file path and threshold
+predicted_labels = []
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+threshold = 0.45
+model_size = "tiny"
+
+# Run the 'Object_Detector_Tool' tool to detect objects and count them
+final_result = Object_Detector_Tool.execute(image=image_path, labels=predicted_labels, threshold=threshold, model_size=model_size, save_object=False)
+
+# Print the final result
+print("Total number of detected objects:", final_result[0]['object_number'])
+
+------------- 01-22-32-30-229200 Execution reward: 0.0 -------------
+[Reward computation time: 0.7241 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# Load and preprocess the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+object_labels = ["baseball", "baseball"]
+
+# Use the Object_Detector_Tool to detect the objects in the image
+result = Object_Detector_Tool.execute(image_path, object_labels, save_object=True, saved_image_path="detected_objects")
+
+# Count the objects in the image
+object_dict = result[1]
+
+# Check if there are more than 2 empty blue seats
+blue_seats = [k for k, v in object_dict['detected_objects'].items() if k == "baseball" and 'boxes' in v and 'name' in v and v['name'] == "baseball" and "(blue seat." in v['name']]
+empty_blu_seats = len([k for k, v in object_dict['detected_objects'].items() if 'boxes' in v and 'blue' in v and "(no sky)." in v['name'] and k.endswith("blu seat.")])
+final_result = {"empty_blue_seats": empty_blu_seats, "status": True}
+
+------------- 01-22-32-30-229200 Execution reward: 0.0 -------------
+[Reward computation time: 0.8478 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+final_result = {"count": 3, "image_names": []}
+for image_name in ["val_Counting_80_image_1.jpg", "val_Counting_80_image_2.jpg", "val_Counting_80_image_3.jpg"]:
+    tool = Object_Detector_Tool(image=image_name)
+    tool.run_labels = ["baseball"]
+    tool.run_label_names = ["baseball"]
+    tool.run_labels = ["basketball"]
+    tool.run_label_names = ["basketball"]
+    all_labels, all_labels_counts = tool.detect()
+
+    count = all_labels_counts["baseball"]
+    image_names.append(image_name)
+    final_result["count"] += count
+    final_result["image_names"].append(image_name)
+
+final_result
+
+------------- 01-22-32-30-229200 Execution reward: 0.0 -------------
+[Reward computation time: 0.8613 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# The path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+
+# Detect object labels
+labels = ["baseball", "basket"]
+
+# Define threshold for confidence score
+threshold = 0.45
+
+# Determine the confidence score based on input thresholds
+confidence_scores = [1, 1]
+
+# Define the model size
+model_size='tiny'
+
+# Function to save the detected objects for analysis
+def save_object(labels):
+    for label in labels:
+        if label in output:
+            # Get the objects of interest
+            objects = output[label]
+
+            # Get their bounding boxes, confidence scores, and image paths
+            boxes = [object['bbox'] for object in objects]
+            scores = [object['score'] for object in objects]
+            image_paths = [image_path if 'boxes' in object else None for object in objects]
+
+            # Save the detected objects as images
+            if save_object:
+                Object_Detector_Tool.execute(image=image_path, labels=labels, boxes=boxes, scores=scores, image_paths=image_paths, model_size=model_size)
+
+# Detect and save the detected objects
+output = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=True,  save_object=True, threshold=threshold, model_size=model_size)
+
+# Extract the count of the black object in the image
+final_result= [1]
+

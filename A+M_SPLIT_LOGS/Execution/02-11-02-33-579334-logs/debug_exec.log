@@ -1,0 +1,31 @@
+
+[EXECUTION EXCEPTION]
+unmatched '}' (<string>, line 1)
+code:after processing the image detection result, I get {'boxes': {'baseball': [(344, 508, 605, 814), (140, 415, 397, 759)], 'basket': [(69, 415, 126, 746)]}, 'confidence_scores': {'baseball': 0.96, 'basket': 0.69, 'total': 0.91}, 'saved_image_paths': {'basket': 'basket.png', 'baseball': 'baseball.png'}, 'labels': ['basket']}, object_number: 1}
+
+[EXECUTION EXCEPTION]
+type object 'Object_Detector_Tool' has no attribute 'read_image'
+code:from object_detector import Object_Detector_Tool
+
+# Read the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_117_image_1.jpg'
+image = Object_Detector_Tool.read_image(image_path)
+
+# Detect objects
+labels = ['baseball', 'basket']
+object_number = Object_Detector_Tool.detect_objects(image, labels)
+
+final_result = []
+for label in labels:
+    result_list = object_number[label]
+    count = result_list['count']
+    boxes = result_list['boxes']
+    for box in boxes:
+        x, y, w, h = box
+        width = h / count
+        final_result.append([label, width, count])
+
+if final_result:
+    print(final_result)
+else:
+    print("No objects detected.")

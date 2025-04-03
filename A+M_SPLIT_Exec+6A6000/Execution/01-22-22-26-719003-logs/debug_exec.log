@@ -1,0 +1,100 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+detected_objects, object_number = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+final_result = detected_objects["baseball"] + detected_objects["basket"]
+print("Number of glasses of water:", final_result)
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:from_module: 'object_detector', import_name: 'Object_Detector_Tool'
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg"
+
+# Create an Object_Detector_Tool instance
+tool = Object_Detector_Tool(image_path=image_path)
+
+# Detect objects (pizza and water glass)
+detected_objects = tool.execute(labels=["pizza", "water Glass"], save_object=False)
+
+# Calculate the total number of detected glasses filled with water
+total_glasses = len(detected_objects['water Glass']['boxes'])
+
+final_result = {
+    "total_glasses": total_glasses
+}
+print("Total glasses filled with water:", final_result["total_glasses"])
+
+[EXECUTION EXCEPTION]
+'Object_Detector_Tool' object has no attribute 'load_image'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image using the "object_detector"
+detector = Object_Detector_Tool()
+image = detector.load_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg")
+
+# Detect and count the detected objects
+objects = detector.detect_objects(image, "basket", "baseball", save_object=True)
+
+# Extract counts from the returned tuple
+labels = [obj["label"] for obj in objects]
+count = len(labels)
+final_result = {"labels": labels, "count": count}
+
+[EXECUTION EXCEPTION]
+name 'detected_objects' is not defined
+code:from object_detector import Object_Detector_Tool
+detected_objects, object_number = detected_objects(image='val_Counting_12_image_1.jpg', labels=["baseball", "basket"], save_object=True, saved_image_path='detected_objects')
+
+final_result: detected_objects
+
+[EXECUTION EXCEPTION]
+cannot import name 'Label' from 'object_detector' (/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/object_detector/__init__.py)
+code:from os import getcwd
+
+from object_detector import Object_Detector_Tool, Label
+
+def get_path():
+    return getcwd() + "/wxie/blink_dataset/counting/validation/images/val_Counting_12_image_1.jpg"
+
+def get_glass_count():
+    path = get_path()
+    object_detector_tool = Object_Detector_Tool()
+
+    with open(path, 'r') as f:
+        image = f.read()
+
+    labels = ['baseball', 'basket']
+
+    # define the output dictionaries
+    detected_objects = {}
+
+    for label in labels:
+        detected_objects[label] = {}
+        detected_objects[label]['boxes'] = []
+        detected_objects[label]['confidence_scores'] = []
+        detected_objects[label]['saved_image_paths'] = ''
+        for label in detected_objects: 
+            detected_objects[label]['boxes'].append([0, 1, 2, 3])
+            detected_objects[label]['confidence_scores'].append([0.])
+        detected_objects[label]['boxes'].append([4, 5, 6, 7])
+        detected_objects[label]['confidence_scores'].append([0.])
+
+    total_objects = 0
+    for label in detected_objects:
+        count = detected_objects[label]['boxes'].count([0, 1, 2, 3])
+        if count > 0:
+            detected_objects[label]['confidence_scores'].append([count])
+            detected_objects[label]['boxes'].append([8, 8])
+            total_objects += count
+
+    print(f"Found {total_objects} glasses filled with water.")
+
+    return total_objects

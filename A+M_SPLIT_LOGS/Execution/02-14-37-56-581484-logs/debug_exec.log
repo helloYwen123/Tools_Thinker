@@ -1,0 +1,55 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'labels'
+code:from object_detector import Object_Detector_Tool
+
+# Initialize the object detector tool
+tool = Object_Detector_Tool()
+
+# Path to the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg"
+
+# Execute the object detection tool
+result = tool.execute(image=path_to_image)
+
+final_result = result['object_number']  # The number of glasses filled with water
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Call the tool with the image file
+result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg", labels=["water"], save_object=True)
+
+# Extract information about the detected water glasses
+detected_labels = result["detected_labels"]
+number_of_glasses = result["object_number"]
+
+if detected_labels["total_count"] == 5 and number_of_glasses == 3:
+    final_result = "D"
+else:
+    final_result = "E"
+
+print(final_result)
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg", labels=["water"], save_object=True)
+detected_objects, obj_number = final_result
+
+if detected_objects["baseball"] is not None:
+    if detected_objects["baseball"]["boxes"] is not None and detected_objects["baseball"]["boxes"][0][1] is not None:
+        water_glass_count = detected_objects["baseball"]["boxes"][0][1]["confidence_scores"][-1]["water"]
+        if water_glass_count > 0.5:
+            final_result = "4"
+        else:
+            final_result = "2"
+else:
+    final_result = "3"
+
+print(final_result)

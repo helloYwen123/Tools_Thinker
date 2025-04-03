@@ -1,0 +1,114 @@
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+final_result = {'boxes': {'sitting_on_counter': (22.33, 254.67, 109.08, 91.61), 'walking_next_to_person': (193.82, 330.57, 97.78, 79.29), 'pulling_bag': (149.27, 351.2, 108.65, 75.82)}}
+print(final_result)
+[THE PRINT OUTPUT]
+{'boxes': {'sitting_on_counter': (22.33, 254.67, 109.08, 91.61), 'walking_next_to_person': (193.82, 330.57, 97.78, 79.29), 'pulling_bag': (149.27, 351.2, 108.65, 75.82)}}
+
+[GENERATE FINAL_RESULT]
+{'boxes': {'sitting_on_counter': (22.33, 254.67, 109.08, 91.61), 'walking_next_to_person': (193.82, 330.57, 97.78, 79.29), 'pulling_bag': (149.27, 351.2, 108.65, 75.82)}}
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+import os
+
+def get_object_detections(image_path, labels, save_object=True, saved_image_path="detected_objects"):
+    labels_path = os.getcwd() + "/labels/" + os.path.basename(image_path)
+    if os.path.exists(labels_path):
+        with open(labels_path, "r") as file:
+            labels_json = json.load(file)
+        try:
+            detected_objects = labels_json["labels"]
+        except KeyError:
+            return False, detected_objects
+    else:
+        return False, {}
+    
+    ground_truth_objects = {}
+    for label in labels:
+        labels = [labels[i] for i in detected_objects.keys()]
+        if label not in labels:
+            continue
+    
+        detection_boxes = []
+        for i in detected_objects[label]["boxes"]:
+            x2 = detected_objects[label]["boxes"][i][0]
+            y2 = detected_objects[label]["boxes"][i][1]
+            w = (50 * scale - detected_objects[label]["bbox_width"] * x2 + detected_objects[label]["bbox_offset"]/2) / scale + detected_objects[label]["bbox_offset"]/2
+            h = (50 * scale - detected_objects[label]["bbox_height"] * y2 + detected_objects[label]["bbox_offset"]/2) / scale + detected_objects[label]["bbox_offset"]/2
+            detection_boxes.append([x2, y2, w, h])
+        
+        # Calculate bounding box coordinates
+        boundingbox_location = []
+        for box in detection_boxes:
+            x1 = int(labels[i]["bbox_left"])
+            y1 = int(labels[i]["bbox_top"])
+            
+            x2 = int(labels[i]["bbox_left"] + labels[i]["bbox_width"])
+            y2 = int(labels[i]["bbox_top"] + labels[i]["bbox_height"])
+            
+            # Calculate bounding box width and height
+            bbox_width = int(x2 - x1)
+            bbox_height = int(y2 - y1)
+            
+            boundingbox_location.append([x1, y1, bbox_width, bbox_height])
+        
+        x, y = [int(object["bbox_left"]) for object in boundingbox_location]
+        w, h = [int(object["bbox_width"]) for object in boundingbox_location]
+        image_path = os.path.basename(image_path)
+        
+        # Read bounding box width and height from file
+        with open(labels_path) as json_file:
+            json_data = json.load(json_file)
+            for i in range(len(json_data["objects"])):
+                objects = json_data["objects"]
+                for object in objects:
+                    if object["bbox_top"] + object["bbox_height"] <= y and object["bbox_top"] + object["bbox_width"] <= x and object["bbox_left"] > x and y < object["bbox_top"] and w > object["bbox_width"] and h > object["bbox_height"]:
+                        object["bbox_top"] = y
+                        object["bbox_left"] = x
+                        object["bbox_width"] = w
+                        object["bbox_height"] = h
+                        object["bbox_offset"] = (bbox_top + bbox_height - object["bbox_top"]) / 2
+                        object["bbox_left"] = (bbox_top + bbox_width - object["bbox_left"]) / 2
+                        object["bbox_width"] = (bbox_top + bbox_height - object["bbox_top"]) / 2
+                        object["bbox_height"] = (bbox_top + bbox_width - object["bbox_left"]) / 2
+                        break
+                        break
+                        break
+        ground_truth_objects[label]["bbox_location"] = boundingbox_location
+        ground_truth_objects[label]["bbox_labels"] = [object["bbox_left"], object["bbox_top"], object["bbox_right"], object["bbox_bottom"],
+                                                      object["bbox_left"], object["bbox_top"], object["bbox_right"], object["bbox_bottom"],
+                                                      object["bbox_left"], object["bbox_top"], object["bbox_right"], object["bbox_bottom"]]
+        
+        ground_truth_objects[label]["bbox_boxes"] = [box for box in ground_truth_objects[label]["bbox_location"]]
+        detection_objects = {}
+        for image in detected_objects.values():
+            for object in image["bbox_boxes"]:
+                if object not in ground_truth_objects:
+                    detection_objects[object] = {}
+                detection_objects[object]["bbox_location"] = ground_truth_objects[labels[i]]
+                detection_objects[object]["bbox_labels"] = ground_truth_objects[labels[i]]
+                detection_objects[object]["bbox_boxes"] = ground_truth_objects[labels[i]].copy()
+        detection_objects = detected_objects.values()
+        return ground_truth_objects, detection_objects
+
+    ground_truth_objects, detection_objects = get_label_distribution(ground_truth_objects, detection_objects, labels)
+
+    # Save object detection results
+    if save_object:
+        detection_objects_file_path = os.path.basename(image_path)[:-3] + "detected_objects.json"
+        with open(detection_objects_file_path, "w") as outfile:
+            json.dump(detection_objects, outfile)
+        
+        return ground_truth_objects, detection_objects, detection_objects_file_path
+    else:
+        return ground_truth_objects, detection_objects, detection_objects_file_path
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None

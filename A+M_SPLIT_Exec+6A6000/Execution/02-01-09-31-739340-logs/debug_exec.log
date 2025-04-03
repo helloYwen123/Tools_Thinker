@@ -1,0 +1,101 @@
+
+[None RESULT]
+
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+name 'image' is not defined
+code:image
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+# Initialize the object detector tool
+ot = Object_Detector_Tool()
+
+# Load the detected objects
+detected_objects, _ = ot.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg", labels=["ballon", "basket"], save_object=True, saved_image_path="detected_objects")
+label_counts = {"ballon": 3, "basket": 2}
+
+# Find the common vowels in the counts of detected objects
+common_vowels = set(detected_objects['detected_objects'])
+final_result = sum((label_counts[l_vowel] == 1 for l_vowel in common_vowels))
+
+# Print the final result
+print("Number of glowing letters:", final_result)
+
+[EXECUTION EXCEPTION]
+type object 'Object_Detector_Tool' has no attribute 'load_image'
+code:from object_detector import Object_Detector_Tool  # Load the object_detector tool
+
+def count_common_vowels(image_path):
+    # Load the image
+    image = Object_Detector_Tool.load_image(image_path)
+    
+    # Detect text on the image
+    detected_text = Object_Detector_Tool.detect_objects(image, "letters", 0.45, "tiny", save_object=True)
+    
+    # Initialize a dictionary to hold the vowel counts
+    vowel_counts = {}
+    
+    # Count the occurrences of each vowel
+    for letter in detected_text["detected_objects"]:
+        if letter["letter"].lower() in "aeiou":
+            if letter["label"] not in vowel_counts:
+                vowel_counts[letter["label"]] = 0
+            vowel_counts[letter["label"]] += 1
+    
+    # Return the count of common vowels
+    return vowel_counts
+    
+# Function to find common vowels in a given image path
+def find_common_vowels(image_path):
+    vowel_count = count_common_vowels(image_path)
+    most_common_vowel = max(vowel_count, key=vowel_count.get)  # Find the most common vowel
+    
+    return most_common_vowel
+    
+find_common_vowels("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg")
+final_result = find_common_vowels("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg")
+print("The most common vowel is: ", final_result)
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+'list' object has no attribute 'items'
+code:from object_detector import Object_Detector_Tool
+
+final_result = {}
+# Import the objectsDetector tool
+detector_tool = Object_Detector_Tool()
+# Convert labels provided by the user to a list
+labels = ["baseball", "basket"]
+# Set confidence threshold
+threshold = 0.45
+# Set model size to tiny
+model_size = "tiny"
+# Set whether to save object images for counting
+save_object = True
+# Set path to image file
+file_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_69_image_1.jpg"
+# Execute detection
+detected_objects = detector_tool.execute(image=file_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size)
+# Count objects in the image
+objects_count = len(detected_objects)
+# Generate output dictionary
+for label, results in detected_objects.items():
+    box = results['boxes']
+    for result in results['boxes']:
+        x, y, width, height = result
+        if label == "baseball":
+            final_result[label] = objects_count
+            for result in results['boxes']:
+                x, y, width, height = result
+                if float(result[-1]) > threshold:
+                    break
+
+final_result

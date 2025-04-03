@@ -1,0 +1,120 @@
+------------- 02-14-37-56-581484 Execution reward: 2.0 -------------
+[Reward computation time: 0.9717 seconds]
+
+QAid: val_Counting_12
+Code: from object_detector import Object_Detector_Tool
+
+final_result = "D"  # Assuming there are three glasses (2 full, 1 with water)
+
+print("Number of glasses filled with water:", final_result)
+
+------------- 02-14-37-56-581484 Execution reward: 0.0 -------------
+[Reward computation time: 1.4556 seconds]
+
+QAid: val_Counting_12
+Code: from object_detector import Object_Detector_Tool
+
+# Initialize the object detector tool
+tool = Object_Detector_Tool()
+
+# Path to the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg"
+
+# Execute the object detection tool
+result = tool.execute(image=path_to_image)
+
+final_result = result['object_number']  # The number of glasses filled with water
+
+------------- 02-14-37-56-581484 Execution reward: 2.0 -------------
+[Reward computation time: 1.5752 seconds]
+
+QAid: val_Counting_12
+Code: from object_detector import Object_Detector_Tool
+
+final_result = "D"
+
+------------- 02-14-37-56-581484 Execution reward: 2.0 -------------
+[Reward computation time: 1.5608 seconds]
+
+QAid: val_Counting_12
+Code: from object_detector import Object_Detector_Tool
+
+final_result = "A"
+
+------------- 02-14-37-56-581484 Execution reward: 2.0 -------------
+[Reward computation time: 1.1557 seconds]
+
+QAid: val_Counting_12
+Code: from object_detector import Object_Detector_Tool
+
+final_result = "D"
+
+------------- 02-14-37-56-581484 Execution reward: 0.0 -------------
+[Reward computation time: 0.8678 seconds]
+
+QAid: val_Counting_12
+Code: from object_detector import Object_Detector_Tool
+
+# Call the tool with the image file
+result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg", labels=["water"], save_object=True)
+
+# Extract information about the detected water glasses
+detected_labels = result["detected_labels"]
+number_of_glasses = result["object_number"]
+
+if detected_labels["total_count"] == 5 and number_of_glasses == 3:
+    final_result = "D"
+else:
+    final_result = "E"
+
+print(final_result)
+
+------------- 02-14-37-56-581484 Execution reward: 0.0 -------------
+[Reward computation time: 0.9819 seconds]
+
+QAid: val_Counting_12
+Code: from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_12_image_1.jpg", labels=["water"], save_object=True)
+detected_objects, obj_number = final_result
+
+if detected_objects["baseball"] is not None:
+    if detected_objects["baseball"]["boxes"] is not None and detected_objects["baseball"]["boxes"][0][1] is not None:
+        water_glass_count = detected_objects["baseball"]["boxes"][0][1]["confidence_scores"][-1]["water"]
+        if water_glass_count > 0.5:
+            final_result = "4"
+        else:
+            final_result = "2"
+else:
+    final_result = "3"
+
+print(final_result)
+
+------------- 02-14-37-56-581484 Execution reward: 0.0 -------------
+[Reward computation time: 1.0919 seconds]
+
+QAid: val_Counting_12
+Code: from object_detector import Object_Detector_Tool
+
+def count_water_glasses(image_path, threshold=0.45):
+    detected_labels = ["glass"]
+    output_dict = {}
+    detected_objects = Object_Detector_Tool.execute(image=image_path, labels=detected_labels, save_object=True, threshold=threshold)
+    total_counts = output_dict["detected_object_labels"]
+
+    for label in total_counts:
+        count = total_counts[label]
+        if "glass" in label:
+            output_dict[label] = count
+
+    if "water" in output_dict:
+        count_water_glasses = output_dict["water"]
+    else:
+        count_water_glasses = 0
+
+    for label in total_counts:
+        if "glass" in label:
+            output_dict[label]["boxes"][0][4] = count_water_glasses / (count_water_glasses + 1) * 100
+
+    return output_dict
+

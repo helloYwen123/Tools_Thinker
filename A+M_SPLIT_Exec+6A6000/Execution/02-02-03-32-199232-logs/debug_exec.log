@@ -1,0 +1,130 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Function to count the number of detected objects in a mirror reflection
+def count_objects_in_reflection():
+    # Call the tool to detect objects and get object labels and their bounding boxes
+    object_labels, object_boxes, object_scores = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg", labels=["person"], model_size="tiny", save_object=False, saved_image_path="detected_objects")
+    
+    # Convert bounding box to a list of coordinates
+    detected_objects = {obj: obj_boxes for obj, boxes in object_boxes.items()}
+    
+    # Count the numbers of objects in the image
+    object_counts = {obj: len(detected_objects[obj]) for obj in detected_objects}
+    
+    return object_counts
+
+# Example usage
+final_result = count_objects_in_reflection()
+print(f"Total number of detected objects: {final_result}")
+
+[EXECUTION EXCEPTION]
+type object 'Object_Detector_Tool' has no attribute 'load_model'
+code:from object_detector import Object_Detector_Tool
+
+# Load the model
+model = Object_Detector_Tool.load_model('base')
+
+# Invert the colors for easier visualization
+inverted_image = Image.open('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg').convert('RGB')[:, :, ::-1]
+
+labels_to_detect =  ['bat', 'baseball']
+
+# Detect the labeled objects on the image
+result = model.detect_objects(inverted_image, labels=labels_to_detect)
+
+# Print the result
+for label, objects in result:
+    print(label, len(objects['boxes']))
+
+[EXECUTION EXCEPTION]
+No module named 'module_object_detector_tool'
+code:from module_object_detector_tool import Object_Detector_Tool
+final_result = {}
+output_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg"
+result = Object_Detector_Tool.execute(image=output_path, labels=["person"], save_object=True, saved_image_path="detected_objects")
+output_image = "detected_objects/person_detected.jpg"
+if result[1]:
+    image_boxes = result[0]['results'][0]['boxes']
+    image_boxes = [bbox for bbox in image_boxes if bbox[0] != -1]
+    image_boxes = sorted(image_boxes)
+    count = len(image_boxes)
+    final_result["person_detected"] = {"boxes": image_boxes[:10], "confidence_scores": [result[0]['results'][0]['scores'][bbox][1] for bbox in image_boxes], "total_count": count}
+    final_result["person"] = count
+else:
+    print("No person detected in the image.")
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg"
+tool = Object_Detector_Tool()
+# Detect objects
+label_list = ["baseball", "basket"]
+labels = label_list
+detected_objects, detection_count = tool.execute(image_path, labels=labels, save_object=True)
+final_result = detected_objects
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg", labels=["Person"], save_object=False, saved_image_path=None)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 3 were given
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg'
+
+# Options for detection and object saving
+options = {
+    'labels': ['baseball', 'basket'],
+    'threshold': 0.45,
+    'model_size': 'tiny',
+    'save_object': True,
+    'saved_image_path': 'detected_objects'
+}
+
+# Initialize the object detector tool
+object_detector_tool = Object_Detector_Tool(image_path, options)
+
+# Detect and save the identified objects
+detected_objects, object_number = object_detector_tool.execute()
+
+# Check if there were any detected objects
+if detected_objects:
+    # Filter the detected objects by label 'basket'
+    basket_objects = [obj for obj in detected_objects['objects'] if obj['label'] == 'basket']
+    
+    # Count the number of objects in the 'basket' label
+    num_basket_objects = object_number['basket']
+    
+    # Determine the count of the 'baseball' label
+    num_baseball_objects = object_number['baseball']
+    
+    # Check if 'basket' label counts are within the count of 'baseball' label
+    num_objects_match_count = num_basket_objects == num_baseball_objects
+else:
+    # No detected objects
+    num_objects_match_count = False
+
+print("Number of corresponding objects in the mirror:", num_objects_match_count)
+
+[EXECUTION EXCEPTION]
+list indices must be integers or slices, not str
+code:from object_detector import Object_Detector_Tool
+
+tool = Object_Detector_Tool()
+result = tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_75_image_1.jpg",
+                      labels=["person"], save_object=False,
+                      saved_image_path="detected_objects")
+number_of_people = len(result["detected_objects"])  # Get the count of people detected in the image
+final_result = {"amount of people": number_of_people}
+print("Number of people reflected in the mirror:", final_result)

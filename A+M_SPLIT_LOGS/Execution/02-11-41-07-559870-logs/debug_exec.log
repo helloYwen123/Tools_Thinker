@@ -1,0 +1,104 @@
+
+[EXECUTION EXCEPTION]
+f-string: invalid syntax. Perhaps you forgot a comma? (<string>, line 7)
+code:from object_detector import Object_Detector_Tool
+
+detect = Object_Detector_Tool()
+result = detect.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+final_result = next(iter(result["object_number"]), None)
+if final_result:
+    print(f"Detected {'basketball' and 'basket' in the image. Returned: {final_result}, Counts: {result['object_number']}.")
+else:
+    print("No detected objects.")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Read image and detect object categories
+detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.jpg", labels=["hat"], save_object=True, saved_image_path="detected_objects")
+
+# Check how many people wearing white hats
+number_with_white_hats = object_number["baseball"][0]["boxes"][0]["objects"][0]["n"]
+final_result = max(number_with_white_hats, 0)
+print("Number of people wearing white hats:", final_result)
+
+[EXECUTION EXCEPTION]
+count_objects() takes from 2 to 6 positional arguments but 7 were given
+code:from object_detector import Object_Detector_Tool
+
+final_result = 0
+
+def count_objects(image_path, labels, threshold=0.45, model_size='tiny', save_object=False, saved_image_path="detected_objects"):
+    detector = Object_Detector_Tool(image_path)
+    labels_objects = detector.detect_labels(labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+    object_count = {label: 0 for label in labels_objects}
+    for detected_labels in labels_objects:
+        for label in detected_labels['labels']:
+            object_count[label] += detected_labels['count']
+    return object_count
+
+# Sample usage
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_59_image_1.jpg"
+detected_labels = ["baseball", "basket"]
+labels_labels = detected_labels
+threshold = 0.45
+model_size = 'tiny'
+save_object = True
+saved_image_path = "detected_objects"
+
+final_result = count_objects(image_path, labels_labels, labels_labels, threshold, model_size, save_object, saved_image_path)
+print("Number of people wearing white hats:", final_result)
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'labels'
+code:from object_detector import Object_Detector_Tool
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_59_image_1.jpg"
+
+labels = ["baseball", "basket"]
+
+threshold = 0.45
+model_size = "tiny"
+
+detected_objects, object_number = Object_Detector_Tool.execute(image_path, labels, save_object=True, threshold=threshold, saved_image_path="detected_objects")
+for object_name, group in detected_objects.items():
+    print(f"{object_name}: {group['box_count']}")
+final_result = str(object_number["baseball"])
+if final_result == "3":
+    final_result = "B"
+if final_result == "4":
+    final_result = "C"
+print(final_result)
+
+[EXECUTION EXCEPTION]
+name 'object_detector' is not defined
+code:from_object_detector = object_detector(Object_Detector_Tool)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'labels'
+code:import torch
+import torchvision
+
+# Detect the image with the object detector
+object_detector = Object_Detector_Tool()
+label_list = [i[1] for i in object_detector.execute(image="val_Counting_59_image_1.jpg")]
+threshold = 0.45
+model_size = 'tiny'
+
+# Calculate the count of people wearing white hats
+total_count = model_count = 0
+for i in label_list:
+    if 'baseball' in i:
+        model_count += 1
+    elif 'basket' in i:
+        model_count += 1
+    elif 'baseball hat' in i:
+        total_count += 1
+
+final_result = min(total_count, model_count)
+print("Total count:", total_count)
+print("Number of people wearing white hats:", final_result)

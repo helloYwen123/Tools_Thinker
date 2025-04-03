@@ -1,0 +1,177 @@
+------------- 01-02-06-31-837743 Execution reward: 0.0 -------------
+[Reward computation time: 0.6545 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# Assuming 'val_Counting_80_image_1.jpg' is the image
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg", labels="skis", save_object=True)
+detected_objects, object_number = final_result
+
+print(f"The number of empty blue seats is: {'1'.casefold() if object_number[detected_objects[detected_objects["boxes"].argsort()[-1]["score"]]["label"]]["confidence_scores"][-1] < 0.5 else object_number[detected_objects[detected_objects["boxes"].argsort()[-1]["label"]]["confidence_scores"][-1]] * 2 for key, value in object_number.items()}")
+
+------------- 01-02-06-31-837743 Execution reward: 0.0 -------------
+[Reward computation time: 0.7632 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# Define the labels to detect
+labels = ['baseball', 'basket']
+
+# Set the confidence threshold
+threshold = 0.45
+
+# Set the model size
+model_size = 'tiny'
+
+# Save the detections
+save_object = True
+saved_image_path = None
+
+# Execute the object detection
+detected_objects, object_number = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg", labels=labels, save_object=True, saved_image_path=saved_image_path, threshold=threshold, model_size=model_size)
+
+# Calculate the number of empty blue seats
+total_seats = sum(1 for row in detected_objects.values() if all(col['label'] == 'Blue Seat' for col in row['boxes']) and all(col['Color'] == 'Blue' for col in row['boxes']) and all(col['class_name'] == 'Empty Seat' for col in row['boxes']))
+empty_seats = total_seats - sum(row['num_of_people'] for row in detected_objects.values() if len(row['num_of_people']) > 0)
+
+final_result = empty_seats
+
+------------- 01-02-06-31-837743 Execution reward: 0.0 -------------
+[Reward computation time: 1.0296 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# Define the number of empty blue seats
+empty_seats_count = 2
+
+# Load the image
+detected_objects, object_number = Object_Detector_Tool.execute(image="/path/to/image.jpg", labels=["blue seat"], save_object=False, saved_image_path="detected_objects")
+
+final_result = {"empty_blue_seats_count": empty_seats_count}
+
+------------- 01-02-06-31-837743 Execution reward: 0.0 -------------
+[Reward computation time: 1.2164 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# 1. Define the parameters
+input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+labels_to_detect = ["baseball", "basket"]
+threshold = 0.45
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# 2. Initialize the object detection tool
+o = Object_Detector_Tool(input_image_path=input_image_path, labels=labels_to_detect, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+# 3. Detect and count objects
+o.execute(labels=["baseball", "basket"], save_object=False)
+
+# 4. Get the counts and saved images paths
+count_dict = o.output_types[0]
+for key in count_dict:
+    if key == "boxes":
+        boxes_list = count_dict[key]["boxes"]
+        
+# 5. Find the index of the empty blue seat
+empty_blue_index = boxes_list.index(b"blue seat")
+for index, object_box in enumerate(boxes_list):
+    if index >= empty_blue_index:
+        empty_blue_index = index
+        
+# 6. Number of empty blue seats
+empty_blue_seats = len(boxes_list) - (empty_blue_index + 1)
+
+final_result = empty_blue_seats
+
+------------- 01-02-06-31-837743 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_80
+Code: [EMPTY]
+
+------------- 01-02-06-31-837743 Execution reward: 0.0 -------------
+[Reward computation time: 1.1933 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image path and create the tool with default parameters
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+tool = Object_Detector_Tool(image_path)
+
+# Detect the objects in the image
+labels = ['baseball', 'basket']
+detected_objects, object_number = tool.execute(labels=labels, save_object=True)
+
+# Count the detected objects
+count = object_number['baseball']['boxes']['baseball'][0]['label_count']
+
+# Check if there are any empty blue seats
+empty_seats = len([obj for obj in sorted(detected_objects.keys(), key=lambda x: -count(x)) if len(obj['boxes']) == 2 and obj['boxes'][0]['color'] == '#235f00'])
+final_result = empty_seats - 1 if empty_seats else count
+final_result
+
+------------- 01-02-06-31-837743 Execution reward: 0.0 -------------
+[Reward computation time: 1.2158 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+
+# Number of empty blue seats
+empty_blue_seats = []
+
+# Load the image
+detector_tool = Object_Detector_Tool(image_path, labels=["skis"], model_size="tiny", threshold=0.45, save_object=True)
+
+# Detect objects
+result = detector_tool.execute()
+
+# Count the detected objects
+objects_count = result[1]["detected_objects"]
+
+# Filter the detected objects based on the count
+filtered_objects = {"baseball": 0, "basket": 0, "skis": 0}
+
+result_count = result[0]
+
+for i, (label, results) in enumerate(result_count.items()):
+    # Count the detected objects
+    objects_count[label] += len(results)
+
+    # Filter the detected object count
+    if label in filtered_objects:
+        filtered_objects[label] += result_count[label]
+
+    if label == "skis":
+        empty_blue_seats += results
+
+final_result = {"total_objects": result_count, "empty_blue_seats": empty_blue_seats}
+
+------------- 01-02-06-31-837743 Execution reward: 0.0 -------------
+[Reward computation time: 0.9357 seconds]
+
+QAid: val_Counting_80
+Code: from object_detector import Object_Detector_Tool
+
+labels = ["baseball", "basket"]  # labels to detect
+threshold = 0.45
+save_object = True
+saved_image_path = "detected_objects"
+
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg", labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+if "boxes" in final_result and "confidence_scores" in final_result:
+    total_count = sum([bbox["count"] for bbox in final_result["boxes"] if "count" in bbox])
+    empty_blue_seats = total_count - len(final_result["boxes"])
+    print(f"Number of empty blue seats: {empty_blue_seats}")
+else: 
+    print("Failed to detect objects.")
+

@@ -1,0 +1,56 @@
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+def count_birds(image_path, bird_label):
+    return (obj['boxes'][0]['ymin'], obj['boxes'][0]['ymax'], obj['boxes'][1]['ymin'], obj['boxes'][1]['ymax'])
+
+def main():
+    # Load detected object file
+    detector = Object_Detector_Tool()
+
+    # Load test image
+    model = 'tiny'
+
+    # Execute object detection
+    result = detector.execute(image=image_path, labels=[bird_label], save_object=False, saved_image_path=None)
+
+    # Count birds
+    bird_count = len(result['object_number']['birds'] or [])
+
+    # Print result
+    print(f"Number of {bird_label} detected: {bird_count}")
+
+if __name__ == '__main__':
+    main()
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+def count_birds_facing_right(image_path):
+    # Initialize the object detector tool
+    detector_tool = Object_Detector_Tool(image_path, ['birds'],
+                                        [1.0],
+                                        "tiny",
+                                        ["detected_objects"])
+
+    # Detect birds in the image and group them by label and score
+    detection_results = detector_tool.execute()
+
+    # Calculate the total count of birds
+    total_birds = sum(1 for results in detection_results.values() if "birds" in results.keys())
+
+    # Check the number of birds facing the right of frame
+    right_birds = sum(results["boxes"][0][0][0] < result["boxes"][0][1][0] for result in detection_results.values() if results["labels"] == 'birds')
+
+    return total_birds, right_birds
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None

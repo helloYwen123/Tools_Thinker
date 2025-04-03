@@ -536,44 +536,63 @@ def execution_reward(completions, QAid,**kwargs):
     reward_result = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
     return reward_result
 
+
+def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs):
+    """
+    """
+    current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+    log_root_dir = os.path.join(f"{root_dir}/A+MLOGS/Accuracy", f"{current_time}-logs")
+    acc_log_path = os.path.join(log_root_dir, "accuracy.log")
+    os.makedirs(log_root_dir, exist_ok=True)
+    rewards = []
+    for exec_r, result, sol, id in zip(exec_reward_list, exec_result_list, solution, QAid):
+        reward = 0.0
+        if exec_r == 0:
+            with open(acc_log_path, "a") as f:
+                f.write(f"\n[QAid]{id}\n\n")
+                f.write("\n[EXECUTION EXCEPTION]\n\n")
+        else:
+            try:
+                # try to verify symbolic calculation
+                parsed_result = parse(result)
+                parsed_solution = parse(sol)
+                if float(verify(parsed_result, parsed_solution)) > 0:
+                    reward = 5.0
+                    with open(acc_log_path, "a") as f:
+                        f.write(f"\n[QAid]{id}\n\n")
+                        f.write("\n[Verification Correct Result]\n\n")
+            except Exception:
+                pass
+            
+            if result == sol or result == sol.lower():
+                reward = 5.0
+                with open(acc_log_path, "a") as f:
+                    f.write(f"\n[QAid]{id}\n\n")
+                    f.write("\n[Correct Result]\n\n")
+            else:
+                with open(acc_log_path, "a") as f:
+                    f.write(f"\n[QAid]{id}\n\n")
+                    f.write("\n[Wrong Result]\n\n")
+        rewards.append(reward)
+    return rewards
+accuracy_reward.reward_type = "accuracy"
+
 completions = ["""
 <command>
-def count_yellow_jackets(image_path, yellow_jackets):
-    # Load the image using the objectdetector tool
-    detection_tool = object_detector.Object_Detector_Tool()
-    
-    # Execute the detection tool with the given parameters
-    execution = detection_tool.execute(image_path, ["yellow_jacket"], threshold=0.35, model_size="tiny", padding=20)
-    
-    # Get the bounding boxes for the detected yellow jackets
-    yellow_jackets_with_boxes = []
-    for detection in execution[0]:
-        label = detection['label']
-        confidence_score = detection['confidence score']
-        box = tuple(detection['box'])
-        
-        # Add the detected yellow jacket to the result list
-        yellow_jackets_with_boxes.append({'label': label, 'confidence score': confidence_score, 'box': box, 'saved_image_path': None})
-    
-    # Get the total number of yellow jackets detected
-    total_yellow_jackets = 0
-    for jacket in yellow_jackets_with_boxes:
-        if jacket['label'] == 'yellow_jacket':
-            total_yellow_jackets += 1
-    
-    return total_yellow_jackets
-
-# Example usage
-if __name__ == "__main__":
-    # Remove the path arguments and execute the function
-    count_result = count_yellow_jackets(image_path="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_103_image_1.jpg", yellow_jackets=None)
-    final_result = count_result['yellow_jacket']
-    print("Hello from exec!")
-    print(f"The number of people wearing a yellow jacket is: {final_result}")
+final_result = "a"
 </command>
 """]
-QAid = [20]
+
+solution = ["A"]
+QAid = [00]
+
 
 rewards, results = execution_reward(completions=completions, QAid=QAid)
 for idx, (reward, output) in enumerate(zip(rewards, results)):
     print(f"code snippet {idx} result: {reward}, {output}")
+reward = accuracy_reward(exec_reward_list = rewards, exec_result_list = results, solution = solution, QAid = QAid)
+print(len(reward))
+for idx, r in enumerate(reward):
+    print(f"{idx} accuracy reward : {r}")
+
+

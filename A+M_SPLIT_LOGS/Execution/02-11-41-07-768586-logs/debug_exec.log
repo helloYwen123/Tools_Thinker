@@ -1,0 +1,101 @@
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 8)
+code:from object_detector import Object_Detector_Tool
+
+# Path of the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg"
+
+# Call the tool with the image and parameters
+object_detector = Object_Detector_Tool(image_path=path_to_image)
+object_labels = object_detector.label DetectionResults()
+labels_info = [("baseball", 1), ("basketball", 0), ("soap", -1), ("handle", 1), ("wall", 0)]
+threshold = 0.45
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Process the detected results
+for obj_label in object_labels:
+    obj_label_organizer = labels_info[obj_label]
+    conf_scores = obj_label_organizer['confidence_scores']
+    boxes = obj_label_organizer['boxes']
+
+    # Calculate the percentage of green tiles based on the coordinates
+    percentage_green = boxes['wall']['x'] - boxes['wall']['x'] // len(labels_info) * len(labels_info)
+    percentage_green = (float(percentage_green) / 100) / 2  # Divide by total number of tiles
+
+    if percentage_green > threshold:
+        final_result = "E"
+        print("URINE TROUBLE!")
+    else:
+        final_result = "C"
+    print(f"{obj_label}: {percentage_green} % green tiles")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 2 required positional arguments: 'self' and 'labels'
+code:from object_detector import Object_Detector_Tool
+
+# Check if the image is detected by the object_detector tool
+result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg")
+
+# Calculate the number of green tiles
+green_tiles = result[0]['boxes'][3]['x'] - result[0]['boxes'][3]['y'] + 1
+total_tiles = 10
+
+# Calculate the percentage of green tiles in the image
+green_percentage = (green_tiles / total_tiles) * 100
+
+# Assign the final result based on the calculation
+final_result = "D" if green_percentage > 25 else "E"
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+tool_output = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg", labels=["GreenTile"], threshold=0.5, model_size="tiny")
+
+num_green_tiles = tool_output.get('output_types')[0]["1"]
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:from python-image-classifier.object_detection import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().detect(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg",
+                                      labels=["green tile"],
+                                      threshold=0.45,
+                                      saved_object=True,
+                                      save_image_path="detected_objects")
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+# Read image
+detector_tool = Object_Detector_Tool()
+
+# Image file path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_19_image_1.jpg"
+
+# Get detected objects from image
+objects, object_number = detector_tool.execute(image=image_path, labels=["urine", "gas"], save_object=True, saved_image_path="detected_objects")
+
+# Count objects
+number_of_green_tiles = 0
+for obj in objects["urine"]:
+   for tile in obj["boxes"]:
+      if tile["x"] > 25 and tile["y"] > 0 and tile["x"] < tile["width"] and tile["y"] < tile["height"]:
+         number_of_green_tiles += 1;
+
+# Check final result
+final_result = "D"
+if number_of_green_tiles == 3:
+   final_result = "C"
+
+print("Final Result:", final_result)

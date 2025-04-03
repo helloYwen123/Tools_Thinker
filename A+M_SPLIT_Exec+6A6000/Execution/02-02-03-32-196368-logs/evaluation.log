@@ -1,0 +1,173 @@
+------------- 02-02-03-32-196368 Execution reward: 0.0 -------------
+[Reward computation time: 1.1848 seconds]
+
+QAid: val_Counting_104
+Code: from object_detector import Object_Detector_Tool
+
+final_result = {}
+labels = ['baseball', 'basket']
+threshold = 0.45
+model_size = 'tiny'
+save_object = True
+
+detection_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_2.jpg", labels=labels, threshold=threshold, model_size=model_size)
+labels_count = detection_result['output_types'][0]
+
+for label, result in labels_count.items():
+    if label in [541, 542]:
+        final_result[label] = 3
+    else:
+        final_result[label] = 1
+
+print("Final result:", final_result)
+
+------------- 02-02-03-32-196368 Execution reward: 0.0 -------------
+[Reward computation time: 1.1929 seconds]
+
+QAid: val_Counting_104
+Code: from object_detector import Object_Detector_Tool
+
+# Check if the image contains a "baseball" label
+detected_objects, object_count = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg", labels=["baseball"], save_object=True)
+
+# Filter results to return only "baseball" and "basket"
+filtered_count = {label: count for _, count in object_count.items() if "baseball" in label}
+
+# Check if any faces were detected
+if "Faces" in filtered_count:
+    final_count = filtered_count["Faces"]
+    print(f"Found faces: {final_count}")
+else:
+    final_result = None
+
+------------- 02-02-03-32-196368 Execution reward: 0.0 -------------
+[Reward computation time: 1.3196 seconds]
+
+QAid: val_Counting_104
+Code: from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg"
+
+# List of object labels to detect
+labels = ["baseball", "basket"]
+
+# Confidence threshold
+threshold = 0.5
+
+# Size of the model to use ("tiny" or "base", default: "tiny")
+model_size = "tiny"
+
+# Whether to save the detected objects as images (default: False)
+save_object = True
+
+# Path to the saved object images
+saved_object_path = "detected_objects"
+
+# Run the object detector
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size)
+
+# Extract the labels
+labels_to_find = ["baseball", "basket"]
+
+# Count the occurrences of the labels
+count = 0
+for label in detected_objects:
+    found = False
+    for obj in label["boxes"]:
+        if obj in labels_to_find:
+            found = True
+            break
+    if found:
+        count += 1
+
+# Calculate the final result with the provided examples
+final_result = {"A": count}
+
+------------- 02-02-03-32-196368 Execution reward: 3.0 -------------
+[Reward computation time: 1.3186 seconds]
+
+QAid: val_Counting_104
+Code: final_result = 2
+
+------------- 02-02-03-32-196368 Execution reward: 0.0 -------------
+[Reward computation time: 1.2012 seconds]
+
+QAid: val_Counting_104
+Code: from torch.utils.data import Dataset
+import os
+import glob
+import requests
+import io
+import re
+from object_detector import Object_Detector_Tool
+
+
+# Load the model and parameters
+model = Object_Detector_Tool()
+model.load_model()
+model.load_params("/path/to/model_params.json")
+
+# Define the path to the image file
+image_path = "/path/to/image.jpg"
+
+# Detect the faces in the image
+detected_objects, object_number = model.execute(image=image_path, labels=["baseball"] + ["basket"], save_object=False, saved_image_path="")
+face_detected_objects = sum(1 for obj in detected_objects if obj["label"] in ["baseball", "basket"])
+final_result = face_detected_objects
+
+------------- 02-02-03-32-196368 Execution reward: 0.0 -------------
+[Reward computation time: 1.2481 seconds]
+
+QAid: val_Counting_104
+Code: import os
+from object_detector import Object_Detector_Tool
+
+# Path to the labeled image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg"
+
+# Initialize the Object_Detector_Tool
+tool = Object_Detector_Tool()
+
+# Detect the image
+labels = tool.execute(image=image_path)
+
+# Process labels
+object_number = 0
+for label in labels:
+    if label[0] != 'background':
+        object_number += 1
+        
+print("The number of faces detected in the image is:", object_number)
+
+------------- 02-02-03-32-196368 Execution reward: 0.0 -------------
+[Reward computation time: 1.2378 seconds]
+
+QAid: val_Counting_104
+Code: from object_detector import Object_Detector_Tool, detected_objects, obj_number
+
+------------- 02-02-03-32-196368 Execution reward: 0.0 -------------
+[Reward computation time: 1.6596 seconds]
+
+QAid: val_Counting_104
+Code: from object_detector import Object_Detector_Tool
+
+# Read the image path
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg"
+
+# Create the Object_Detector_Tool object
+tool = Object_Detector_Tool()
+
+# Call the method to detect objects in the image
+results = tool.execute(image=path_to_image, labels=["baseball", "basket"], save_object=True, saved_image_path="Detected_ObjectImages")
+
+# Convert the results to a dictionary
+detected_objects = results["output_types"][0]
+
+# Count the total number of boxes for detected objects
+total_objects = 0
+for label in results["output_types"][1]:
+    total_objects += len(detected_objects["boxes"][label]["boxes"])
+
+print("Number of boxes detected: " + str(total_objects))
+

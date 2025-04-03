@@ -1,0 +1,33 @@
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+# Function to process the detected objects in image
+def process_objects(image_path):
+    # Initialize objects dictionary
+    object_count = {}
+
+    # Load model and image
+    bs_model = {
+        'tiny': ('tiny', 'tiny'),
+        'base': ('tiny', 'base')
+    }[model_size]
+
+    bs_tool = bs_model[tool_class_name]
+    object_detector = bs_tool(image=image_path, labels=labels, model_size=bs_tool['size'])
+
+    for label, detections in sorted(object_detector.output['results']['detections'][0].items()):
+        object_count[label] = object_detector.output['results']['detections'][0][label]['count']
+
+    # Write to output file
+    output_path = f'detected_objects{label}.txt'
+    with open(output_path, 'w') as f:
+        for label, count in sorted(object_count.items()):
+            f.write(f"{label} {count}\n")
+
+    return object_count, image
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None

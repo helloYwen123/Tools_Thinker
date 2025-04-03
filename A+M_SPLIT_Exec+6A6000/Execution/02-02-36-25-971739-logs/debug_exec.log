@@ -1,0 +1,140 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'labels'
+code:from object_detector import Object_Detector_Tool
+
+# Step 1: Set the options
+input_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_6_image_1.jpg"
+labels_to_detector = ["nuts"]
+confidence_threshold = 0.6
+model_size = "tiny"
+save_object = True
+
+# Step 2: Create the detector tool object
+detector_tool = Object_Detector_Tool(input_image_path, labels=labels_to_detector, confidence_threshold=confidence_threshold, model_size=model_size, save_object=save_object)
+
+# Step 3: Detect the objects
+detected_objects, object_number = detector_tool.execute(labels=detector_tool.labels)
+
+# Step 4: Find the target object
+target_object = next(iter(detected_objects["nuts"]), None)
+if target_object:
+    # Step 5: Get the target object and its count
+    nuts_count = object_number["nuts"]
+    print(f"There are {nuts_count} big nuts in the green bowl.")
+else:
+    print("No target object detected.")
+"""
+
+final_result = detect_animal(nuts_count)
+print("Final result:", final_result)
+"""
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Call the method with the path to the image, labels, thresholds, and model type
+detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png",
+                                                               labels=["big_nut"],
+                                                               save_object=True,
+                                                               saved_image_path="detected_objects")
+
+# Check if 'big_nut' was detected
+if detected_objects["big_nut"]["boxes"] is not None:
+    # Count the number of 'big_nut' in the image
+    total_count = len(detected_objects["big_nut"]["boxes"])
+else:
+    total_count = None
+
+# Extract the value of object number from the returned result
+if object_number:
+    total_count = detected_objects["big_nut"]["boxes"].count(object_number)
+else:
+    total_count = None
+
+final_result = {"total_count": total_count}
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+# Load image Path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_6_image_1.jpg"
+
+# Load model
+model = Object_Detector_Tool("tiny")
+
+# Detect objects
+labels = ["baseball", "basket"]
+result = model.execute(image_path, labels, threshold=0.45, save_object=True, saved_image_path="detected_objects")
+
+# Get detected objects
+object_number = 0
+object_count = {}
+
+for obj_result in result:
+    for obj_label in obj_result['labels']:
+        if obj_label not in object_count:
+            object_count[obj_label] = [1]  # Assuming 1 is the maximum number of objects per label.
+
+for obj_label in object_count:
+    object_count[obj_label].append(obj_result['box'])
+
+    if obj_label == "baseball":
+        object_count["Baseball"] = [1]  # Adding baseball detection
+
+for obj_label in object_count.keys():
+    if "baseball" in object_count:
+        object_number = 1
+    else:
+        object_number = len(object_count)
+
+final_result = {"nuts_count": 3, "total_count": object_number}
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:from_object_detector_tool import Object_Detector_Tool
+
+# Step 1: Call the Object_Detector_Tool method
+final_result = Object_Detector_Tool().execute(image="path/to/image.png", labels=["big_tiny"], save_object=False)
+
+# Step 2: Get the total count of 'big_tiny' in the image
+big_tiny_count = final_result["output_types"][0]["data"]["object_number"]
+
+# Final result: The number of big nuts is "big_tiny_count"
+
+[EXECUTION EXCEPTION]
+list index out of range
+code:# Step 1: Import necessary modules
+from object_detector import Object_Detector_Tool
+
+# Step 2: Assign the image and object labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_6_image_1.jpg"
+labels = ["nuts"]  # Assign a list of detected labels to detect
+
+# Step 3: Use the Object_Detector_Tool object to execute the detection
+tool = Object_Detector_Tool()
+result = tool.execute(image_path, labels, save_object=False, saved_image_path="result")
+
+# Step 4: Extract the detected objects
+bboxs = result[2]
+scores = result[1]
+num_label = len(result[2])
+
+# Step 5: Calculate the number of big nuts in the green bowl
+big_nuts = [score[1] > 0.4 for score in scores]
+total_nuts_in_bowl = sum(big_nuts)
+num_nuts_in_bowl = result[0]["nuts"]["bbox"]
+
+# Step 6: Check if there are any big nuts in the green bowl
+if total_nuts_in_bowl == num_nuts_in_bowl:
+    final_result = 2  # For this example, assume 2 big nuts were found
+else:
+    final_result = 3  # Assume 3 big nuts were found
+
+# Step 7: Print the final result
+print("The final result is:", final_result)

@@ -1,0 +1,109 @@
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+name '__file__' is not defined
+code:import os
+import numpy as np
+import json
+import yaml
+from object_detector import Object_Detector_Tool
+
+def detect_parking_meters(path_to_image):
+    object_detector = Object_Detector_Tool()
+
+    # Convert image path to absolute
+    image_path = os.path.join(os.path.dirname(__file__), "..", path_to_image)
+
+    # Convert image format to RGB
+    with open(image_path, 'rb') as image_buffer:
+        image = np.array(Image.open(image_buffer))
+
+    # Run object detector
+    object_detection = object_detector.execute(image=image, labels=["parking_meter"], threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+
+    # Calculate number of parking meters detected
+    detected_objects = object_detection["detected_objects"]["parking_meter"]
+    num_parking_meters = len(detected_objects["boxes"])
+
+    return num_parking_meters
+
+final_result = detect_parking_meters("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_41_image_1.jpg")
+print("Number of parking meters:", final_result)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_41_image_1.jpg"
+
+# Initialize the object detector tool
+object_detector_tool = Object_Detector_Tool(image_path)
+
+# Detect the parking meters
+parking_meters_detections = object_detector_tool.execute(labels=["parking meter"], save_object=True)
+
+# Count the parking meters
+total_parking_meters = len(parking_meters_detections["object_number"]["parking meter"])
+
+final_result = {"total_parking_meters": total_parking_meters}
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+# Specify the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_41_image_1.jpg"
+
+# Create an Object_Detector_Tool object
+tool = Object_Detector_Tool()
+
+# Detect the objects in the image
+labels = ["baseball", "basket"]
+threshold = 0.45
+
+# Calculate the bounding box, confidence score, and saved image path
+detected_objects, object_number = tool.execute(image_path, labels, threshold, 'tiny', True, saved_image_path="detected_objects")
+
+# The result is a dictionary grouping detected objects by label and their bounding box, confidence scores, and saved image paths
+# Since there is only one label detected, there's only one label and its bounding box in the detected_objects dictionary
+final_result = detected_objects[0]
+
+# Check if there is any information contained in the detected_objects dictionary
+print(f"The total number of parking meters found in the garden: {final_result['sum']}")
+
+# Calculate whether the number is less than zero or more than zero
+if final_result['sum'] == 0:
+    print(f"The amount is 0.")
+else:
+    print(f"The amount is {final_result['sum']}.")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["parking meter"], save_object=True, saved_image_path="detected_objects")
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+# Use the object_detector module to detect parking meters
+detector = Object_Detector_Tool()
+
+# Generate the image name
+image_name = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_41_image_1.jpg"
+
+# Use the script that detects objects to detect parking meters
+(detected_objects, object_count) = detector.execute(image=image_name, labels=["parking meter"], save_object=True)
+
+# The total number of objects detected in the image
+total_objects = len(detected_objects)
+
+# The number of parking meters detected for image detection
+num_parking_meters = {label: detected_objects[label].get('boxes') for label in detected_objects if label == "parking meter"}
+
+# Convert the object counts to a string and join them with a comma
+final_result = (str(num_parking_meters) + ", " if num_parking_meters else "0") + f"{total_objects} parking meters in the garden, objects detected: {detected_objects}."
+
+final_result

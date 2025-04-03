@@ -1,0 +1,90 @@
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 7 were given
+code:from object_detector import Object_Detector_Tool
+
+final_result = "B"
+
+image_path = "path/to/image.png"
+labels = ["baseball", "basket"]
+threshold = 0.45
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+object_detector = Object_Detector_Tool(image_path, labels, threshold, model_size, save_object, saved_image_path)
+object_detector.execute()
+
+object_counts = object_detector.output_types[1]
+
+if object_counts["baseball"]["boxes"][0]["x1"] > 0.5 and object_counts["baseball"]["boxes"][0]["y1"] > 0.5:
+    final_result = "A"
+else:
+    if object_counts["basket"]["boxes"][0]["x1"] > 0.5 and object_counts["basket"]["boxes"][0]["y1"] > 0.5:
+        final_result = "D"
+    else:
+        final_result = "E"
+
+print(final_result)
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+final_result = None
+
+# Image Path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg"
+
+# Create Object_Detector_Tool instance
+detector_tool = Object_Detector_Tool()
+
+# Execution
+detected_objects, object_number = detector_tool.execute(image=image_path, labels=["baseball"], save_object=True)  # Save detected objects as images
+
+if "detected_objects" in object_number:
+    # Check if detected objects exist in the image
+    final_result = object_number["detected_objects"]
+else:
+    # If no detected objects are found
+    final_result = object_number["non_found_objects"]
+
+if final_result is None:
+    print("No hot dogs are being eaten.")
+else:
+    print(f"{final_result:,} hot dogs are being eaten.")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'saved_object'
+code:from object_detector import Object_Detector_Tool
+
+# Initialize Object_Detector_Tool
+dd_tool = Object_Detector_Tool()
+
+# Initialize object labels
+object_labels = ['hot dog', 'lettuce', 'ketchup', 'mustard']
+
+# Initialize confidence threshold
+confidence_threshold = 0.45
+
+# Save image path
+save_object_image_path = None
+
+# Get total count for each label
+total_counts = dd_tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_51_image_1.jpg",
+                               labels=object_labels,
+                               threshold=confidence_threshold,
+                               saved_object=False,
+                               model_size='base',
+                               save_object=False)
+
+# Print final result
+final_result = "None"
+for label, count in total_counts.items():
+    final_result += f"- {label}: {count}\n"
+
+# Output result as text (final_result)
+print(f"Final result: {final_result}")

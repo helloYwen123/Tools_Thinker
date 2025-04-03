@@ -1,0 +1,114 @@
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_115_image_1.jpg'
+
+# Detect and save detections
+detected_objects = Object_Detector_Tool.execute(image=image_path, labels=["bird"], save_object=False, saved_image_path="")
+
+# Get the total count for the detected bird
+total_count = detected_objects["total_label_counts"]
+
+# Filter for birds
+bird_labels = ["bird"]
+bird_counts = {label: 0 for label in bird_labels}
+
+for label in bird_labels:
+    counts = detected_objects["label_counts"].get(label, None)
+    if counts:
+        bird_counts[label] = counts
+
+final_result = {
+    "count": bird_counts,
+    "response": "There are " + str(total_count) + " birds."
+}
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+detected_objects = Object_Detector_Tool.execute(image="val_Counting_115_image_1.jpg", labels=["crab"], save_object=True, saved_image_path="detected_objects")
+object_number = detected_objects["baseball"]
+final_result = object_number
+print(final_result)
+
+[EXECUTION EXCEPTION]
+'Object_Detector_Tool' object has no attribute 'load_image'
+code:from object_detector import Object_Detector_Tool
+
+# Load a trained model
+object_detector_tool = Object_Detector_Tool()
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_115_image_1.jpg"
+image_content = object_detector_tool.load_image(image_path)
+labels = ["sandpiper"]  # Replace this with the actual labels
+
+# Detect birds
+bird_detection_result = object_detector_tool.detect_object_with_labels(image_content, labels, confidence_threshold=0.5)
+
+# Count birds
+bird_count = bird_detection_result['object_number']
+
+# Find birds facing the right of the frame
+if (bird_detection_result['boxes'][0]['x'] + bird_detection_result['boxes'][0]['width'] > image_content.shape[1] / 2) and (bird_detection_result['boxes'][1]['y'] + bird_detection_result['boxes'][1]['height'] < image_content.shape[0] / 2):
+    bird_count += 1
+
+bird_count
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 4)
+code:from image_utils import read_image, ImageUtils, save_detected_objects
+from object_detector import Object_Detector_Tool
+
+import_module: 'object_detector', object_detection_tool
+import_name: 'Object_Detector_Tool'
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+final_result = {}
+detected_objects = Object_Detector_Tool.execute(
+    image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_115_image_1.jpg",
+    labels=["gray-faced Scoter", "white-faced whimbrel"],
+    save_object=True,
+    saved_image_path="detected_objects"
+)
+
+if detected_objects["boxes"] and "confidence_scores" in detected_objects:
+    print(detected_objects["boxes"])
+
+for label in detected_objects["boxes"]:
+    bird_boxes = detected_objects["boxes"][label]
+    bird_scores = detected_objects["confidence_scores"][label]
+
+    right_side_count = 0
+    for box in bird_boxes:
+        bird_footprint = [
+            (box[0] + bird_boxes[box[0]][1][0], box[1] + bird_boxes[box[0]][1][1]),
+            (box[0] + bird_boxes[box[0]][2][0], box[1] + bird_boxes[box[0]][2][1]),
+            (box[0] + bird_boxes[box[0]][3][0], box[1] + bird_boxes[box[0]][3][1])
+        ]
+        right_side_footprint = [
+            (w + bird_boxes[box[0]][1][0], h + bird_boxes[box[0]][1][1]),
+            (w + bird_boxes[box[0]][2][0], h + bird_boxes[box[0]][2][1]),
+            (w + bird_boxes[box[0]][3][0], h + bird_boxes[box[0]][3][1])
+        ]
+        if right_side_footprint[0] - bird_footprint[0] <= 20 and right_side_footprint[1] - bird_footprint[1] <= 20:
+            right_side_count += 1
+
+    final_result[label] = right_side_count
+else:
+    final_result = {"gray-faced Scoter": 0, "white-faced whimbrel": 0}
+
+print("Final result:", final_result)
+
+[None RESULT]
+

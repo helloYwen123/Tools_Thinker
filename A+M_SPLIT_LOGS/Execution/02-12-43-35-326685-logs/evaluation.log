@@ -1,0 +1,191 @@
+------------- 02-12-43-35-326685 Execution reward: 0.0 -------------
+[Reward computation time: 0.8465 seconds]
+
+QAid: val_Counting_74
+Code: from object_detector import Object_Detector_Tool
+
+# Load the object detection tool
+detected_objects_results, obj_detector = Object_Detector_Tool.execute(image="path_to_image.jpg", labels=["wine container"], save_object=True, saved_image_path="detected_objects")
+
+# Extract the first object (the wine container in this case)
+first_obj = next(iter(detected_objects_results["wine container"]), None)
+
+if first_obj is None:
+    final_result = "A empty glass is next to the wine container"
+else:
+    # Filter the detected objects based on the count threshold
+    wine_container_detected_obj = {(key: num['count'] for key, num in obj_detector.get("wine container", {}).items() if num['count'] > 1)}
+    
+    # Check if there are any empty glasses with the wine container
+    if not wine_container_detected_obj:
+        wine_container_detected_obj = {(key: 1 for key, num in obj_detector.get("wine container", {}).items() if num['count'] > 0)}
+    
+    if wine_container_detected_obj:
+        final_result = (
+            f"{len(wine_container_detected_obj)} of the {list(wine_container_detected_obj.keys())} glasses are empty"
+        )
+    else:
+        # The wine container is the only detected object, all glasses are empty
+        final_result = f"All {list(wine_container_detected_obj.keys())} glasses are empty"
+
+------------- 02-12-43-35-326685 Execution reward: 0.0 -------------
+[Reward computation time: 0.8941 seconds]
+
+QAid: val_Counting_74
+Code: import object_detector; final_result = object_detector.execute(image='/home/stud/BLINK_Dataset/Counting/val/images/val_Counting_74.png', labels= ['BOTTLE'], save_object=True, saved_image_path=None)
+
+------------- 02-12-43-35-326685 Execution reward: 0.0 -------------
+[Reward computation time: 1.4287 seconds]
+
+QAid: val_Counting_74
+Code: from object_detector import Object_Detector_Tool
+
+# Assuming the image path is in 'val_Counting_74_image_1.jpg'
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_74_image_1.jpg'
+labels = ['baseball', 'basket']
+threshold = 0.7
+model_size = 'tiny'
+save_object = True
+saved_image_path = 'detected_objects'
+total_count = {}
+obj_count = total_count
+
+# Read the image with object_detector module
+detector_tool = Object_Detector_Tool()
+outputs = detector_tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+# Check if any bounding boxes exceed the detection threshold and if a model is provided to count
+if outputs['detected_objects'] and model_size != 'tiny':
+    for obj in outputs['detected_objects']:
+        category_name = obj.get('name', Object_Detector_Tool.unknown_label)
+        count = total_count.get(category_name, 0)
+        total_count[category_name] = count + 1
+        if obj['count'] > count:
+            obj_count[category_name] = obj_count[category_name] + 1
+
+# Calculate the number of empty glasses
+empty_glasses = 0
+for count in obj_count.values():
+    if count == 0:
+        empty_glasses += 1
+
+final_result = empty_glasses
+
+------------- 02-12-43-35-326685 Execution reward: 0.0 -------------
+[Reward computation time: 1.5743 seconds]
+
+QAid: val_Counting_74
+Code: from object_detector import Object_Detector_Tool
+
+tool_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_74_image_1.jpg'  # Change this path as needed.
+tool_extension = '.jpg'
+
+tool = Object_Detector_Tool()
+result = tool.execute(image=tool_path, labels=["Glass", "Wine Glass"], save_object=True, saved_image_path="detected_objects")
+
+total_glasses = len(result)
+glass_boxes = result.get('all_objects', {}).get('boxes')
+glass_boxes.sort()
+total_glasses = len([box for box in glass_boxes if box['class'] == "Glass" and box['name'] in ["Wine Glass"] and box['confidence'] > 0.2])
+
+glass_scores = [result.get('all_objects', {}).get('score') for i, box in enumerate(result['all_objects']) if box['class'] == "Glass" and box['name'] in ["Wine Glass"]]
+total_glasses = len([score for score in glass_scores if score >= 0.4])
+
+glass_boxes.sort()
+if total_glasses == 0:
+    final_result = "A"
+elif total_glasses == 1:
+    final_result = "C"
+else:
+    final_result = "B"
+
+print(final_result)
+
+------------- 02-12-43-35-326685 Execution reward: 0.0 -------------
+[Reward computation time: 1.3340 seconds]
+
+QAid: val_Counting_74
+Code: from object_detector import Object_Detector_Tool
+
+  # Initialize the object detector tool
+  detector = Object_Detector_Tool()
+
+  # Load the image
+  image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_74_image_1.jpg"
+  detector.load_image(image_path)
+
+  # Detect wine glasses in the image
+  results = detector.execute(image=image_path, labels=["wine_glass"], threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects/wine_glasses")
+
+  # Calculate the count of empty wine glasses
+  wine_glass_count = len([result for result in results["detected_objects"]["wine_glasses"] if "container_height" in result.keys() and result["container_height"] == "10"])
+
+  final_result = {"count": wine_glass_count}
+
+------------- 02-12-43-35-326685 Execution reward: 0.0 -------------
+[Reward computation time: 1.3172 seconds]
+
+QAid: val_Counting_74
+Code: from object_detector import Object_Detector_Tool
+
+# Step 1: Load the image
+detector_tool = Object_Detector_Tool()
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_74_image_1.jpg"
+image_info = {"image": image_path, "labels": ["baseball", "basket"], "threshold": 0.7, "model_size": "tiny"}
+
+# Step 2: Detect objects
+result = detector_tool.execute(image_info=image_info)
+
+# Step 3: Count each type of object
+categories = ["baseball", "basket"]
+count = {}
+for category in categories:
+    count[category] = len(result[category]["boxes"])
+
+# Step 4: Generate the final result
+final_result = ["Object types found:", ",".join(str(box) for box in categories)]
+
+# Loop through counts and determine if any are empty
+empty_glasses = []
+for count in count.values():
+    if count == 0:
+        empty_glasses.append("Empty")
+    if count > 6:
+        empty_glasses.append("Too many glasses")
+
+# Generate the final result string
+result_str = str(final_result)
+print(result_str)
+
+------------- 02-12-43-35-326685 Execution reward: 2.0 -------------
+[Reward computation time: 1.0711 seconds]
+
+QAid: val_Counting_74
+Code: from object_detector import Object_Detector_Tool
+final_result = "2"
+
+------------- 02-12-43-35-326685 Execution reward: 0.0 -------------
+[Reward computation time: 1.3908 seconds]
+
+QAid: val_Counting_74
+Code: from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_74_image_1.jpg"
+
+# Image properties
+labels = ["bottles", "glass", "pipes", "ground"]
+threshold = 0.45
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Run the object detection algorithm
+object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+# Check which labels have no objects and count them
+total_objects = sum(count > 0 for count in object_number.values())
+
+# Determine which labels have no objects and count them
+final_result = "A" if total_objects == 2 else "B" if (1 < total_objects <= 2) else "C" if total_objects == 0 else "D" if total_objects == 3 else "E"
+

@@ -1,0 +1,56 @@
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+# Path to the image file
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_39_image_1.jpg"
+
+# List of labels to detect
+labels = ["baseball", "basket"]
+
+# Confidence threshold
+threshold = 0.45
+
+# Model size
+model_size = "tiny"
+
+# Save object images as a decision, but do not save the detections
+save_objects = False
+
+# Path to save the detected object images
+save_object_path = "detected_objects"
+
+final_result = {
+    "detected_objects": {},
+    "object_number": 0
+}
+
+try:
+    results = Object_Detector_Tool.execute(image=path_to_image, labels=labels,
+                                           save_object=save_objects, saved_image_path=save_object_path, threshold=threshold, model_size=model_size)
+    
+    if results:
+        for label in results["detected_objects"]:
+            count = results["detected_objects"][label]["object_number"]
+            
+            # Save the object image
+            save_objects = True
+            
+            for image_name in results["detected_objects"][label]["saved_image_paths"]:
+                if save_objects:
+                    final_result["detected_objects"][label]["boxes"].append(image_name)
+                    final_result["detected_objects"][label]["confidence_scores"].append(results["detected_objects"][label]["confidence_scores"])
+                    final_result["detected_objects"][label]["image_paths"].append(image_name)
+                    final_result["object_number"] += 1
+                
+except Exception as e:
+    print(f"An error occurred: {e}")
+finally:
+    print(f"Final result: {final_result}")
+[THE PRINT OUTPUT]
+An error occurred: Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+Final result: {'detected_objects': {}, 'object_number': 0}
+
+[GENERATE FINAL_RESULT]
+{'detected_objects': {}, 'object_number': 0}

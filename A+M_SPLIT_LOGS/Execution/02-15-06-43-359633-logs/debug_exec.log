@@ -1,0 +1,51 @@
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:from object_detector import Object_Detector_Tool  final_result = 'B'  # 'B' will be assigned if there are more than one people wearing suit in the image  # This code block uses the Object_Detector_Tool to analyze the image and count the people wearing suit  if final_result != 'B':
+    Image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_77_image_1.jpg"
+    labels = ['baseball', 'basket']  # Assume these are the labels for people wearing suit
+    threshold = 0.45  # Confidence threshold (0.45 in this case)
+    model_size = 'tiny'  # The size of the model to use
+
+    # Execute the tool
+    object_number = Object_Detector_Tool.execute(image=Image, labels=labels, threshold=threshold, model_size=model_size, save_object=True, saved_image_path="detected_objects")  # The output is a tuple-like dictionary
+
+    # Calculate the number of people wearing suit in the image
+    suit_number = object_number['detected_objects'][f'suit']['boxes'][0]['confidence_scores'][0]
+    if suit_number > 0:
+        final_result = 1
+
+if final_result == 'B':
+    print(final_result)  # Output: B
+
+[EXECUTION EXCEPTION]
+keyword argument repeated: save_object (<string>, line 24)
+code:from object_detector import Object_Detector_Tool
+
+final_result = "B"
+
+# Create an instance of Object_Detector_Tool
+detector_tool = Object_Detector_Tool()
+
+# Image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_77_image_1.jpg"
+
+# Detect objects
+labels_list = ["baseball", "basket"]
+
+# Confidence threshold
+threshold = 0.45
+
+# Save object as image
+if threshold == 0.45:
+    saved_image_path = "detected_objects"
+else:
+    saved_image_path = None
+
+# Execute object detection
+result = detector_tool.execute(image=image_path, labels=labels_list, save_object=False, saved_image_path=saved_image_path, model_size="tiny", save_object=True, threshold=threshold)
+
+for label in result:
+    if "boxes" in label.keys():
+        final_result = label["label"]
+        break

@@ -1,0 +1,156 @@
+
+[EXECUTION EXCEPTION]
+name 'img' is not defined
+code:from object_detector import *
+
+# 1. Read the image
+photo = img.imread("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg")
+detector_tool = Object_Detector_Tool()
+
+# 2. Detect detected objects in the image
+labels = ["baseball", "basket"]
+
+# 3. Convert the object detection results to dictionary format
+detected_objects = detector_tool.execute(image=photo, labels=labels, save_object=True, saved_image_path="detected_objects")
+
+# 4. Extract the face protection count from the detected objects
+face_guards = [detected_objects[label]['boxes'][0][-1]['label'].split('_')[-1] for label in labels][1:] # remove '_0'
+
+# 5. Determine the final result
+final_result = "\n".join(['Number of players wearing face guards in the image:', ', '.join(f'{x}' for x in face_guards)])
+if final_result:
+    print(final_result)
+else:
+    print("No players wearing face guards in the image.")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image and specify object labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+labels = ["baseball", "baseball", "sock"]
+
+# Create the Object_Detector_Tool object
+tool = Object_Detector_Tool(
+    image_path=image_path,
+    labels=labels,
+    save_object=True
+)
+
+# Execute the detection
+final_result = tool.execute()
+
+# Extract the count of players wearing face guards
+player_count = final_result["object_number"]["baseball"]["boxes"].get("count_of_played_players_with_face_guard")
+print(f"The number of players wearing face guards is: {player_count}")
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code:from_object_detector import Object_Detector_Tool
+
+# Load the image
+object_detector_tool = Object_Detector_Tool()
+
+# Define the labels to detect
+labels = ["baseball", "basket"]
+
+# Set the confidence threshold
+threshold = 0.45
+detect_objects, object_number = object_detector_tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg", labels=labels, save_object=True, saved_image_path="detected_objects", threshold=threshold)
+
+# Initialize a variable to store the number of players wearing face guards
+face_guard_count = 0
+
+# Check each object in the detected objects dictionary
+for label, results in detected_objects.items():
+    for boxes in results["boxes"]:
+        box_coordinates = [np.array(box) for box in boxes]
+        for box in box_coordinates:
+            # Determine if the bounding box (box) is likely to be a player wearing face guard
+            if "baseball" in label and "face guard" in results["boxes"][bbox]["name"]:
+                face_guard_count += 1
+                # Get the confidence score for the label "baseball"
+                baseball_confidence = results["boxes"][label]["confidence_scores"][-1]
+                # Add a condition to check if the baseball confidence score is above the threshold
+                if baseball_confidence > threshold:
+                    continue  # Skip to the next object
+                break 
+
+# Determine the final result based on the above analysis
+final_result = f"({face_guard_count}, {object_number}, {labels})"
+
+# Print the final result
+print(final_result)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image file
+detected_objects = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg", labels=["baseball", "basket"], threshold=0.45, save_object=True, saved_image_path="detected_objects")
+
+# Get the count of players wearing face guards
+face_guard_counts = detected_objects['object_number']
+final_result = max(face_guard_counts.values())  # Choose the label with the highest count
+
+if final_result == 4:  # Player count
+    print("B")
+elif final_result == 3:  # Player count
+    print("A")
+elif final_result == 2:  # Player count
+    print("C")
+else:
+    print("D")
+
+[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code:import os
+import shutil
+import numpy as np
+from object_detector_tool import Object_Detector_Tool
+
+# Image path
+image_path = 'path/to/image.png'
+
+# Initialize the object detection tool
+detector_tool = Object_Detector_Tool()
+
+# Detect objects
+labels_to_detect = ["baseball", "basketball"]  # You can add more if needed
+is_detection = detector_tool.detect_objects(image_path, labels_to_detect)
+
+# Print the labels with their detection results
+object_labels = detector_tool.output_types[0]
+
+# Extract the detections for player wearing face guards
+face_guard_detections = object_labels[0]['boxes'][list(image_labels['baseball'].values())].tolist()
+
+# Print the face guard detections
+for idx, detection in enumerate(face_guard_detections):
+    print(f"Face guard detection {idx+1}: {detection}")
+
+# Count the number of face guard detections
+face_guard_count = len(face_guard_detections)
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+list indices must be integers or slices, not str
+code:from object_detector import Object_Detector_Tool
+
+# Load the tool
+tool = Object_Detector_Tool()
+
+# Load the path to the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_57_image_1.jpg"
+
+# Execute the tool
+result = tool.execute(image=image_path, labels=["face guard"], threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+
+# Get the total count of face guard in the image
+face_guard_count = len(result['object_number']['baseball']['boxes'])
+
+# Assign the result to the final result variable
+final_result = "D ({})".format(face_guard_count)

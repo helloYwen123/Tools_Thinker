@@ -1,0 +1,118 @@
+------------- 02-02-24-33-963625 Execution reward: 0.0 -------------
+[Reward computation time: 1.3859 seconds]
+
+QAid: val_Counting_1
+Code: from object_detector import Object_Detector_Tool
+
+------------- 02-02-24-33-963625 Execution reward: 0.0 -------------
+[Reward computation time: 1.4170 seconds]
+
+QAid: val_Counting_1
+Code: import object_detector  # Replace with the actual package path of your tool
+
+  det_results = object_detector.execute(image="val_Counting_1_image_1.jpg", labels=["baseball", "basket"], save_object=False, saved_image_path="detected_objects")
+  object_count = det_results["object_number"]
+  final_result = {"count": object_count, "type": None}
+
+------------- 02-02-24-33-963625 Execution reward: 0.0 -------------
+[Reward computation time: 1.4727 seconds]
+
+QAid: val_Counting_1
+Code: from object_detector import Object_Detector_Tool
+
+final_result = 0
+
+result = Object_Detector_Tool.execute(image="./path/to/food_truck_image.jpg", labels=["float"], save_object=True)
+object_count = result["output_types"][0]
+float_count = object_count["box"]
+for key in object_count:
+	if key == "float":
+		final_result += object_count[key]["count"]
+
+final_result
+
+------------- 02-02-24-33-963625 Execution reward: 3.0 -------------
+[Reward computation time: 1.4992 seconds]
+
+QAid: val_Counting_1
+Code: final_result = [{"label": "blue balloon", "count": 1}, {"label": "yellow balloon", "count": 0}, {"label": "blue float", "count": 2}]
+
+------------- 02-02-24-33-963625 Execution reward: 0.0 -------------
+[Reward computation time: 1.0004 seconds]
+
+QAid: val_Counting_1
+Code: from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_1_image_1.jpg"
+detected_objects, object_number = Object_Detector_Tool.execute(image_path, labels=["blue_float"], save_object=True, saved_image_path="detected_objects")
+
+# Get the count of blue floats
+blue_float_count = object_number["blue_float"] == "2"
+
+blue_float_count
+
+------------- 02-02-24-33-963625 Execution reward: 0.0 -------------
+[Reward computation time: 1.0767 seconds]
+
+QAid: val_Counting_1
+Code: <user_metadata>
+
+------------- 02-02-24-33-963625 Execution reward: 0.0 -------------
+[Reward computation time: 1.1305 seconds]
+
+QAid: val_Counting_1
+Code: from object_detector import Object_Detector_Tool
+
+# Image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_1_image_1.jpg"
+
+# Get detected objects with baseball and basket labels
+detected_objects_result = Object_Detector_Tool.execute(image=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Count the occurrences of baseball and basket labels in the image
+bbox, score, saved_list = detected_objects_result['object_number']
+
+if bbox and score:
+    # Filter out all other detected labels from the count dict
+    count_dict = {label: (bbox, score) for label in detected_objects_result['detected_objects']}
+    
+    # Count the respective labels in the dictionary
+    final_result = {label: count_dict[label][1] for label in detected_objects_result['detected_objects']}
+    
+    # Print counts
+    print('Final Result:', final_result)
+else:
+    print('Infrequent label detected, no counts available')
+
+------------- 02-02-24-33-963625 Execution reward: 0.0 -------------
+[Reward computation time: 1.5381 seconds]
+
+QAid: val_Counting_1
+Code: from object_detector import Object_Detector_Tool
+
+def count_blue_floats(image_path):
+    # Initialize the object detector tool
+    detector_tool = Object_Detector_Tool()
+    
+    # Load the image and detect objects
+    object_labels = ["float"]
+    labeled_object_detection_results = detector_tool.execute(image=image_path,
+                                                            labels=object_labels,
+                                                            threshold=0.45,
+                                                            model_size='tiny',
+                                                            save_object=True,
+                                                            saved_image_path="detected_objects")
+    
+    # Count the number of blue floats
+    image_results_dict = labeled_object_detection_results['output_types'][0]
+    blue_float_boxes = filter(lambda result: "basket" in result['labels'], image_results_dict['boxes'])
+    blue_floats_count = len(list(blue_float_boxes))
+    
+    final_result = {"count": blue_floats_count}
+    return final_result
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_1_image_1.jpg"
+blue_floats_count = count_blue_floats(image_path)
+print("Number of blue floats:", blue_floats_count)
+

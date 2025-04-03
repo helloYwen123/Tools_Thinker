@@ -1,0 +1,169 @@
+------------- 01-22-22-26-710798 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_40
+Code: [EMPTY]
+
+------------- 01-22-22-26-710798 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_40
+Code: [EMPTY]
+
+------------- 01-22-22-26-710798 Execution reward: 0.0 -------------
+[Reward computation time: 1.1782 seconds]
+
+QAid: val_Counting_40
+Code: from object_detector import Object_Detector_Tool
+
+# Sample image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_40_image_1.jpg"
+
+# Instantiate the Object_Detector_Tool
+tool = Object_Detector_Tool()
+
+# Use the tool to detect objects in the image
+labels = tool.detect_objects(image_path, saved_object=False)
+
+# Initialize a dictionary to hold the count of skiers wearing red
+count_red_skiers = {'skiers': 0}
+
+# Check if "skier" is in the detected objects
+if 'skier' in labels:
+    # Find the coordinates (x, y) and bounding box information
+    skier_coordinates = labels["skier"]["boxes"]
+    
+    # Find the x-coordinate of the bounding box containing a skier with red clothes
+    for coord in skier_coordinates:
+        if "red" in coord["colors"]:
+            x, y = coord["coordinates"]
+            total_coords_with_red = 0
+            for coord in skier_coordinates:
+                if "red" in coord["colors"]:
+                    total_coords_with_red += 1
+            
+            if total_coords_with_red > 0:
+                count_red_skiers["skiers"] += 1
+
+# Output the result
+if count_red_skiers:
+    print(f"Number of skiers wearing red: {count_red_skiers}")
+else:
+    print("No skier with red clothes detected.")
+
+------------- 01-22-22-26-710798 Execution reward: 0.0 -------------
+[Reward computation time: 1.3102 seconds]
+
+QAid: val_Counting_40
+Code: from object_detector import Object_Detector_Tool
+
+# Assuming the path to the image is "path/to/image.jpg"
+# and there are no more labels to detect beyond "baseball" and "basket"
+object_detector_tool = Object_Detector_Tool(
+    input_types={
+        "image": "path/to/image.jpg",
+        "labels": ["baseball", "basket"],
+        "threshold": 0.45,
+        "model_size": "tiny",
+        "save_object": True
+    }
+)
+
+# Call the tool to detect the objects in the image
+detected_objects, object_number = object_detector_tool.execute()
+print(detected_objects["baseball"]["boxes"], detected_objects["basket"]["boxes"])
+
+------------- 01-22-22-26-710798 Execution reward: 0.0 -------------
+[Reward computation time: 1.2795 seconds]
+
+QAid: val_Counting_40
+Code: from tool import Object_Detector_Tool
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_40_image_1.jpg"
+labels = ["red_ski"]
+threshold = 0.45
+model_size = "tiny"
+save_object = True
+
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path="detected_objects", threshold=threshold, model_size=model_size)
+
+for label, results in detected_objects.items():
+    print(f"Label: {label}, Number: {len(results['boxes'])}")
+
+# The skiers wearing red will only appear in the detected_objects dictionary with the key "red_ski". Let's count the number of such skiers.
+red_ski_count = object_number.get("red_ski", 0)
+final_result = f"Number of skiers wearing red: {red_ski_count}"
+
+------------- 01-22-22-26-710798 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_40
+Code: [EMPTY]
+
+------------- 01-22-22-26-710798 Execution reward: 0.0 -------------
+[Reward computation time: 1.8301 seconds]
+
+QAid: val_Counting_40
+Code: from object_detector import Object_Detector_Tool
+
+# Load the labels to detect
+labels = ["skier"]
+
+# Set the confidence threshold
+threshold = 0.45
+
+# Set the size of the model to use
+model_size = "tiny"
+
+# Set the path to save the detected object images
+saved_image_path = "detected_objects"
+
+# Run the Object_Detector_Tool to detect objects in the image
+object_detector_tool = Object_Detector_Tool()
+result = object_detector_tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_40_image_1.jpg", labels=labels, threshold=threshold, model_size=model_size, save_object=True, saved_image_path=saved_image_path)
+
+# Extract the detected objects
+box = result["detected_objects"]
+box_count = result["object_distribution"]
+
+# Determine the color of the skier
+if "red" in box_count:
+    final_result = 1
+else:
+    final_result = 0
+
+print(final_result)
+
+------------- 01-22-22-26-710798 Execution reward: 0.0 -------------
+[Reward computation time: 0.5890 seconds]
+
+QAid: val_Counting_40
+Code: import openai
+
+# image file path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_40_image_1.jpg"
+
+# labels to detect (assuming red jacket as the key object to search for)
+labels = ["red jacket"]
+
+# threshold for detection
+threshold = 0.4
+
+try:
+    generated_objs = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size="tiny", save_object=True)
+
+    for obj_data in generated_objs[0]['object_boxes']:
+        box = obj_data[0]
+        center_img = "img_" + str(box[2])  # add padding based on detected size
+        cropped_image = Image.open(path_img).crop(box[0:4])
+        cropped_image.save(f"{saved_image_path}/{center_img}", dpi=(1080, 1080), optimize=True)
+
+        boxes.append(box)
+        scores.append(obj_data[1][box[0][0]:box[0][1]])  # assuming labels are given as x,y coordinates, we crop to detect
+except Exception as e:
+    final_result = "error"
+    print(f"Error: {e}")
+except FileNotFoundError:
+    final_result = "file not found"
+finally:
+    print(f"Detected Labels:", boxes, "\nScores:", scores)
+
+final_result
+

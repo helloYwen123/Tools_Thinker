@@ -1,0 +1,63 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+final_result = {'detected_images': [], 'object_count': 0}
+
+# Load the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_31_image_1.jpg'
+
+# Detect and count train carts
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path,
+                                                                  labels=['green'],
+                                                                  save_object=True,
+                                                                  saved_image_path="detected_objects")
+
+# Extract the detected objects into a dictionary
+detected_objects['detected_images'].clear()  # Clear the existing detected images dictionary
+for label in detected_objects['detected_images']:
+    detected_objects['detected_images'][label['label']] = {
+        'boxes': label['boxes'],
+        'confidence_scores': label['confidence_scores'],
+    }
+
+# Count the green train carts
+for train_carts in detected_objects['detected_images']:
+    for img in detected_objects['detected_images'][train_carts]:
+        for bbox in img['boxes']:
+            if bbox['confidence_scores'] >= 0.45:
+                visible_cart = {'bbox': label['bbox'], 'model_name': 'train', 'cart_number': int(bbox['label'])}
+                if visible_cart not in final_result['detected_images']:
+                    final_result['detected_images'][train_carts].append(visible_cart)
+                    final_result['object_count'] += 1
+
+# Save the results to a dictionary for demonstration
+final_result = {'detected_images': final_result['detected_images'],
+                'object_count': final_result['object_count']}
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+# Get the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_31_image_1.jpg"
+
+# Create an Object_Detector_Tool instance
+detector = Object_Detector_Tool()
+
+# Execute the detection.
+labels = ["baseball", "basket"]
+confidence_threshold = 0.45
+model_size = "tiny"
+saved_object = False
+detected_objects, object_number = detector.execute(image_path, labels, confidence_threshold, model_size, saved_object, image_path)
+
+# Check whether the tennis ball was detected
+if "baseball" in detected_objects:
+    no_of_green_train_carts = detected_objects["baseball"]["boxes"][0]["y_max"]
+else:
+    no_of_green_train_carts = 0
+
+print("Number of green train carts in the picture:", no_of_green_train_carts)
+final_result = no_of_green_train_carts

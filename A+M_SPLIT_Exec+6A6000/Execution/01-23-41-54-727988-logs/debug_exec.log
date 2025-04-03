@@ -1,0 +1,130 @@
+
+[EXECUTION EXCEPTION]
+name 'save_object' is not defined
+code:from object_detector import Object_Detector_Tool
+
+final_result = []
+# Your code to run the Python program is here
+
+# Save detected objects as separate images
+if save_object:
+    for label, obj in data["output_types"][0]["detected_objects"].items():
+        image_path = create_image_obj_with_boxes(label, boxes=obj, scores=obj["confidence_scores"], model_type=model_type)
+
+# Create a dictionary mapping each detected object label to its total count in the image
+labels = data["output_types"][0]["labels"]
+label_counts = {l: 0 for l in labels}
+total_count = data["output_types"][0]["total_count"]
+for obj in data["output_types"][0]["detected_objects"]:
+    label_counts[obj["label"]] += 1
+total_count = total_count + sum(label_counts.values())
+
+
+def create_image_obj_with_boxes(label, boxes, scores, model_type):
+    width, height = 10, 10
+    obj = {
+        "label": label,
+        "width": width,
+        "height": height,
+        "boxes": boxes,
+        "scores": scores,
+    }
+    if model_type == 'tiny':
+        size = 'tiny'
+    else:
+        size = 'base'
+    return f"{size}_img.png", obj
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+# Set the input data
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg'
+labels = ["baseball", "basket"]
+threshold = 0.4
+save_object = True
+
+# Initialize the detector
+object_detector = Object_Detector_Tool(image_path=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size='base')
+
+# Get the detected objects
+results = object_detector.execute()
+
+# Count the baseball
+
+# Get the total number of baseball detected
+total_baseball = results["detected_objects"]["baseball"]["total"]
+
+# Assign the final result
+final_result = {
+    "Total number of baseball detected": total_baseball
+}
+
+# Print the final result
+print(final_result)
+
+[EXECUTION EXCEPTION]
+name '__file__' is not defined
+code:from object_detector import Object_Detector_Tool
+
+# Get current path
+import os
+current_path = os.path.dirname(os.path.abspath(__file__))
+
+image_path = os.path.join(current_path, 'val_Counting_28_image_1.jpg')
+
+# Initialize object_detector
+obj_detector = Object_Detector_Tool()
+
+# Execute object_detector
+detected_objects, obj_number = obj_detector.execute(image=image_path)
+
+detected_objects
+
+[EXECUTION EXCEPTION]
+type object 'Object_Detector_Tool' has no attribute 'object_detector'
+code:from object_detector import Object_Detector_Tool
+
+# Load image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg"
+image = Object_Detector_Tool.object_detector(image=image_path)
+
+# Detect objects
+labels = ["baseball", "basket"]
+number_of_detected_objects = Object_Detector_Tool.detect_objects(image=image, labels=labels)
+
+# Check result
+final_result = {"count": sum(n['count'] for n in number_of_detected_objects.values()), "labels": sorted(number_of_detected_objects.keys())}
+print("Final result:", final_result)
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image (assuming the image file path is 'image_path')
+# Using the provided example, we demonstrate the tool's usage.
+# Replace 'image_path' with the actual file path if required.
+final_result = Object_Detector_Tool.execute(image='image_path', labels=["baseball", "basket"])
+finally_result = final_result[0]
+
+# Extract the labels and their counts from the result
+result_labels = finally_result['object_number']
+labels_count = [label['label'] for label in final_result['object_number'] if label['label'] in final_result['labels'] and label['number'] in result_labels]
+print(f"The detected objects are: {labels_count}")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Read the image
+result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_28_image_1.jpg", labels=["woman"], save_object=True, saved_image_path="detected_objects", threshold=0.5)
+
+# Get the labels detected in the image
+labels = result['output_types'][0][1]
+
+# Print the number of people sitting on the bed
+print("Number of people sitting on the bed:", labels["baseball"])

@@ -1,0 +1,146 @@
+
+[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code:from object_detector_tool import Object_Detector_Tool as OTD
+
+# Path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1.jpg"
+
+# Function to detect and count 'baseball' and 'basket' in the image
+def count_objects(image_path, labels, threshold=0.45, model_size="tiny", save_object=False):
+    # Load the image
+    image_data = OTD.open_image(image_path)
+
+    # Detect objects using the Grounding DINO model
+    detected_objects = OTD.detect_objects(image_data, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object)
+
+    # Get the number of objects
+    object_count = OTD.extract_object_count(detected_objects)
+
+    # Return the number of objects
+    return object_count
+
+# Call the function to count objects
+objects_count = count_objects(image_path, ["baseball", "basket"])
+
+# Print the resulting count
+final_result = f"There are {objects_count} baseballs and basketballs detected in the image."
+print(final_result)
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1.jpg"
+object_label = ['baseball', 'basket']
+threshold = 0.45
+model_size = 'tiny'
+save_object = True
+saved_image_path = ""
+
+# Execute the detection
+detector_tool = Object_Detector_Tool(image_path=image_path, labels=object_label, save_object=save_object, saved_image_path=saved_image_path, threshold=threshold, model_size=model_size)
+detections = detector_tool.execute()
+
+# Find the count of detected objects
+object_count = {obj: len(detections['bbox']) * 3 for obj in detections['bbox']}
+
+# Check if the truck is to the right of the truck and print the count of telephone poles
+truck_count = 0
+truck_detection = []
+for obj in detections['bbox']:
+    is_phone_pole = 'truck' in obj['label']
+    is_truck = (obj['shape'] == [0.21, 0.62]) or (obj['shape'] == [0.65, 0.62]) 
+    if is_truck:
+        truck_count += 1
+        truck_detection.append(obj)
+truck_count
+
+# Check if the truck is to the right of the truck and calculate the distance between them
+truck_distance = 0
+
+if truck_count > 0:
+    truck_detection.sort(key=lambda x: x['pos'])
+    truck_pos = truck_detection[-1]
+    truck_shape = truck_detection[-1]['shape']
+    distance = truck_shape[-2] - truck_detection[-1]['shape'][0] - truck_detection[-2]['shape'][0] * truck_detection[-1]['shape'][1] / truck_shape[0]
+    
+    print(distance)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Convert the question text into a string
+question = "Question: How many telephone poles are to the right of the truck?"
+
+# Use the Object_Detector_Tool to locate the telephone poles and extract their coordinates
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_COUNTING_85_image_1.jpg", labels=["telephone", "pole"], save_object=True, saved_image_path="detected_objects")
+
+potential_result = {
+    "total_phone_2": 3.0, "total_line_5": 2.0, "total_6": 3.0
+    }
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+path_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1.jpg" 
+labels = ["baseball", "basket"]
+save_object = True
+saved_image_path = "detected_objects" # If you want to save detected objects as images
+
+# Call Object_Detector_Tool to detect objects
+detected_objects, object_number = Object_Detector_Tool.execute(image=path_image, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+# Extract the number of telephone poles to the right of the truck
+telephone_poles_right = 0
+for detected_object in detected_objects['objects']:
+    if detected_object.get('name') in ['telephone pole 1', 'telephone pole 2', 'telephone pole 3']:
+        telephone_poles_right += 1
+
+final_result = telephone_poles_right
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1.jpg'
+
+# Create the detector object
+tool = Object_Detector_Tool(image_path)
+
+# Detect the 'baseball' and 'basket' in the image
+labels = ["baseball", "basket"]
+tool.execute(labels=labels)
+
+# Get the count of each detected label
+labels_counter = tool.execute(labels=labels, save_object=False)
+
+final_result = labels_counter
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'labels'
+code:from object_detector import Object_Detector_Tool
+
+# 读取图片路径
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_85_image_1.jpg"
+labels = ["baseball"]
+threshold = 0.45
+model_size = "base"
+
+# 使用Object_Detector_Tool工具进行检测
+final_result = Object_Detector_Tool.execute(image_path, labels,  # 参数说明：
+                                        save_object=True,
+                                        threshold=threshold,
+                                        model_size=model_size,
+                                        saved_image_path="detected_objects")
+
+# 输出结果
+for result in final_result:
+    print(result)

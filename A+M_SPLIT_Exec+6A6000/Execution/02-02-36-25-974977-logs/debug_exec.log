@@ -1,0 +1,104 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'saved_object'
+code:from object_detector import Object_Detector_Tool
+
+# Detect blue seats in the picture
+blue_seats = Object_Detector_Tool.execute(image="path/to/image.jpg", labels=["blue_seats"], threshold=.5, model_size="base", saved_object=True, saved_image_path="detected_objects_blue_seats")
+blue_seat_count = len(blue_seats["detected_objects_blue_seats"][0]["boxes"])
+final_result = blue_seat_count
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+
+# Use the Object_Detector_Tool to detect objects in the image
+final_result = Object_Detector_Tool.execute(
+    image=image_path,
+    labels=["blue"],
+    threshold=0.45,
+    save_object=True,
+)
+
+# Extract the number of empty blue seats from the final_result
+empty_seats_count = sum(value["boxes"].count("blue") == 0 for value in final_result["object_number"]["count"])
+empty_seats_count
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code:from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg'
+
+# Initialize Object_Detector_Tool
+tool = Object_Detector_Tool()
+
+# Execute the tool
+label_detection, object_number = tool.execute(image_path, labels=["skis"], save_object=True, saved_image_path="skis")
+
+# Get the total number of skis
+total_ski_count = object_number['skis'].values()[-1]
+
+final_result = "The total number of skis in the picture is " + str(total_ski_count)
+
+[EXECUTION EXCEPTION]
+'list' object has no attribute 'items'
+code:from object_detector import Object_Detector_Tool 
+
+# Define the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg"
+
+# Create the Object_Detector_Tool instance with the provided labels and settings
+obj_detector_tool = Object_Detector_Tool()
+
+# Run the detection process and get the results
+labels_results = obj_detector_tool.execute(image_path, ["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Calculate the number of empty blue seats
+num_empty_blue_seats = 0
+for _, box_results in labels_results.items():
+    box_results = box_results[0]  # Get the first element in the tuple 
+    box_results_list = box_results.tolist()  # Convert the list to a Python list 
+    if "Basket" in box_results_list:
+        # Filter out the 'Basket' category as detected for empty seats
+        num_empty_blue_seats -= 1
+
+# Calculate the total number of seats (including no seats)
+total_seats = len(obj_detector_tool.output_objects)  # Assuming the total number of seating segments is the sum of empty blue seats and occupied blue segments
+
+# Calculate the number of empty blue seats as a percentage of the total seats
+empty_seats_percentage = (num_empty_blue_seats / total_seats) * 100
+
+# Assign the final result
+final_result = empty_seats_percentage
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:# Running code from the Object_Detector_Tool tool
+(detected_objects, _) = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg", labels=["skibed", "skier"], save_object=False, saved_image_path="detected_objects") 
+final_result = detected_objects["skier"]["boxes"]
+
+# The number of empty blue seats is the number of skier objects detected
+final_result
+
+[EXECUTION EXCEPTION]
+list indices must be integers or slices, not str
+code:from object_detector import Object_Detector_Tool
+
+def get_blue_seats_count(image):
+    detector = Object_Detector_Tool()
+    label_results = detector.execute(image=image, labels=["blue_seat"], save_object=True, saved_image_path="blue_seat_results")
+    total_blue_seats = 0
+    for result in label_results["object_number"]["blue_seat"]:
+        if result["boxes"]["bbox"][2] >= 1 and result["boxes"]["bbox"][3] >= 1:
+            total_blue_seats += 1
+    return total_blue_seats
+
+final_result = get_blue_seats_count("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_80_image_1.jpg")
+print(final_result)

@@ -1,0 +1,61 @@
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Read the image and get the labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_53_image_1.jpg"
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["wine bottle"], save_object=True, saved_image_path="detected_objects")
+
+# Calculate the total number of bottles
+bottles_count = object_number["wine bottle"]
+final_result = []
+
+# Assign the value to the final result
+if bottles_count > 0:
+    final_result = ["{} bottle(s)".format(bottles_count)]
+else:
+    final_result = "0 bottle"
+
+final_result
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'image'
+code:from object_detector import Object_Detector_Tool
+
+# paths to image file and labels (in the order detected by Object_Detector_Tool)
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_53_image_1.jpg"
+labels = ["chair", "wine_glass"]
+
+
+def check_labels(path):
+    detections = Object_Detector_Tool.execute(image_path, labels=labels, threshold=0.45, save_object=True)
+    labels_count = {}
+    for label, details in detections.items():
+        if label not in labels_count:
+            labels_count[label] = 0
+        labels_count[label] += details["total_count"]
+    return labels_count
+
+
+labels_count = check_labels(image_path)
+
+final_result = {"labels": labels_count.keys(), "count": labels_count, "total_count": sum(labels_count.values())}
+
+print(final_result)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Read the image and detect the objects
+detected_objects, object_number = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_53_image_1.jpg", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Get the count for 'baseball' and 'basket'
+baseball_count = object_number["baseball"]["boxes"][0]["bbox"][1] - object_number["baseball"]["boxes"][0]["bbox"][0]
+basket_count = object_number["basket"]["boxes"][0]["bbox"][1] - object_number["basket"]["boxes"][0]["bbox"][0]
+
+final_result = {"baseball_count": baseball_count, "basket_count": basket_count}

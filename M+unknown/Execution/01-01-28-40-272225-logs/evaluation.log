@@ -1,0 +1,162 @@
+------------- 01-01-28-40-272225 Execution reward: 0.0 -------------
+[Reward computation time: 1.0442 seconds]
+
+QAid: val_Counting_61
+Code: from object_detector import Object_Detector_Tool
+
+# Load detected objects
+detected_objects, object_number = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_61_image_1.jpg", labels=["person"], save_object=True, save_image_path="detected_objects_result")  # This will detect 'person' in the image
+
+------------- 01-01-28-40-272225 Execution reward: 0.0 -------------
+[Reward computation time: 1.2810 seconds]
+
+QAid: val_Counting_61
+Code: try:
+    import_object_detector_tool = Object_Detector_Tool()
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_61_image_1.jpg"
+    labels = ["baseball", "basket"]
+    save_object = True
+    saved_image_path = "detected_objects"
+    
+    if image_path is not None:
+        if len(image_path.split(".")) > 1:
+            num_objects, object_dict = object_detector_tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path=saved_image_path, threshold=0.45, model_size="tiny")
+            if num_objects > 0:
+                for label in labels:
+                    if label in object_dict:
+                        object_dict[label].append((object_detector_tool.get_boxes(label), object_detector_tool.get_scores(label), saved_image_path))
+                        object_dict[label].append({"count": len(object_dict[label])})
+                final_result = {"bbox_list": []}
+                for label in labels:
+                    final_result["bbox_list"] += [f"{label}: {len(object_dict[label])} instances"]
+                return final_result
+else:
+    final_result = {"bbox_list": [], "bbox_count": []}
+except Exception as e:
+    final_result = {"bbox_list": [], "bbox_count": []}
+finally:
+    return {"bbox_list": final_result["bbox_list"], "bbox_count": final_result["bbox_count"]}
+
+------------- 01-01-28-40-272225 Execution reward: 0.0 -------------
+[Reward computation time: 1.4194 seconds]
+
+QAid: val_Counting_61
+Code: from object_detector import Object_Detector_Tool
+
+# Set the input image and label for detection
+input_image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_61_image_1.jpg'
+labels = ["motorcycle"]
+confidence_threshold = 0.7
+
+# Create an Object_Detector_Tool instance
+tool = Object_Detector_Tool()
+
+# Execute the detection
+detected_objects, object_number = tool.execute(input_image, labels=labels, confidence_threshold=confidence_threshold)
+
+# Print the detected objects
+for label, result in detected_objects.items():
+    confidence = result.get("confidence_scores", 0)[0]
+    boxes = result.get("boxes", [])
+    if len(boxes) > 0:
+        boxes = boxes[0][0]
+
+        # Check if it's a motorcycle (ignoring all the other objects)
+        if boxes[1] > 0.5 and boxes[3] > 0.5:
+            final_result.append(label)
+            print(f"Found {label} with Confidence {confidence}")
+
+            # Save the detected motorcycle if "save_object" is True
+            if save_object:
+                motocycle_img_path = f'detected_objects/{label}'
+                tool.save(detected_objects=motocycle_img_path, labels=tool.get_object_results())
+
+# Print the final result
+print("Detected motorcycles:", final_result)
+
+------------- 01-01-28-40-272225 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_61
+Code: [EMPTY]
+
+------------- 01-01-28-40-272225 Execution reward: 0.0 -------------
+[Reward computation time: 2.1159 seconds]
+
+QAid: val_Counting_61
+Code: import os.path  # Needed for checking the file path
+
+# Check if the image file exists
+if os.path.exists("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_61_image_1.jpg"):
+    # If it exists, proceed with detecting the labels
+    from object_detector import Object_Detector_Tool
+    det_tool = Object_Detector_Tool()
+    det_tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_61_image_1.jpg", labels=[["baseball", "basket"]], save_object=True, saved_image_path="/tmp/tmp.jpg")
+    labels = det_tool.load_object_labels("/tmp/tmp.jpg")
+
+    # Count the detected labels
+    num_bikes = len(labels)
+    final_result = {"label_count": {"baseball": num_bikes, "basket": 0}}
+    
+    if num_bikes > 0:
+        final_result["label_count"]["baseball"] = num_bikes
+        print("Found", num_bikes, "baseball bicycles in the image.")
+    else:
+        print("No bicycles detected.")
+else:
+    print("Invalid file path. Please check the file path and try again.")
+
+------------- 01-01-28-40-272225 Execution reward: 0.0 -------------
+[Reward computation time: 0.7790 seconds]
+
+QAid: val_Counting_61
+Code: from object_detector import Object_Detector_Tool
+
+model_size = 'tiny'
+label = 'motorcycle'
+
+output = Object_Detector_Tool.execute(image=image_path, labels=[label], threshold=0.45, model_size=model_size, save_object=True, saved_image_path="found_objects")
+
+final_result = {label: output[item][0].split('/')[-1] for item in output.keys()}
+
+------------- 01-01-28-40-272225 Execution reward: 0.0 -------------
+[Reward computation time: 0.6094 seconds]
+
+QAid: val_Counting_61
+Code: from object_detector import Object_Detector_Tool
+
+# path to the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_61_image_1.jpg"
+
+# labels to detect
+labels_to_detect = ['person']
+
+# confidence threshold
+conf_thresh = 0.8
+
+# model size
+model_size = "tiny"
+
+# whether to save detected objects as images
+save_object = False
+
+# detected_objects = {}
+
+# execute object detection
+detected_objects, object_number = Object_Detector_Tool.execute(image_path=image_path, labels=labels_to_detect, save_object=save_object, conf_thresh=conf_thresh, model_size=model_size)
+
+# print detected_objects
+detected_objects
+
+------------- 01-01-28-40-272225 Execution reward: 0.0 -------------
+[Reward computation time: 0.7566 seconds]
+
+QAid: val_Counting_61
+Code: from_module: object_detector
+import_name: object_detector
+
+input_types = {
+'title': 'Motorcycle rider near a motor',
+'resources': ['image', 'labels', 'threshold', 'model_size', 'save_object', 'saved_image_path'],
+'value': {'path_to_image': 'path/to/image.png', 'labels': ['motorcycle rider', 'bike'], 'threshold': 0.4, 'model_size': 'tiny', 'save_object': True, 'saved_image_path': 'detected_objects'}
+}
+

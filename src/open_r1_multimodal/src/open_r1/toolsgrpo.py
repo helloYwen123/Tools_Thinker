@@ -47,8 +47,8 @@ from object_detector import Object_Detector_Tool
 
 from datasets import load_dataset, load_from_disk, concatenate_datasets
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-# from src.open_r1.trainer import Qwen2VLGRPOTrainer, Qwen2VLGRPOVLLMTrainerModified
-from src.open_r1.trainer import Qwen2VLGRPOTrainer
+from open_r1.trainer import Qwen2VLGRPOTrainer, Qwen2VLGRPOVLLMTrainerModified
+# from src.open_r1.trainer import Qwen2VLGRPOTrainer
 from trl import GRPOConfig, GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
 from PIL import Image
 import traceback
@@ -69,7 +69,7 @@ class GRPOScriptArguments(ScriptArguments):
             "help": "relative or absolute path to the configuration file"},
     )
     reward_funcs: list[str] = field(
-        default_factory=lambda: ["format","execution"], #########
+        default_factory=lambda: ["format","execution","accuracy"], #########
         metadata={"help": "List of reward functions. Possible values: 'code', 'format', 'execution, 'accuracy'"},
     )
     max_pixels: Optional[int] = field(
@@ -126,8 +126,8 @@ def unsafe_execute(code, timeout, result, log_path):
         output_raw = buffer.getvalue() # seems to get all output/print in code execution
         output = exec_globals.get("final_result", None)
         
-        debug_log_path = os.path.join(log_path, "debug_exec.log")
-        with open(debug_log_path, "a") as df:
+        success_log_path = os.path.join(log_path, "success_execution.log")
+        with open(success_log_path, "a+") as df:
             df.write("\n" + "=" * 30 + " NEW SCCESSFUL EXECUTION " + "=" * 30 + "\n")
             df.write("[EXEC CODE]\n")
             df.write(code + "\n")
@@ -135,17 +135,18 @@ def unsafe_execute(code, timeout, result, log_path):
             df.write(output_raw + "\n")
             df.write("[GENERATE FINAL_RESULT]\n")
             df.write(str(output) + "\n")
-        
+
+        debug_log_path = os.path.join(log_path, "debug_exec.log")
         reward = 0.0
         if output != None: # OUTPUT exist then reward is 1.0
-            reward = 1.0
+            reward = 2.0 # add parameters to scale 
         else:
-            with open(debug_log_path, "a") as df:
+            with open(debug_log_path, "a+") as df:
                 df.write("\n[None RESULT]\n\n")
         result.append((reward, output))
     except Exception as e: # if the code problematic
         debug_log_path = os.path.join(log_path, "debug_exec.log")
-        with open(debug_log_path, "a") as df:
+        with open(debug_log_path, "a+") as df:
             df.write("\n[EXECUTION EXCEPTION]\n")
             df.write(str(e) + "\n")
             df.write(f"code:{code}\n")
@@ -155,11 +156,10 @@ def unsafe_execute(code, timeout, result, log_path):
 
 def check_correctness(task: dict, log_path, current_time) -> float:
     start_time = time.perf_counter()  # timer start
-    evaluation_log_path = os.path.join(log_path, "evaluation.log")  # in evaluation includes all cased in reward computation
+    evaluation_log_path = os.path.join(log_path, f"{task['QAid']}-evaluation.log")  # in evaluation includes all cased in reward computation
                                                     # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
     if task["code"] == None:  # 
-        with open(evaluation_log_path, "a") as f:
-            
+        with open(evaluation_log_path, "a+") as f:
             f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
             f.write(f"Reward: 0.0\n")
             f.write(f"QAid: {task['QAid']}\n")
@@ -179,7 +179,7 @@ def check_correctness(task: dict, log_path, current_time) -> float:
         result = result[0] if result else (0.0, None)
         end_time = time.perf_counter()  # timer stop
         elapsed = end_time - start_time
-        with open(evaluation_log_path, "a") as f:
+        with open(evaluation_log_path, "a+") as f:
             f.write(f"------------- {current_time} Execution reward: {result[0]} -------------\n")
             f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n\n")
             f.write(f"QAid: {task['QAid']}\n")
@@ -198,9 +198,10 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
     reward_list = [r for r, _ in rewards] 
     result_list = [res for _, res in rewards]
     return (reward_list, result_list)
+
 ##########################################################################
 ##########EXECUTION REWARD#############################
-def execution_reward(completions,QAid,**kwargs):
+def execution_reward(completions, QAid,**kwargs):
     # based on completions type to constuct
     if isinstance(completions[0], str):
         contents = [completion for completion in completions]
@@ -218,7 +219,7 @@ def execution_reward(completions,QAid,**kwargs):
     for content, id in zip(contents, QAid):
         try:
             code = extract_code(content)
-        except Exception as e:
+        except Exception:
             code = None
         tasks.append({
             "code": code,
@@ -233,6 +234,48 @@ def execution_reward(completions,QAid,**kwargs):
     return reward_result
 
 execution_reward.reward_type = "execution"
+
+####################################################################
+############################ACCURACY REWARD#########################
+def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs):
+    """
+    """
+    current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+    log_root_dir = os.path.join(f"{root_dir}/A+M_SPLIT_LOGS/Accuracy", f"{current_time}-logs")
+    os.makedirs(log_root_dir, exist_ok=True)
+    rewards = []
+    for exec_r, result, sol, id in zip(exec_reward_list, exec_result_list, solution, QAid):
+        reward = 0.0
+        acc_log_path = os.path.join(log_root_dir, f"{id}-accuracy.log")
+        if exec_r == 0:
+            with open(acc_log_path, "a") as f:
+                f.write(f"\n[QAid]{id}\n\n")
+                f.write("\n[EXECUTION EXCEPTION]\n\n")
+        else:
+            try:
+                # try to verify symbolic calculation
+                parsed_result = parse(result)
+                parsed_solution = parse(sol)
+                if float(verify(parsed_result, parsed_solution)) > 0:
+                    reward = 10.0
+                    with open(acc_log_path, "a") as f:
+                        f.write(f"\n[QAid]{id}\n\n")
+                        f.write("\n[Verification Correct Result]\n\n")
+            except Exception:
+                pass
+            
+            if result == sol or result == sol.lower():
+                reward = 10.0
+                with open(acc_log_path, "a") as f:
+                    f.write(f"\n[QAid]{id}\n\n")
+                    f.write("\n[Correct Result]\n\n")
+            else:
+                with open(acc_log_path, "a") as f:
+                    f.write(f"\n[QAid]{id}\n\n")
+                    f.write("\n[Wrong Result]\n\n")
+        rewards.append(reward)
+    return rewards
+accuracy_reward.reward_type = "accuracy"
 
 ####################################################################
 #############################FORMAT REWARD##########################
@@ -250,7 +293,7 @@ def format_reward(completions, **kwargs):
 reward_funcs_registry = {
     #"code": code_exec_acc_reward, # execution and accuracy reward
     "execution": execution_reward, # note here sequency
-    #"accuracy": accuracy_reward,
+    "accuracy": accuracy_reward,
     "format": format_reward # format reward
 }
 ########global asyncio to avoid frequently open-close#######
@@ -344,8 +387,8 @@ def main(script_args, training_args, model_args,conf):
     # with open(save_path, "w") as f:
     #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
         
-    # trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
-    trainer_cls = Qwen2VLGRPOTrainer
+    trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
+    # trainer_cls = Qwen2VLGRPOTrainer
     
     # Initialize the GRPO trainer
     trainer = trainer_cls(
@@ -366,12 +409,12 @@ def main(script_args, training_args, model_args,conf):
     elif script_args.freeze_llm:
         trainer.model.model.requires_grad_ = False
     # Train and push the model to the Hub
-    trainer.train()
+    # trainer.train()
 
-    # Save and push to hub
-    trainer.save_model(training_args.output_dir)
-    if training_args.push_to_hub:
-        trainer.push_to_hub(dataset_name=script_args.dataset_name)
+    # # Save and push to hub
+    # trainer.save_model(training_args.output_dir)
+    # if training_args.push_to_hub:
+    #     trainer.push_to_hub(dataset_name=script_args.dataset_name)
     
     # global_loop.close()  # close Global loop for `Asyncio` approach
     

@@ -1,0 +1,182 @@
+------------- 01-05-00-58-948446 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_115
+Code: [EMPTY]
+
+------------- 01-05-00-58-948446 Execution reward: 0.0 -------------
+[Reward computation time: 1.2540 seconds]
+
+QAid: val_Counting_115
+Code: from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_115_image_1.jpg", labels=["bird2:3"], save_object=True, saved_image_path="detected_objects")
+print(final_result)  # Assign the final result to the variable 'final_result'
+```
+
+------------- 01-05-00-58-948446 Execution reward: 0.0 -------------
+[Reward computation time: 1.3045 seconds]
+
+QAid: val_Counting_115
+Code: from object_detector import Object_Detector_Tool
+
+def count_birds(image_path, bird_labels=[]):
+    # Initialize object detector
+    detector_tool = Object_Detector_Tool(image_path, bird_labels=bird_labels)
+
+    # Execution
+    detected_results = detector_tool.execute()
+
+    # Analysis
+    total_bird_count = sum(int(row["count"]) for row in detected_results["object_number"])
+
+    return {"total_bird_count": total_bird_count}
+
+# Example usage
+bird_label = ["bird1", "bird2"]
+bird_count = count_birds(image_path="path_to_image", bird_labels=bird_label)
+print(bird_count)  # Output will be the count of detected birds
+
+------------- 01-05-00-58-948446 Execution reward: 0.0 -------------
+[Reward computation time: 1.3200 seconds]
+
+QAid: val_Counting_115
+Code: from object_detector import Object_Detector_Tool
+
+# Function to check if a bird is facing the right of the frame
+def is_bird_facing_right(bird):
+    # Assuming the bird's head is the center point and it's facing left
+    head_point = [bird.location['bbox'][0], bird.location['bbox'][3]]
+    center_point = [bird.location['bbox'][0]+bird.location['bbox'][2], bird.location['bbox'][3]+bird.location['bbox'][5]]
+    left_distance = center_point[1]-bird.location['bbox'][1]
+    right_distance = bird.location['bbox'][1]-center_point[1]
+
+    return abs(left_distance) > abs(right_distance)
+
+# Get the bird locations
+bird_location = bird locations['bbox']
+
+# Check if the bird is facing the right of the frame
+is_right = is_bird_facing_right(bird)
+final_result = "Bird 'is_right' = " + str(is_right)
+
+# Print the final result
+print(final_result)
+
+------------- 01-05-00-58-948446 Execution reward: 0.0 -------------
+[Reward computation time: 1.4113 seconds]
+
+QAid: val_Counting_115
+Code: from Object_Detector_Tool import Object_Detector_Tool
+# Define the image path and labels
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_115_image_1.jpg"
+labels = ["sandpiper"]
+# Configure the detection parameters
+labels = [x.lower() for x in labels]
+threshold = 0.3
+model_size = "tiny"
+save_object = False
+
+# Use the object detector tool
+detected_objects, object_number = Object_Detector_Tool.execute(image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size)
+final_result = detected_objects['object_number']//2
+final_result
+
+------------- 01-05-00-58-948446 Execution reward: 0.0 -------------
+[Reward computation time: 1.0964 seconds]
+
+QAid: val_Counting_115
+Code: from object_detector import Object_Detector_Tool
+
+# Set the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_115_image_1.jpg"
+
+# Create object detection tool
+tool = Object_Detector_Tool()
+
+# Detect objects in the image
+label_list = tool.execute(image=image_path)
+detected_objects = [obj['saved_image_path'] for obj in label_list[0]['boxes']]
+
+# Filter objects and show the ones in the right direction
+right_direction_objects = [obj for obj in detected_objects if "right" in obj.split("\"")[1]]
+
+# Count the objects in the right direction
+right_direction_objects_count = len(right_direction_objects)
+
+final_result = {"count": right_direction_objects_count}
+
+------------- 01-05-00-58-948446 Execution reward: 0.0 -------------
+[Reward computation time: 1.0657 seconds]
+
+QAid: val_Counting_115
+Code: from object_detector.IOUtil import *
+import os
+import cv2
+
+def get_label_bbox(dataset, image_path):
+    try:
+        if not os.path.exists(image_path):
+            raise ValueError(f"The image '{image_path}' is not found.")
+        
+        img = cv2.imread(image_path)
+        
+        # Detect the image using the Grounding DINO model
+        label_list = detect_object(img, labels=['red', 'orange'], save_object=False)
+        
+        return label_list
+    except Exception as e:
+        return None
+
+def label_count(dataset, label_list):
+    label_count_dict = {}
+    for label in label_list['labels']:
+        if label in label_count_dict:
+            current_count = label_count_dict[label]
+            new_count = current_count + 1
+            label_count_dict[label] = new_count
+        else:
+            label_count_dict[label] = 1
+            
+    return label_count_dict
+
+def count_birds():
+    # Load the val_image_115.txt file
+    with open("val_image_115.txt", "r") as file:
+        val_image_content = file.readlines()
+
+    dataset_folder = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/"
+    
+    image_list = []
+    for i in range(len(val_image_content)):
+        val_label = val_image_content[i][11:13]
+        image_list.append(os.path.join(dataset_folder, val_image_content[i].strip().replace('[', '').replace(']', '').replace('/Image', '')))
+    
+    label_list = get_label_bbox(dataset=dataset_folder, image_path=image_list[0])
+    
+    if label_list is None:
+        return None
+    
+    label_count_dict = label_count(dataset=dataset_folder, label_list=label_list)
+    
+    bird_count = 0
+    for label, count in label_count_dict.items():
+        if label == 'wading-bird':
+            bird_count += count
+
+    return bird_count
+
+final_result = count_birds()
+if final_result:
+    print(f"The number of wading birds facing to the right of the image is {final_result}")
+else:
+    print("No wading birds found.")
+
+------------- 01-05-00-58-948446 Execution reward: 1.0 -------------
+[Reward computation time: 1.1824 seconds]
+
+QAid: val_Counting_115
+Code: from object_detector import Object_Detector_Tool
+
+final_result = 2
+print(final_result)
+

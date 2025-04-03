@@ -1,0 +1,64 @@
+------------- 02-10-32-32-449637 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_66
+Code: [EMPTY]
+
+------------- 02-10-32-32-449637 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_66
+Code: [EMPTY]
+
+------------- 02-10-32-32-449637 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_66
+Code: [EMPTY]
+
+------------- 02-10-32-32-449637 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_66
+Code: [EMPTY]
+
+------------- 02-10-32-32-449637 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_66
+Code: [EMPTY]
+
+------------- 02-10-32-32-449637 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_66
+Code: [EMPTY]
+
+------------- 02-10-32-32-449637 Code Extraction Failed -------------
+Reward: 0.0
+QAid: val_Counting_66
+Code: [EMPTY]
+
+------------- 02-10-32-32-449637 Execution reward: 0.0 -------------
+[Reward computation time: 0.3136 seconds]
+
+QAid: val_Counting_66
+Code: from object_detector import Object_Detector_Tool
+
+def count_gloves(image_path, max_gloves=1):
+    object_dic = {}
+    label_counts = dict()
+    with Object_Detector_Tool(image_path) as tool:
+        results = tool.execute(labels=["glove"], threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+        for label_name, detections in results["output"]:
+            objects = detections["boxes"]
+            for _label, _box, _score in objects:
+                if label_name != "glove":
+                    continue
+                for obj_detection in detections["saved_image_paths"]:
+                    object_label, box, score = obj_detection["labels"]
+                    if label_name == "glove" and box[3] > 0.45:
+                        object_label += "_glove"
+                    else:
+                        object_label = obj_label
+                    if object_label not in label_counts or label_counts[object_label] < max_gloves:
+                        object_counts = label_counts.copy()
+                        object_counts[object_label] = 1
+                    else:
+                        object_counts[object_label] += 1
+    return object_counts
+

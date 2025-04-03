@@ -1,0 +1,307 @@
+
+[EXECUTION EXCEPTION]
+No module named 'detect'
+code:from detect import Object_Detector_TOOL, detected_objects, object_number
+
+# Load the image and get the labels
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg'
+labels_to_detect = ["baseball", "basket"]  # Example labels
+
+# Execute the tool and get the detected objects
+object_boxes, object_scores, saved_objects, object_number_dict = detected_objects(image_path=image_path, labels=labels_to_detect, save_object=False)
+
+# Get object numbers based on object scores
+for label, box in object_boxes.items():
+    object_number_dict[label] = detected_objects_object_nums[object_score_to_label_box_number(box)]
+
+# Filter objects based on type
+if "baseball" in labels_to_detect:
+    object_list = [box for box in object_boxes.values() if "baseball" in box['name']]
+
+# Filter objects based on position
+if "basket" in labels_to_detect:
+    object_list = [box for box in object_boxes.values() if box['x'] > 50 and box['y'] > 200]
+
+# Filter objects based on bounding box size
+if "basket" in labels_to_detect:
+    object_list = [box for box in object_boxes.values() if rectangle_area(box) > 200]
+
+# Print the filtered object list
+for obj_box_info in object_list:
+    name = obj_box_info['name']
+    x = obj_box_info['x']
+    y = obj_box_info['y']
+    h = obj_box_info['h']
+    w = obj_box_info['w']
+    w_list.append([box['x'] - box['x'] * x_scale + x0_list, box['y'] - box['y'] * y_scale / 2 + y1_list])
+    area_list.append(np.prod([h, w]) * (x0_list - x_list))
+    area_list.sort()
+    if "basket" in labels_to_detect and w_list[-1][1] >= 300:
+        basket_boxes.append(obj_box_info)
+
+final_result = sorted(h, reverse=True)
+for box in basket_boxes:
+    basket_area = rectangle_area(box) * (x0_list + x_list) * (y1_list - y_list) * w_list[-1][0] * w_list[-1][1]
+    if basket_area > 200:
+        final_result.append("Basket Found")
+print(final_result)
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 29)
+code:from object_detector import Object_Detector_Tool
+
+# Get the image path
+path_to_image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg'
+
+# Create the object detector tool
+detector_tool = Object_Detector_Tool()
+labels = ['white_umbrella']
+threshold = 0.45
+model_size = 'tiny'
+save_object = True
+saved_image_path = 'detected_objects'
+
+# Detect objects
+if detector_tool.label_count_in_image(labels=labels, threshold=threshold, model_size=model_size) == 0:
+    detected_objects, object_number = detector_tool.execute(image=path_to_image, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+# Get the total count of white umbrellas
+number_of_white_umbrellas = 0
+total_image_count = len(detected_objects)
+for detected_objects_group in detected_objects['object_number_label_counts']:
+    key = f"white_umbrella"
+    if key in detected_objects_group:
+        number_of_white_umbrellas += detected_objects_group[key]
+        total_image_count -= 1
+
+final_result = {"number_of_white_umbrellas": number_of_white_umbrellas, "total_image_count": total_image_count}
+print(f"Number of white umbrellas: {final_result['number_of_white_umbrellas']}" if total_image_count > 0 else "No white umbrellas detected in the image")
+else:
+    print("There is no white umbrellas detected in the image.")
+
+[EXECUTION EXCEPTION]
+keyword argument repeated: brightness (<string>, line 110)
+code:from os import path
+
+class Object_Detector_Tool:
+    def execute(self, image, labels, threshold=0.45, model_size='tiny', save_object=False, saved_image_path="detected_objects"):
+        import torchvision.transforms as transforms
+        import cv2
+        from model import grounding_dino
+        from torchvision.models.detection.r50_fpn_head import Head
+        
+        threshold, model, transform = self.threshold, self.model, self.transform
+        detection_result = []
+        
+        input_transform = transform.Compose([
+                           transforms.Resize((self.model.size.width, self.model.size.height)),
+                           transforms.ToTensor(),
+                           transform.SpatialNormalization(),
+                            transform.Normalize(mean=[0.4, 0.4, 0.4], std=[0.2, 0.2, 0.2]),
+                           ])
+        
+        image = cv2.cvtColor(cv2.imread(image), cv2.COLOR_BGR2RGB)
+        input = input_transform(image=image, bboxes=None, mask=None, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path= saved_image_path)
+        
+        input = input.to(self.device)
+        output_detections = grounding_dino(input)
+        
+        for _, detection in output_detections:
+            boxes = detection['boxes']
+            bboxes = boxes[labels]
+            conf_score = detection['scores'][:, labels]
+            detection_result.append({
+                'boxes': bboxes,
+                'confidence_score': conf_score,
+                'label': labels
+            })
+        
+        if save_object:
+            for d in detection_result:
+                if d['label'] in {'baseball', 'basket'}:
+                    det_dir = f'detected_objects/{d["label"]}'
+                    os.makedirs(det_dir, exist_ok=True)
+                    det_img_path = path.join(det_dir, f'{d["label"]}.jpg')
+                    import os
+                    os.makedirs(det_img_path, exist_ok=True)                
+                    cv2.imwrite(det_img_path, d['boxes'], d['scores'])
+            
+        return detection_result
+
+    def threshold(self):
+        from sklearn.metrics.threshold import percentile_confidence
+        return 90
+        
+    def model(self):
+        from torchvision.models.detection.postprocessing import nms, add_gt_fields
+        from torch.hub import load_state_dict_from_string
+        from torchvision.models.detection.r50_fpn_head import Head
+        from torchvision.models.detection.bfd import BcFpn
+        from torchvision.models.detection.backbone import load_resnet50_ssd
+
+
+        model = load_resnet50_ssd(backbone_name='ResNet50', num_classes=17, pretrained=False)
+        model.add_module('fc', Head(len(Head), 512, model.backbone.in_channels))
+        model = model.backbone
+
+        model = BcFpn(model, backbone_name='ResNet50', num_fpn_channels=512, num_classes=17)
+        
+        head = Head(Head, model.backbone.num_channels, num_fpn_channels=512)
+        head = head.classifier
+        
+        with open('model.pt', 'rb') as f:
+            state_dict = torch.load(f)
+            head.load_state_dict(state_dict)
+        
+        model.load_state_dict(state_dict)
+        
+        heads = [HeadHead, Head, Head]
+        self.model = model
+
+    def transform(self):
+        trans = {
+            'ResNet50': get_transform(),
+        }
+        return trans.get(self.model.backbone.name)
+
+    def execute_tool(self):
+        if not (model == 'ResNet50' and model == 'ResNet152'):
+            return
+
+        # Load weights
+        weights_path = 'model.pt'
+        if not path.exists(weights_path):
+            raise FileNotFoundError(f'Model file not found: {weights_path}')
+
+        model_path = 'https://s3-res.cloud-object-storage.appdomain.intranet/t556f5c4-c291-4d45-b911-c25f63ae6c76/model_resnet50.pth'
+        weights_path_without_cifar = weights_path.rsplit('/', maxsplit=1)[0].rsplit('/', maxsplit=1)
+        weights_path = f'{weights_path_without_cifar}{model_path}'
+        torch.hub.download_url_to_file(weights_path, model_path)
+
+        self.model = torchvision.models.resnet50()
+        self.model.load_state_dict(torch.load(weights_path_without_cifar + '/model.pt', map_location=device))
+
+class Grounding_Dino_Tool:
+    def execute(self, image, labels, threshold=0.45, model_size='tiny', save_object=False, saved_image_path="detected_objects"):
+        import torchvision.transforms as transforms
+        img = cv2.resize(image, (224, 224))
+        img = transforms.ColorJitter.brightness((0.2, 0.2, 0.2), contrast=(0.1, 0.1),
+                                                  saturation=(0.8, 0.8), hue=(0.0, 0.0))(img)
+        img_ = transforms.RandomGrayscale().apply(image=img, prob=0.3)
+        img = transforms.ColorJitter(brightness=(0.2, 0.2), contrast=(0.1, 0.1),
+                                   saturation=(0.8, 0.8), hue=(0.0, 0.0),
+                                   brightness=(0.2, 0.2),
+                                   contrast=(0.1, 0.1),
+                                   saturation=(0.8, 0.8),
+                                   hue=(0.0, 0.0))(img_)
+        img = transforms.ToTensor()(img)
+        self.transform = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(inp)
+        inp = self.transform(img)
+
+        with torch.no_grad():
+            out = self.model(inp)
+            boxes = out['boxes'].cpu().numpy()
+            num_boxes = boxes.shape[0]
+            scores = out['scores'].cpu().numpy()
+            
+            scores, labels = scores.flatten(), boxes.flatten()
+
+        threshold = 90
+        bboxes, conf_scores = self.threshold(boxes, scores, threshold)
+
+        labels_dict = {
+            1:'baseball', 2:'basket', 3:'crown', 4:'crown'
+        }
+        image_path = saved_image_path + f'/baseball.jpg'
+        image = cv2.imread(image_path)
+        self.target_boxes = bboxes
+        bboxes = bboxes[bboxes[:, 4] >= 0.95]
+        image_path = saved_image_path + f'/basket.jpg'
+        image = cv2.imread(image_path)
+        self.target_boxes = bboxes
+        bboxes = bboxes[bboxes[:, 4] >= 0.95]
+
+        bboxes = bboxes[bboxes[:, 4] >= 0.95]
+        boxes = []
+        conf_scores = []
+        labels = []
+        for _, det in boxes:
+            boxes.append(det)
+            conf_scores.append(scores[det])
+            labels.append(labels_dict[scores[det]])
+
+        target_boxes = self.target_boxes
+        target_labels = labels
+        target_conf_scores = conf_scores
+
+        target_bboxes, target_scores, target_labels, target_conf_scores = bboxes, conf_scores, labels, target_boxes  # 2048, 2048, 4, 4
+
+        return dict(target_bboxes=target_bboxes, target_labels=target_labels, target_scores=target_scores, target_conf_scores=target_conf_scores), bboxes, conf_scores, labels
+
+    def threshold(self, boxes, scores, threshold):
+        boxes = boxes.cpu().numpy()
+        scores = scores.cpu().numpy()
+        threshold = 90 # 90th percentile confidence threshold
+        conf_scores = scores.cpu().numpy()
+
+        for i, (det) in enumerate(boxes):
+            if det[4] >= threshold:
+                boxes[i, :] = det[:4]
+                scores[i, :] = conf_scores[i, :]
+        return boxes, scores
+
+detect_object = object_detector = Object_Detector_Tool("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg", labels=['baseball', 'basket'])
+detection_result = object_detector.execute_tool()
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image_path'
+code:from object_detector import Object_Detector_Tool
+
+def detect_objects(image_path, labels, threshold, model_size, save_object, saved_image_path):
+    obj_detector_tool = Object_Detector_Tool(image_path=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+    detected_objects, object_count = obj_detector_tool.execute()
+
+    final_result = {'labels': obj_detector_tool.labels, 'counts': object_count}
+
+    return final_result
+
+result = detect_objects("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg",
+                        ["white_umbrellas"], 0.45, "tiny", False, "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1_white_umbrellas")
+print(result)
+# The output will be a dictionary with detected labels and their counts.
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'image_path'
+code:# Import the Object_Detector_Tool class from the available tools
+from object_detector import Object_Detector_Tool
+
+def count_white_umbrellas(image_path):
+    detected_objects = Object_Detector_Tool.execute(image_path=image_path, labels=["white_umbrella"], save_object=False)
+    total_white_umbrellas = 0
+    for label_detected_objects in detected_objects:
+        for detection_results in label_detected_objects["results"]:
+            if detection_results["label"] == "white_umbrella":
+                total_white_umbrellas += 1
+                for box in detection_results["boxes"]:
+                    white_umbrella_boxes.append([box["left"], box["top"], box["width"], box["height"]])
+
+def count_total_umbrellas(image_path):
+    detected_objects = Object_Detector_Tool.execute(image_path=image_path, labels=["umbrella"], save_object=False)
+    total_umbrellas = 0
+    for label_detected_objects in detected_objects:
+        for detection_results in label_detected_objects["results"]:
+            if detection_results["label"] == "umbrella":
+                total_umbrellas += 1
+                for box in detection_results["boxes"]:
+                    total_umbrellas_boxes.append([box["left"], box["top"], box["width"], box["height"]])
+    final_result = {"white_umbrellas": total_white_umbrellas, "total_umbrellas": total_umbrellas}
+
+# Example usage: Image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg"
+# image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg"
+count_white_umbrellas("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg")
+print(count_total_umbrellas("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_1.jpg"))
+
+# Example usage: Image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_2.jpg"
+# image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_67_image_2.jpg"
+# count_white_umbrellas(image_path)
+# print(count_total_umbrellas(image_path))

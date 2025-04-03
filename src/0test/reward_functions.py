@@ -645,38 +645,33 @@ def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs
     os.makedirs(log_root_dir, exist_ok=True)
     rewards = []
     for exec_r, result, sol, id in zip(exec_reward_list, exec_result_list, solution, QAid):
+        reward = 0.0
         if exec_r == 0:
             with open(acc_log_path, "a") as f:
                 f.write(f"\n[QAid]{id}\n\n")
                 f.write("\n[EXECUTION EXCEPTION]\n\n")
-            rewards.append(0.0)
         else:
             try:
                 # try to verify symbolic calculation
                 parsed_result = parse(result)
                 parsed_solution = parse(sol)
                 if float(verify(parsed_result, parsed_solution)) > 0:
-                    rewards.append(1.0)
+                    reward = 5.0
                     with open(acc_log_path, "a") as f:
                         f.write(f"\n[QAid]{id}\n\n")
                         f.write("\n[Verification Correct Result]\n\n")
-                else:
-                    rewards.append(0.0)
-                    with open(acc_log_path, "a") as f:
-                        f.write(f"\n[QAid]{id}\n\n")
-                        f.write("\n[Verification Wrong Result]\n\n")
             except Exception:
                 pass
             
             if result == sol:
-                rewards.append(1.0)
+                reward = 5.0
                 with open(acc_log_path, "a") as f:
                     f.write(f"\n[QAid]{id}\n\n")
                     f.write("\n[Correct Result]\n\n")
             else:
-                rewards.append(0.0)
                 with open(acc_log_path, "a") as f:
                     f.write(f"\n[QAid]{id}\n\n")
                     f.write("\n[Wrong Result]\n\n")
+        rewards.append(reward)
     return rewards
 accuracy_reward.reward_type = "accuracy"

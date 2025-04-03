@@ -1,0 +1,189 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+# Define the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg"
+
+# Initialize the Object_Detector_Tool
+object_detection_tool = Object_Detector_Tool(image_path)
+
+# Get the object detection results for the 'baseball' and 'basket' object
+labels = ['baseball', 'basket']
+detected_objects, object_count = object_detection_tool.execute(labels=labels)
+
+# Filter the results to count the number of 'baseball' and 'basket' objects
+num_chicken_nuggets = 0
+for found_labels in detected_objects:
+    num_chicken_nuggets += len([find for find in found_labels['boxes'] if find['category_id'] == 132])
+
+final_result = num_chicken_nuggets
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Assign labels and threshold values
+labels = ["chicken nugget"]
+threshold = 0.45
+
+# Use the Object_Detector_Tool to detect the objects in the image
+result = Object_Detector_Tool.execute(image="path/to/image.png", labels=labels, threshold=threshold, model_size="tiny", save_object=True)
+
+# Get the objects and their count
+objects_count = result[1]
+
+# Extract the count of chicken nuggets from the detected count
+chicken_nugget_count = objects_count.get("chicken nuggets", 0)
+chicken_nugget_count
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 2 were given
+code:from object_detector import Object_Detector_Tool
+
+def detect_chicken_nuggets(image_path):
+    tool = Object_Detector_Tool(image_path)
+
+    if tool.can_get_detection_results():
+        if tool.need_to_generate_objects():
+            objects = tool.generate_objects()
+
+            if objects:
+                for label, count in tool.label_count().items():
+                    image = tool.load_result(label, True)
+                    detected_objects = tool.detected_objects
+
+                    if detected_objects:
+                        for detected_objects in detected_objects:
+                            for detected_object in detected_objects["boxes"]:
+                                if detected_object["class"] == "ChickenNugget":
+                                    final_result = detected_object["bbox"].copy()  # Save the bounding boxes
+
+                print("Chicken Nuggets: ", count)  # Print the total count
+    else:
+        print("Error:", tool.errormsg)  # Print the error message
+
+# Example usage:
+detect_chicken_nuggets("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg")
+
+[EXECUTION EXCEPTION]
+string indices must be integers, not 'str'
+code:from object_detector import Object_Detector_Tool
+
+# Load the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg"
+object_detector = Object_Detector_Tool()
+
+# Detect and save the objects in the image
+object_number = object_detector.execute(image=path_to_image, labels=["chicken"], save_object=True)
+detect_results = object_detector.output_types[1]
+
+# Count the "chicken" object in the image
+final_result = sum(detect_results["object_number"]["chicken"])
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() got an unexpected keyword argument 'thresholds'
+code:from object_detector import Object_Detector_Tool
+
+final_result = {
+    "count": 3,
+    "results": []
+}
+
+# Load object labels from the image
+labels = ["chicken nuggets"]
+threshold = 0.45
+
+# Use the tool to detect objects in the image
+detected_objects = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg", labels=labels, save_object=True, thresholds={threshold}, model_size="tiny")
+
+# Add detected objects to the results
+results = {
+    "baseball": [detected_objects["baseball"]] + detected_objects.get("basket", [])
+}
+
+# Calculate the total count of chicken nuggets
+total_count = sum([result["boxes"][0][0][1][:3] for result in results.values() if "chicken nuggets" in result["boxes"][0][0][4]])
+total_count
+
+final_result["results"].append(total_count)
+final_result
+
+final_result
+
+[EXECUTION EXCEPTION]
+list indices must be integers or slices, not str
+code:# Import the required object detection tool
+from object_detector import Object_Detector_Tool
+ 
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_65_image_1.jpg"
+object_detector_tool = Object_Detector_Tool()
+detect_result = object_detector_tool.execute(image_path, labels=["chicken_nugget"], save_object=True, saved_image_path="detected_objects")
+
+def count_chicken_nuggets(detect_result):
+    # Detect the bounding boxes and confidence scores for chicken nuggets in the image
+    chicken_nugget_boxes = [
+        {
+            "label": ["chicken_nugget"],
+            "bbox": detect_result["boxes"]["chicken_nugget"],
+            "confidence_score": [conf_score]
+        }
+        for conf_score in detect_result["confidence_scores"]
+        if "chicken_nugget" in conf_score["labels"]
+    ]
+    
+    # Filter out only the chicken nuggets
+    chicken_nugget_bounding_boxes = [
+        bbox
+        for bbox in chicken_nugget_boxes
+        if bbox["label"] == "chicken_nugget"
+    ]
+    
+    # Count the chicken nuggets
+    chicken_nugget_count = len(chicken_nugget_bounding_boxes)
+    
+    return chicken_nugget_count
+
+final_result = count_chicken_nuggets(detect_result)
+print("Number of chicken nuggets detected:", final_result)
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+# Convert the image to a list of RGB channels
+def toRGBImageList(imgPth):
+    # Load the image
+    img = Image.open(imgPth)
+    # Convert to RGB
+    imgRGB = img.convert('RGB')
+    # Return as tuple - a list of RGB values
+    return list(imgRGB[0])
+
+# Check the command documentation for details
+result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg", labels=["chicken", "nugget"])
+detected_objects = result[0]
+object_number = detected_objects["baseball"].sort_key().keys()
+
+final_result = len(detected_objects["baseball"]['boxes'])
+print(f"Number of chicken nuggets: {final_result}")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 2 required positional arguments: 'self' and 'labels'
+code:# Step 1: Import the object detection tool from the package
+from object_detector import Object_Detector_Tool
+
+# Step 2: Load the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg"  # Replace with the actual file path
+detection_res = Object_Detector_Tool.execute(image=path_to_image)
+
+# Step 3: Extract the object count and their names
+object_count = [obj['count'] for obj in detection_res['output_types'][0]['object_number']['count']]
+
+# Step 4: Choose the result
+final_result = max(object_count, key=object_count.__getitem__)
+
+# Step 5: Print the result
+print("Number of chicken nuggets:", final_result)

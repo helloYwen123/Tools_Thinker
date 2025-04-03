@@ -1,0 +1,90 @@
+
+[None RESULT]
+
+
+[None RESULT]
+
+
+[EXECUTION EXCEPTION]
+unexpected indent (<string>, line 4)
+code:from yumpor import Object_Detector_Tool
+
+  # Set parameters
+  labels = ["chicken nuglett", "potato fry"]
+  threshold = 0.45
+  model_size = "tiny"
+  save_object = True
+  saved_image_path = ""
+
+  # Execute tool
+  detected_objects, object_count = Object_Detector_Tool.execute(image="path/to/image.jpg", labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+  # Determine final result
+  if detected_objects:
+    for label in labels:
+      num_cases = object_count[label]
+      found_num = 0
+      for instance in detected_objects[label]:
+        instance_id = instance["instance_id"]
+        box = instance["bbox"]
+        # Determine whether "chicken nuglett" has been found based on bounding box information
+        if f"{find_chicken_nuglett.box} {find_chicken_nuglett.score} > {0.45}":
+          found_num += 1
+          # Detect "potato fry" based on bounding box information
+          for found_fry in detected_objects[label][instance_id]:
+            if f"{find_chicken_nuglett.box} {find_chicken_nuglett.score} {found_fry.box} {found_fry.score} > 0.45":
+              # Determine if the "chicken nuglett" and "potato fry" have been found together
+              if find_chicken_nuglett.box == found_fry.box and find_chicken_nuglett.score > 0.45:
+                found_num += 1
+                break
+      if found_num == 3:
+        final_result = 3
+      elif found_num >= 4:
+        final_result = 4
+      else:
+        final_result = 0
+  else:
+    final_result = 0
+
+  print(f"Number of Chicken Nuggets in Final Result: {final_result}")
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() takes 1 positional argument but 7 were given
+code:from object_detector import Object_Detector_Tool
+
+# Parameters
+input_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg"
+labels = ["chicken nuggets"]
+threshold = 0.45
+model_size = "tiny"
+save_image = True
+saved_image_path = "detected_objects"
+
+# Create the object detector tool
+tool = Object_Detector_Tool(input_path, labels, threshold, model_size, save_image, saved_image_path)
+
+# Call the tool
+results = tool.execute()
+
+# Extract the detected objects and their counts
+labels, count = results["object_number"], results["detected_objects"].values()
+
+# Count the chicken nuggets
+chunk_size = 10
+chicken_nuggets_count = sum(count.values() for _ in range(3) if "chicken nuggets" in _)
+
+final_result = {
+    "chicken nuggets": chicken_nuggets_count
+}
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code:from object_detector import Object_Detector_Tool
+
+PATH = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_55_image_1.jpg'  # Path to the image file
+labels = ['baseball', 'basket']  # List of object labels to detect
+save_object = True  # Whether to save the detected objects as images
+
+detected_objects, object_count = Object_Detector_Tool.execute(image=PATH, labels=labels, save_object=save_object)
+final_result = detected_objects['count']
+print(f'There are {final_result} pieces of chicken nuggets in the image.')
