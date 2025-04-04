@@ -9,7 +9,7 @@ export TOKENIZERS_PARALLELISM=false
 
 # netstat -tulnp | grep 29507
 #"flash_attention_2",  #  "eager" / "sdpa"
-# jidegaihuilai
+
 # --max_prompt_length 1024 \
 # Confusing Parameters
 # dataset_name: push_to_hub; 

@@ -408,6 +408,7 @@ def main(script_args, training_args, model_args,conf):
         trainer.model.visual.requires_grad_ = False
     elif script_args.freeze_llm:
         trainer.model.model.requires_grad_ = False
+    
     # Train and push the model to the Hub
     # trainer.train()
 

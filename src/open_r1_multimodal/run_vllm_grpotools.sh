@@ -1,16 +1,13 @@
 #!/bin/bash
-
-
 # The latest vllm==0.7.3 is required for this script: pip3 install vllm==0.7.3
 # The latest transformers is required too, install by: pip install git+https://github.com/huggingface/transformers.git@a40f1ac602fe900281722254c52ce3773f28eb0e
-
-
 
 export DEBUG_MODE="true"
 export LOG_PATH="./vllm_run.txt"
 export TOKENIZERS_PARALLELISM=false
+export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
-
+export MKL_SERVICE_FORCE_INTEL=1
 QWEN_PATH="Qwen/Qwen2-VL-2B-Instruct"  # Qwen2.5
 HF_DATASET="BLINK_visual_counting" 
 OUTPUT_DIR="outputs/Qwen2-VL-2B-Instruct-GRPO-BLINK"
@@ -23,7 +20,7 @@ DS_CONFIG="configs/zero1_no_optimizer.json"  # Note that other zero setting woul
 # NOTE: you are expected to use X + 1 cards for X training proc and 1 vLLM proc 
 # e.g., the visible devices should be 0,1,2,3,4 for 5 cards, and  --nproc_per_node="4"
 
-CUDA_VISIBLE_DEVICES="0,1,2,3" torchrun \
+    torchrun \
     --nproc_per_node="3" \
     --nnodes="1" \
     --node_rank="0" \
@@ -58,4 +55,4 @@ CUDA_VISIBLE_DEVICES="0,1,2,3" torchrun \
     --vllm_device "cuda:3" \
     --vllm_gpu_memory_utilization 0.8 \
     --deepspeed ${DS_CONFIG} \
-    2>&1 | tee "${OUTPUT_DIR}/training_log.txt"
+    2>&1 | tee "${OUTPUT_DIR}/Logs/training_log.txt"

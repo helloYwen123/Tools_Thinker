@@ -3,14 +3,18 @@
 #  pip install huggingface_hub
 
 import torch
-from sam2.sam2_image_predictor import SAM2ImagePredictor, SAM2VideoPredictor
+from sam2.sam2_image_predictor import SAM2ImagePredictor
 import os
 # if using Apple MPS, fall back to CPU for unsupported ops
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-from basetool import BaseTool
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(os.path.dirname(current_dir))
+sys.path.insert(0, root_dir)
+from basetool import BaseTool  # note
 
 class SegmentationTool(BaseTool):
     def __init__(self):
@@ -26,9 +30,8 @@ class SegmentationTool(BaseTool):
                 "If segmentation_mode is 'points', include an 'input_points' key with a list of [x, y] coordinates; "
                 "if segmentation_mode is 'boxes', include an 'input_box' key with a list of bounding boxes defined as [x1, y1, x2, y2]."
             ),
-                 "model_size": "str: The SAM2 model size to use, e.g., 'base_plus' or 'small'."
+                 "model_size": "str: The SAM2 model size to use, e.g., 'base_plus' or 'small'.(default: 'small')"
             },
-            ["path01","path02"]
             output_types={
                  "masks": (
                     "list: A list of segmentation masks as numpy arrays. For a single image input, each object has one mask with shape (H, W). "
@@ -72,9 +75,9 @@ class SegmentationTool(BaseTool):
         elif torch.backends.mps.is_available():
             self.device = torch.device("mps")
         else:
-            device = torch.device("cpu")
-        print(f"using device: {device}")
-        if device.type == "cuda":
+            self.device = torch.device("cpu")
+        print(f"using device: {self.device}")
+        if self.device.type == "cuda":
             # use bfloat16 for the entire script
             torch.autocast("cuda", dtype=torch.bfloat16).__enter__()
             
@@ -87,7 +90,7 @@ class SegmentationTool(BaseTool):
             print(f"Error building the Object Detection tool: {e}")
             return None
 
-    def execute(self,prompt_type: str, input_prompts: dict, model_size):
+    def execute(self, prompt_type: str, input_prompts: dict, model_size= "small"):
         
         if len(input_prompts) == 1:
             prompt = input_prompts[0]
@@ -194,12 +197,12 @@ if __name__ == '__main__':
     segmentation_tool = SegmentationTool()
 
     # Set the model size for testing
-    model_size = "base_plus"
+    model_size = "small"
 
     # Test Case 1: Single image with point-based input
     single_point_input = [
         {
-            "image_path": "path/to/test_image.jpg",
+            "image_path": "./examples/images/cars.jpg",
             "input_points": [[100, 200], [300, 400]]
         }
     ]
@@ -216,48 +219,48 @@ if __name__ == '__main__':
     except Exception as e:
         print("Error in point-based segmentation for a single image:", e)
 
-    # Test Case 2: Single image with box-based input
-    single_box_input = [
-        {
-            "image_path": "path/to/test_image.jpg",
-            "input_box": [[425, 680, 700, 875]]
-        }
-    ]
+    # # Test Case 2: Single image with box-based input
+    # single_box_input = [
+    #     {
+    #         "image_path": "path/to/test_image.jpg",
+    #         "input_box": [[425, 680, 700, 875]]
+    #     }
+    # ]
 
-    print("\nTesting single image with box-based input:")
-    try:
-        masks_boxes = segmentation_tool.execute(
-            segmentation_mode='boxes',
-            input_prompts=single_box_input,
-            model_size=model_size
-        )
-        print("Returned masks for box-based input:")
-        print(masks_boxes)
-    except Exception as e:
-        print("Error in box-based segmentation for a single image:", e)
+    # print("\nTesting single image with box-based input:")
+    # try:
+    #     masks_boxes = segmentation_tool.execute(
+    #         segmentation_mode='boxes',
+    #         input_prompts=single_box_input,
+    #         model_size=model_size
+    #     )
+    #     print("Returned masks for box-based input:")
+    #     print(masks_boxes)
+    # except Exception as e:
+    #     print("Error in box-based segmentation for a single image:", e)
 
-    # Test Case 3: Batch processing with point-based input
-    batch_point_input = [
-        {
-            "image_path": "path/to/test_image1.jpg",
-            "input_points": [[100, 200], [300, 400]]
-        },
-        {
-            "image_path": "path/to/test_image2.jpg",
-            "input_points": [[150, 250], [350, 450]]
-        }
-    ]
+    # # Test Case 3: Batch processing with point-based input
+    # batch_point_input = [
+    #     {
+    #         "image_path": "path/to/test_image1.jpg",
+    #         "input_points": [[100, 200], [300, 400]]
+    #     },
+    #     {
+    #         "image_path": "path/to/test_image2.jpg",
+    #         "input_points": [[150, 250], [350, 450]]
+    #     }
+    # ]
 
-    print("\nTesting batch processing with point-based input:")
-    try:
-        batch_masks_points = segmentation_tool.execute(
-            segmentation_mode='points',
-            input_prompts=batch_point_input,
-            model_size=model_size
-        )
-        print("Returned masks for batch point-based input:")
-        print(batch_masks_points)
-    except Exception as e:
-        print("Error in batch point-based segmentation:", e)
+    # print("\nTesting batch processing with point-based input:")
+    # try:
+    #     batch_masks_points = segmentation_tool.execute(
+    #         segmentation_mode='points',
+    #         input_prompts=batch_point_input,
+    #         model_size=model_size
+    #     )
+    #     print("Returned masks for batch point-based input:")
+    #     print(batch_masks_points)
+    # except Exception as e:
+    #     print("Error in batch point-based segmentation:", e)
 
     print("\nAll tests completed.")

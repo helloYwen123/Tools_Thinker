@@ -1,76 +1,56 @@
-# Grounding DINO Object Detection Tool
-# https://huggingface.co/IDEA-Research/grounding-dino
+# SOTA Grounding DINO Object Detection Tool: Gounding-DINO 1.5 pro
+# https://github.com/IDEA-Research/Grounding-DINO-1.5-API
 
+import argparse
 import os
-import time
-
-from octotools.tools.base import BaseTool
-from PIL import Image, ImageOps
-
-import os
-# Suppress stderr by redirecting it to /dev/null
 import sys
-import re
-import base64
-import requests
-sys.stderr = open(os.devnull, 'w')
+from gdino import GroundingDINOAPIWrapper, visualize
+from PIL import Image, ImageOps
+import numpy as np
+from collections import defaultdict
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(os.path.dirname(current_dir))
+sys.path.insert(0, root_dir)
+from basetool import BaseTool
 
-
-class Advanced_Object_Detector_Tool(BaseTool):
+class Advanced_Object_Detector(BaseTool):
     def __init__(self):
         super().__init__(
-            tool_name="Advanced_Object_Detector_Tool",
-            tool_description="A tool that detects objects in an image using the Grounding DINO-X model and saves individual object images with empty padding.",
+            tool_module_name="advanced_object_detector",
+            tool_class_name="Advanced_Object_Detector",
+            tool_description=(
+            "Object detection tool using Grounding DINO 1.5 Pro. "
+            "Supports single or multiple category prompts with optional cropping of detected objects."
+            ),  
             tool_version="1.0.0",
             input_types={
-                "image": "str - The path to the image file.",
-                "labels": "list - A list of object labels to detect.",
-                "threshold": "float - The confidence threshold for detection (default: 0.35).",
-                "save_object": "bool - Whether to save the detected objects as images (default: False).",
-                "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects').",
+            "image": "str: Path to the input image file.",
+            "labels": "List of object categories to detect, e.g., ['person', 'tree']",
+            "threshold": "Detection score threshold. Only objects above this score will be returned.",
+            "save_object": "Whether to save cropped images of detected objects (bool).",
+            "saved_image_path": "Directory to save cropped object images if `save_object` is True.",
+            "mask": "Whether to return segmentation masks (binary mask: 255 inside object regions, 0 elsewhere) for each detected object (bool)."
             },
-            output_types="list - A list of detected objects with their scores, bounding boxes, and saved image paths.",
-            demo_commands=[
-                {
-                    "command": 'execution = tool.execute(image="path/to/image.png", labels=["baseball", "basket"])',
-                    "description": "Detect baseball and basket in an image, save the detected objects with default empty padding, and return their paths."
-                },
-                {
-                    "command": 'execution = tool.execute(image="path/to/image.png", labels=["car", "person"], threshold=0.5, model_size="base", save_object=False)',
-                    "description": "Detect car and person in an image using the base model, don't save the detected objects, and set the confidence threshold to 0.5."
-                }
-            ],
+            output_types={
+            "results": "A dictionary grouped by label, each containing list of detection entries with box, score, and optional mask/saved image path.",
+            "object_counts": "A dictionary with count of detected objects for each label."
+            },
+            demo_commands=[{
+                "command": "result, object_counts = tool.execute(image='demo.jpg', labels=['person', 'bicycle'], threshold=0.4, save_object=False, mask=True)",
+                "description": "Detect 'person' and 'bicycle' in the image with bounding boxes and pixel-level segmentation masks.",
+                "output_example": """
+                results :  {'person': [{'box': (50, 30, 200, 400), 'score': 0.92, 'mask': '<numpy array representing mask>', 'saved_path': None}],
+                            'bicycle': [{'box': (400, 200, 550, 420), 'score': 0.85, 'mask': '<numpy array representing mask>', 'saved_path': None}]}
+                object_counts : {'person': 2, 'bicycle': 1}"""}],
             user_metadata={
-                "limitation": "The model may not always detect objects accurately, and its performance can vary depending on the input image and the associated labels. It typically struggles with detecting small objects, objects that are uncommon, or objects with limited or specific attributes. For improved accuracy or better detection in certain situations, consider using supplementary tools or image processing techniques to provide additional information for verification."
-            }
+               "potential usage": (
+                    "The masks can be used to determine precise object regions and pixel-level coordinates, enabling integration "
+                    "with downstream tasks such as depth estimation, instance segmentation, or semantic feature encoding. "
+                )
+            }  
         )
-        self.DINO_KEY = os.environ.get("DINO_KEY")
-
-    def preprocess_caption(self, caption):
-        result = caption.lower().strip()
-        if result.endswith("."):
-            return result
-        return result + "."
-
-    def build_tool(self, threshold=0.35):
-
-        params_dict = {
-                        'headers': {
-                                    "Content-Type": "application/json",
-                                    "Token"       : self.DINO_KEY
-                                    },
-                        'body':{
-                                    "image"  : None,
-                                    "prompts": [
-                                        {"type": "text", "text": None},
-                                    ],
-                                    "bbox_threshold": threshold 
-                                }
-
-                      }
-        return params_dict
-
-
+        self.DINO_KEY = os.environ.get("DINO_KEY") # Replace with your actual API key
+    
     def save_detected_object(self, image, box, image_name, label, index, padding):
         object_image = image.crop(box)
         padded_image = ImageOps.expand(object_image, border=padding, fill='white')
@@ -81,164 +61,99 @@ class Advanced_Object_Detector_Tool(BaseTool):
         
         padded_image.save(save_path)
         return save_path
-
-    def execute(self, image: str, labels, threshold=0.35,save_object=False, saved_image_path="detected_objects", padding=20, retry_delay=1):
-        retry_count = 0
-        self.output_dir = saved_image_path
-        
-        # Set the maximum number of retries and delay between retries
-        max_retries=10
-        
-        params = self.build_tool(threshold)
-
-        def process_image(input_str):
-
-            def image_to_base64(image_path):
-                with open(image_path, "rb") as image_file:
-                    return base64.b64encode(image_file.read()).decode('utf-8')
-            # Define common image file extensions
-            image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.tiff', '.webp'}
-
-            # Check if it is a URL
-            url_pattern = re.compile(r'^(http|https|ftp)://')
-            if url_pattern.match(input_str):
-                if input_str.lower().endswith(tuple(image_extensions)):
-                    return input_str
-                return input_str
-
-            # Check if it is a file path
-            _, ext = os.path.splitext(input_str)
-            if ext.lower() in image_extensions:
-                image_base64 = image_to_base64(input_str)
-                return f'data:image/png;base64,{image_base64}'
-            return None
-
-        if len(labels) < 1:
-            preprocessed_prompt = '<prompt_free>'
-        else:
-            preprocessed_prompt = ''
-            for label in labels:
-                preprocessed_prompt += self.preprocess_caption(label)
-
-
-        body = params['body']
-        body['image'] = process_image(image)
-        body['prompts'] =  [{"type": "text", "text": preprocessed_prompt}]
-
-        # send request
-        resp = requests.post(   # post object detection request
-            'https://api.deepdataspace.com/tasks/dinox',
-            json=body,
-            headers=params['headers']
-        )
-
-        if resp.status_code == 200:
-            json_resp = resp.json()
-            print(json_resp)
-
-            # get task_uuid
-            task_uuid = json_resp["data"]["task_uuid"]
-            print(f'task_uuid:{task_uuid}')
-
-            # poll get task result
-            while retry_count < max_retries:
-                resp = requests.get(f'https://api.deepdataspace.com/task_statuses/{task_uuid}', headers=params['headers'])
-                
-
-                if resp.status_code != 200:
-                    break
-                json_resp = resp.json()
-
-                if json_resp["data"]["status"] not in ["waiting", "running"]:
-                    break
-                time.sleep(retry_delay) #retry_delay)
-                retry_count += 1
-
-            if json_resp["data"]["status"] == "failed":
-                print(f'failed resp: {json_resp}')
-            elif json_resp["data"]["status"] == "success":
-                # print(f'success resp: {json_resp}')
-                formatted_results = []
-                original_image = Image.open(image)
-                image_name = os.path.splitext(os.path.basename(image))[0]
-                
-                object_counts = {}
-
-                for result in json_resp['data']['result']['objects']:
-                    box = tuple(result["bbox"])
-                    try:
-                        box = [int(x) for x in box]
-                    except:
-                        continue
-                    label = result["category"]
-                    score = round(result["score"], 2)
-                    if label.endswith("."):
-                        label = label[:-1]
-                    
-                    object_counts[label] = object_counts.get(label, 0) + 1
-                    index = object_counts[label]
-                    
-                    save_path = None
-                    if save_object:
-                        save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
+    
+    
+    def execute(self, image, labels, threshold=0.45, save_object=False, saved_image_path="detected_objects", mask=False):
+            padding = 20 # default padding
             
-                    formatted_results.append({
-                        "label": label,
-                        "confidence score": score,
-                        "box": box,
-                        "saved_image_path": save_path
-                    })
-
-                return formatted_results, object_counts
-            else:
-                print(f'get task resp: {resp.status_code} - {resp.text}')
-        else:
-            print(f'Error: {resp.status_code} - {resp.text}')
-        
-        print(f"Failed to detect objects after {max_retries} attempts.")
-        return []
-
+            self.DINO_KEY = "5cf9118fa07590654271566b4599070f" ## Replace with your actual API key
+            gdino = GroundingDINOAPIWrapper(self.DINO_KEY)
+            prompt_str = " . ".join(labels)
+            
+            prompts = dict(image=image, prompt=prompt_str)
+            
+            results = gdino.inference(prompts, return_mask= mask)
+            
+            if save_object:
+                # Create the directory to save detected objects
+                image_path = prompts['image']
+                image = Image.open(image_path).convert("RGB")
+                image_name = os.path.splitext(os.path.basename(image_path))[0]
+                self.output_dir = saved_image_path
+            
+            grouped = defaultdict(list)
+            object_counts = {}
+            has_mask = bool(results.get("masks"))
+            for box, category, score, *mask in zip(
+                results["boxes"],
+                results["categorys"],
+                results["scores"],
+                results["masks"] if has_mask else [None] * len(results["boxes"])
+            ):  
+                if score < threshold:  # optional filter
+                    continue
+                
+                entry = {
+                    "box": box,
+                    "score": score,
+                }
+                
+                if has_mask and mask[0] is not None:
+                    alpha = mask[0].split()[-1]
+                    alpha_array = np.array(alpha)  # binary mask
+                    entry["mask"] = alpha_array
+                    
+                
+                object_counts[category] = object_counts.get(category, 0) + 1
+                index = object_counts[category]
+                # Save the detected object image if requested
+                entry["saved_path"] = None
+                if save_object:
+                    saved_path = self.save_detected_object(
+                        image=image,
+                        box=box,
+                        image_name=image_name,
+                        label=category,
+                        index=index,
+                        padding=padding
+                    )
+                    entry["saved_path"] = saved_path
+                # Add the saved image path to the entry
+                grouped[category].append(entry)
+                
+            results = dict(grouped)
+            
+            return results, object_counts
+    
     def get_metadata(self):
         metadata = super().get_metadata()
-        return metadata
-
-if __name__ == "__main__":
-    # Test command:
-    """
-    Run the following commands in the terminal to test the script:
+        return metadata    
     
-    cd octotools/tools/advanced_object_detector
-    python tool.py
-    """
+if __name__ == "__main__":
 
-    # Get the directory of the current script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Example usage of the Object_Detector_Tool
-    tool = Advanced_Object_Detector_Tool()
-    tool.set_custom_output_dir("detected_objects")
-
-    # Get tool metadata
+    # Use provided token or fallback to hardcoded (for testing)
+    token = "5cf9118fa07590654271566b4599070f"
+    
+    tool = Advanced_Object_Detector()
     metadata = tool.get_metadata()
-    # print(metadata)
+    
+    image_path = './asset/AB.png'
+    labels = ['woman']
+    results = tool.execute(image=image_path, labels=labels, threshold=0.35, save_object=True, mask=True)
+    
+    results_dict, object_counts = results
+    for label, entries in results_dict.items():
+        print(f"Label: {label}")
+        for i, entry in enumerate(entries):
+            print(f"  Detection {i + 1}:")
+            print(f"    Confidence: {entry['score']}")
+            print(f"    Bounding box: {entry['box']}")
+            print(f"    Saved image path: {entry.get('saved_path', 'N/A')}")
+        print(f"  Total detections for {label}: {object_counts[label]}")
 
-    # Construct the full path to the image using the script's directory
-    relative_image_path = "examples/baseball.png"
-    image_path = os.path.join(script_dir, relative_image_path)
 
-    import json
-
-    # Execute the tool
-    try:
-        execution = tool.execute(image=image_path, labels=["baseball", "basket"], padding=20)
-        print(json.dumps(execution, indent=4))
-        print("Detected Objects:")
-        for obj in execution:
-            print(f"Detected {obj['label']} with confidence {obj['confidence score']}")
-            print(f"Bounding box: {obj['box']}")
-            print(f"Saved image (with padding): {obj['saved_image_path']}")
-            print()
-    except ValueError as e: 
-        print(f"Execution failed: {e}")
-
-    print("Done!")
+    # Save overlay visualizations
+    # Save structured results to JSON (as string, quick version)
+    with open('./asset/demo_output.json', 'w') as f:
+        f.write(str(results_dict))
+        print("Saved raw result dict to ./asset/demo_output.json")

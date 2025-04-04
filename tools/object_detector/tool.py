@@ -20,8 +20,6 @@ import os
 import sys
 # sys.stderr = open(os.devnull, 'w')
 
-
-
 class Object_Detector_Tool(BaseTool):
     def __init__(self):
         super().__init__(
@@ -32,29 +30,35 @@ class Object_Detector_Tool(BaseTool):
             input_types={
                 "image": "str - The path to the image file.",
                 "labels": "list - A list of object labels to detect.",
-                "threshold": "float - The confidence threshold for detection (default: 0.45).",
+                "threshold": "float - The confidence threshold for detection (default: 0.35).",
                 "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
                 "save_object": "bool - Whether to save the detected objects as images (default: False).",
                 "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects').",
             },
             output_types = "tuple - A tuple containing two elements: \
-                            (1) a dictionary mapping each detected label to its grouped detection results, \
-                            where each value is a dictionary with keys 'boxes', 'confidence_scores', and 'saved_image_paths'; \
-                            (2) a dictionary mapping each label to its total count in the image.",
-            demo_commands=[
+            (1) a dictionary mapping each detected label to a list of detection entries, \
+            where each entry is a dictionary with keys: 'box', 'score', and 'saved_image_path'; \
+            (2) a dictionary mapping each label to the number of detected objects in the image.",
+            demo_commands = [
                 {
                     "command": 'detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")',
                     "description": (
-                            "Detects 'baseball' and 'basket' in the image. "
-                            "Returns a tuple: (1) a dictionary grouping results by label with boxes, scores, and image paths; "
-                            "(2) a dictionary with counts for each label. "
-                            "Detected objects are saved to 'detected_objects' if 'save_object' is True."
-                        )
-                },
-            ],
+                        "Detects 'baseball' and 'basket' in the image. Returns a tuple: "
+                        "(1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path); "
+                        "(2) a dict with the total count for each detected label. "
+                        "If 'save_object' is True, detected objects are cropped and saved to the specified directory."
+                    ),
+                    "output_example": """
+                        detected_objects : {
+                        'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],
+                        'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]
+                        }
+                        object_number : {'baseball': 1, 'basket': 2}
+                    """
+                }
+            ]
             user_metadata={
-                "limitation": "The model may not always detect objects accurately.",
-                "potential usage": "The tool can be used for locating interest-objects in images."
+                "potential usage": "The tool can be used for locating interest-objects in images by utilizing the bounding boxes"
             }
         )
 
@@ -85,7 +89,7 @@ class Object_Detector_Tool(BaseTool):
         padded_image.save(save_path)
         return save_path
 
-    def execute(self, image, labels, threshold=0.45, model_size='tiny', max_retries=10, retry_delay=2, clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images"):
+    def execute(self, image, labels, threshold=0.35, model_size='tiny', max_retries=10, retry_delay=2, clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images"):
         
         # default padding value
         padding=20
@@ -121,16 +125,13 @@ class Object_Detector_Tool(BaseTool):
                         save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
                     
                     if label not in grouped_results:
-                        grouped_results[label] = {
-                            "boxes": [],
-                            "confidence_scores": [],
-                            "saved_image_paths": [],
-                        }
-                    # label is the key，box, score, and save_path are the values
-                    grouped_results[label]["boxes"].append(box)
-                    grouped_results[label]["confidence_scores"].append(score)
-                    grouped_results[label]["saved_image_paths"].append(save_path)
+                        grouped_results[label] = []
 
+                    grouped_results[label].append({
+                        "box": box,
+                        "score": score,
+                        "saved_image_path": save_path
+                    })
 
                 return grouped_results, object_counts
             
@@ -175,21 +176,25 @@ if __name__ == "__main__":
 
     # Get tool metadata
     metadata = tool.get_metadata()
-    print(metadata)
+    # print(metadata)
 
     # Construct the full path to the image using the script's directory
-    relative_image_path = "examples/baseball.png"
+    relative_image_path = "examples/AB.png"
     image_path = os.path.join(script_dir, relative_image_path)
 
     # Execute the tool
     try:
-        objs, labels_num = tool.execute(image=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+        objs, labels_num = tool.execute(image=image_path, labels=["woman"], save_object=True, saved_image_path="detected_objects",model_size='base')
         print("Detected Objects:")
-        for obj in objs:
-            print(f"Detected {obj['label']} with confidence {obj['confidence score']}")
-            print(f"Bounding box: {obj['box']}")
-            print(f"Saved image (with padding): {obj['saved_image_path']}")
-            print()
+        for label, entries in objs.items():
+            print(f"Label: {label}")
+            for i, data in enumerate(entries):
+                print(f"  Detection {i + 1}:")
+                print(f"    Confidence: {data['confidence_scores'][i]}")
+                print(f"    Bounding box: {data['boxes'][i]}")
+                print(f"    Saved image path: {data['saved_image_paths'][i]}")
+            print(f"  Total detections for {label}: {labels_num[label]}")
+
     except ValueError as e: 
         print(f"Execution failed: {e}")
 
