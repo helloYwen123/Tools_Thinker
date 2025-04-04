@@ -137,8 +137,8 @@ if __name__ == "__main__":
     tool = Advanced_Object_Detector()
     metadata = tool.get_metadata()
     
-    image_path = './asset/AB.png'
-    labels = ['woman']
+    image_path = './asset/07.jpg'
+    labels = ['single letter']
     results = tool.execute(image=image_path, labels=labels, threshold=0.35, save_object=True, mask=True)
     
     results_dict, object_counts = results

@@ -15,58 +15,48 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(os.path.dirname(current_dir))
 sys.path.insert(0, root_dir)
 from basetool import BaseTool  # note
-
 class SegmentationTool(BaseTool):
     def __init__(self):
         super().__init__(
             tool_module_name="segmentation_tool",
             tool_class_name="SegmentationTool",
-            tool_description="A tool that performs segmentation using the SAM2 model.",
-            input_types={
-                "segmentation_mode": "str: The mode for segmentation input. Allowed values are 'points' for point-based input and 'boxes' for box-based input.",
-                "input_prompts": (
-                "list[dict]: A list of dictionaries, each containing segmentation inputs for one image. "
-                "Each dictionary must include an 'image_path' key (str) specifying the image file path. "
-                "If segmentation_mode is 'points', include an 'input_points' key with a list of [x, y] coordinates; "
-                "if segmentation_mode is 'boxes', include an 'input_box' key with a list of bounding boxes defined as [x1, y1, x2, y2]."
+            tool_description=(
+                "A segmentation tool using the SAM2 model."
+                "Supports point-based and box-based inputs for single or batch segmentation."
             ),
-                 "model_size": "str: The SAM2 model size to use, e.g., 'base_plus' or 'small'.(default: 'small')"
+            input_types={
+                "segmentation_mode": "str: 'points' or 'boxes'.",
+                "input_prompts": (
+                "list[dict]: Each dictionary must include an 'image_path' key (str). "
+                "Optionally, include one of the keys 'input_points' or 'input_box'. "
+                "For 'points' segmentation_mode, 'input_points' should be a list of [x, y] coordinates; "
+                "for 'boxes' segmentation_mode, 'input_box' should be a list of bounding boxes defined as [x1, y1, x2, y2]."
+                ),
+                "model_size": "str: SAM2 model size, e.g., 'base_plus' or 'small' (default: 'small')."
             },
             output_types={
-                 "masks": (
-                    "list: A list of segmentation masks as numpy arrays. For a single image input, each object has one mask with shape (H, W). "
-                    "For batch input, the output includes an extra dimension for the image number, e.g., shape (B, O, H, W), "
-                    "where B is the number of images and O is the number of objects per image."
-                ),
+                "masks": (
+                    "list: Segmentation masks as numpy arrays. "
+                    "For single image input, the output is a list of masks, each of shape (O, 1, H, W). O is number of Obeject in image segmentation "
+                    "For batch input, the output is a list of length equal to the number of input images, "
+                    "where each element is a list of masks for that image (each mask with shape (O, 1, H, W))."
+                    "Note that the number of masks may vary across images."
+                )
             },
-            demo_commands=[{"command":(
-                    "segmentation_tool.execute(segmentation_mode='points' , "
-                    "input_prompts=[{'image_path': 'path/to/image.jpg', 'input_points': [[100,200], [300,400]]}], "
-                    "model_size='base_plus')"
-                        ),
-                    "description":"Segment an image using point-based input. At least two points are required to avoid ambiguity."},
-                    {
-                    "command": (
-                    "segmentation_tool.execute(segmentation_mode='boxes', "
-                    "input_prompts=[{'image_path': 'path/to/image.jpg', 'input_box': [[425,680,700,875]]}], "
-                    "model_size='small')"
-                    ),
-                    "description": "Segment an image using a bounding box."
-                    },
-                    {
-                    "command": (
-                    "segmentation_tool.execute(segmentation_mode='points', "
-                    "input_prompts=["
-                    "  {'image_path': 'path/to/image1.jpg', 'input_points': [[100,200], [300,400]]}, "
-                    "  {'image_path': 'path/to/image2.jpg', 'input_points': [[150,250], [350,450]]}"
-                    "], "
-                    "model_size='base_plus')"
-                    ),
-                    "description": "Batch segmentation using point-based input for multiple images."
-                    },
-                    ],
+            demo_commands = [
+                {
+                    "command": "masks = segmentation_tool.execute(segmentation_mode='boxes', input_prompts=[{'image_path': 'path/to/image1.jpg', 'input_box': [[100,150,400,500]]}, {'image_path': 'path/to/image2.jpg', 'input_box': [[50,80,300,350]]}], model_size='small')",
+                    "description": "Batch segmentation for multiple images using box-based input. Each image returns its segmentation mask as a numpy array.",
+                    "output_examples": (
+                        "masks = [mask_image1, mask_image2]\n"
+                        "# Example: mask_image1.shape -> (H1, W1), mask_image2.shape -> (H2, W2)\n"
+                        "# where each mask is a numpy array representing the segmentation result."
+                    )
+                }
+            ],
             user_metadata={
-                "Note": "This tool uses the SAM2 model for segmentation tasks."
+                "Suggestions": "Before using the segmentation tools, it is advisable to consider how to obtain the points and bounding box coordinates for the region of interest."
+
             }
         )
         # select the device for computation
@@ -90,8 +80,8 @@ class SegmentationTool(BaseTool):
             print(f"Error building the Object Detection tool: {e}")
             return None
 
-    def execute(self, prompt_type: str, input_prompts: dict, model_size= "small"):
-        
+    def execute(self, segmentation_mode: str, input_prompts: dict, model_size= "small"):
+        print(len(input_prompts))
         if len(input_prompts) == 1:
             prompt = input_prompts[0]
             image = Image.open(prompt["image_path"])
@@ -99,19 +89,27 @@ class SegmentationTool(BaseTool):
             predictor = self.build_tool(model_size=model_size)
             predictor.set_image(image)
             
-            if prompt_type == "points":
+            print(predictor._features["image_embed"].shape, predictor._features["image_embed"][-1].shape)
+            
+            if segmentation_mode == "points":
                 input_points = np.array(prompt["input_points"])  # shape: (N, 2)
+                # print(input_points.shape)
                 # at least two points are required to avoid ambiguity
                 assert input_points.shape[0] >= 2, "At least two points are required to avoid ambiguity."
                 
-                input_point = input_points[0]
+                input_point = np.array(input_points[0:1])
                 
-                input_label = np.ones((input_point.shape[0],), dtype=int)
+                
+                input_label = np.ones((input_point.shape[0]), dtype=int)
+                
+               
                 masks, scores, logits = predictor.predict(
                         point_coords=input_point,
                         point_labels=input_label,
                         multimask_output=True,
                     )
+                print(f"mask shape: {masks.shape}")
+                
                 # here masks shape is (N, H, W) where N is the number of masks
                 sorted_ind = np.argsort(scores)[::-1] # sort in descending order
                 masks = masks[sorted_ind]  
@@ -119,26 +117,30 @@ class SegmentationTool(BaseTool):
                 logits = logits[sorted_ind]
                 
                 # Select the best single mask per object
-                input_label = np.ones((input_points.shape[0],), dtype=int)
-
+                input_labels = np.ones((input_points.shape[0],), dtype=int)
+                print(f"input label {input_labels}")
+                
                 mask_input = logits[np.argmax(scores), :, :]
                 # using 2 points to create unambiguous mask(1,H,W) 
                 masks, scores, _ = predictor.predict(
-                    point_coords=input_point,
-                    point_labels=input_label,
+                    point_coords=input_points,
+                    point_labels=input_labels,
                     mask_input=mask_input[None, :, :],
                     multimask_output=False,
                 )
+                print(masks.shape)
                 final_masks = masks  # shape: (1, H, W)
                 
                 
-            elif prompt_type == "boxes":
+            elif segmentation_mode == "boxes":
+                
                 if "input_box" not in prompt or len(prompt["input_box"]) == 0:
                     raise ValueError("input_box is required.")
                 
                 # if only one box is provided
+                
                 input_boxes = np.array(prompt["input_box"])
-                if len(input_prompts["input_box"]) == 1:
+                if len(prompt["input_box"]) == 1:
                     input_boxes=input_boxes[None, :]
                 else:
                     input_boxes = input_boxes
@@ -148,7 +150,7 @@ class SegmentationTool(BaseTool):
                     box= input_boxes,
                     multimask_output=False,
                 )
-            
+                print(final_masks.shape)
             return final_masks
         else:
             image_batch = []
@@ -160,73 +162,114 @@ class SegmentationTool(BaseTool):
                 # convert image to RGB
                 image = np.array(image.convert("RGB"))
                 image_batch.append(image)
-                if prompt_type == "boxes":
+                if segmentation_mode == "boxes":
                     # create a batch of boxes
                     boxes_batch.append(np.array(input_prompt["input_box"]))
-                if prompt_type == "points":
+                if segmentation_mode == "points":
                     pts = np.array(input_prompt["input_points"])
+                    assert pts.shape[0] >= 2, "At least two points are required to avoid ambiguity."
+                    print(pts.shape)
                     # create a batch of points
                     points_batch.append(pts)
                     # create a batch of labels
-                    labels_batch.append(np.ones((pts.shape[0],), dtype=int))
+                    labels_batch.append(np.ones((pts.shape[0]), dtype=int))
                     
+            predictor = self.build_tool(model_size=model_size)        
             # create a batch of images features   
             predictor.set_image_batch(image_batch)
             
-            if prompt_type == "boxes":
-                
+            if segmentation_mode == "boxes":
                 # create a batch of masks
                 final_masks, scores_batch, _ = predictor.predict_batch(
-                    points_batch=None, labels_batch=None, boxes_batch=boxes_batch, multimask_output=False
+                    None, None, box_batch=boxes_batch, multimask_output=False
                     )
-            if prompt_type == "points":
+                # final_masks = np.array(final_masks)
+                # print(f"final_masks shape: {final_masks.shape}") # here can't not unify the shape of each layer mask
+            if segmentation_mode == "points":
                 # Select the best single mask per object
                 final_masks = []
                 masks_batch, scores_batch, _ = predictor.predict_batch(
                     points_batch, labels_batch, box_batch=None, multimask_output=True
                     )
-                # here masks_batch shape is (M ,O ,N ,H ,W) 
-                # where N is the number of masks, M is the number of images, O is the number of objects
+                masks_batch = np.array(masks_batch)
+               
+                # here masks_batch shape is (M ,O ,1 ,H ,W) 
+                # where N is the number of masks, M is the number of images, O is the number of objects for corresponding image
                 for masks, scores in zip(masks_batch,scores_batch):
                     final_masks.append(masks[range(len(masks)), np.argmax(scores, axis=-1)])
+                    
             return final_masks
         
 if __name__ == '__main__':
+    
+    np.random.seed(3)
 
-    # Assume that the SegmentationTool class has been defined and imported.
+    def save_mask(mask, save_path, random_color=False, borders=True):
+        """
+        save mask image to verify correctness
+        """
+        if random_color:
+            color = np.concatenate([np.random.random(3), np.array([0.6])], axis=0)
+        else:
+            color = np.array([30/255, 144/255, 255/255, 0.6])
+        
+        # 
+        h, w = mask.shape[-2:]
+        mask = mask.astype(np.uint8)
+        mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
+        
+        if borders:
+            import cv2
+            #
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            # 
+            contours = [cv2.approxPolyDP(contour, epsilon=0.01, closed=True) for contour in contours]
+            mask_image = cv2.drawContours(mask_image, contours, -1, (1, 1, 1, 0.5), thickness=2)
+        
+        plt.imsave(save_path, mask_image)
+        print(f"Mask saved to: {save_path}")
     segmentation_tool = SegmentationTool()
-
-    # Set the model size for testing
     model_size = "small"
+####################PASS single image + Input(points)######################## 
+#     single_point_input = [
+#         {
+#             "image_path": "./examples/images/truck.jpg",
+#             "input_points": [[500, 375], [1125, 625]]
+#         }
+#     ]
+#     print("Testing single image with point-based input:")
+#     try:
+#         masks_points = segmentation_tool.execute(
+#             segmentation_mode='points',
+#             input_prompts=single_point_input,
+#             model_size=model_size
+#         )
+#         print("Returned masks for point-based input:")
+#         print(masks_points)
+#         print(f"Returned mask's type is {type(masks_points)}")
+        
+#         #
+#         for idx, mask in enumerate(masks_points):
+#             save_path = f"./saved_masks/mask_point_{idx}.png"
+            
+#             import os
+#             os.makedirs(os.path.dirname(save_path), exist_ok=True)
+#             save_mask(mask, save_path, borders=True)
+#     except Exception as e:
+#         print("Error in point-based segmentation for a single image:", e)
 
-    # Test Case 1: Single image with point-based input
-    single_point_input = [
-        {
-            "image_path": "./examples/images/cars.jpg",
-            "input_points": [[100, 200], [300, 400]]
-        }
-    ]
-
-    print("Testing single image with point-based input:")
-    try:
-        masks_points = segmentation_tool.execute(
-            segmentation_mode='points',
-            input_prompts=single_point_input,
-            model_size=model_size
-        )
-        print("Returned masks for point-based input:")
-        print(masks_points)
-    except Exception as e:
-        print("Error in point-based segmentation for a single image:", e)
-
-    # # Test Case 2: Single image with box-based input
+####################PASS single image + Input(boxes)######################## 
     # single_box_input = [
     #     {
-    #         "image_path": "path/to/test_image.jpg",
-    #         "input_box": [[425, 680, 700, 875]]
+    #         "image_path": "./examples/images/truck.jpg",
+    #         "input_box": [
+    #             [75, 275, 1725, 850],
+    #             [425, 600, 700, 875],
+    #             [1375, 550, 1650, 800],
+    #             [1240, 675, 1400, 750],
+    #         ]   
     #     }
     # ]
-
     # print("\nTesting single image with box-based input:")
     # try:
     #     masks_boxes = segmentation_tool.execute(
@@ -235,32 +278,54 @@ if __name__ == '__main__':
     #         model_size=model_size
     #     )
     #     print("Returned masks for box-based input:")
-    #     print(masks_boxes)
+    #     print(masks_boxes.shape)
+    #     idx= 0
+    #     for mask in masks_boxes:
+    #         idx += 1
+    #         save_path = f"./saved_masks/mask_box_{idx}.png"
+    #         os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    #         save_mask(mask.squeeze(0), save_path, borders=True)
     # except Exception as e:
     #     print("Error in box-based segmentation for a single image:", e)
 
-    # # Test Case 3: Batch processing with point-based input
-    # batch_point_input = [
-    #     {
-    #         "image_path": "path/to/test_image1.jpg",
-    #         "input_points": [[100, 200], [300, 400]]
-    #     },
-    #     {
-    #         "image_path": "path/to/test_image2.jpg",
-    #         "input_points": [[150, 250], [350, 450]]
-    #     }
-    # ]
-
-    # print("\nTesting batch processing with point-based input:")
-    # try:
-    #     batch_masks_points = segmentation_tool.execute(
-    #         segmentation_mode='points',
-    #         input_prompts=batch_point_input,
-    #         model_size=model_size
-    #     )
-    #     print("Returned masks for batch point-based input:")
-    #     print(batch_masks_points)
-    # except Exception as e:
-    #     print("Error in batch point-based segmentation:", e)
+################## 
+   # Pass image batch , based on bbx
+    multi_box_input = [
+        {
+            "image_path": "./examples/images/truck.jpg",
+            "input_box": [
+                [75, 275, 1725, 850],
+                [425, 600, 700, 875],
+                [1375, 550, 1650, 800],
+                [1240, 675, 1400, 750],
+            ]
+        },
+        {
+            "image_path": "./examples/images/groceries.jpg",
+            "input_box": [
+                [450, 170, 520, 350],
+                [350, 190, 450, 350],
+                # [500, 170, 580, 350],
+                # [580, 170, 640, 350],
+            ]
+        }
+    ]
+    print("\nTesting multiple images with box-based input:")
+    try:
+        masks_multi_boxes = segmentation_tool.execute(
+            segmentation_mode='boxes',
+            input_prompts=multi_box_input,
+            model_size=model_size
+        )
+        print("Returned masks for multiple images with box-based input:")
+        print(masks_multi_boxes)
+        
+        for img_idx, masks in enumerate(masks_multi_boxes):
+            for mask_idx, mask in enumerate(masks):
+                save_path = f"./saved_masks/mask_multi_{img_idx}_{mask_idx}.png"
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                save_mask(mask.squeeze(0), save_path, borders=True)
+    except Exception as e:
+        print("Error in box-based segmentation for multiple images:", e)
 
     print("\nAll tests completed.")

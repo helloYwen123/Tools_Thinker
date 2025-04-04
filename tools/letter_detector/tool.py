@@ -12,6 +12,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(os.path.dirname(current_dir))
 sys.path.insert(0, root_dir)
 from basetool import BaseTool
+
 class Letter_Detector_Tool(BaseTool):
     def __init__(self):
         super().__init__(
@@ -170,7 +171,7 @@ class Letter_Detector_Tool(BaseTool):
 if __name__ == "__main__":
     tool = Letter_Detector_Tool()
 
-    image_path = "./examples/04.png"
+    image_path = "./examples/07.jpg"
     results = tool.execute(image=image_path, max_retries=10, retry_delay=5, clear_cuda_cache=False)
     tool.visualize_letter_results(image_path, results)
 

@@ -167,7 +167,7 @@ if __name__ == "__main__":
     # Construct the full path to the image using the script's directory
     # relative_image_path = "examples/chinese_tra.jpg"
     # relative_image_path = "examples/chinese.jpg"
-    relative_image_path = "./examples/01.png"
+    relative_image_path = "./examples/07.jpg"
     image_path = os.path.join(script_dir, relative_image_path)
 
     # Execute the tool
