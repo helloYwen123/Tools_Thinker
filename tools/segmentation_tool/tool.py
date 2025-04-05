@@ -15,6 +15,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(os.path.dirname(current_dir))
 sys.path.insert(0, root_dir)
 from basetool import BaseTool  # note
+
 class SegmentationTool(BaseTool):
     def __init__(self):
         super().__init__(
@@ -77,7 +78,7 @@ class SegmentationTool(BaseTool):
             predictor = SAM2ImagePredictor.from_pretrained(model_name, device=self.device)
             return predictor
         except Exception as e:
-            print(f"Error building the Object Detection tool: {e}")
+            print(f"Error building the Segmentation tool: {e}")
             return None
 
     def execute(self, segmentation_mode: str, input_prompts: dict, model_size= "small"):
@@ -200,6 +201,10 @@ class SegmentationTool(BaseTool):
                     
             return final_masks
         
+    def get_metadata(self):
+        metadata = super().get_metadata()
+        return metadata   
+    
 if __name__ == '__main__':
     
     np.random.seed(3)

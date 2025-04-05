@@ -19,30 +19,29 @@ class Pixel_Depth_Tool(BaseTool):
             tool_description="A tool that estimates pixel-level depth from image or video using the Depth Anything V2 model.",
             input_types={
                 "mode": "str - The mode of operation, either 'image' or 'video' (default='image').",
-                "image_path": "str - The path to single image, directory or txt file list.",
-                "video_path": "str - The path to single videos, directory or txt file list.",
+                "image_path": "str - The path to a single image, a directory, or a txt file containing a list of image paths.",
+                "video_path": "str - The path to a single video, a directory, or a txt file containing a list of video paths.",
                 "output": "bool - If True, save the depth image or depth video (default: False).",
-                "outdir": "str - The output directory to save the depth images (default: './vis_depth').",
+                "outdir": "str - The output directory to save the depth images/videos (default: './vis_depth').",
             },
             output_types={
-                "image mode":  "Returns a list of depth images as NumPy arrays. Each element in the list is a single-channel (uint8) depth map corresponding to an input image",
-                "video mode":  "Returns a list of lists, where each inner list contains depth frames for the corresponding video. Each frame is a single-channel (uint8) depth map.",
-                "save depth":  "If output is True, saves the depth images or videos in the specified outdir. The depth images are saved as PNG files, and the depth videos are saved in MP4 format."
-                },
+                "image mode": "Returns a list of depth images as NumPy arrays. Each element in the list is a single-channel (uint8) depth map corresponding to an input image.",
+                "video mode": "Returns a list of lists, where each inner list contains depth frames for the corresponding video. Each frame is a single-channel (uint8) depth map.",
+                "save depth": "If output is True, saves the depth images or videos in the specified outdir. The depth images are saved as PNG files, and the depth videos are saved in MP4 format."
+            },
             demo_commands= [
                 {
-                    "command": "image_depth = Pixel_Depth_Tool.execute(mode='image', image_path='/path/to/images_directory', video_path=None, output=True, outdir='./vis_depth')",
-                    "description": "Processes images in image mode. It returns a list of depth maps as NumPy arrays (one per image) and saves each depth map as a PNG file in './vis_depth'",
+                    "command": "depth_image =  Pixel_Depth_Tool.execute(mode='image', image_path /path/to/image.jpg, output=True)\npoint_depth = depth_image[point_y, point_x]",
+                    "description": "Estimates the pixel point's depth in image for a single image. ",
+                    "output_examples": "depth_image: np.ndarray, point_depth: uint8 - The depth value at the specified pixel coordinates (point_y, point_x) in the depth image.",
                 },
-                {
-                    "command": "Pixel_Depth_Tool.execute(mode='video', image_path=None, video_path='/path/to/video', output=True, outdir='./vis_depth')",
-                    "description": "Processes videos in video mode. It returns a list where each element is a list of depth frames (one per video) and saves each processed depth video as an MP4 file in './vis_depth' if output is enabled.",
-                }
+
             ],
             user_metadata={
                 "Note": "The tool has different output formats and types depending on different modes."
             }
         )
+
     def execute(self, mode: str, image_path: str, video_path:str, output=False, outdir='./vis_depth'):
         input_size=518
         encoder='vitl'
@@ -140,7 +139,9 @@ class Pixel_Depth_Tool(BaseTool):
                 
             return video_results
 if __name__ == '__main__':
-    
+    # depth 图尺寸是不是和原图一样大
+    # video 输出形状 
+    # depth 是什么样的
     # Test paths (update these paths with actual image/video locations)
     test_image_path = '/assets/examples'  # Can be a single image file, directory, or a txt file containing image paths.
     test_video_path = '/assets/examples_video'    # Can be a single video file, directory, or a txt file containing video paths.
