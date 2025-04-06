@@ -8,9 +8,10 @@ setup(
         'basetool',
         'object_detector',
         'advanced_object_detector',
-        'text_detector'
+        'text_detector',
+        'letter_detector'
     ],
     
-    package_dir={'': 'tools'}     # from xx import xx ;instead of from tools.xx import xx
+    package_dir={'': 'src/tools'}     # from xx import xx ;instead of from tools.xx import xx
     # modify logical root path
 )

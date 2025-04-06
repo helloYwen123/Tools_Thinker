@@ -1,27 +1,29 @@
 export DEBUG_MODE="true" # Enable Debug if you want to see the rollout of model during RL
 export LOG_PATH="./debug_log_2b.txt"
 export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
+export CUDA_VISIBLE_DEVICES=0,1,2,3
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 export WANDB_PROJECT="code_gen_GRPO"
 # export MAIN_PROCESS_PORT=29507  # Change this to an available port
-export NCCL_P2P_DISABLE=0
+export NCCL_P2P_DISABLE=1
 export TOKENIZERS_PARALLELISM=false
 
 # netstat -tulnp | grep 29507
 #"flash_attention_2",  #  "eager" / "sdpa"
 
-# --max_prompt_length 1024 \
 # Confusing Parameters
 # dataset_name: push_to_hub; 
+# respectively modify zero3 yaml `num_processes` to control parallel GPU computation
+
 accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src/open_r1/toolsgrpo.py \
-    --confile configs/configuration_file.yaml \
+    --confile configs/prompt_configuration_file.yaml \
     --output_dir outputs/Qwen2-VL-2B-Instruct-GRPO-BLINK \
     --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
     --dataset_name BLINK_visual_counting \
     --max_prompt_length 4096 \
     --max_completion_length 2048 \
     --per_device_train_batch_size 1 \
-    --gradient_accumulation_steps 2 \
+    --gradient_accumulation_steps 3 \
     --logging_steps 1 \
     --bf16 true \
     --torch_dtype bfloat16 \

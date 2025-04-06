@@ -135,6 +135,7 @@ def unsafe_execute(code, timeout, result, log_path):
             df.write(output_raw + "\n")
             df.write("[GENERATE FINAL_RESULT]\n")
             df.write(str(output) + "\n")
+            df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n")
 
         debug_log_path = os.path.join(log_path, "debug_exec.log")
         reward = 0.0
@@ -142,14 +143,16 @@ def unsafe_execute(code, timeout, result, log_path):
             reward = 2.0 # add parameters to scale 
         else:
             with open(debug_log_path, "a+") as df:
-                df.write("\n[None RESULT]\n\n")
+                df.write("\n[Successful Execution but Get None RESULT]\n\n")
+                df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n")
         result.append((reward, output))
     except Exception as e: # if the code problematic
         debug_log_path = os.path.join(log_path, "debug_exec.log")
         with open(debug_log_path, "a+") as df:
             df.write("\n[EXECUTION EXCEPTION]\n")
             df.write(str(e) + "\n")
-            df.write(f"code:{code}\n")
+            df.write(f"code: \n{code}\n")
+            df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n")
         result.append((0.0, None))
     finally:
         signal.alarm(0)
@@ -164,6 +167,7 @@ def check_correctness(task: dict, log_path, current_time) -> float:
             f.write(f"Reward: 0.0\n")
             f.write(f"QAid: {task['QAid']}\n")
             f.write(f"Code: [EMPTY]\n\n")
+            f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n")
         result = (0.0, None)  # code reward is 0.0
     else:
         manager = multiprocessing.Manager()
@@ -183,7 +187,8 @@ def check_correctness(task: dict, log_path, current_time) -> float:
             f.write(f"------------- {current_time} Execution reward: {result[0]} -------------\n")
             f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n\n")
             f.write(f"QAid: {task['QAid']}\n")
-            f.write(f"Code: {task['code']}\n\n")
+            f.write(f"Code: \n{task['code']}\n\n")
+            f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n")
     return result
 
 async def run_all_checks_async(tasks, log_root_dir, current_time):
@@ -200,7 +205,8 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
     return (reward_list, result_list)
 
 ##########################################################################
-##########EXECUTION REWARD#############################
+#                          EXECUTION REWARD                              #
+##########################################################################
 def execution_reward(completions, QAid,**kwargs):
     # based on completions type to constuct
     if isinstance(completions[0], str):
@@ -236,7 +242,8 @@ def execution_reward(completions, QAid,**kwargs):
 execution_reward.reward_type = "execution"
 
 ####################################################################
-############################ACCURACY REWARD#########################
+#                           ACCURACY REWARD                        #
+####################################################################
 def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs):
     """
     """
@@ -257,7 +264,7 @@ def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs
                 parsed_result = parse(result)
                 parsed_solution = parse(sol)
                 if float(verify(parsed_result, parsed_solution)) > 0:
-                    reward = 10.0
+                    reward = 5.0
                     with open(acc_log_path, "a") as f:
                         f.write(f"\n[QAid]{id}\n\n")
                         f.write("\n[Verification Correct Result]\n\n")
@@ -265,7 +272,7 @@ def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs
                 pass
             
             if result == sol or result == sol.lower():
-                reward = 10.0
+                reward = 5.0
                 with open(acc_log_path, "a") as f:
                     f.write(f"\n[QAid]{id}\n\n")
                     f.write("\n[Correct Result]\n\n")
@@ -278,7 +285,8 @@ def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs
 accuracy_reward.reward_type = "accuracy"
 
 ####################################################################
-#############################FORMAT REWARD##########################
+#                            FORMAT REWARD                         #
+####################################################################
 def format_reward(completions, **kwargs):
     """Reward function that checks if the completion has a specific format."""
     pattern = r"<command>.*?</command>"
@@ -288,14 +296,16 @@ def format_reward(completions, **kwargs):
         completion_contents = [completion[0]["content"] for completion in completions]
     matches = [re.fullmatch(pattern, content, re.DOTALL) for content in completion_contents]
     return [1.0 if match else 0.0 for match in matches]
-####################################################################
-####################################################################
+#####################################################################
+
 reward_funcs_registry = {
     #"code": code_exec_acc_reward, # execution and accuracy reward
     "execution": execution_reward, # note here sequency
     "accuracy": accuracy_reward,
     "format": format_reward # format reward
 }
+#####################################################################
+
 ########global asyncio to avoid frequently open-close#######
 # import asyncio
 # try:
@@ -303,8 +313,8 @@ reward_funcs_registry = {
 # except RuntimeError:
 #     global_loop = asyncio.new_event_loop()
 #     asyncio.set_event_loop(global_loop)
+############################################################
 
-######################################################
 ######################MAIN############################
 def main(script_args, training_args, model_args,conf):
     # Get reward functions
