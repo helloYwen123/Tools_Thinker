@@ -1,0 +1,82 @@
+
+[QAid]val_Counting_97
+
+
+[Code Includes Tools Usage]
+
+code: 
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_97_image_1.jpg", labels=["baseball", "basket"], thresholds=[0.35], model_size="base", save_object=True, saved_image_path="detected_objects")
+detected_objects = final_result["detected_objects"]
+object_number = final_result["object_number"]
+
+if "baseball" in detected_objects:
+    baseball_objects = detected_objects["baseball"]
+    num_baseball_objects = sum(detected_objects["baseball"].__iter__().__next__() for _, data in baseball_objects)
+else:
+    num_baseball_objects = 0
+
+if "basket" in detected_objects:
+    basket_objects = detected_objects["basket"]
+    num_basket_objects = sum(detected_objects["basket"].__iter__().__next__() for _, data in basket_objects)
+else:
+    num_basket_objects = 0
+
+if num_baseball_objects or num_basket_objects:
+    final_result = {C: [C if num_baseball_objects else D, num_basket_objects] for C in ('baseball', 'basket')}
+else:
+    final_result = {'baseball': 0, 'basket': 0}
+
+print(final_result)
+============================== END ==============================
+
+[QAid]val_Counting_97
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+final_result = None
+
+# Image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_97_image_1.jpg"
+
+# Detect text in the image using multiple languages
+result_text = Text_Detector_Tool.execute(image=image_path, languages=["en", "de"])
+
+if result_text:
+    for line in result_text:
+        for text in line:
+            if "baseball" in text:
+                baseball_count = text['bbox'][0][0] - text['bbox'][0][0] + 1
+                basketball_count = text['bbox'][0][1] - text['bbox'][0][1] + 1
+                last_text = text['bbox'][0][0] - text['bbox'][0][0]
+                last_text = last_text[last_text < text[0][1]:]  # Remove trailing text
+
+                if last_text > 15:
+                    print(f"Last detected text was '{last_text}' in the image.")
+            
+                letter_count = 0
+                letter_texts = [t['bbox'][0][0] for t in text if t['bbox'][0][1] > last_text][::-1]
+                for letter_text in letter_texts:
+                    if letter_text[0] < last_text:
+                        letter_count += 1
+                
+                letters = [v for k, v in text_dict.items() if k in Letter_Detector_Tool.object_ids and 'bbox' in v]
+                total_objects = len([bbox for bbox in letters if bbox[0][1] < text[0][1]])
+            
+                if len(letters) == total_objects:
+                    final_result = f"The image contains {last_text} letters. The last detected text was in the bottom right corner. Total objects: {total_objects}, baseballs detected: {baseball_count}, basketballs detected: {basketball_count}."
+                elif letter_count == total_objects:
+                    final_result = f"The image contains {last_text + 1} more letters. The last detected text was {last_text + int(last_text + 1)} in the middle. Total objects: {total_objects}, baseballs detected: {baseball_count + letter_count}, basketballs detected: {basketball_count}."
+                
+                break
+
+# Save detected objects if required
+if final_result:
+    result_object = Object_Detector_Tool.execute(image_to_save=detected_objects_output, labels=['baseball', 'basket'])
+    print(result_object)
+============================== END ==============================

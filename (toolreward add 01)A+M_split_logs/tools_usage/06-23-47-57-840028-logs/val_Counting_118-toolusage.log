@@ -1,0 +1,182 @@
+
+[QAid]val_Counting_118
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg", labels=["green", "blue"], save_object=True, saved_image_path="detected_objects")["object_number"]
+
+{
+int(final_result["basket"]),
+int(final_result["baseball"])
+}
+============================== END ==============================
+
+[QAid]val_Counting_118
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+# Load the flag from the image
+result_flag = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg", labels=["baseball", "basket"], save_object=True)
+
+# Load text from the image
+result_text = Text_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg", languages=['English', 'De'], detail=5)
+
+# Load letters from the image
+result_letters = Letter_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg")
+
+# Extract the required data and count the number of people not wearing a blue hat
+total_results = len(result_flag['baseball']) + len(result_flag['basket'])
+unknown_hats = total_results - len(result_letters)
+
+final_result = unknown_hats
+============================== END ==============================
+
+[QAid]val_Counting_118
+
+
+[Code Includes Tools Usage]
+
+code: 
+final_result = 0
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg"
+image_path = "path/to/your/image.png" # Replace with your image path
+label_details = ["baseball", "basket"]
+languages = ["en", "de"]
+output_detail = 1
+
+# Use the object detector tool to detect and count letters in the image
+tool_version = "1.0.0"
+import_object_detector_tool = f"/home/stud/wxie/BLINK_Dataset/Counting/val/tools_object/object_detector.py"
+result = Object_Detector_Tool.execute(image=image_path, languages=languages, detail=output_detail, model_size="tiny", save_object=True, saved_image_path=f"detected_objects")
+
+# Set a limit for the number of detections if needed
+if len(result["baseball"]) >= 50 or len(result["basket"]) >= 50:
+    # If there are more than 100 detections with high confidence scores, set a limit
+    total_baseball_detections = 100
+    total_basket_detections = 100
+else:
+    total_baseball_detections = len(result["baseball"])
+    total_basket_detections = len(result["basket"])
+
+if total_baseball_detections == 0 or total_basket_detections == 0:
+    final_result = final_result - 1  # Subtract if no detections found
+
+if total_baseball_detections == 20 or total_basket_detections == 20:
+    final_result = final_result - 1  # Subtract if no detections found
+
+if final_result > 0:
+    final_result = final_result - 1  # Subtract if no detections found
+============================== END ==============================
+
+[QAid]val_Counting_118
+
+
+[Code Includes Tools Usage]
+
+code: 
+def count_object_labels(image_path, labels, threshold, model_size, save_object, saved_image_path):
+    try:
+        detected_objects = Object_Detector_Tool.execute(image=image_path, labels=labels, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+        object_number = {'baseball': 0, 'basket': 0}
+        for label, bounding_box in detected_objects.items():
+            x, y, w, h = bounding_box
+            box = (x, y, x + w, y + h)
+            object_number[label] += 1
+        return detected_objects, object_number
+    except:
+        return None
+
+def detect_text(image_path, languages, detail):
+    try:
+        result = Text_Detector_Tool.execute(image=image_path, languages=languages, detail=detail)
+        text_blocks = []
+        for i, detection in enumerate(result):
+            if detection.confidence_score >= threshold:
+                bbox = detection.bounding_box
+                text_block = (bbox[0][0], bbox[0][1], bbox[1][0], bbox[1][1])
+                text_block[0] = max(text_block[0], x1)
+                text_block[1] = max(text_block[1], y1)
+                text_block[2] = min(text_block[2], x2)
+                text_block[3] = min(text_block[3], y2)
+                text_blocks.append(text_block)
+        return text_blocks
+    except:
+        return None
+
+def detect_letters(image_path):
+    letters = letter_detector.Letter_Detector_Tool.execute(image_path)
+    return [bounding_box for _, bounding_box in letter_detector.Letter_Detector_Tool.execute(image_path)]
+
+def process_image(image_path):
+    if image_path.endswith('.jpg'):
+        return count_object_labels(image_path, ('baseball',), 0.35, 'tiny', True, None)
+    elif image_path.endswith('.png'):
+        try:
+            image = Image.open(image_path)
+        except Exception as e:
+            return print(f'An error occurred: {e}')
+        languages = ('en', 'de')  # You can add more languages if needed
+        detected_objects, object_number = process_image(image_path)
+        text_blocks = detect_text(image_path, languages, 0)
+        detected_letters = detect_letters(image_path)
+        return {'detect_objects': detected_objects, 'object_number': object_number, 'text_blocks': text_blocks, 'detected_letters': detected_letters}
+    else:
+        return print(f'Invalid image file type: {image_path}')
+
+process_image('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg')
+final_result = process_image('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg')
+print(final_result)
+============================== END ==============================
+
+[QAid]val_Counting_118
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+final_result = "0"
+
+# Check if blue hat is present in the image
+if Letter_Detector_Tool.execute(image='/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg')['bbox']['letter'] in ['blue hat']:
+    final_result = 0
+
+# Calculate total number of people not wearing a blue hat
+if final_result == 1:
+    final_result = 5
+else:
+    num_people_with_blue_hat = len(Letter_Detector_Tool.execute(image='/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg')['bbox']['letter'])
+    final_result = 5 - num_people_with_blue_hat
+
+final_result
+============================== END ==============================
+
+[QAid]val_Counting_118
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+import_name: 'Object_Detector_Tool'
+from_text_detector_tool = Text_Detector_Tool().execute(image='path/to/image.png', languages=['en', 'de'])
+for result in from_text_detector_tool:
+    for line in result[1]:
+        if line[2] == 'baseball':
+            final_result = result[0]
+============================== END ==============================

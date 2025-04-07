@@ -1,0 +1,179 @@
+
+[QAid]val_Counting_95
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+# Define command path for image
+command_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+# Get image
+image = Object_Detector_Tool.execute(command_path)
+
+# Get results for bounding boxes, text, and letter detection
+detected_bboxes = Object_Detector_Tool.execute(image=image, labels=[])  # empty labels list
+detected_text = Text_Detector_Tool.execute(image=image, languages=['en', 'de'])  # detect text in English and German
+detected_letters = Letter_Detector_Tool.execute(image=image)  # detect letters in image
+
+# Filter results for detected texts
+result_texts = [text for bbox in detected_text for text in bbox[2] if text[1] == 'Detected text']
+
+# Get the confidence scores of the detected texts
+confidence_scores = [bbox[0] for bbox in detected_text for text in bbox[2] if text[1] == 'Detected text']
+
+# Count the total number of detected texts
+text_count = len(result_texts)
+
+# Get the total number of objects detected including labels and boxes
+total_objects = 2 + text_count
+
+# Determine final result based on the question's criteria
+final_result = total_objects - detected_bboxes["baseball"][0][2]["bbox"][1] - detected_letters
+
+final_result
+============================== END ==============================
+
+[QAid]val_Counting_95
+
+
+[Code Includes Tools Usage]
+
+code: 
+from letter_detector import Letter_Detector_Tool
+
+# Load image data
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+letter_detector_tool = Letter_Detector_Tool()
+detected_letter_result = letter_detector_tool.execute(image=image_path)
+
+# Process detected letters
+detected_letter_result = [(detected_text, detected_text + ', detected by Letter_Detector_Tool.') for detected_text in detected_letter_result]
+
+# Extract useful information
+num_letter = len(detected_letter_result)
+final_result = f'Number of detected letters {num_letter}'
+
+print(final_result)
+============================== END ==============================
+
+[QAid]val_Counting_95
+
+
+[Code Includes Tools Usage]
+
+code: 
+from letter_detector import Letter_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+image = Letter_Detector_Tool.execute(image=image_path)
+results = [[([100, 150], "A", 0.95), ...]]
+
+if results:
+    final_result = max(results, key=lambda x: x[1][1])
+    max_score = max([result[1][1] for result in results])
+
+    if max_score >= 1.0:
+        final_result = None
+
+    print("Number of people without hats:", 2 if final_result else 0)
+else: output_example = "No letters detected."
+============================== END ==============================
+
+[QAid]val_Counting_95
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+
+label_detector = Object_Detector_Tool()
+
+# Input image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+# Detect objects with hat
+result = label_detector.execute(image_path=image_path, labels=["hat"], save_object=True)
+
+# Count hats
+total_hats = len(result["detected_objects"])
+
+print("Number of people without hats: ", total_hats - result["detected_objects"].get("hat", "").count())
+============================== END ==============================
+
+[QAid]val_Counting_95
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_95
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_95
+
+
+[Code Includes Tools Usage]
+
+code: 
+from text_detector import Text_Detector_Tool
+
+# Convert the image file path to the tool's format
+results = []
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_95_image_1.jpg"
+
+# Convert the image file path to the tool's format
+lang_codes = ['en', 'ja']
+lang_code = 'en'
+
+# Threshold for the confidence score
+threshold = 0.5
+
+# Set the level of detail
+detail = 1
+
+# Execute the text detection
+for language in lang_codes:
+    result = Text_Detector_Tool.execute(image=image_path, languages=[language], detail=detail)
+    detected_text_blocks = []
+    detected_text = ''
+
+    for detection in result[0]:
+        if detection[0] > threshold:
+            detected_text_blocks.append([detection[2], detection[1], detection[2], detection[3]])
+            detected_text += ' '.join(detection[1:]) + ' '
+    detected_text_blocks.append([detected_text, detected_text, 0.5])
+    results.append(detected_text_blocks)
+
+    # For debugging
+    # print('Detected text:', detected_text)
+
+# Filter the detected text blocks
+filter_text = ['baseball']
+text_blocks = [result for result in results if result[1] in filter_text]
+
+# Count the number of text blocks
+count = len(text_blocks)
+final_result = None
+for text_block in text_blocks:
+    count -= 1
+    if count > 0:
+        final_result = text_block
+
+final_result
+============================== END ==============================
+
+[QAid]val_Counting_95
+
+
+[Code Extraction Failed or Parse Failed]
+

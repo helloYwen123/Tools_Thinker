@@ -1,0 +1,66 @@
+
+[QAid]val_Counting_55
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+labels = ['chicken nugget', 'poutine']
+threshold = 0.3
+model_size = 'tiny'
+save_object = True
+saved_image_path = './detected_objects'
+
+# Detect text
+results = Letter_Detector_Tool.execute(image='path_to_image')
+text_blocks = []
+for result in results:
+    text_label = result['letter']
+    text_blocks.append((result['bbox'], text_label, result['score']))
+image_text_blocks = [t[0] for t in results]
+
+# Detect letters
+results = Letter_Detector_Tool.execute(image='path_to_image')
+letter_blocks = []
+for result in results:
+    letter_blocks.append(result['bbox'])
+
+# Process text blocks
+text_blocks_total = []
+total_text_results = 0
+for text_block in text_blocks:
+    if text_block[1] == 'chicken nugget':
+        text_results = []
+        for letter in letter_blocks:
+            if letter[0] <= text_block[0] <= letter[1] or (text_block[0] <= letter[0] <= text_block[1] and text_block[2] + text_block[3] <= letter[2] + letter[3]):
+                text_results.append([letter, 'chicken nugget', text_block[2]])
+        if text_block[2] <= text_block[1] and text_block[0] <= text_block[1]:
+            text_results.append([text_block[0], 'chicken nugget', text_block[0]])
+        
+        total_text_results += len(text_results)
+        text_blocks_total.append(text_results)
+
+total_results = [x for x in total_text_results if x[1] == 'chicken nugget']
+image_text_total = [t[0] for t in text_blocks_total]
+
+# Calculate total number of chicken nuggets
+total_chicken_nuggets = len(total_results) + len(image_text_total)
+
+total_results.sort()
+total_results.reverse()
+total_text_total.sort()
+
+final_result = {
+    "chicken nuggets count (letters)": total_results,
+    "total number of chicken nuggets": sum(total_text_total)
+}
+============================== END ==============================
+
+[QAid]val_Counting_55
+
+
+[Code Extraction Failed or Parse Failed]
+

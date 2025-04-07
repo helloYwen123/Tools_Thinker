@@ -1,0 +1,143 @@
+
+[EXECUTION EXCEPTION]
+name 'A' is not defined
+code: 
+{(A): 0, (B): 2, (C): 0, (D): 1}
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+closing parenthesis ')' does not match opening parenthesis '[' (<string>, line 36)
+code: 
+from object_detector import Object_Detector_Tool
+final_result = object_detector_tool.execute(image='path/to/image.png', labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+Detected_images = []
+for i, obj in enumerate(final_result):
+    if obj['languages'] == ['en']:
+        detected_image = [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], "Detected text", obj['score']]]
+        if obj['bbox'][0] > len(detected_images):
+            detected_images.append(detected_image)
+    elif obj['languages'] == ['de']:
+        detected_image = [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], "Detected text", obj['score']]]
+        if obj['bbox'][0] > len(detected_images):
+            detected_images.append(detected_image)
+
+def count_labels(labels):
+    result = {}
+    for i in range(len(labels)):
+        result[labels[i]] = 1
+    return result
+
+A = count_labels(final_result['baseball'])
+B = count_labels(final_result['basket'])
+C = count_labels(final_result['baseball', 'basket'])
+
+if final_result:
+    if A:
+        print("There are", A["baseball"], "baseball and", B["basket"], "basket")
+    elif A and B:
+        print("There are", A["baseball"], "baseball and", B["basket"], "basket")
+    elif A:
+        print("There is", A["baseball"], "baseball")
+    elif B:
+        print("There is", B["basket"], "basket")
+    else:
+        print("There are not any baseball or basket detected")
+    if final_result['baseball' in final_result]:
+        print("The largest detected baseball text is", final_result['baseball'][final_result['baseball' in final_result].index(max(final_result['baseball'][final_result['baseball' in final_result].index(max(final_result['baseball']))))])
+    elif final_result['baseball']:
+        print("The largest detected baseball text is, It doesn't contain other detected objects. There is", final_result['baseball'])
+    print("Total number of detected bases:", len(detected_images))
+else:
+    print('No texts detected')
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+No module named 'tool'
+code: 
+from tool import Object_Detector_Tool, Text_Detector_Tool, Letter_Detector_Tool
+
+# Read the image file paths
+# Note: These paths should be replaced with actual image file paths.
+stop_sign_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_1561828412_image_5.jpg'
+signs_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_1561828412_signs.jpg'
+
+# Initialize the object detector tool
+detector = Object_Detector_Tool()
+
+# Check if the image has faces
+face_found = detector.is_face_object_found(open(stop_sign_path, 'rb').read())
+
+# Check if the image has any sign in the specified directory
+sign_dir = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_1561828412_signs/'
+sign_found = detector.find_signs(sign_dir, stop_sign_path)
+
+# Use the text detector tool to find facial expressions on the sign
+text_detected = detector.find_faces(sign_dir, stop_sign_path)
+
+# Filter and extract the facial expressions
+if face_found:
+    expressions = list(filter(lambda x: 'f' in x['letter'], text_detected))
+    expressions, count = filter_text(expression=text_detected, lang='en')
+else:
+    expressions = []
+
+# Final result
+final_result = expressions if expressions else ''
+
+# Print the final result
+print(final_result)
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Letter_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from letter_detector import Letter_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg"
+results = Letter_Detector_Tool.execute(image = image_path)
+
+# Extract detected letters
+detected_letters = results[0]
+
+final_result =  max((len(detected_letters),), default=0)
+(final_result, detected_letters)
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+def count_faces(image_path):
+    from object_detector import Object_Detector_Tool
+    from text_detector import Text_Detector_Tool
+    from letter_detector import Letter_Detector_Tool
+
+    image = Object_Detector_Tool.execute(image=image_path, labels=["face"], save_object=True)
+    text_result = Text_Detector_Tool.execute(image=image_path, languages=['english'])
+    letters = []
+
+    for text in text_result:
+        if text['text'] == "Face":
+            letters.append([x['bbox'], x['text'], x['score']])
+    letter_result = []
+
+    image = Letter_Detector_Tool.execute(image=image_path)
+    for letter in image:
+        if letter['text'] == "face":
+            letter_result.append([letter['bbox'], letter['text'], letter['score']])
+
+    faces = [x for x in letter_result if x[2] == 'face']
+
+    final_result = []
+    for result in faces:
+        final_result.append({'score': result[2], 'words': result[1].replace(' ', '').title() if result[1] != '' and len(result[1]) > 0 else ''})
+    return final_result
+
+final_result = count_faces("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_104_image_1.jpg")
+print(set([item['words'] for item in final_result]))
+
+============================== END ==============================

@@ -1,0 +1,62 @@
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 4)
+code: 
+final_result = None
+
+# Load the image
+import_module: 'object_detector', 'Object_Detector_Tool'
+import_name: 'Object_Detector_Tool'
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_16_image_1.jpg'
+final_result = Object_Detector_Tool.execute(image_path)
+detected_objects = final_result["detected_objects"]
+object_number = final_result["object_number"]
+
+if "baseball" in detected_objects.keys():
+    detections_baseball = detected_objects["baseball"]
+    boxes_baseball = detections_baseball[0]["box"]
+    letter_baseball = [d["box"] for d in detections_baseball if d["object_text"] == "baseball"][0]
+    x0_baseball, y0_baseball, x1_baseball, y1_baseball = boxes_baseball[0]
+    x1_baseball, y1_baseball = boxes_baseball[2]
+    score_baseball = detections_baseball[0]["score"]
+
+if "baseball" in object_number.keys():
+    n_baseball = object_number["baseball"]
+
+if "basket" in detected_objects.keys():
+    detections_basket = detected_objects["basket"]
+    boxes_basket = detections_basket[0]["box"]
+    letter_basket = [d["object_text"] for d in detections_basket if d["object_text"] == "basket"][0]
+    x0_basket, y0_basket, x1_basket, y1_basket = boxes_basket[0]
+    x1_basket, y1_basket = boxes_basket[2]
+
+if letter_baseball is not None:
+    letter_baseball.append([bbox for bbox in boxlist if bbox[1] >= x0_baseball and bbox[3] <= x1_baseball and bbox[2] >= y0_baseball and bbox[0] <= y1_baseball])
+
+print("Baseball Detection Results:")
+print("Detected Baseball", letter_baseball)
+
+if letter_basket is not None:
+    letter_basket.append([bbox for bbox in boxlist if bbox[1] >= x0_basket and bbox[3] <= x1_basket and bbox[2] >= y0_basket and bbox[0] <= y1_basket])
+
+print("Basketball Detection Results:")
+print("Detected Basketball", letter_basket)
+
+# Print the total number of detections for basketball and baseball
+if letter_baseball:
+    print(f"There are {len(letter_baseball)} detections for baseball, and {n_baseball} detection results. ")
+    print(f"There are {len(letter_basket)} detections for basketball, and {len(letter_basket) - (n_baseball if n_baseball else 0)} detection results.")
+else:
+    print("Basketball detection results are incomplete.")
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+No module named 'toolkits'
+code: 
+from toolkits import object_detector, text_detector, letter_detector
+result_object = object_detector.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_16_image_1.jpg", labels=["FIRST STUDENT"], threshold=0.35, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+final_result = result_object["object_number"]
+print(final_result)
+
+============================== END ==============================

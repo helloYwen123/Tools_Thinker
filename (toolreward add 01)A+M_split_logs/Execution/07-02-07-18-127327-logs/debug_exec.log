@@ -1,0 +1,154 @@
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 3)
+code: 
+from Letter_Detector_Tool import Letter_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+<output>
+final_result = Letter_Detector_Tool.execute(image='/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_93_image_1.jpg')
+print(final_result)
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+unexpected character after line continuation character (<string>, line 83)
+code: 
+import cv2
+from letter_detector import Letter_Detector_Tool
+from pyocr import tone_from_emoji
+import numpy as np
+import os
+from glob import glob
+import matplotlib.pyplot as plt
+from letter_detector import Letter_Detector_Tool
+
+# Define languages for English and German
+languages = ['en', 'de']
+
+# Set the confidence level and detect regions
+max_conf = 0.9
+detected_objects = []  # Initialize as an empty list
+object_number = {}  # Initialize as an empty dictionary
+
+# Define function to count objects
+def count_objects(image, languages, detector_method):
+    text_results = []
+
+    # Detect text in the image
+    for lan in languages:
+        # Try detecting text in the image using different languages
+        if tonemaps_exist := tonemaps_exist(image):
+            # Use EasyOCR for text detection
+            detec_results = detector_method(image=image, languages=lan, detail=2)
+            for res in detec_results[0]["bbox"]:
+                # Extract individual detected text and calculate its confidence score
+                if confidence_score(res):
+                    # Add detected texts to the list and update the confidence score
+                    text_results.append(res)
+                    # Append to the image object results
+                    detector_results.append(res)
+
+    # Find the list with the best score
+    best_score = -1
+    # loop through the list to find the best detection
+    for res in text_results:
+        scores = [confidence_score(x) for x in res[1]]
+        # Find the index of the text image result with the highest confidence score
+        for j, score in enumerate(scores):
+            if score > best_score:
+                best_score = score
+                best_result = res
+        # Keep the best detection if we have a more accurate score
+        if best_score != -1 and best_score > best_score[1]:
+            best_score = best_score[1]
+            best_result = best_result[1]
+            best_result = [''.join(text.reshape(1, -1).tolist()) for text in res[1]]
+            text_results = []
+            # loop through the list to find the best detection
+            for res in text_results:
+                scores = [confidence_score(x) for x in res[1]]
+                # Find the index of the text image result with the highest confidence score
+                for j, score in enumerate(scores):
+                    if score > best_score:
+                        best_score = score
+                        best_result = res
+                        best_result = ''.join(text.reshape(1, -1).tolist())
+                        text_results = []
+
+    # Return the text detected in the image
+    return "\n".join([''.join(text.reshape(1, -1).tolist()) 
+        for text in text_results] if text_results else 'Failed to detect text')
+
+# Try to detect letters in image using EasyOCR
+def tonemaps_exist(image):
+    # detect text using different languages
+    detec_results = detector_method(image=image, languages=languages, detail=0)
+    return 'Detected' in ['Detected' in x for x in detec_results]
+
+# Detect letters in the image
+image = "path/to/image.png"
+results = Letter_Detector_Tool.execute(image=image)  # replace image with path to your image
+
+# Save detected objects as images
+detected_objects = {x[0]: [y[0], y[1], y[2], y[3]] for x in detected_objects.values()}
+detector_results = {x[x.find('.') + 1]: [y[0], y[1], y[2], y[3]] 
+                         for x, y in results.items()}
+file_name = 'detected_objects.py'
+with open(file_name, 'w') as file:
+    file.write('detected_objects = \'\"\n'.replace('\'",\',0\'. \', \"',\'. \',\'. \', 0\'')
+                  .replace('\n\'', '\n'))
+    file.write('\n'.join(detected_objects.values()).replace("0","0").replace('\'","\","0\","0"," 0\'","'"))  
+    file.write('\n\nobject_number = {\'baseball\': 1, \'basket\': 2}\n')
+
+# Execute the text detection tool on your image
+result = count_objects(image, languages, letter_detector)
+
+final_result = {'detected_objects': result, 'object_number': object_number}
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image'
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+# Import the labels
+labels = ["baseball", "basket"]
+
+# Set the threshold
+threshold = 0.35
+
+# File paths
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_93_image_1.jpg"
+
+# Create an Object_Detector_Tool instance
+detector = Object_Detector_Tool(image=image_path, labels=labels, save_object=True)
+
+# Detect objects in the image
+images, object_number = detector.execute()
+
+# Check the objects detected
+detected_objects = []
+for image, obj_count in images.items():
+    detected_objects += objects
+    if obj_count != 1:
+        print(detected_objects)
+        print(image)
+        print(detected_objects)
+        print(image)
+
+# Check the count and print the result
+if detected_objects:
+    (detected_objects, object_number) = objects
+else:
+    print("No detected objects found.")
+
+# Determine the correct choice
+final_result = True if object_number == 1 else False
+
+# Print the result
+print("Final result:", final_result)
+
+============================== END ==============================

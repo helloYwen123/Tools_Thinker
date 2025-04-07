@@ -1,0 +1,167 @@
+------------- 07-00-47-23-246140 Execution reward: 0.0 -------------
+[Reward computation time: 1.3980 seconds]
+
+QAid: val_Counting_102
+Code: 
+def identify_people_with_blue_shirt(image_path):
+    # Use the Letter_Detector_Tool to detect letters in the image
+    results = Letter_Detector_Tool.execute(image=image_path)
+    
+    # Count the number of people wearing blue shirts
+    blue_shirt_count = sum(1 for result in results if result[2].lower() == "blue")
+    
+    final_result = {"People wearing blue shirt": blue_shirt_count}
+    
+    return final_result
+
+# Check with the provided image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg"
+people_with_blue_shirt = identify_people_with_blue_shirt(image_path)
+print(people_with_blue_shirt)
+
+
+============================== END ==============================
+------------- 07-00-47-23-246140 Execution reward: 0.0 -------------
+[Reward computation time: 1.4932 seconds]
+
+QAid: val_Counting_102
+Code: 
+(2
+
+
+============================== END ==============================
+------------- 07-00-47-23-246140 Execution reward: 0.0 -------------
+[Reward computation time: 1.5872 seconds]
+
+QAid: val_Counting_102
+Code: 
+from text_detector import Text_Detector_Tool
+
+# Convert image path to PIL image object
+if os.path.exists('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg'):
+    image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg'
+    image = Image.open(image_path)
+else:
+    image = None
+
+# Detect text in the image
+if image:
+    try:
+        text_blocks = Text_Detector_Tool.execute(image=image, languages=['en', 'de'], detail=0)
+        detected_text = [block for _, block in text_blocks]
+
+        if detected_text:
+            final_result = "Detected Text"
+        else:
+            final_result = "No Text detected"
+    except Exception as e:
+        final_result = "Text Detection Failed" + str(e)
+else:
+    final_result = "Image does not exist"
+
+
+============================== END ==============================
+------------- 07-00-47-23-246140 Execution reward: 0.0 -------------
+[Reward computation time: 1.9201 seconds]
+
+QAid: val_Counting_102
+Code: 
+from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg"
+
+# Create the object detector tool
+detector_tool = Object_Detector_Tool(image_path, labels=["baseball", "basket"], thresholds=[0.6], model_size="tiny")
+
+# Detect baseball and basketball in the image
+detection_results = detector_tool.execute()
+
+# Filter and display only the objects detected
+for obj in detection_results[1]:
+    print(obj)
+
+final_result = "C"
+
+
+============================== END ==============================
+------------- 07-00-47-23-246140 Execution reward: 0.0 -------------
+[Reward computation time: 1.0781 seconds]
+
+QAid: val_Counting_102
+Code: 
+[[(220, 100, 400, 350), 'Basketball', 0.85], ["baseball", "Basketball"]]
+
+
+============================== END ==============================
+------------- 07-00-47-23-246140 Execution reward: 0.0 -------------
+[Reward computation time: 1.2060 seconds]
+
+QAid: val_Counting_102
+Code: 
+from object_detector import Object_Detector_Tool
+
+final_result = ""
+# Get the file paths for the images
+image_paths = [
+    "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_102_image_1.jpg"
+]
+
+# Use the Object_Detector_Tool to detect objects in the images
+for image_path in image_paths:
+    detector = Object_Detector_Tool(
+        save_object=True, saved_image_path=image_path
+    )
+    labeled_objects = detector.execute(image=image_path, labels=["baseball", "basket"])
+
+    if labeled_objects:
+        # Extract the letter bounding boxes and letter text
+        letter_bbxs = [bbox for obj in labeled_objects for bbox in obj["bbox"]]
+        letter_texts = [letter.lower() for obj in labeled_objects for letter in obj["score"][0]]
+
+        # Sort the letter bounding boxes by their score
+        letter_bbxs.sort(key=lambda x: x[2])
+
+        detected_letters = " ".join(letter_texts)
+        
+        if letter_texts:
+            final_result += "Found " + detected_letters + " letter:"
+        if letter_texts and labeled_objects:
+            final_result += f" with {len(letter_texts)} letters detected in the following letters: {' '.join(letter_texts)}"
+        else:
+            final_result += " No letters found."
+    else:
+        final_result += " No objects detected."
+
+
+============================== END ==============================
+------------- 07-00-47-23-246140 Execution reward: 0.0 -------------
+[Reward computation time: 0.8739 seconds]
+
+QAid: val_Counting_102
+Code: 
+final_result = (A, B, C, D, or E)
+
+
+============================== END ==============================
+------------- 07-00-47-23-246140 Execution reward: 0.0 -------------
+[Reward computation time: 1.3439 seconds]
+
+QAid: val_Counting_102
+Code: 
+from object_detector import Object_Detector_Tool
+# Running the tool on the image 'val_Counting_102_image_1.jpg'
+detected_objects, object_number = Object_Detector_Tool.execute(image="val_Counting_102_image_1.jpg", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Checking the detected objects
+print("Detected Objects:")
+for label, data in detected_objects.items():
+    print(label)
+    print(f"data : {data}")
+
+# Checking the number of detected objects in the image
+print("Number of detected objects:")
+print(object_number)
+
+
+============================== END ==============================

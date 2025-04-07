@@ -1,0 +1,169 @@
+
+[QAid]val_Counting_15
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+
+final_result = ""
+
+# Example: Detecting objects in an image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_15_image_1.jpg"
+labels_to_detect = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+save_image = True
+saved_image_path = "detected_objects"
+
+# Execute the tool
+detected_objects, object_number = Object_Detector_Tool.execute(image_path, labels_to_detect, save_image, saved_image_path)
+
+# Extract the necessary information
+for label in object_number:
+    object_detected = object_number[label]
+    detected_objs_list = object_detected.get('baseball') or object_detected.get('basket')
+    obj_detected_count = len(detected_objs_list)
+
+# Determine the final result
+if obj_detected_count == 1:
+    final_result = "D"
+elif obj_detected_count == 2:
+    final_result = "E"
+elif obj_detected_count == 0:
+    final_result = "C"
+else:
+    print("The number of people wearing glasses is unknown.") if obj_detected_count == 2 else print("The number of people wearing glasses is unknown.") if obj_detected_count == 1 else print("The number of people wearing glasses is unknown.")
+
+final_result
+============================== END ==============================
+
+[QAid]val_Counting_15
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_15
+
+
+[Code Includes Tools Usage]
+
+code: 
+def count_people_with_glasses(image_path):
+    detector = Letter_Detector_Tool()
+    result = detector.execute(image=image_path)
+    
+    total_people_glasses = {label: count for count, (bbox, letter, score) in result.items() if letter == "glasses"}
+    
+    if total_people_glasses:
+        return total_people_glasses
+    else:
+        return 0
+
+final_result = count_people_with_glasses("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_15_image_1.jpg")
+print(final_result)
+============================== END ==============================
+
+[QAid]val_Counting_15
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_15_image_1.jpg'
+labels = ['baseball', 'basket']
+save_object = True
+
+final_result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object)
+detected_objects = final_result[0]
+object_number = final_result[1]
+============================== END ==============================
+
+[QAid]val_Counting_15
+
+
+[Code Includes Tools Usage]
+
+code: 
+# Import necessary tools
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+# Path to image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_15_image_1.jpg"
+
+# Detect glasses in the image
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["glasses"], save_object=True, saved_image_path="detected_objects")
+
+final_result = []
+for _, labels, _ in object_number.items():
+    for label in labels:
+        # Detect text in each detected object
+        text_detector = Text_Detector_Tool()
+        result = text_detector.execute(image=image_path, languages=["en", "de"], detail=1)
+
+        # Collect detected letters
+        if len(result) > 0:
+            letter_detector = Letter_Detector_Tool()
+            detected_letters = letter_detector.execute(image=image_path)
+
+            # Count detected letters that are glasses
+            for detected_letter in detected_letters:
+                detected_letter["glasses"] = 1
+
+            final_result.append(detected_letter)
+        else:
+            final_result.append(None)
+
+# Example output (as a list of dictionaries): [{"glasses": 1, "text": "I have glasses.", "score": 0.97}, ...]
+final_result
+============================== END ==============================
+
+[QAid]val_Counting_15
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_15
+
+
+[Code Includes Tools Usage]
+
+code: 
+def detect_people(image_path):
+    # Load the image
+    image = Image.open(image_path)
+    
+    # Define the model and other parameters
+    model = model_path
+    threshold = 0.35
+    save_images = True
+    
+    # Use the text detector tool
+    text_results = text_detector.execute(image=image, languages=['eng', 'de'], detail=1)
+    
+    # Use the letter detector tool to detect people
+    letter_results = letter_detector.execute(image=image)
+    
+    # Extract detected people from the text and letter results
+    people_results = []
+    for text_result in text_results:
+        people_results.extend(text_result[3])
+    
+    # Filter out people that are not wearing glasses
+    filtered_results = [result for result in people_results if "glasses" in result[1]]
+    
+    # Return the number of people wearing glasses
+    return len(filtered_results)
+
+# Test the function on the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_15_image_1.jpg"
+final_result = detect_people(image_path)
+print("Number of people wearing glasses:", final_result)
+============================== END ==============================

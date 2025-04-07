@@ -1,0 +1,71 @@
+
+[Successful Execution but Get None RESULT]
+
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+name 'Text_Detector_Tool' is not defined
+code: 
+def calculate_gloves():
+    # Path of the image file
+    image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_66_image_1.jpg'
+    
+    # Image file and language codes for the OCR model
+    image = image_path
+    languages = ['en', 'zh']
+    
+    # Level of detail
+    detail = 1
+    
+    # Run the OCR tool
+    result = Text_Detector_Tool.execute(image=image_path, languages=languages, detail=detail)
+    
+    # Filter and return letters detected in the image. You can modify the 'results' list for specific analysis.
+    detected_letters = []
+    for _, _, letter, score in result:
+        detected_letters.append({'bbox': letter, 'text': letter, 'score': score})
+    
+    return detected_letters
+
+final_result = calculate_gloves()
+category = 'gloves'
+gloves_count = len(final_result) - (3 if 'glove' in category else 0)
+print(f'{category}: {gloves_count}')
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+name 'Image' is not defined
+code: 
+from object_detector import Object_Detector_Tool
+
+final_result = 0
+detected_objects = {}
+
+# Read the image file
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_66_image_1.jpg"
+image = Image.open(image_path)
+labels = ["baseball","basket"]
+
+# Run object detection and get bounding box results
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path="detected_objects")
+
+# Check if text_detection failed after retries
+if result["baseball"]:
+    text_blocks = result["baseball"]["bbox"]
+    text_detected = text_blocks[0][0]
+    print(f"Detected baseball: {(text_detected[0], text_detected[1], text_detected[2], text_detected[3])}")
+    final_result = 1  # (A) 3
+
+if result["basket"]:
+    text_blocks = result["basket"]["bbox"]
+    text_detected = text_blocks[0][0]
+    print(f"Detected basketball: {(text_detected[0], text_detected[1], text_detected[2], text_detected[3])}")
+    final_result = 1  # (A) 3
+
+# Output the final result and any detected objects
+print(f"Final result: {final_result}")
+print(f"Detected objects: {detected_objects}")
+
+============================== END ==============================

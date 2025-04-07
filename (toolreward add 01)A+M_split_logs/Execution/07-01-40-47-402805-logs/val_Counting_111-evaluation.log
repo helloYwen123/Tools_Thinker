@@ -1,0 +1,230 @@
+------------- 07-01-40-47-402805 Execution reward: 0.0 -------------
+[Reward computation time: 3.5967 seconds]
+
+QAid: val_Counting_111
+Code: 
+def count_sheep(image_path):
+    image = Text_Detector_Tool().execute(image=image_path, languages=['en'], detail=0)
+
+    letter_containers = Letter_Detector_Tool().execute(image=image_path)
+
+    letter_count = {}
+    letter_scores = {}
+    letter_found_count = 0
+
+    for bbox, letter, score in letter_containers:
+        if letter in ['s', 'c']:
+            letter_count[letter] = letter_count.get(letter, 0) + 1
+            letter_scores[letter] = score * 100
+            letter_found_count += 1
+
+    # print(letter_count)
+    # print(letter_scores)
+
+    total_score = 0
+    for letter, score in letter_scores.items():
+        total_score += score
+        if letter in ['s', 'c']:
+            letter_found_count += 1
+
+    if letter_found_count % 2 == 0:
+        total_score /= 2
+
+    final_results = {}
+    final_results['sheep_count'] = len(letter_containers)
+    final_results['letter_count'] = {
+        'found': letter_found_count, 'score_sum': total_score * 100, 'correct_ratio': 100 / ((total_score * 100) / letter_found_count)
+    }
+    return final_results
+
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_111_image_1.jpg'
+sheep_count = count_sheep(image_path)
+ 
+if sheep_count['sheep_count'] == 1:
+	print('option A')
+elif sheep_count['sheep_count'] == 2:
+	print('option B')
+else:
+	print('option D')
+
+
+============================== END ==============================
+------------- 07-01-40-47-402805 Execution reward: 2.0 -------------
+[Reward computation time: 3.6293 seconds]
+
+QAid: val_Counting_111
+Code: 
+final_result = "D"
+
+
+============================== END ==============================
+------------- 07-01-40-47-402805 Execution reward: 0.0 -------------
+[Reward computation time: 3.7462 seconds]
+
+QAid: val_Counting_111
+Code: 
+def calculate_tigers(sheep_image):
+    # Load the image
+    detector = Object_Detector_Tool()
+    detector.execute(image=sheep_image, save_object=True, saved_image_path="detected_objects")
+    
+    # Convert the object data to a dictionary
+    data = {}
+    for i, object_data in enumerate(detected_objects['baseball']):
+        for j, bbox in enumerate(object_data['bbox']):
+            object_data = detected_objects['baseball'][j]
+            if object_data['label'] == 'tigers':
+                data[i] = object_data
+    
+    # If there are tigers, return the count, otherwise return 0
+    if len(data) > 0:
+        tigers = data.values()
+        count = sum([t['bbox'][1][0] - t['bbox'][3][0] for t in tigers]) / 2
+        return count
+    else:
+        return 0
+
+final_result = calculate_tigers("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_111_image_1.jpg")
+print("Option:", final_result)
+
+
+============================== END ==============================
+------------- 07-01-40-47-402805 Execution reward: 0.0 -------------
+[Reward computation time: 3.8305 seconds]
+
+QAid: val_Counting_111
+Code: 
+from object_detector import Object_Detector_Tool
+
+final_result = 0  # Initialize result variable
+
+# Choose an object identifier
+object_identifier = 'Sheep'
+
+# Construct the command using the input for the Tool
+command = f"object_identifier.execute(image='{path_to_image}', labels=['Sheep'])"
+
+# Execute the command with the path to the image as input
+result = Object_Detector_Tool.execute(image='sample_image.png', labels=['Sheep'])
+
+# Check if the command executes successfully
+if isinstance(result, tuple):
+    detected_objects = result[0]
+    object_count = result[1]
+    if detected_objects["baseball"] is not None and detected_objects["basket"] is not None:
+        final_result = detected_objects["baseball"][1][0]["box"]
+        print(f"There are {len(detected_objects)} objects of type '{object_identifier}' between {final_result['bbox'][0]} and {final_result['bbox'][1]}")
+    
+# If the object count is 0, finalize the result with '0'
+else:
+    final_result = len(detected_objects) if detected_objects is not None else 0
+
+print(f"Final result for object '{object_identifier}' count: {final_result}")
+
+
+============================== END ==============================
+------------- 07-01-40-47-402805 Execution reward: 2.0 -------------
+[Reward computation time: 0.4119 seconds]
+
+QAid: val_Counting_111
+Code: 
+final_result = "B"
+
+
+============================== END ==============================
+------------- 07-01-40-47-402805 Execution reward: 0.0 -------------
+[Reward computation time: 0.5229 seconds]
+
+QAid: val_Counting_111
+Code: 
+generate_image_code
+
+
+============================== END ==============================
+------------- 07-01-40-47-402805 Execution reward: 0.0 -------------
+[Reward computation time: 0.4111 seconds]
+
+QAid: val_Counting_111
+Code: 
+def answer_question(image_path):
+    # Load the image
+    image = Image.open(image_path)
+
+    # Detect the text in the image
+    texts = Text_Detector_Tool.execute(image=image, languages=['en', 'de'])
+
+    if not texts:
+        return "Text detection failed."
+
+    # Extract the text blocks that contain the sheep names
+    detection_areas = []
+    for _, text in texts:
+        box = (x0, y0, x1, y1) = box = (x2, y2, x3, y3) = (x4, y4, x5, y5)
+        result_dict = {}
+        for bbx, text, score in box:
+            if text[0] == text[2] and text.startswith("sheep"):
+                if isinstance(bbx, tuple):
+                    x0 = bbx[0]
+                    x1 = bbx[2]
+                    y0 = bbx[1]
+                    y1 = bbx[3]
+                else:
+                    x0 = bbx
+                    y0 = bbx
+                    if x1 is not None:
+                        x1 = text[0] - 1
+                if x0 + 1 == x1 and text.startswith(text[0]):
+                    x1 += 1
+                    y1 -= 1
+                if x0 + 1 != x1:
+                    x0 += 1
+                    y1 += 1
+                    if x0 < x1:
+                        x0 -= 1
+                        y0 -= 1
+            else:
+                raise ValueError(f"Invalid text detection for image: {image_path}")
+            result_dict[text] = (box, result_dict.get(text, (None, None, score)))
+
+        # Filter out text blocks that contain sheep names
+        detected_texts = [t for text in texts for _, box, score in result_dict[text] if text.startswith("sheep")]
+
+        # Find the bounding box with the highest score or the longest text
+        detected_text = max(detected_texts, key=lambda t: result_dict[t][1])
+
+        # Get the bounding box for the detected text
+        box = result_dict[detected_text][0]
+        # Calculate the confidence score for the detected text
+        confidence_score = detected_text if confidence_score is None else confidence_score
+
+        if 0.8 >= confidence_score >= 0.75:
+        final_result = " (D) 2"
+
+    # Return the final result
+    return final_result
+
+
+============================== END ==============================
+------------- 07-01-40-47-402805 Execution reward: 2.0 -------------
+[Reward computation time: 0.6269 seconds]
+
+QAid: val_Counting_111
+Code: 
+from object_detector import Object_Detector_Tool
+final_result = ""
+detected_objects = {}
+object_number = {}
+language_codes = ["en", "de"]
+
+def get_text_detection(image_path, languages):
+    # The text detector will detect text in the image for the specified languages
+    # and return detected text blocks with bounding box coordinates, recognized text, and confidence score
+    pass
+
+def get_letter_detection(image_path):
+    # The letter detector will detect letter in the image for a specific font
+    # and return list [bbox, recognized text, and confidence score]
+    pass
+
+
+============================== END ==============================

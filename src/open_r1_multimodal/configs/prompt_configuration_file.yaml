@@ -1,12 +1,13 @@
 prompt_template: |
   Write a Python program to answer the question related to images: 
   Question: {question}.
+  The paths of images: {image_paths}, which are related to the question.
   Enclose the generated code and comments in <command> </command> tags,
   i.e. <command> generated python code </command>.
+
   Please make full use of the following available tools.
   Available Tools: {available_tools}
   Tools Metadata: {toolbox_metadata}
-  If you need, please directly use the PATHs of images: {image_paths}, which are related to the question.
   Note:
   - The code output should be one of the options in Question: (A, B, C, D, or E). Assign your final choice to a variable named final_result.
   - If needed, include import paths like: from_module: `<tool_module_name>`, import_name: `<tool_class_name>`.
@@ -28,13 +29,13 @@ toolbox_metadata:
       save_object: "bool - Whether to save the detected objects as images (default: False)."
       saved_image_path: "str - The path to save the detected object images (default: 'detected_objects')."
     output_types: >
-            "tuple - A tuple containing two elements: 
-            (1) a dictionary mapping each detected label to a list of detection entries,
-            e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}]}, 
-            (2) a dictionary mapping each label to the number of detected objects in the image.
-            e.g. {'baseball': 2, 'basket': 1}".
+      "tuple - A tuple containing two elements: 
+      (1) a dictionary mapping each detected label to a list of detection entries,
+      e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}]}, 
+      (2) a dictionary mapping each label to the number of detected objects in the image.
+      e.g. {'baseball': 2, 'basket': 1}".
     demo_commands:
-      - command: 'detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")'
+        command: 'detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")'
         description: >
           "Detects 'baseball' and 'basket' in the image. Returns a tuple: "
           "(1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path); "
@@ -48,8 +49,47 @@ toolbox_metadata:
           object_number : {'baseball': 1, 'basket': 2}
     user_metadata:
       potential usage: "The tool can be used for counting and locating interest-objects in images by utilizing the bounding boxes"
-  
+  Text_Detector_Tool:
+    tool_module_name: "text_detector"
+    tool_class_name: "Text_Detector_Tool"
+    tool_description: "A tool that detects text in an image using EasyOCR."
+    tool_version: "1.0.0"
+    input_types:
+      image: "str - The path to the image file."
+      languages: "list - A list of language codes for the OCR model."
+      detail: "int - The level of detail in the output. Set to 0 for simpler output, 1 for detailed output."
+    output_types: >
+      "list - A list of detected text blocks. 
+      Each block contains the bounding box coordinates, the recognized text, and the confidence score (float).
+      e.g. [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], "Detected text", score], ...].
+      An empty list is returned if text detection fails after retries."
+    demo_commands:
+      command: "result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'])"
+      description: "Detect text in an image using multiple languages (English and German), including coordinates and confidence scores."
+      output_example: "[[[[100, 150], [200, 150], [200, 200], [100, 200]], 'Detected text', 0.95], ...]"
+    user_metadata:
+      frequently_used_language: 
+        "ch_sim": "Simplified Chinese"
+        "de": "German"
+        "en": "English"
+        "ja": "Japanese"
+      important_note: 
+        "The text detector may return additional text beyond the correct result. 
+         Make sure to extract the required text according to your needs.
+         e.g. for bbox, text, score in results:\n if text == whatyouneed:\n then pick it"
+  Letter_Detector_Tool:
+    tool_module_name: letter_detector
+    tool_class_name: Letter_Detector_Tool
+    tool_description: A tool that detects filtered letters in an image.
+    tool_version: "1.0.0"
+    input_types:
+      image: "str - The path to the image file."
+    output_types: "list - A list of detected letters with bounding box coordinates, recognized text, and confidence score."
+    demo_commands:
+      command: "results = Letter_Detector_Tool.execute(image='path/to/image.png')"
+      description: "Detect letters in an image, return the list of list [bbx, letter, and score]."
+      output_example: "[[[[100, 150], [200, 150], [200, 200], [100, 200]], 'A', 0.95], ...]."
   ######################
 
 # available_tools for usage
-available_tools: "Object_Detector_Tool"
+available_tools: "Object_Detector_Tool, Text_Detector_Tool, Letter_Detector_Tool"

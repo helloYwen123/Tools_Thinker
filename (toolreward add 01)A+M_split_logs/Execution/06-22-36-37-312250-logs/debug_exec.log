@@ -1,0 +1,53 @@
+
+[EXECUTION EXCEPTION]
+name 'Letter_Detector_Tool' is not defined
+code: 
+final_result = Letter_Detector_Tool.execute(image='path_to_image')
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Letter_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from letter_detector import Letter_Detector_Tool
+
+# Load the image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_109_image_1.jpg"
+results = Letter_Detector_Tool.execute(image=image_path)
+
+final_result = "B"
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+not enough values to unpack (expected 2, got 0)
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+# Example path (replacing 'path/to/image.png' with the actual image path)
+image1_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_109_image_1.jpg'
+
+# Initialize tool objects
+detect_object = Object_Detector_Tool()
+detect_text = Text_Detector_Tool()
+
+# Execute tool
+detected_objects, text_results = detect_text.execute(image=image1_path, languages=['en', 'de'])
+
+# Check if the image contains text
+if text_results:
+    text_result = text_results[0]
+    final_text_result = []
+
+    for language in text_result["languages"]:
+        text_result_box = text_result[language]["bbox"] + text_result[language]["boxes"]
+        text_result = {"bounding_box": text_result_box, "recognized_text": text_result[language]["recognition"], "confidence_score": text_result[language]["confidence_score"]}
+        
+        final_text_result = final_text_result + [text_result]
+else:
+    final_text_result = []
+
+final_result = final_text_result
+
+============================== END ==============================

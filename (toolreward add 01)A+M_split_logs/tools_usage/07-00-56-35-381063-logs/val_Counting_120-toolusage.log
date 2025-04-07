@@ -1,0 +1,115 @@
+
+[QAid]val_Counting_120
+
+
+[Code Includes Tools Usage]
+
+code: 
+results = Text_Detector_Tool.execute(image='path/to/image.jpg')
+for result in results:
+    if "kumquat" in result[2]:
+        num_kumquat = len(result)
+        final_result = f"2"
+        break
+
+if final_result == 'E':
+    print("There is no 'kumquat' text detected in the image.")
+else:
+    print(f"Number of 'kumquat' signs found: {final_result}")
+============================== END ==============================
+
+[QAid]val_Counting_120
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_120
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+final_result = Object_Detector_Tool.execute(image="path/to/image.jpg", labels=["kumquat"], save_object=True)
+object_number = final_result['object_number']
+print(final_result)
+print(object_number)
+============================== END ==============================
+
+[QAid]val_Counting_120
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+final_result = Object_Detector_Tool.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_120_image_1.jpg", labels=["kumquat"], threshold=0.35, save_object=True, saved_image_path="detected_objects")
+print("Number of small signs say 'kumquat' on them:", final_result["object_number"]["kumquat"])
+============================== END ==============================
+
+[QAid]val_Counting_120
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_120
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_120
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+# Define the image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_120_image_1.jpg"
+
+# Create an Object_Detector_Tool to detect the name 'Kumquat'
+object_detector = Object_Detector_Tool(image_path, 'kumquat', 0.35, 'tiny', True)
+
+# Create a Text_Detector_Tool to detect the name 'Kumquat'
+text_detector = Text_Detector_Tool(image_path)
+
+# Create a Letter_Detector_Tool to detect the name 'Kumquat'
+letter_detector = Letter_Detector_Tool(image_path)
+
+# Get the labels and object number for each detected object
+labels = object_detector.execute(labels=['kumquat'])
+object_number = text_detector.execute(languages=['en'])
+
+# Get the bounding box coordinates, recognized text and confidence score for each detected letter
+for result in letter_detector.execute(image_path):
+    detected_letters = result[0][0]
+    detected_letters_bounding_box = result[0][1][0]
+    detected_letters_text = detected_letters[0]
+    detected_letters_score = detected_letters[1]
+
+    # Check if the first detected letter is 'Kumquat'
+    if detected_letters[0] == 'Kumquat' and detected_letters_score > 0.80:
+        letters = [detected_letters[2]]
+        objects = object_number[detected_letters[0]]
+        total_objects = sum(objects)
+
+        # Create text for the name 'Kumquat' with the correct bounding box
+        text = "Kumquat"
+
+        # Calculate the final score
+        total_objects = letter_detector.execute(image_path)
+
+        # Output the final result
+        final_result = None
+if final_result:
+    # Process the detected kumquats
+    print(final_result)
+else:
+    print("No detected kumquats.")
+============================== END ==============================

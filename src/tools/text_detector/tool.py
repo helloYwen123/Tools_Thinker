@@ -19,13 +19,13 @@ class Text_Detector_Tool(BaseTool):
             tool_description="A tool that detects text in an image using EasyOCR.",
             tool_version="1.0.0",
             input_types={
-                "tool_module_name": "str - The path to the image file.",
+                "image": "str - The path to the image file.",
                 "languages": "list - A list of language codes for the OCR model.",
                 "detail": "int - The level of detail in the output. Set to 0 for simpler output, 1 for detailed output."
             },
             output_types="list - A list of detected text blocks. \
-                Each block is a tuple containing the bounding box coordinates, the recognized text, and the confidence score (float). \
-                An empty list is returned if text detection fails after retries.",
+                Each block contains the bounding box coordinates, the recognized text, and the confidence score (float). \
+                e.g. [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], 'Detected text', score], ...] ",
             demo_commands=[
                 {
                     "command": 'result = Text_Detector_Tool.execute(image="path/to/image.png", languages=["en", "de"])',
@@ -41,8 +41,8 @@ class Text_Detector_Tool(BaseTool):
                     "ja": "Japanese",
                 },
                  "important_note": "The text detector may return additional text beyond the correct result. \
-                                    Make sure to extract the required text according to your needs instead of using everything directly.",
-                 "usage_scenarios": "This tool is very useful for locating specific regions labeled with letters in reference and target images."
+                                    Make sure to extract the required text according to your needs instead of using everything directly. \
+                                    e.g. for bbox, text, score in results:\n if text == whatyouneed:\n then pick it",
             }
         )
 

@@ -1,0 +1,91 @@
+
+[QAid]val_Counting_51
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_51
+
+
+[Code Includes Tools Usage]
+
+code: 
+def recognize_image(path):
+    # Load the image
+    image = Image.open(path)
+    # Detect text in the image
+    result = Text_Detector_Tool.execute(image, languages=['en', 'de'])
+    # If text is detected, return the list of detected text blocks
+    if result:
+        letter_blocks = result[0].copy()
+        letter_blocks.insert(1, 'Detected text')  # Add detection to the text block
+        letter_blocks.insert(3, result[0][3])
+        return letter_blocks
+    # Return empty list if no text is detected
+    return []
+
+# Call the function with the provided test image
+final_result = recognize_image('path/to/image.jpg')
+print('Number of people eating sandwich:', final_result)
+============================== END ==============================
+
+[QAid]val_Counting_51
+
+
+[Code Includes Tools Usage]
+
+code: 
+def count_hot_dogs(image_path):
+    import object_detector
+    import text_detector
+    import letter_detector
+    import cv2
+    import numpy as np
+    
+    # Load image
+    img = cv2.imread(image_path)
+    
+    # Detect hotdogs using the Object_Detector_Tool
+    obj_dets, obj_cnt = object_detector.execute(image_file=image_path, labels=['hotdog'], threshold=0.35, save_object=True)
+    
+    # Detect text using the Text_Detector_Tool
+    texts = []
+    for label in obj_dets:
+        if label["label"] == 'hotdog':
+            bbox = label["bbox"]
+            texts.append((bbox, label["score"]))
+    
+    # Detect letters using the Letter_Detector_Tool
+    letters = []
+    lines = text_detector.text_detector.detect_lines(img)
+    for l in lines:
+        letters.append((l[0][1], l[1][1]))
+    
+    # Combine text and letter detections to identify any hotdogs with text
+    hot_dog_with_text = []
+    for t in texts:
+        x0, y0, x1, y1 = t[0]
+        x0, y0, x2, y2 = t[1]
+        b0, b1, b2, b3 = t[2]
+        b0, b1, b2, b3 = b0 * x0, b1 * y0, b2 * x0, b3 * y0
+    
+        letters = []
+        for lb in lines:
+            x0, y0, x1, y1 = lb[0]
+            b0, b1, b2, b3 = b0 * x0, b1 * y0, b2 * x0, b3 * y0
+            bb = max(b0, b1), min(b1, b2), min(b2, b1), max(b0, b2)
+            
+            if list(bb) == list(range(1, 101, 2)):
+                letters.append(lb)
+        
+        # Combine text and letter detections to identify any hotdogs with text
+        if len(letters) > 0:
+            b1, b2 = max(bb), min(bb)
+            if b1 <= b3 * x1 and b2 >= b2 * x2:
+                hot_dog_with_text.append((t[0][1], t[1][1], t[2][1], t[2][2], b1, b2, letters))
+    
+    return hot_dog_with_text
+
+final_result = "D"
+============================== END ==============================

@@ -1,0 +1,107 @@
+
+[EXECUTION EXCEPTION]
+name 'Object_Detector_Tool' is not defined
+code: 
+def find_one_way_signs(input_image_path):
+    """
+    This function searches for all one-way signs in a given image.
+    :param input_image_path: The path of the image to search.
+    :return: A list of tuples where each tuple contains the coordinates and the value of the sign (1 for right hand traffic, 0 for left hand traffic).
+    """
+    # Load the input image
+    image = Image.open(input_image_path)
+
+    # Detect one-way signs using the Text_Detector_Tool
+    results = text_detector.execute(image=image, languages=["en"],
+                                    detail=1)  # Details are irrelevant
+
+    # Initialize counters for each type of sign
+    right_hand = 0
+    left_hand = 0
+
+    # Search for each sign
+    for block in results:
+        if 'right' in block[1] and 'left' in block[1]:
+            right_hand += 1
+        elif 'left' in block[1] and 'right' not in block[1]:
+            left_hand += 1
+
+    # Return the counts for the right and left hand signs
+    return (right_hand, left_hand)
+
+# Initialize the letter_detector tool with the available tool
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/no_taxa_image.png', labels=['baseball', 'basket', 'one way'], save_object=True, saved_image_path='detected_objects')
+detected_objects,
+right_hand,
+left_hand
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+unexpected indent (<string>, line 2)
+code: 
+from object_detector import Object_Detector_Tool
+  import_name: 'Object_Detector_Tool'
+  class_name: 'Object_Detector_Tool'
+  tool_module_name: 'object_detector'
+  tool_class_name: 'Object_Detector_Tool'
+  tool_description: 'A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.'
+  tool_version: '1.0.0'
+  input_types: {'image': 'str - The path to the image file.', 'labels': 'list - A list of object labels to detect.', 'threshold': 'float - The confidence threshold for detection (default: 0.35).', 'model_size': "str - The size of the model to use ('tiny' or 'base', default: 'tiny').", 'save_object': 'bool - Whether to save the detected objects as images (default: False).', 'saved_image_path': "str - The path to save the detected object images (default: 'detected_objects')."}
+  output_types: '"tuple - A tuple containing two elements:  (1) a dictionary mapping each detected label to a list of detection entries, e.g. {\'baseball\': [{\'box\': (x1, y1, x2, y2), \'score\': 0.95, \'saved_image_path\': \'path/to/saved/image.png\'}],  (2) a dictionary mapping each label to the number of detected objects in the image. e.g. {\'baseball\': 1, \'basket\': 2}".'
+  tool_function_call: "detected_objects, object_number = Object_Detector_Tool.execute(image=\"path/to/image.png\", labels=['no turns', 'one way'], save_object=True, saved_image_path=\"detected_objects\")"
+  example_result: "detected_objects : { 'no turns': [{'box': (296, 109, 446, 282), 'score': 0.97}, {'box': (367, 152, 517, 289), 'score': 0.97}, {'box': (565, 215, 610, 290), 'score': 0.98}], 'one way': [{'box': (329, 74, 439, 253), 'score': 0.98}, {'box': (377, 107, 498, 257), 'score': 0.98}] } object_number : {'no turns': 3, 'one way': 3} E"
+finally_result: 'None'
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+list index out of range
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+# Create an instance of Object_Detector_Tool
+object_detector = Object_Detector_Tool()
+
+# Execute the object_detector with the path to the image 'image_1.jpg'
+detected_objects = object_detector.execute(image="path/to/image.jpg", labels=["one way", "no turns", "one way"], save_object=True, saved_image_path="detected_objects")
+ 
+# Get the total number of detected objects
+objects_number = len(detected_objects)
+
+# Create an instance of Text_Detector_Tool
+text_detector = Text_Detector_Tool()
+
+# Execute the text_detector (but with a lower retry limit to account for possible errors)
+try:
+    text_results = text_detector.execute(image="path/to/image.jpg", languages=['en', 'zh'], detail=0)
+except Exception as e:
+    final_result = 'None'  # Assume there's an error
+    text_results = []
+
+# Get the text result from the first detected object (the only one detected in the image)
+text_result = text_results[0][1]  # Convert detected objects object to text
+
+# Create an instance of Letter_Detector_Tool
+letter_detector = Letter_Detector_Tool()
+
+# Execute the letter_detector with the path to the image 'letter_1.jpg'
+letter_results = letter_detector.execute(image="path/to/image.jpg")
+
+# Check if the 'detected_objects' and letter_results dictionaries have keys with the same value
+if 'detected_objects' in text_results and 'letter_results' in text_results:
+    if text_results['detected_objects'] == text_results['letter_results']:
+        final_result = "None"
+    else:
+        final_result = object_detector.total_objects
+elif any(key in text_results for key in text_results.keys()):
+    final_result = object_detector.total_objects
+else:
+    final_result = "None"
+
+# Use the final_result to determine the final choice
+final_result
+
+============================== END ==============================

@@ -1,0 +1,57 @@
+
+[EXECUTION EXCEPTION]
+unexpected indent (<string>, line 2)
+code: 
+# Import required tool classes
+  from object_detector import Object_Detector_Tool
+  from letter_detector import Letter_Detector_Tool
+
+  # Path to the image file
+  image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_21_image_1.jpg"
+
+  # Initiate the object detector
+  object_detector = Object_Detector_Tool()
+  results = object_detector.execute(image=image_path, languages=['en', 'de'])
+
+  # Initiate the letter detector
+  letter_detector = Letter_Detector_Tool()
+  detections = letter_detector.execute(image=image_path)
+
+  # Get total number of detections for each detected category
+  total_detections = {detected_class: len(results) for detected_class in detections[0][0]}
+
+  final_result = max(detections[0][0], key=lambda x: x[1][1]) if any(detections[0][0]) else "C"
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+No module named 'objectDetector_tool'
+code: 
+from objectDetector_tool import Object_Detector_Tool, image_to_list, image_to_dict
+
+final_result = False
+
+# Assuming the image is detected
+detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["red_buses"], save_object=True, saved_image_path="detected_objects")
+
+if detected_objects:
+    red_buses = image_to_dict(detected_objects, labels=["red_buses"])
+    red_buses = [object_number]
+    final_result = (f"{len(red_buses)} red buses detected")
+
+# Check if there are any detected text blocks
+result = Text_Detector_Tool.execute(image="path/to/image.png", languages=['en', 'de'], detail=1)
+
+if len(result):
+    final_result = "Error: Text detection is failed"
+else:
+    final_result = string.join(result, ",") + "(None)"
+
+print(final_result)
+
+============================== END ==============================
+
+[Successful Execution but Get None RESULT]
+
+
+============================== END ==============================

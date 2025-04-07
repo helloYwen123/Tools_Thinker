@@ -1,0 +1,33 @@
+
+[EXECUTION EXCEPTION]
+No module named 'tool_module'
+code: 
+from tool_module import Object_Detector_Tool
+
+# Convert the image path to a string format
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_10_image_1.jpg'
+
+# Create an instance of the Object_Detector_Tool
+detector_tool = Object_Detector_Tool()
+
+# Execute the detection with the specified language code (English) and other necessary arguments
+results = detector_tool.execute(image=image_path, languages=['en'], detail=1)
+
+# Check if any tall buildings are detected
+if(results):
+    taller_top = False
+    for result in results:
+        if 'box' in result:
+            bottom_location = result['bbox'][0]
+            top_location = result['bbox'][2]
+            if top_location - bottom_location > 460:
+                taller_top = True
+                
+    if taller_top:
+        final_result = (True, 1, "A")
+    else:
+        final_result = (False, 1, "C")
+else:
+    final_result = (False, 0, "C")
+
+============================== END ==============================

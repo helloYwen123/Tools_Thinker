@@ -1,0 +1,187 @@
+
+[QAid]val_Counting_99
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import ObjectDetector_Tool
+
+# Load image files
+image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg"
+
+# Set the object labels to be detected
+labels = ["baseball", "basket"]
+
+# Set the desired threshold for confidence score
+threshold = 0.35
+
+# Set the size of the model to use
+model_size = "tiny"
+
+# Set whether to save the detected objects as images or not
+save_object = True
+
+# Execute the object detector tool
+result = ObjectDetector_Tool.execute(image=image, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size)
+
+# Extract object detections
+detected_objects = result["detected_objects"]
+object_number = result["object_number"]
+
+# Determine the number of persons driving the red car front of the train
+if detected_objects:
+    for detection in detected_objects:
+        if detection["bbox"][0] == (36, 50) and detection["bbox"][1] == (200, 150) and detection["bbox"][2] == (200, 200) and detection["bbox"][3] == (100, 200):
+            final_result = f"{detected_objects['baseball']}"
+
+    else:
+        final_result = f"{object_number}"
+else:
+    final_result = "No detected objects"
+============================== END ==============================
+
+[QAid]val_Counting_99
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+final_result = Object_Detector_Tool.execute(image='/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg', labels=["car"], thresholds=[0.35], saved_object=True, save_image_path='detected_objects')
+print(final_result)
+============================== END ==============================
+
+[QAid]val_Counting_99
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_99
+
+
+[Code Includes Tools Usage]
+
+code: 
+def main(image):
+    object_detector = Object_Detector_Tool() 
+    labels, object_num = object_detector.execute(image=image)
+    final_result = object_num
+    return final_result
+
+# Use the function with the image path
+result = main('val_Counting_99_image_1.jpg')
+print(result)
+============================== END ==============================
+
+[QAid]val_Counting_99
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+    image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg",
+    labels=[
+        "car"
+    ],
+    save_object=False
+)
+
+if "detected_objects" in final_result:
+    car_count = len(final_result["detected_objects"]["car"])
+else:
+    car_count = 0
+
+if "object_number" in final_result:
+    final_result = final_result["object_number"]
+else:
+    final_result = {}
+
+if car_count > 0:
+    if "ch_sim" in final_result:
+        ch_sim_count = final_result["ch_sim"].get("baseball")
+        if ch_sim_count > 0:
+            ch_sim_count = "Chinese_Simplified_Chinese"
+        elif "ch_sim" not in final_result:
+            ch_sim_count = "Chinese_Simplified_Chinese"
+    else:
+        ch_sim_count = final_result["ch_sim"]
+
+if car_count > 0 and ch_sim_count is not None:
+    if "en" in final_result["ch_sim"]:
+        en_count = final_result["en"].get("car")
+        if en_count > 0:
+            en_count = "English"
+    elif "fr" in final_result["ch_sim"]:
+        fr_count = final_result["fr"]
+        fr_count = "French"
+    elif "de" in final_result["ch_sim"]:
+        de_count = final_result["de"]
+        de_count = "German"
+    elif "es" in final_result["ch_sim"]:
+        es_count = final_result["es"]
+        es_count = "Spanish"
+    else:
+        es_count = "English"
+    if en_count is not None and es_count is not None:
+        if en_count == "English" and ch_sim_count != "English" and es_count == "E":
+            if car_count == 1:
+                ch_sim_count = "J"
+            elif car_count == 2:
+                ch_sim_count = "E"
+            elif car_count == 3:
+                ch_sim_count = "E"
+
+final_result = {"name": "BMW", "model": "3", "count": car_count, "language": en_count, "ch_sim": {"baseball": 2, "basket": 1}}
+============================== END ==============================
+
+[QAid]val_Counting_99
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_99
+
+
+[Code Extraction Failed or Parse Failed]
+
+
+[QAid]val_Counting_99
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector.module import Object_Detector_Tool
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg'
+labels = ['car']
+threshold = 0.35
+model_size = 'tiny'
+save_object = True
+
+final_result = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object)
+
+detected_images, object_count = final_result[1], final_result[0]
+
+detected_objects = {label: [] for label in labels}
+objects_with_details = {}
+for detected_object in detected_images:
+    if len(detected_object) > 1:
+        for objects in detected_object:
+            labeled_object = objects[1]['bbox'][0]
+            if labeled_object not in objects_with_details:
+                objects_with_details[labeled_object] = objects.count(labeled_object)
+                detected_objects[objects['bbox'][0]].append(objects)
+    else:
+        objects_with_details = objects.count(detected_image[1]['bbox'][0])
+        detected_objects[objects_with_details].append(detected_image[labeled_object])
+
+total_objects = sum((detected_objects[label] for label in labels))
+print(f'Total Objects: {total_objects}')
+detected_objects
+============================== END ==============================

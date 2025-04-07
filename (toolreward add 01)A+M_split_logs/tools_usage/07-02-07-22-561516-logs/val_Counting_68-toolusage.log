@@ -1,0 +1,68 @@
+
+[QAid]val_Counting_68
+
+
+[Code Includes Tools Usage]
+
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+import Letter_Detector_Tool
+
+# Convert the image path from relative to absolute
+# image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_68_image_1.jpg"
+# Load the image and get its dimensions
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_68_image_1.jpg"
+image = open(image_path, 'rb').read()
+
+# Detect objects in the image using the Text_Detector_Tool
+results_text = Text_Detector_Tool.execute(image=image_path, languages=['en'])
+
+# Convert the detected text lists to a dictionary based on bboxes
+text_detection_result_text = {k: [v] for [k, v] in results_text[0].items()}
+
+# Detect objects in the image using the Letter_Detector_Tool
+results_letters = Letter_Detector_Tool.execute(image=image_path)
+
+# Convert the detected letter lists to a dictionary based on bboxes
+letter_detection_result_letters = {k: [v] for [k, v] in results_letters[0].items()}
+
+# Combine the results
+combined_results_text = text_detection_result_text
+combined_results_letters = letter_detection_result_letters
+
+for key, value in combined_results_text.items():
+    for entry in value:
+        combined_results_text[key].append(entry[0])
+
+for key, value in combined_results_letters.items():
+    for entry in value:
+        combined_results_letters[key].append(entry[0])
+
+# Count the detected objects in the image and return them
+object_number = len([obj for obj in combined_results_text.values()])
+
+final_result = (combined_results_text, object_number)
+
+print("Final results:", final_result)
+============================== END ==============================
+
+[QAid]val_Counting_68
+
+
+[Code Includes Tools Usage]
+
+code: 
+from letter_detector import Letter_Detector_Tool
+final_result = Letter_Detector_Tool.execute(image="path/to/image.png")
+============================== END ==============================
+
+[QAid]val_Counting_68
+
+
+[Code Includes Tools Usage]
+
+code: 
+from text_detector import Text_Detector_Tool
+final_result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'], detail=2).pop()
+============================== END ==============================

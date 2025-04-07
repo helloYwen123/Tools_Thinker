@@ -1,0 +1,93 @@
+
+[EXECUTION EXCEPTION]
+No module named 'Object_Detector_Tool'
+code: 
+from Object_Detector_Tool import Object_Detector_Tool
+final_result = "D"
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 10)
+code: 
+from object_detector import Object_Detector_Tool
+
+# Load saved image
+img = Object_Detector_Tool.load_image("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_118_image_1.jpg")
+
+# Detect the face
+results = Object_Detector_Tool.execute(image=img, labels=['baseball', 'basket', 'helmet'], saved_image_path="detected_objects")
+
+all_detected_objects = [
+    (label, 1 if box[4] == 0 else 0 for box in detected_results) for label, detected_results in results.items()
+]
+
+# Select the correct objects
+valid_labels = ["baseball", "basket"]
+selected_labels = [label for label in all_detected_objects[0].keys() if label in valid_labels and 0 in all_detected_objects[0].get(label, [])]
+
+selected_objects = [
+    (
+        label,
+        (bbox[4] for bbox in detected_results) for label, detected_results in selected_labels.items()
+    ) for label, detected_results in detected_results.items()
+]
+
+final_result = ["02"]  # 02 means the number of persons not wearing a blue hat
+
+# Determine the number of persons not wearing a blue hat
+for label in selected_objects[0]:
+    if all_detected_objects[0][label][1] < len(selected_objects[0][label]):
+        final_result = ["" + str(all_detected_objects[0][label][1] - len(selected_objects[0][label])) + "]#" + label + "]"]
+
+# Format and convert result
+final_result = "".join(final_result).upper()
+print("Final Result:", final_result)
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from object_detector import Object_Detector_Tool
+object_labels = ['Baseball', 'Basket']
+final_result = None
+
+filename = 'val_Counting_118_image_1.jpg'
+result = Object_Detector_Tool.execute(image=filename, labels=object_labels, save_object=True, saved_image_path='detected_objects')
+
+if result:
+    detected_objects = result['detected_objects']
+
+    if 'Baseball' in detected_objects:
+        total_baseball = detected_objects[0]['score']
+    else:
+        total_baseball = 0
+
+    if 'Basket' in detected_objects:
+        total_basket = detected_objects[1]['score']
+    else:
+        total_basket = 0
+
+    final_result = f"The count of non-blue hat individuals: ({total_baseball}, {total_basket})"
+else:
+    final_result = "Error: failed to detect baseball or basket in the image."
+
+final_result
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+name 'soldiers' is not defined
+code: 
+final_result = 0 # Calculate the number of people not wearing a blue hat
+for soldier in soldiers:
+    if soldier['hat'] != 'blue':
+        final_result += 1
+
+    if soldier['letter_detector'] != 'A':
+        final_result += 1
+
+print(final_result)
+
+============================== END ==============================

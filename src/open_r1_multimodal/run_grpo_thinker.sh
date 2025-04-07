@@ -1,7 +1,6 @@
 export DEBUG_MODE="true" # Enable Debug if you want to see the rollout of model during RL
 export LOG_PATH="./debug_log_2b.txt"
 export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
-export CUDA_VISIBLE_DEVICES=0,1,2,3
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 export WANDB_PROJECT="code_gen_GRPO"
 # export MAIN_PROCESS_PORT=29507  # Change this to an available port
@@ -23,7 +22,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --max_prompt_length 4096 \
     --max_completion_length 2048 \
     --per_device_train_batch_size 1 \
-    --gradient_accumulation_steps 3 \
+    --gradient_accumulation_steps 2 \
     --logging_steps 1 \
     --bf16 true \
     --torch_dtype bfloat16 \

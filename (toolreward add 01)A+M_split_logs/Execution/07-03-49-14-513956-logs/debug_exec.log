@@ -1,0 +1,127 @@
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'image'
+code: 
+from object_detector import Object_Detector_Tool
+
+# Load the image
+input_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg"
+
+# Execute the tool
+# We only need to detect one label (the car front), so we use the "baseball" label here
+detected_objects_results = Object_Detector_Tool.execute(input_image, labels=["car-front"], save_object=True).detected_objects[0]["baseball"]
+
+# Extract the car front and the train label for counting
+car_frontend_label = detected_objects_results[0]["baseball"]
+train_label = detected_objects_results[1]["car-front"]
+
+# Count the occurrence of each label
+car_frontend_count = len(detected_objects_results[0])
+train_count = len(detected_objects_results[1])
+
+final_result = (car_frontend_label, "0", train_label, "0", train_label, "0")
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+name 'Text_Detector_Tool' is not defined
+code: 
+final_result = 0
+
+def analyze_image(image_path):
+    # Use Text_Detector_Tool to find text
+    text_results = Text_Detector_Tool.execute(image=image_path, languages=['en', 'de'])
+    for text_result in text_results if text_result else []:
+        final_result = 1
+
+    # Use Letter_Detector_Tool to find letter
+    letter_results = Letter_Detector_Tool.execute(image=image_path)
+    unique_letters = list(set([det[1] for det in letter_results if det[1] not in {'', ' '}] if det[1] else ''))
+    if unique_letters:
+        final_result = 1
+
+        for letter in unique_letters:
+            for result in text_results:
+                text_result = result[0]
+                if str(letter) in [str(x[1]) for x in result[0]]:
+                    final_result = 1
+
+    return final_result
+
+result = analyze_image('/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg')
+print(result)
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+unexpected indent (<string>, line 2)
+code: 
+# Load the Image and Detect Objects
+  import_module: 'object_detector'
+  import_name: 'Object_Detector_Tool'
+  image = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_99_image_1.jpg'
+  labels = ['baseball', 'basket']
+  save_object = True
+  saved_image_path = 'detected_objects'
+  tool_kwargs = {'label_set': labels, 'threshold': 0.35, 'model_size': 'tiny'}
+
+  detected_objects, object_number = Object_Detector_Tool.execute(image=image, labels=labels, save_object=save_object, saved_image_path=saved_image_path, **tool_kwargs)
+  object_number
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Letter_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from letter_detector import Letter_Detector_Tool
+
+# Load the image data and apply the letter detection tool
+results = Letter_Detector_Tool.execute(image='val_Counting_99_image_1.jpg')
+
+# Extract the detected text and confidence score for each letter
+results_text_confidence = {}
+for result in results:
+    result_text = result[2]
+    result_confidence = result[1]
+    if result_text:
+        results_text_confidence[result_text] = result_confidence
+
+# Analyze the text results
+text_results = {k: v for k, v in results_text_confidence.items() if k in ["baseball", "basket"]}
+letter_count = {}
+for text, confidence in text_results.items():
+    for bbbox, letter in text_results.items():
+        if bbbox in results_text_confidence[letter] and bbbox != text:
+            if results_text_confidence[letter][bboxbox][0] < confidence:
+                results_text_confidence[letter][bboxbox] = [bboxbox, letter, confidence]
+
+# Count the number of people in the red car front of the train
+people_count = 0
+for detections in results_text_confidence.values():
+    for detection in detections:
+        letter = detection[2]
+        if letter == 'red':
+            people_count += 1
+
+final_result = "People present in the red car front of the train are Countings Number {}".format(people_count)
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+unexpected indent (<string>, line 2)
+code: 
+from object_detector import Object_Detector_Tool
+  from text_detector import Text_Detector_Tool
+  from letter_detector import Letter_Detector_Tool
+
+  def get_object_details(image_path, languages=['en', 'de'], detail=1):
+    detector = Object_Detector_Tool
+    result = detector.execute(image_path, languages=languages, detail=detail)
+    print(result)
+    
+    for result_list in result:
+      if 'baseball' in result_list or 'basket' in result_list:
+        count = result_list['baseball'] + result_list['basket']
+        return count
+
+============================== END ==============================

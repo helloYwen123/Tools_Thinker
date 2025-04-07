@@ -1,0 +1,70 @@
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+final_result = {"A": 1, "B": 0, "C": 0, "D": 2, "E": 0}
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+{'A': 1, 'B': 0, 'C': 0, 'D': 2, 'E': 0}
+
+============================== END ==============================
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+final_result = (0, 0, 1, 0)  # Assuming the image is not empty, no detected objects are purple.
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+(0, 0, 1, 0)
+
+============================== END ==============================
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+def count_purple_planes(image_path):
+    """
+    Counts the number of purple planes in the image and extracts text blocks.
+    """
+    object_detector = Object_Detector_Tool()
+    text_detector = Text_Detector_Tool()
+    letter_detector = Letter_Detector_Tool()
+
+    try:
+        object_detector.execute(image=image_path, model_size="base")
+        detected_objects = object_detector.output_dict['baseball'] + object_detector.output_dict['basket']
+        
+        if debug:
+            for obj in detected_objects:
+                if obj['box'] is not None and obj['box'][0] == 220:
+                    print(f"Detected purple baseball: Box {obj['box']}, TextBlock: {obj['score'] + ' / '.join(obj['score'])}")
+                elif obj['box'] is not None and obj['box'][0] == None:
+                    print(f"Detected purple tennis racket: Box {obj['box']}, TextBlock: {obj['score'] + ' / '.join(obj['score'])}")
+                else:
+                    print(f"Detected purple airplane: Box {obj['box']}, TextBlock: {obj['score'] + ' / '.join(obj['score'])}")
+
+        all_texts = text_detector.execute(image=image_path, languages=['de'])
+        texts_info = [t[0] for t in all_texts if t[1] == 'a' and t[1] == 'Purpur'] + [t[0] for t in all_texts if t[1] == 'Purple']
+        text_scores = [t[2] for t in all_texts if t[1] == 'Purpur'] + [t[2] for t in all_texts if t[1] == 'Azure']
+        texts_with_scores = dict(zip(texts_info, text_scores))
+
+        for obj in detected_objects:
+            if text_with_scores.get(obj['box'][0:2], ''):
+                letter = text_with_scores.get(obj['box'][0:2])
+                plane_with_text = {'score': texts_with_scores.get(obj['box'][0:2], '0'), 'text': letter}
+                letter_detector.execute(image=image_path, languages=['en'], detail=1, bbx=[0, obj['box'][2]], score=plane_with_text['score'])  
+                yield plane_with_text
+    finally:
+        text_detector.close()
+        letter_detector.close()
+    
+    return False
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+None
+
+============================== END ==============================

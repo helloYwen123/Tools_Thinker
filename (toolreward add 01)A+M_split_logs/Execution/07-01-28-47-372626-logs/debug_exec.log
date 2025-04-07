@@ -1,0 +1,113 @@
+
+[EXECUTION EXCEPTION]
+No module named 'object_detector_tool'
+code: 
+import object_detector_tool as object_detector_tool
+import text_detector_tool as text_detector_tool
+import letter_detector_tool as letter_detector_tool
+
+# Load and process an example image
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_45_image_1.jpg"
+labels = ["baseball", "basket"]
+save_object = True
+saved_image_path = "detected_objects"
+
+# Detect objects
+labels_detected = object_detector_tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path=saved_image_path)
+
+# Detect text
+languages = ['en', 'de']
+result = text_detector_tool.execute(image=image_path, languages=languages)
+
+# Detect letters
+letter_image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_45_image_1_letter_image_1.png"
+
+# Detect letters
+results = letter_detector_tool.execute(image=letter_image_path)
+letters = results[0]
+
+final_result = [len(labels_detected[0]), len(results[0])]
+
+============================== END ==============================
+
+[Successful Execution but Get None RESULT]
+
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+invalid syntax (<string>, line 1)
+code: 
+<result> 3  </result>
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from object_detector import Object_Detector_Tool
+
+# Load the image file
+input_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_45_image_1.jpg'
+detected_objects, object_number = Object_Detector_Tool.execute(image=input_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+final_result = ""
+if detected_objects:
+    detection_result = {}
+    for detected_label, detected_objects in detected_objects.items():
+        if len(detected_objects) == 2 and detected_objects[0]["box"][2][0] < detected_objects[1]["box"][1][2]:
+            print(detected_label, len(detected_objects), *detected_objects)
+            detection_result[detected_label] = len(detected_objects)
+        else:
+            print(detected_label, len(detected_objects))
+
+# Print the number of motors driving near the bus
+motor_count = object_number.get("baseball", 0) + object_number.get("basket", 0)
+
+final_result = motor_count if motor_count >= 2 else "0"
+print(final_result)
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Letter_Detector_Tool.__init__() got an unexpected keyword argument 'imagePath'
+code: 
+from letter_detector import Letter_Detector_Tool
+
+# Sample code using the letter_detector tool
+def is_bus_has_two_motors(image_path):
+  letter_detector_tool = Letter_Detector_Tool(imagePath=image_path)
+  detected_letters = letter_detector_tool.execute()
+
+  if detected_letters:
+    # Assuming the detected_letters list contains tuples of (bbox, recognized text, and score)
+    detected_numbers = [f"{number}" for number in range(1, 12)]
+
+    for bbox, recognized_text, score in detected_letters:
+      # Check if recognized text contains 'motor'
+      if recognized_text.lower() in detected_numbers:
+        return True
+
+    return False
+
+# Sample image path
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_45_image_1.jpg"
+is_two_motors = is_bus_has_two_motors(image_path)
+final_result = "({}, {})".format(is_two_motors, B)
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+name 'results' is not defined
+code: 
+from text_detector import Text_Detector_Tool
+
+# Load the image
+# Assuming the path to the image is "path/to/image.png"
+# results = Text_Detector_Tool.execute(image="path/to/image.png", languages=["en", "de"])
+result = results[0]     # Assuming "results" is a list of lists
+final_result = result[1]
+
+print(final_result)
+
+============================== END ==============================

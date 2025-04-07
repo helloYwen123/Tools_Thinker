@@ -1,0 +1,74 @@
+
+[EXECUTION EXCEPTION]
+name 'Object_Detector_Tool' is not defined
+code: 
+final_result = 0 # initial result
+
+# Extract information from the image
+path_to_image = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_26_image_1.jpg"
+detected_objects, object_number = Object_Detector_Tool.execute(image=path_to_image, labels=["yellow"], save_object=True, saved_image_path="detected_objects")
+for detected_object in detected_objects:
+    if detected_object["label"] == "yellow":
+        final_result += 1
+
+final_result
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+Text_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from text_detector import Text_Detector_Tool
+
+text_detector_output = Text_Detector_Tool.execute(
+    image="path/to/image.png",
+    languages=["en", "de"],
+    detail=1
+)
+
+final_result = [text for text in text_detector_output if text[1][0] == "baseball" or text[1][0] == "basket"]
+
+if final_result:
+    total_baseball = 1
+    total_basket = 2
+    total_text = len(final_result)
+else:
+    total_baseball = 0
+    total_basket = 0
+    total_text = 0
+
+total_result = [f"{text[1][0]:3} : {text[1][0]} with {total_result[0]} texts in the image", f"{total_result[1]} {total_result[2]}"]
+
+============================== END ==============================
+
+[EXECUTION EXCEPTION]
+module 'object_detector' has no attribute 'detect_objects'
+code: 
+final_result = []
+import object_detector
+import text_detector
+image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_26_image_1.jpg"
+
+# Detect buses from the image
+buses = object_detector.detect_objects(image=image_path, labels=['buses'], save_object=True)
+
+for bus in buses:
+    bus_info = bus[0]
+    if bus_info['label'] == 'buses':
+        bus_info['count'] = 1
+        final_result.append(bus_info)
+
+# Detect text in the image
+text_results = text_detector.detect_image(image=image_path, languages=['en'])
+
+for result in text_results:
+    letter_results = result[0]
+    if letter_results[2] == 'buses':
+        letter_results[2]['count'] = 1
+        final_result.append(letter_results)
+
+if buses:
+    final_result.extend(buses)
+print(final_result)
+
+============================== END ==============================

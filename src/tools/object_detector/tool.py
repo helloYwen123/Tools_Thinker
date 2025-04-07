@@ -29,7 +29,7 @@ class Object_Detector_Tool(BaseTool):
             tool_version="1.0.0",
             input_types={
                 "image": "str - The path to the image file.",
-                "labels": "list - A list of object labels to detect.",
+                "labels": "list[str] - A list of object labels to detect.",
                 "threshold": "float - The confidence threshold for detection (default: 0.35).",
                 "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
                 "save_object": "bool - Whether to save the detected objects as images (default: False).",
