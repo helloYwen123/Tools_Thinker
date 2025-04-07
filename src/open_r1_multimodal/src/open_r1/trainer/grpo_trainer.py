@@ -505,7 +505,7 @@ class Qwen2VLGRPOTrainer(Trainer):
                             # Repeat each value in the column for `num_generations` times
                             reward_kwargs[key].extend([example[key]] * self.num_generations)
                     # execution reward 
-                    exec_reward_list,exec_result_list = reward_func(prompts=prompts, completions=completions, **reward_kwargs) # completions
+                    exec_reward_list,exec_result_list = reward_func(prompts=prompts, completions=completions, step=self.state.global_step , **reward_kwargs) # completions
                     rewards_per_func[:, i] = torch.tensor(exec_reward_list, dtype=torch.float32, device=device)
                 elif hasattr(reward_func, "reward_type") and reward_func.reward_type == "accuracy":
                     # ensure there is execution reward
@@ -521,6 +521,7 @@ class Qwen2VLGRPOTrainer(Trainer):
                     output_reward_func = reward_func(  # exec_reward list, exec result and QAid
                                       exec_reward_list=exec_reward_list,
                                       exec_result_list=exec_result_list,
+                                      step=self.state.global_step,
                                       **reward_kwargs)
                     rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
                 else:
@@ -530,7 +531,7 @@ class Qwen2VLGRPOTrainer(Trainer):
                         for example in inputs:
                             # Repeat each value in the column for `num_generations` times
                             reward_kwargs[key].extend([example[key]] * self.num_generations)
-                    output_reward_func = reward_func(prompts=prompts, completions=completions, **reward_kwargs)
+                    output_reward_func = reward_func(prompts=prompts, completions=completions, step=self.state.global_step, **reward_kwargs)
                     rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
 
         # Sum the rewards from all reward functions

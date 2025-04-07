@@ -141,6 +141,7 @@ def unsafe_execute(code, timeout, result, log_path):
                 df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
         else:
             debug_log_path = os.path.join(log_path, "debug_exec.log")
+            reward = 0.5
             with open(debug_log_path, "a+") as df:
                 df.write("\n" + "=" * 30 + " New Completed Execution " + "=" * 30 + "\n")
                 df.write("\n[Successful Execution but Get None RESULT]\n")
@@ -175,11 +176,11 @@ def check_correctness(task: dict, log_path, current_time) -> float:
         manager = multiprocessing.Manager()
         result = manager.list()
         ########################################################################################
-        p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], 60, result, log_path)) 
+        p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], 90, result, log_path)) 
         # here unsafe execute part could be replaced with communication between Executor Server and Reward function(Evaluator Client)
         ###########################################################################################
         p.start()
-        p.join(61)
+        p.join(91)
         if p.is_alive():
             p.kill()
         result = result[0] if result else (0.0, None)
@@ -210,7 +211,7 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
 #                          EXECUTION REWARD                              #
 ##########################################################################
 
-def execution_reward(completions, QAid,**kwargs):
+def execution_reward(completions, QAid, step,**kwargs):
     # based on completions type to constuct
     if isinstance(completions[0], str):
         contents = [completion for completion in completions]
@@ -235,7 +236,7 @@ def execution_reward(completions, QAid,**kwargs):
             "QAid": id
         })
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Execution", f"{current_time}-logs")
+    log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Execution", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     
     reward_result = asyncio.run(run_all_checks_async(tasks, log_root_dir, current_time))
@@ -246,11 +247,11 @@ execution_reward.reward_type = "execution"
 ####################################################################
 #                           ACCURACY REWARD                        #
 ####################################################################
-def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs):
+def accuracy_reward(exec_reward_list, exec_result_list, step, solution, QAid, **kwargs):
     """
     """
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Accuracy", f"{current_time}-logs")
+    log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Accuracy", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     rewards = []
     for exec_r, result, sol, id in zip(exec_reward_list, exec_result_list, solution, QAid):
@@ -266,7 +267,7 @@ def accuracy_reward(exec_reward_list, exec_result_list, solution, QAid, **kwargs
                 parsed_result = parse(result)
                 parsed_solution = parse(sol)
                 if float(verify(parsed_result, parsed_solution)) > 0:
-                    reward = 5.0
+                    reward = 2.0
                     with open(acc_log_path, "a") as f:
                         f.write(f"\n[QAid]{id}\n")
                         f.write("\n[Verification Correct Result]\n\n")
@@ -306,12 +307,12 @@ def format_reward(completions, **kwargs):
 
 import ast
 
-def tool_usage_reward(completions, QAid , **kwargs):
+def tool_usage_reward(completions, QAid, step , **kwargs):
     """
     check whether the generated code containing tool execution
     """
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Tools_usage", f"{current_time}-logs")
+    log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Tools_usage", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     rewards = []
     if isinstance(completions[0],str):
@@ -325,8 +326,9 @@ def tool_usage_reward(completions, QAid , **kwargs):
             return match.group(1).strip()
         else:
             raise ValueError("No Command Tag Found!!")
-    reward = 0.0
+        
     for content, id in zip(contents, QAid):
+        reward = 0.0 
         tool_log_path = os.path.join(log_root_dir, f"toolusage-{id}.log")
         try:
             code = extract_code(content)
@@ -336,7 +338,7 @@ def tool_usage_reward(completions, QAid , **kwargs):
                     #  tool.execute or tool_class.execute
                     if isinstance(node.func, ast.Attribute):
                         if node.func.attr == "execute":
-                            reward = 2.0
+                            reward = 1.0
                             with open(tool_log_path, "a+") as f:
                                 f.write(f"\n[QAid]{id}\n")
                                 f.write("\n[Code Includes Tools Usage]\n")
@@ -347,6 +349,7 @@ def tool_usage_reward(completions, QAid , **kwargs):
             with open(tool_log_path, "a+") as f:
                 f.write(f"\n[QAid]{id}\n")
                 f.write("\n[Code Extraction Failed or Parse Failed]\n\n")
+                f.write(f"\nCompletion Content: \n{content}")
         rewards.append(reward)
     return rewards
 ####################################################################
@@ -436,14 +439,29 @@ def main(script_args, training_args, model_args,conf):
             }
 
     dataset_prefix = "/home/stud/wxie/"
-    dataset_path = "BLINK_Dataset/Counting/val/Counting_val.json"
     
-    # load json file 
-    with open(dataset_prefix + dataset_path, 'r') as f:
-        dataset = json.load(f)
+    # Blink Dataloader
+    task_names = ["Counting", "Object_Localization", "Spatial_Relation"]
+    dataset = {}
+    all_samples = []
+    for task in task_names:
+        dataset_path = f"BLINK_Dataset/{task}/val/{task}_val.json"
+        full_path = os.path.join(dataset_prefix, dataset_path)
+        with open(full_path, 'r') as f:
+            raw_dataset = json.load(f)
+            processed_dataset = [make_conversation_sat(sample, dataset_prefix, base_model_prompt) for sample in raw_dataset]
+            all_samples.extend(processed_dataset)
 
-    dataset = [make_conversation_sat(sample, dataset_prefix, base_model_prompt) for sample in dataset]
-    dataset = {'train': dataset} #####
+    dataset = {"train": all_samples}
+    
+    # dataset_path = "BLINK_Dataset/Counting/val/Counting_val.json"
+
+    # # load json file 
+    # with open(dataset_prefix + dataset_path, 'r') as f:
+    #     dataset = json.load(f)
+
+    # dataset = [make_conversation_sat(sample, dataset_prefix, base_model_prompt) for sample in dataset]
+    # dataset = {'train': dataset} #####
 
     # test template and arg
     # save_path = "processed_dataset.json"
