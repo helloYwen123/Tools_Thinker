@@ -143,7 +143,7 @@ def unsafe_execute(code, timeout, result, log_path):
             debug_log_path = os.path.join(log_path, "debug_exec.log")
             reward = 0.5
             with open(debug_log_path, "a+") as df:
-                df.write("\n" + "=" * 30 + " New Completed Execution " + "=" * 30 + "\n")
+                df.write("\n[None RESULT]\n\n")
                 df.write("\n[Successful Execution but Get None RESULT]\n")
                 df.write("[EXEC CODE]\n")
                 df.write(code + "\n")
@@ -206,7 +206,6 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
     reward_list = [r for r, _ in rewards] 
     result_list = [res for _, res in rewards]
     return (reward_list, result_list)
-
 ##########################################################################
 #                          EXECUTION REWARD                              #
 ##########################################################################
