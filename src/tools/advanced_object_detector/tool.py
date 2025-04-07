@@ -83,7 +83,7 @@ class Advanced_Object_Detector(BaseTool):
                 image_name = os.path.splitext(os.path.basename(image_path))[0]
                 self.output_dir = saved_image_path
             
-            grouped = defaultdict(list)
+            grouped = defaultdict(list) # dict: list[dict]
             object_counts = {}
             has_mask = bool(results.get("masks"))
             for box, category, score, *mask in zip(

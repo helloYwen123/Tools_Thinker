@@ -85,7 +85,6 @@ if __name__ == "__main__":
     cd octotools/tools/generalist_solution_generator
     python tool.py
     """
-
     # Get the directory of the current script
     script_dir = os.path.dirname(os.path.abspath(__file__))
     print(f"Script directory: {script_dir}")

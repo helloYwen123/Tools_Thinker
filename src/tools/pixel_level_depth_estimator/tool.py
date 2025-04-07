@@ -169,33 +169,33 @@ if __name__ == '__main__':
     # -----------------------
     # Test Image Mode
     # -----------------------
-    test_image_path = ['./assets/examples/demo01.jpg']  # Can be a single image file, directory, or a txt file containing image paths.
-    print("Testing image mode...")
-    # When testing image mode, the video_path parameter is not used.
-    image_results = tool.execute(
-        mode='image',
-        image_path=test_image_path,
-        video_path='',  # Not used in image mode.
-        output=True,    # Enable saving of depth images.
-        outdir=outdir
-    )
-    print("Image mode depth results:")
-    for key, depth_img in image_results.items():
-        print(f"Image {key}: depth map shape: {depth_img.shape}")
+    # test_image_path = ['./assets/examples/demo01.jpg']  # Can be a single image file, directory, or a txt file containing image paths.
+    # print("Testing image mode...")
+    # # When testing image mode, the video_path parameter is not used.
+    # image_results = tool.execute(
+    #     mode='image',
+    #     image_path=test_image_path,
+    #     video_path='',  # Not used in image mode.
+    #     output=True,    # Enable saving of depth images.
+    #     outdir=outdir
+    # )
+    # print("Image mode depth results:")
+    # for key, depth_img in image_results.items():
+    #     print(f"Image {key}: depth map shape: {depth_img['depth_map'].shape}")
     
     # -----------------------
     # Test Video Mode
     # -----------------------
-    # print("\nTesting video mode...")
-    # test_video_path = ['./assets/examples_video/basketball.mp4']   # Can be a single video file, directory, or a txt file containing video paths.
-    # # When testing video mode, the image_path parameter is not used.
-    # video_results = tool.execute(
-    #     mode='video',
-    #     image_path='',   # Not used in video mode.
-    #     video_path=test_video_path,
-    #     output=True,     # Enable saving of depth videos.
-    #     outdir=outdir
-    # )
-    # print("Video mode depth results:")
-    # for key, video_frames in video_results.items():
-    #     print(f"Video {key}: number of frames processed: {len(video_frames)}")
+    print("\nTesting video mode...")
+    test_video_path = ['./assets/examples_video/basketball.mp4']   # Can be a single video file, directory, or a txt file containing video paths.
+    # When testing video mode, the image_path parameter is not used.
+    video_results = tool.execute(
+        mode='video',
+        image_path='',   # Not used in video mode.
+        video_path=test_video_path,
+        output=True,     # Enable saving of depth videos.
+        outdir=outdir
+    )
+    print("Video mode depth results:")
+    for key, video_frames in video_results.items():
+        print(f"Video {key}: number of frames processed: {len(video_frames['video_depth_map'])}")

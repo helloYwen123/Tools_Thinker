@@ -1,5 +1,4 @@
 import torch
-import clip
 from transformers import CLIPImageProcessor
 from PIL import Image
 import math
@@ -202,7 +201,7 @@ class Matcher(BaseTool):
             # preprocess ref and candidate images
             ref = prep(ref_pil_image).unsqueeze(0).to(self.device)
             candidate = prep(can_pil_image).unsqueeze(0).to(self.device)
-            
+
             # featrue extraction
             with torch.no_grad():
                 ref_out = model(ref, is_training=True)
@@ -231,7 +230,7 @@ class Matcher(BaseTool):
                 ref_feature = ref_feature / ref_feature.norm(dim=-1, keepdim=True)
                 print(f"Candidate feature shape: {candidate_features.shape}")
                 
-                    # Calculate the cosine similarity
+                # Calculate the cosine similarity
                 similarities = (100 * ref_feature @ candidate_features.T).softmax(dim=-1)
                 
                 # Find the best match
@@ -291,7 +290,7 @@ if __name__ == "__main__":
     ref = ["./examples/local_feature_bbx/01.png"]
     candidates = ["./examples/local_feature_bbx/02.png"]
 
-    result = matcher.execute(ref_img=ref, candidate_img=candidates, matching_type='local_correspondence')
+    result = matcher.execute(ref_img=ref, candidate_img=candidates,ref_bbox= None, candidate_bbox=None, matching_type='local_correspondence')
     
     # ref = ["./examples/semantic_full/01.png"]
     # candidates = ["./examples/semantic_full/03.png","./examples/semantic_full/02.png"]

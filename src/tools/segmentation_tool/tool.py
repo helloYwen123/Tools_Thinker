@@ -237,32 +237,32 @@ if __name__ == '__main__':
     segmentation_tool = SegmentationTool()
     model_size = "small"
 ####################PASS single image + Input(points)######################## 
-    single_point_input = [
-        {
-            "image_path": "./examples/images/truck.jpg",
-            "input_points": [[500, 375], [1125, 625]]
-        }
-    ]
-    print("Testing single image with point-based input:")
-    try:
-        masks_points = segmentation_tool.execute(
-            segmentation_mode='points',
-            input_prompts=single_point_input,
-            model_size=model_size
-        )
-        print("Returned masks for point-based input:")
-        print(masks_points)
-        print(f"Returned mask's type is {type(masks_points)}")
+    # single_point_input = [
+    #     {
+    #         "image_path": "./examples/images/truck.jpg",
+    #         "input_points": [[500, 375], [1125, 625]]
+    #     }
+    # ]
+    # print("Testing single image with point-based input:")
+    # try:
+    #     masks_points = segmentation_tool.execute(
+    #         segmentation_mode='points',
+    #         input_prompts=single_point_input,
+    #         model_size=model_size
+    #     )
+    #     print("Returned masks for point-based input:")
+    #     print(masks_points)
+    #     print(f"Returned mask's type is {type(masks_points)}")
         
-        #
-        for idx, mask in enumerate(masks_points):
-            save_path = f"./saved_masks/mask_point_{idx}.png"
+    #     #
+    #     for idx, mask in enumerate(masks_points):
+    #         save_path = f"./saved_masks/mask_point_{idx}.png"
             
-            import os
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            save_mask(mask, save_path, borders=True)
-    except Exception as e:
-        print("Error in point-based segmentation for a single image:", e)
+    #         import os
+    #         os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    #         save_mask(mask, save_path, borders=True)
+    # except Exception as e:
+    #     print("Error in point-based segmentation for a single image:", e)
 
 ####################PASS single image + Input(boxes)######################## 
     # single_box_input = [
@@ -296,42 +296,42 @@ if __name__ == '__main__':
 
 ################## 
    # Pass image batch , based on bbx
-    # multi_box_input = [
-    #     {
-    #         "image_path": "./examples/images/truck.jpg",
-    #         "input_box": [
-    #             [75, 275, 1725, 850],
-    #             [425, 600, 700, 875],
-    #             [1375, 550, 1650, 800],
-    #             [1240, 675, 1400, 750],
-    #         ]
-    #     },
-    #     {
-    #         "image_path": "./examples/images/groceries.jpg",
-    #         "input_box": [
-    #             [450, 170, 520, 350],
-    #             [350, 190, 450, 350],
-    #             # [500, 170, 580, 350],
-    #             # [580, 170, 640, 350],
-    #         ]
-    #     }
-    # ]
-    # print("\nTesting multiple images with box-based input:")
-    # try:
-    #     masks_multi_boxes = segmentation_tool.execute(
-    #         segmentation_mode='boxes',
-    #         input_prompts=multi_box_input,
-    #         model_size=model_size
-    #     )
-    #     print("Returned masks for multiple images with box-based input:")
-    #     print(masks_multi_boxes)
+    multi_box_input = [
+        {
+            "image_path": "./examples/images/truck.jpg",
+            "input_box": [
+                [75, 275, 1725, 850],
+                [425, 600, 700, 875],
+                [1375, 550, 1650, 800],
+                [1240, 675, 1400, 750],
+            ]
+        },
+        {
+            "image_path": "./examples/images/groceries.jpg",
+            "input_box": [
+                [450, 170, 520, 350],
+                [350, 190, 450, 350],
+                # [500, 170, 580, 350],
+                # [580, 170, 640, 350],
+            ]
+        }
+    ]
+    print("\nTesting multiple images with box-based input:")
+    try:
+        masks_multi_boxes = segmentation_tool.execute(
+            segmentation_mode='boxes',
+            input_prompts=multi_box_input,
+            model_size=model_size
+        )
+        print("Returned masks for multiple images with box-based input:")
+        print(masks_multi_boxes)
         
-    #     for img_idx, masks in enumerate(masks_multi_boxes):
-    #         for mask_idx, mask in enumerate(masks):
-    #             save_path = f"./saved_masks/mask_multi_{img_idx}_{mask_idx}.png"
-    #             os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    #             save_mask(mask.squeeze(0), save_path, borders=True)
-    # except Exception as e:
-    #     print("Error in box-based segmentation for multiple images:", e)
+        for img_idx, masks in enumerate(masks_multi_boxes):
+            for mask_idx, mask in enumerate(masks):
+                save_path = f"./saved_masks/mask_multi_{img_idx}_{mask_idx}.png"
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                save_mask(mask.squeeze(0), save_path, borders=True)
+    except Exception as e:
+        print("Error in box-based segmentation for multiple images:", e)
 
     print("\nAll tests completed.")
