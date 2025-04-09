@@ -163,7 +163,8 @@ class Qwen2VLGRPOTrainer(Trainer):
         max_pixels: Optional[int] = 12845056,
         min_pixels: Optional[int] = 3136,
         attn_implementation: str = "flash_attention_2",
-        torch_dtype: str = None  # Debug
+        torch_dtype: str = None, # Debug
+        reward_weights: list[float] = None
     ):
         # Args
         if args is None:
@@ -261,7 +262,7 @@ class Qwen2VLGRPOTrainer(Trainer):
                     reward_func, num_labels=1, **model_init_kwargs
                 )
         self.reward_funcs = reward_funcs
-
+        self.reward_weights = reward_weights
         # Reward processing class
         if reward_processing_classes is None:
             reward_processing_classes = [None] * len(reward_funcs)
@@ -533,7 +534,16 @@ class Qwen2VLGRPOTrainer(Trainer):
                             reward_kwargs[key].extend([example[key]] * self.num_generations)
                     output_reward_func = reward_func(prompts=prompts, completions=completions, step=self.state.global_step, **reward_kwargs)
                     rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
-
+        ##################################################
+        # Store a clone of the raw, unweighted rewards BEFORE applying weights
+        unweighted_rewards_per_func = rewards_per_func.clone()
+        if self.reward_weights is not None:
+            # Convert weights list to tensor on the correct device
+            weights_tensor = torch.tensor(self.reward_weights, dtype=torch.float32, device=device)
+            # Perform weighted multiplication using broadcasting
+            rewards_per_func = rewards_per_func * weights_tensor 
+        # (Num_Generation, Num_function) * (N,) -> (Num_Generation, Num_function)
+        ##################################################
         # Sum the rewards from all reward functions
         rewards = rewards_per_func.sum(dim=1)
 
@@ -566,12 +576,14 @@ class Qwen2VLGRPOTrainer(Trainer):
         self._metrics["completion_length"].append(completion_length)
 
         reward_per_func = self.accelerator.gather_for_metrics(rewards_per_func).mean(0)
+        unweighted_reward_per_func = self.accelerator.gather_for_metrics(unweighted_rewards_per_func).mean(0) ##
         for i, reward_func in enumerate(self.reward_funcs):
             if isinstance(reward_func, PreTrainedModel):
                 reward_func_name = reward_func.config._name_or_path.split("/")[-1]
             else:
                 reward_func_name = reward_func.__name__
-            self._metrics[f"rewards/{reward_func_name}"].append(reward_per_func[i].item())
+            self._metrics[f"rewards/weighted_{reward_func_name}"].append(reward_per_func[i].item())
+            self._metrics[f"rewards/original_{reward_func_name}"].append(unweighted_reward_per_func[i].item()) ##
 
         self._metrics["reward"].append(self.accelerator.gather_for_metrics(rewards).mean().item())
 

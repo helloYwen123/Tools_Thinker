@@ -6,7 +6,13 @@ export WANDB_PROJECT="code_gen_GRPO"
 # export MAIN_PROCESS_PORT=29507  # Change this to an available port
 export NCCL_P2P_DISABLE=1
 export TOKENIZERS_PARALLELISM=false
-
+mkdir -p debuglogs
+timestamp=$(date +"%m%d_%H%M%S")
+# BUG
+CACHE_DIR="/tmp/trition_cache_${USER}/triton_cache_${SLURM_JOB_ID}"
+mkdir -p "$CACHE_DIR"
+export TRITON_CACHE_DIR="$CACHE_DIR"
+echo "TRITON_CACHE_DIR is set to: $TRITON_CACHE_DIR"
 # netstat -tulnp | grep 29507
 #"flash_attention_2",  #  "eager" / "sdpa"
 
@@ -37,3 +43,4 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --report_to wandb \
     --use_cpu False \
     --num_generations 8 \
+    2>&1 | tee "debuglogs/training_log_${timestamp}.txt"

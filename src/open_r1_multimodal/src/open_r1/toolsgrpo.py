@@ -63,15 +63,26 @@ class GRPOScriptArguments(ScriptArguments):
         reward_funcs (`list[str]`):
             List of reward functions. Possible values: 'accuracy', 'format'.
     """
+    reward_weights: list[float] = field(
+        default_factory=lambda: [1.0, 1.0, 2.0, 1.0],
+        metadata={
+            "help": "Weights for the reward functions specified in --reward_funcs, in the *same order*. \
+            Example: if --reward_funcs format execution accuracy tool, \
+            then weights correspond to [format_weight, execution_weight, accuracy_weight, tool_weight]."
+            },
+    )
+    
+    reward_funcs: list[str] = field(
+        default_factory=lambda: ["format","execution","accuracy","tool"], #
+        metadata={"help": "List of reward functions. Possible values: 'tool', 'format', 'execution, 'accuracy'"},
+    )
+    
     confile: str = field(
         default=None,
         metadata={
             "help": "relative or absolute path to the configuration file"},
     )
-    reward_funcs: list[str] = field(
-        default_factory=lambda: ["format","execution","accuracy","tool"], #
-        metadata={"help": "List of reward functions. Possible values: 'tool', 'format', 'execution, 'accuracy'"},
-    )
+
     max_pixels: Optional[int] = field(
         default=12845056,
         metadata={"help": "Maximum number of pixels for the image"},
@@ -140,8 +151,8 @@ def unsafe_execute(code, timeout, result, log_path):
                 df.write(str(output) + "\n")
                 df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
         else:
-            debug_log_path = os.path.join(log_path, "debug_exec.log")
-            reward = 0.5
+            debug_log_path = os.path.join(log_path, "bug_exec.log")
+            reward = 0.0
             with open(debug_log_path, "a+") as df:
                 df.write("\n[None RESULT]\n\n")
                 df.write("\n[Successful Execution but Get None RESULT]\n")
@@ -152,7 +163,7 @@ def unsafe_execute(code, timeout, result, log_path):
     except Exception as e: # if the code problematic
         debug_log_path = os.path.join(log_path, "bug_exec.log")
         with open(debug_log_path, "a+") as df:
-            df.write("\n[EXECUTION EXCEPTION]\n\n")
+            df.write("\n[Exctuion Failed]\n\n")
             df.write(str(e) + "\n")
             df.write(f"code: \n{code}\n")
             df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
@@ -162,42 +173,35 @@ def unsafe_execute(code, timeout, result, log_path):
 
 def check_correctness(task: dict, log_path, current_time) -> float:
     start_time = time.perf_counter()  # timer start
-    evaluation_log_path = os.path.join(log_path, f"evaluation-{task['QAid']}.log")  # in evaluation includes all cased in reward computation
-                                                    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
-    if task["code"] == None:  # 
-        with open(evaluation_log_path, "a+") as f:
-            f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
-            f.write(f"Reward: 0.0\n")
-            f.write(f"QAid: {task['QAid']}\n")
-            f.write(f"Code: [EMPTY]\n")
-            f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
-        result = (0.0, None)  # code reward is 0.0
-    else:
-        manager = multiprocessing.Manager()
-        result = manager.list()
-        ########################################################################################
-        p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], 90, result, log_path)) 
-        # here unsafe execute part could be replaced with communication between Executor Server and Reward function(Evaluator Client)
-        ###########################################################################################
-        p.start()
-        p.join(91)
-        if p.is_alive():
-            p.kill()
-        result = result[0] if result else (0.0, None)
-        end_time = time.perf_counter()  # timer stop
-        elapsed = end_time - start_time
-        with open(evaluation_log_path, "a+") as f:
-            f.write(f"------------- {current_time} Execution reward: {result[0]} -------------\n")
-            f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n")
-            f.write(f"QAid: {task['QAid']}\n")
-            f.write(f"Code: \n{task['code']}\n")
-            f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+    evaluation_log_path = os.path.join(log_path, f"evaluation-{task['QAid']}.log") 
+    # in evaluation includes all cased in reward computation
+    # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
+    manager = multiprocessing.Manager()
+    result = manager.list()
+    ########################################################################################
+    p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], 60, result, log_path)) 
+    # here unsafe execute part could be replaced with communication between Executor Server and Reward function(Evaluator Client)
+    ###########################################################################################
+    p.start()
+    p.join(61)
+    if p.is_alive():
+        p.kill()
+    result = result[0] if result else (0.0, None)
+    end_time = time.perf_counter()  # timer stop
+    elapsed = end_time - start_time
+    with open(evaluation_log_path, "a+") as f:
+        f.write(f"------------- {current_time} Execution reward: {result[0]} -------------\n")
+        f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n")
+        f.write(f"QAid: {task['QAid']}\n")
+        f.write(f"Code: \n{task['code']}\n")
+        f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
     return result
 
 async def run_all_checks_async(tasks, log_root_dir, current_time):
     loop = asyncio.get_event_loop()
     rewards = []
-    with ProcessPoolExecutor(max_workers=4) as pool:  # max num Processes 
+    #mp_context = multiprocessing.get_context('spawn')  mp_context=mp_context
+    with ProcessPoolExecutor(max_workers=2) as pool:  # max num Processes 
         futures = [
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
             for task in tasks
@@ -218,18 +222,15 @@ def execution_reward(completions, QAid, step,**kwargs):
         contents = [completion[0]["content"] for completion in completions]
 
     def extract_code(completion):
-        match = re.fullmatch(r"<command>(.*?)</command>", completion.strip(), re.DOTALL)
-        if match:
-            return match.group(1).strip()
-        else:
-            raise ValueError("No Command Tag Found!!")
+            match = re.search(r"<command>(.*?)</command>", completion, re.DOTALL)
+            if match:
+                return match.group(1).strip()
+            else:
+                return completion.strip()
     
     tasks = []
     for content, id in zip(contents, QAid):
-        try:
-            code = extract_code(content)
-        except Exception:
-            code = None
+        code = extract_code(content)
         tasks.append({
             "code": code,
             "QAid": id
@@ -266,7 +267,7 @@ def accuracy_reward(exec_reward_list, exec_result_list, step, solution, QAid, **
                 parsed_result = parse(result)
                 parsed_solution = parse(sol)
                 if float(verify(parsed_result, parsed_solution)) > 0:
-                    reward = 2.0
+                    reward = 1.0
                     with open(acc_log_path, "a") as f:
                         f.write(f"\n[QAid]{id}\n")
                         f.write("\n[Verification Correct Result]\n\n")
@@ -274,7 +275,7 @@ def accuracy_reward(exec_reward_list, exec_result_list, step, solution, QAid, **
                 pass
             
             if result == sol or result == sol.lower():
-                reward = 2.0
+                reward = 1.0
                 with open(acc_log_path, "a") as f:
                     f.write(f"\n[QAid]{id}\n")
                     f.write("\n[Correct Result]\n\n")
@@ -291,7 +292,7 @@ accuracy_reward.reward_type = "accuracy"
 ####################################################################
 def format_reward(completions, **kwargs):
     """Reward function that checks if the completion has a specific format."""
-    pattern = r"<command>.*?</command>"
+    pattern = r"<command>.*?final_result\s*=.*?</command>"
     if isinstance(completions[0],str):
         completion_contents = [completion for completion in completions]
     else:
@@ -320,14 +321,14 @@ def tool_usage_reward(completions, QAid, step , **kwargs):
         contents = [completion[0]["content"] for completion in completions]
         
     def extract_code(completion):
-        match = re.fullmatch(r"<command>(.*?)</command>", completion.strip(), re.DOTALL)
+        match = re.search(r"<command>(.*?)</command>", completion, re.DOTALL)
         if match:
             return match.group(1).strip()
         else:
-            raise ValueError("No Command Tag Found!!")
+            return completion.strip()
         
     for content, id in zip(contents, QAid):
-        reward = 0.0 
+        reward = -1.0 
         tool_log_path = os.path.join(log_root_dir, f"toolusage-{id}.log")
         try:
             code = extract_code(content)
@@ -344,11 +345,13 @@ def tool_usage_reward(completions, QAid, step , **kwargs):
                                 f.write(f"code: \n{code}")
                                 f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
                             break # found execute() calling
-        except Exception:
+        except Exception as e:
             with open(tool_log_path, "a+") as f:
                 f.write(f"\n[QAid]{id}\n")
                 f.write("\n[Code Extraction Failed or Parse Failed]\n\n")
+                f.write(str(e) + "\n")
                 f.write(f"\nCompletion Content: \n{content}")
+                
         rewards.append(reward)
     return rewards
 ####################################################################
@@ -479,7 +482,8 @@ def main(script_args, training_args, model_args,conf):
         eval_dataset=dataset[script_args.dataset_test_split] if training_args.eval_strategy != "no" else None,
         peft_config=get_peft_config(model_args),
         attn_implementation=model_args.attn_implementation,
-        torch_dtype = model_args.torch_dtype,  # Debug: origianlly parameters can not passed 
+        torch_dtype = model_args.torch_dtype,  # Debug: origianlly parameters can not passed
+        reward_weights = script_args.reward_weights,
         max_pixels=script_args.max_pixels,
         min_pixels=script_args.min_pixels,
     )
@@ -500,6 +504,14 @@ def main(script_args, training_args, model_args,conf):
     # global_loop.close()  # close Global loop for `Asyncio` approach
     
 if __name__ == "__main__":
+    # Debug for sub-process CUDA issue
+    try:
+        multiprocessing.set_start_method('spawn', force=True)
+        print("Set multiprocessing start method to 'spawn'")
+    except RuntimeError:
+        print("Multiprocessing context already set.")
+        pass
+    
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
     #print("Parsed training_args:", training_args)
