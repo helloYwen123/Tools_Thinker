@@ -16,11 +16,11 @@ root_dir = os.path.dirname(os.path.dirname(current_dir))
 sys.path.insert(0, root_dir)
 from basetool import BaseTool  # note
 
-class SegmentationTool(BaseTool):
+class Segmentation_Tool(BaseTool):
     def __init__(self):
         super().__init__(
             tool_module_name="segmentation_tool",
-            tool_class_name="SegmentationTool",
+            tool_class_name="Segmentation_Tool",
             tool_description=(
                 "A segmentation tool using the SAM2 model."
                 "Supports point-based and box-based inputs for single or batch segmentation."

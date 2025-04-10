@@ -3,30 +3,42 @@ export LOG_PATH="./debug_log_2b.txt"
 export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 export WANDB_PROJECT="code_gen_GRPO"
-# export MAIN_PROCESS_PORT=29507  # Change this to an available port
 export NCCL_P2P_DISABLE=1
 export TOKENIZERS_PARALLELISM=false
-mkdir -p debuglogs
+mkdir -p Debug_logs
 timestamp=$(date +"%m%d_%H%M%S")
-# BUG
-CACHE_DIR="/tmp/trition_cache_${USER}/triton_cache_${SLURM_JOB_ID}"
-mkdir -p "$CACHE_DIR"
-export TRITON_CACHE_DIR="$CACHE_DIR"
-echo "TRITON_CACHE_DIR is set to: $TRITON_CACHE_DIR"
-# netstat -tulnp | grep 29507
-#"flash_attention_2",  #  "eager" / "sdpa"
 
-# Confusing Parameters
-# dataset_name: push_to_hub; 
-# respectively modify zero3 yaml `num_processes` to control parallel GPU computation
+# BUG regarding tmp file
+NODE_LOCAL_STORAGE="${TMPDIR:-/tmp}"
+JOB_LOCAL_DIR="$NODE_LOCAL_STORAGE/wxie/grpo_job_${SLURM_JOB_ID}"
+mkdir -p "$JOB_LOCAL_DIR"
+echo "Created job-specific local directory: $JOB_LOCAL_DIR"
+
+TRITON_CACHE_PATH="$JOB_LOCAL_DIR/triton_cache"
+mkdir -p "$TRITON_CACHE_PATH"
+export TRITON_CACHE_DIR="$TRITON_CACHE_PATH"
+echo "TRITON_CACHE_DIR set to: $TRITON_CACHE_DIR"
+
+WANDB_LOCAL_PATH="$JOB_LOCAL_DIR/wandb"
+mkdir -p "$WANDB_LOCAL_PATH"
+export WANDB_DIR="$WANDB_LOCAL_PATH"
+
+WANDB_CACHE_PATH="$JOB_LOCAL_DIR/wandb_cache"
+mkdir -p "$WANDB_CACHE_PATH"
+export WANDB_CACHE_DIR="$WANDB_CACHE_PATH"
+
+WANDB_CONFIG_PATH="$JOB_LOCAL_DIR/wandb_config"
+mkdir -p "$WANDB_CONFIG_PATH"
+export WANDB_CONFIG_DIR="$WANDB_CONFIG_PATH"
+# BUG
 
 accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src/open_r1/toolsgrpo.py \
     --confile configs/prompt_configuration_file.yaml \
     --output_dir outputs/Qwen2-VL-2B-Instruct-GRPO-BLINK \
     --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
     --dataset_name BLINK_visual_counting \
-    --max_prompt_length 4096 \
-    --max_completion_length 2048 \
+    --max_prompt_length 8192 \
+    --max_completion_length 4096 \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 2 \
     --logging_steps 1 \
@@ -43,4 +55,4 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --report_to wandb \
     --use_cpu False \
     --num_generations 8 \
-    2>&1 | tee "debuglogs/training_log_${timestamp}.txt"
+    2>&1 | tee "Debug_logs/training_log_${timestamp}.txt"

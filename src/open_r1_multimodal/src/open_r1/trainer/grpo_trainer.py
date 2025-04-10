@@ -346,7 +346,6 @@ class Qwen2VLGRPOTrainer(Trainer):
         if self._signature_columns is None:
             self._signature_columns = ["prompt"]
 
-
     # Get the per-token log probabilities for the completions for the model and the reference model
     def _get_per_token_logps(self, model, input_ids, attention_mask, pixel_values, image_grid_thw):
         logits = model(input_ids, attention_mask=attention_mask, pixel_values=pixel_values, image_grid_thw=image_grid_thw).logits  # (B, L, V)
@@ -359,7 +358,6 @@ class Qwen2VLGRPOTrainer(Trainer):
             token_log_prob = torch.gather(log_probs, dim=1, index=input_ids_row.unsqueeze(1)).squeeze(1)
             per_token_logps.append(token_log_prob)
         return torch.stack(per_token_logps)
-
 
     # Trainer "prepares" the inputs before calling `compute_loss`. It converts to tensor and move to device.
     # Since we preprocess the data in `compute_loss`, we need to override this method to skip this step.
@@ -475,7 +473,7 @@ class Qwen2VLGRPOTrainer(Trainer):
         completions = self.processing_class.batch_decode(completion_ids, skip_special_tokens=True)
         ##################################################################################################################
 
-        #################################################################################################################        
+        ##################################################################################################################     
         if is_conversational(inputs[0]):
             completions = [[{"role": "assistant", "content": completion}] for completion in completions]
 

@@ -173,7 +173,7 @@ def unsafe_execute(code, timeout, result, log_path):
 
 def check_correctness(task: dict, log_path, current_time) -> float:
     start_time = time.perf_counter()  # timer start
-    evaluation_log_path = os.path.join(log_path, f"evaluation-{task['QAid']}.log") 
+    evaluation_log_path = os.path.join(log_path, f"evaluation-{task['QAid']}.log")
     # in evaluation includes all cased in reward computation
     # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
     manager = multiprocessing.Manager()
@@ -200,7 +200,7 @@ def check_correctness(task: dict, log_path, current_time) -> float:
 async def run_all_checks_async(tasks, log_root_dir, current_time):
     loop = asyncio.get_event_loop()
     rewards = []
-    #mp_context = multiprocessing.get_context('spawn')  mp_context=mp_context
+    # mp_context = multiprocessing.get_context('spawn')  mp_context=mp_context
     with ProcessPoolExecutor(max_workers=2) as pool:  # max num Processes 
         futures = [
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
@@ -304,7 +304,6 @@ def format_reward(completions, **kwargs):
 ####################################################################
 #                         Tool Usage REWARD                        #
 ####################################################################
-
 import ast
 
 def tool_usage_reward(completions, QAid, step , **kwargs):
@@ -356,7 +355,6 @@ def tool_usage_reward(completions, QAid, step , **kwargs):
     return rewards
 ####################################################################
 reward_funcs_registry = {
-    #"code": code_exec_acc_reward, # execution and accuracy reward
     "execution": execution_reward, # note here sequency
     "accuracy": accuracy_reward,
     "format": format_reward, # format reward
@@ -383,51 +381,54 @@ def main(script_args, training_args, model_args,conf):
     if model_args.model_name_or_path.split("/")[-1] == "Qwen2-VL-2B" or "Base" in model_args.model_name_or_path:
         base_model_prompt = True
     
-    toolbox_metadata = conf.get("toolbox_metadata")
-    available_tools = conf.get("available_tools")
-    
     PROMPT_TEMPLATE = conf.get("prompt_template")
     # for Blink Dataset
-    def make_conversation_sat(example, prefix, base_model_prompt=False):
+    def make_conversation_sat(example, prefix,
+                        available_tools_str: str,
+                        filtered_metadata_str: str,
+                        base_model_prompt=False):
         # get answer
-        answer = example["answer"].strip("()")
+        answer = example["messages"][1]["content"].strip()
+        image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
+        images = [Image.open(path) for path in image_paths ]
+        idx = os.path.splitext(os.path.basename(example["images"][0]))[0] # image name as index
         
+         # Format the final prompt text using the provided strings
+        formatted_question_part = PROMPT_TEMPLATE.format(
+        question=example["messages"][0]["content"].strip(),
+        image_paths=", ".join(image_paths),
+        available_tools=available_tools_str,        # Use the pre-formatted string
+        toolbox_metadata=filtered_metadata_str      # Use the filtered metadata string
+        )
+
         if base_model_prompt:
-            image_paths = [os.path.join(prefix, img_path) for img_path in example["image_paths"]]
-            images = [Image.open(path) for path in image_paths ]
-           
             prompt = f"""A conversation between User and Assistant. 
             The user asks a question about the image, and the Assistant solves it. 
             The assistant first thinks about the reasoning process in the mind and then provides the user with the answer.
-            \nUser: {PROMPT_TEMPLATE.format(question=example["prompt"],
-                                            image_paths = ", ".join(image_paths),
-                                            available_tools=available_tools,
-                                            toolbox_metadata = toolbox_metadata
-                                            )} \nAssistant: <command>"""
+            \nUser: {formatted_question_part} \nAssistant: <command>"""
+            
+            image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
+            images = [Image.open(path) for path in image_paths]
             message_content = [ {"type": "image"} for _ in images ]
             message_content.append({
                 "type": "text" , "text": "<image>" + prompt
             })
             idx = example["idx"]
             return {"image": images, # images
+                "image_path": image_paths,
                 "prompt": message_content,
                 "solution": answer,  ###
                 "QAid": idx
             }
         else:
-            image_paths = [os.path.join(prefix, img_path) for img_path in example["image_paths"]]
-            images = [Image.open(path) for path in image_paths ]
+            image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
+            images = [Image.open(path) for path in image_paths]
             message_content = [ {"type": "image"} for _ in images ]
             message_content.append({
                             "type": "text",
-                            "text": PROMPT_TEMPLATE.format(
-                                question=example["prompt"],
-                                image_paths=", ".join(image_paths),  
-                                available_tools=available_tools,
-                                toolbox_metadata=toolbox_metadata
-                            )
+                            "text": formatted_question_part
                         })
-            idx = example["idx"] 
+            
             return {"image": images, # images 
                 "image_path": image_paths,
                 "prompt": [
@@ -439,40 +440,58 @@ def main(script_args, training_args, model_args,conf):
                 "solution": answer, ###
                 "QAid": idx
             }
+    # load selected tooldata from prompt yaml file        
+    def load_tool_data(conf):
+        # --- Tool Metadata Filtering Logic ---
+        active_tool_names = conf.get("available_tools", []) # Get the list from YAML
+        full_toolbox_metadata = conf.get("toolbox_metadata", {})
 
-    dataset_prefix = "/home/stud/wxie/"
-    
-    # Blink Dataloader
-    task_names = ["Counting", "Object_Localization", "Spatial_Relation"]
+        # Create a dictionary containing only the metadata for active tools
+        filtered_metadata_dict = {
+            tool_name: full_toolbox_metadata[tool_name]
+            for tool_name in active_tool_names
+            if tool_name in full_toolbox_metadata
+        }
+
+        # Warn for missing tools
+        for tool_name in active_tool_names:
+            if tool_name not in full_toolbox_metadata:
+                print(f"Warning: Tool '{tool_name}' listed in available_tools but not found in toolbox_metadata.")
+
+        # indent=2 makes it readable
+        filtered_metadata_str = json.dumps(filtered_metadata_dict, indent=2)
+
+        available_tools_str = ", ".join(active_tool_names)
+
+        return available_tools_str, filtered_metadata_str
+
+    #################### Data Loading Start ####################
+
+    dataset_prefix = "/nfs/data8/liao/wxie/SAT" #"/home/stud/wxie/"
+
+    # SAT Dataloader
     dataset = {}
     all_samples = []
-    for task in task_names:
-        dataset_path = f"BLINK_Dataset/{task}/val/{task}_val.json"
-        full_path = os.path.join(dataset_prefix, dataset_path)
-        with open(full_path, 'r') as f:
-            raw_dataset = json.load(f)
-            processed_dataset = [make_conversation_sat(sample, dataset_prefix, base_model_prompt) for sample in raw_dataset]
-            all_samples.extend(processed_dataset)
+    
+    dataset_path = f"filtered_output_file.json"
+   
+    full_path = os.path.join(dataset_prefix, dataset_path)
+    with open(full_path, 'r') as f:
+        raw_dataset = json.load(f)
+        available_tools_str, filtered_metadata_str = load_tool_data(conf=conf)
+        processed_dataset = [make_conversation_sat(sample, dataset_prefix, available_tools_str, filtered_metadata_str,base_model_prompt) for sample in raw_dataset]
+        all_samples.extend(processed_dataset)
 
     dataset = {"train": all_samples}
-    
-    # dataset_path = "BLINK_Dataset/Counting/val/Counting_val.json"
-
-    # # load json file 
-    # with open(dataset_prefix + dataset_path, 'r') as f:
-    #     dataset = json.load(f)
-
-    # dataset = [make_conversation_sat(sample, dataset_prefix, base_model_prompt) for sample in dataset]
-    # dataset = {'train': dataset} #####
 
     # test template and arg
     # save_path = "processed_dataset.json"
     # with open(save_path, "w") as f:
     #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
-        
+
     trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
     # trainer_cls = Qwen2VLGRPOTrainer
-    
+
     # Initialize the GRPO trainer
     trainer = trainer_cls(
         model=model_args.model_name_or_path,
@@ -487,12 +506,12 @@ def main(script_args, training_args, model_args,conf):
         max_pixels=script_args.max_pixels,
         min_pixels=script_args.min_pixels,
     )
-    
+
     if script_args.freeze_vision:
         trainer.model.visual.requires_grad_ = False
     elif script_args.freeze_llm:
         trainer.model.model.requires_grad_ = False
-    
+
     # Train and push the model to the Hub
     trainer.train()
 
@@ -500,18 +519,18 @@ def main(script_args, training_args, model_args,conf):
     trainer.save_model(training_args.output_dir)
     if training_args.push_to_hub:
         trainer.push_to_hub(dataset_name=script_args.dataset_name)
-    
+
     # global_loop.close()  # close Global loop for `Asyncio` approach
-    
+
 if __name__ == "__main__":
     # Debug for sub-process CUDA issue
-    try:
-        multiprocessing.set_start_method('spawn', force=True)
-        print("Set multiprocessing start method to 'spawn'")
-    except RuntimeError:
-        print("Multiprocessing context already set.")
-        pass
-    
+    # try:
+    #     multiprocessing.set_start_method('spawn', force=True)
+    #     print("Set multiprocessing start method to 'spawn'")
+    # except RuntimeError:
+    #     print("Multiprocessing context already set.")
+    #     pass
+
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
     #print("Parsed training_args:", training_args)

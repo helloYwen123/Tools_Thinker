@@ -1,1 +1,1 @@
-from .tool import SegmentationTool
+from .tool import Segmentation_Tool
