@@ -216,9 +216,11 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
             for task in tasks
         ]
     #
-    # 这里用并发多线程的形式运行check_correctness这个函数， task变量为一个dict 的数据类型: "code" 和 "QAid"；[log_root_dir与current_time仅做debug用]
+    # 这里用异步并发单线程Asyncio&多进程Multiprocessing的形式运行check_correctness这个函数， task变量为一个dict 的数据类型: "code" 和 "QAid"；[log_root_dir与current_time仅做debug用]
     # 也就是这里的check_correctness接收 模型生成的code->执行code->返回结果
+    # TODO
     # server mode下， 这个函数接受code-> 发送带code的request到server(还可以有image path， 可能不需要question以及prompt)->等待server结果
+    # TODO server 端需要解析代码然后做对应环境的运行与启动
     # Code Example:
     # from object_detector import Object_Detector_Tool
     # obj_detector_tool = Object_Detector_Tool()
