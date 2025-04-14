@@ -1,0 +1,245 @@
+###########################################################
+from object_detector import Object_Detector_Tool
+
+final_result = None
+
+# Define the image file path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_15_image_1.jpg'
+# Define the labels to detect
+labels = ["baseball", "basket"]
+
+# Set the confidence threshold to 0.45
+threshold = 0.45
+
+# Set the size of the model to "tiny"
+model_size = "tiny"
+
+# Set the mode to save detected objects as images
+save_object = True
+
+# Define the saved output path
+saved_image_path = "detected_objects"
+
+
+#############################################################
+
+from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_2_image_1.jpg'
+
+# Load the Object_Detector_Tool class
+tool_class_name = "Object_Detector_Tool"
+tool_module_name = "object_detector"
+
+# Function to execute the object detection tool
+def execute_tool(tool_class, tool_module_name, image_path, labels, threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects"):
+    # Create a new Tool instance
+    tool = tool_class("path_to_tool_model_file", model_size=model_size, threshold=threshold)
+    
+    # Execute the object detection tool
+    tool.execute(image=image_path, labels=labels)
+
+    # Initialize counters for black toilets and total toilets
+    black_count = 0
+    total_count = 0
+    
+    # Analyze the detected objects in the image
+    results = tool.execute(image=image_path, labels=["baseball", "basket", "toilet"], save_object=True, saved_image_path=saved_image_path)
+    
+    # Identify black toilets and their counts
+    for label in results.get('object_number'):
+        name = label.get('name')
+        boxes = label.get('boxes')
+        scores = label.get('confidence_scores')
+        image_paths = label.get('saved_image_paths')
+        
+        # Count black toilets
+        if name == "toilet":
+            black_count += 1
+            for i in range(len(image_paths)):
+                if image_paths[i].endswith(".jpg"):
+                    total_count += 1
+                    continue
+                else:
+                    black_count += 1
+                    total_count += 1
+    
+    # Output the result
+    if black_count == 0:
+        final_result = "D"  # Count (A)
+    else:
+        final_result = str(black_count)
+    # Print the final result
+    print(f"Final result: {(black_count)}")
+    
+######################################################################
+from object_detector import Object_Detector_Tool
+
+final_result = None
+
+# Define the image file path
+image_path = '/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_15_image_1.jpg'
+# Define the labels to detect
+labels = ["baseball", "basket"]
+
+# Set the confidence threshold to 0.45
+threshold = 0.45
+
+# Set the size of the model to "tiny"
+model_size = "tiny"
+
+# Set the mode to save detected objects as images
+save_object = True
+
+# Define the saved output path
+saved_image_path = "detected_objects"
+#####################################################################
+ from object_detector import Object_Detector_Tool
+
+    # Specify the image path
+    label_list = ["elephant"]
+    save_image_path = "elephant_detected"
+
+    # Specify the detection thresholds and model size
+    threshold = 0.45
+    model_size = "tiny"
+
+    # Call the object detector tool
+    detected_objects, result_dict = Object_Detector_Tool.execute(image="/path/to/image.png",
+                                                                labels=label_list,
+                                                                threshold=threshold,
+                                                                model_size=model_size,
+                                                                save_object=True,
+                                                                saved_image_path=save_image_path)
+
+    # Get the count for each label
+    object_number = result_dict["output_types"][0]["counts"]
+
+    # Determine the result
+    final_result = {
+        "method": "Object_Detector_Tool",
+        "details": {
+            "method_description": "The object detection method was used to count the number of elephants in the image.",
+            "labels": label_list,
+            "threshold": threshold,
+            "result": object_number
+        }
+    }
+
+except Exception as e:
+    print(f"An error occurred during object detection: {e}")
+    final_result = {"method": e, "details": {"error": "An error occurred during object detection."}}
+#####################################################################
+
+from_object_detector = Object_Detector_Tool()
+final_result = from_object_detector.execute(image="/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_54_image_1.jpg", labels=["baseball", "basket"], save_object=True)
+[THE PRINT OUTPUT]
+Error building the Object Detection tool: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+Error detecting objects: Failed to build the Object Detection tool.
+Failed to detect objects after 10 attempts.
+
+[GENERATE FINAL_RESULT]
+[]
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+final_result = {'BUTTERS: 1', 'SODAS: 22', 'WINEBOTTLES: 3', 'LICQBOTTLES: 5', 'WHISKEYBOTTLES: 6', 'SULFCOKEBOTTLES: 1'}
+[THE PRINT OUTPUT]
+
+[GENERATE FINAL_RESULT]
+{'LICQBOTTLES: 5', 'SODAS: 22', 'WINEBOTTLES: 3', 'WHISKEYBOTTLES: 6', 'BUTTERS: 1', 'SULFCOKEBOTTLES: 1'}
+
+============================== NEW SCCESSFUL EXECUTION ==============================
+[EXEC CODE]
+from object_detector import Object_Detector_Tool
+
+final_result = { # Assign the final result to a variable
+    'C': 0, # Example: The number of knobs on the stove in the image
+    # Your task is to calculate the actual number of knobs
+}
+#######################################################################
+from object_detector import Object_Detector_Tool
+
+def count_cows(image_path, labels=["cow", "bull"], save_image=True):
+    detector_tool = Object_Detector_Tool()
+    try:
+        results = detector_tool.execute(image_path=image_path, labels=labels, threshold=0.85, model_size='tiny', save_object=save_image)
+        label_to_labels = detector_tool.output_types['output_results'][0]
+        detection_results = {label_to_label: results for label_to_label, results in label_to_labels.items()}
+        cow_count = sum(1 for cows in detection_results.values() if 'cow' in cows)
+        return cow_count
+    except Exception as e:
+        print(f"An error occurred while counting cows: {e}")
+        return 0
+
+final_result = count_cows("/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_63_image_1.jpg")
+print(f"Number of cows: {final_result}")
+##########################################################3
+import os
+from object_detector import Object_Detector_Tool
+
+# Read image path from environment variable
+image_path = os.getenv('image_path')
+
+# Initialize the object detector tool
+tool = Object_Detector_Tool()
+
+def classify_objects(image_path):
+    # Load the image from the file
+    loaded_image = tool.image_objectDetector(image_path, 'baseball')
+
+    counts = tool.objectCount(loaded_image['boxes'], loaded_image['confidence_scores'], 'baseball')
+
+    return counts
+
+def main():
+    image_path = 'val_Counting_116_image_1.jpg'
+    counts = classify_objects(image_path)
+
+    # Calculate average counts
+    average_counts = counts / len(counts)
+
+    final_result = average_counts
+    print('The average number of counts is:', final_result)
+
+    if final_result == max(counts):
+        print('The image has one ' + str(final_result - 1) + ' most common class in the average counts.')
+    else:
+        print('The image has two ' + str(round(counts, 2) - 1) + ' most common classes in the average counts.')
+    
+if __name__ == '__main__':
+    main()
+##################################################################
+from object_detector import Object_Detector_Tool
+
+# Load the object detector tool
+detector_tool = Object_Detector_Tool()
+
+# Define the question
+question = "How many flower pots have flowers in them?"
+
+# Define the answer list
+answers = [1, 4, 6, 3]
+
+# Convert the final answer list to a tuple
+final_result = tuple(answers)
+
+# Print the final answer
+print(final_result)
+#####################################################################
+from object_detector import Object_Detector_Tool
+
+def count_words_in_sign(file_path):
+    tool = Object_Detector_Tool(file_path)
+    result = tool.execute(labels=["i"], threshold=0.45, model_size="tiny", save_object=True, saved_image_path="detected_objects")["output_types"][0][1]
+    final_result = {}
+    for label, data in result.items():
+        final_result[label] = data["count"]
+    return final_result
+
+if __name__ == '__main__':
+    image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_91_image_1.jpg"
+    final_result = count_words_in_sign(image_path)
+    print(final_result)
