@@ -215,6 +215,27 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
             for task in tasks
         ]
+    #
+    # 这里用并发多线程的形式运行check_correctness这个函数， task变量为一个dict 的数据类型: "code" 和 "QAid"；[log_root_dir与current_time仅做debug用]
+    # 也就是这里的check_correctness接收 模型生成的code->执行code->返回结果
+    # server mode下， 这个函数接受code-> 发送带code的request到server(还可以有image path， 可能不需要question以及prompt)->等待server结果
+    # Code Example:
+    # from object_detector import Object_Detector_Tool
+    # obj_detector_tool = Object_Detector_Tool()
+
+    # # Load a sample image for detection
+    # image_path = "/home/stud/wxie/BLINK_Dataset/Counting/val/images/val_Counting_68_image_1.jpg"
+    # detected_objects, object_number = obj_detector_tool.execute(image=image_path, labels=['baseball bat'], save_object=True, saved_image_path="detected_objects")
+
+    # # Access object_number dictionary to find the number of objects detected
+    # num_bats = object_number.get('baseball bat', None)
+
+    # if num_bats:
+    #   final_result = "Detected baseball bat."
+    # else:
+    #   final_result = "No detected baseball bat."
+
+    # print(final_result)
         rewards = await asyncio.gather(*futures) # keep same sequence as tasks(completions code)
     reward_list = [r for r, _ in rewards] 
     result_list = [res for _, res in rewards]
