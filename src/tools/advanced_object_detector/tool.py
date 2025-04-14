@@ -4,7 +4,6 @@
 import argparse
 import os
 import sys
-from gdino import GroundingDINOAPIWrapper, visualize
 from PIL import Image, ImageOps
 import numpy as np
 from collections import defaultdict
@@ -12,6 +11,9 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(os.path.dirname(current_dir))
 sys.path.insert(0, root_dir)
 from basetool import BaseTool
+
+from dds_cloudapi_sdk import Config, Client
+from dds_cloudapi_sdk.tasks.v2_task import V2Task
 
 class Advanced_Object_Detector(BaseTool):
     def __init__(self):
@@ -29,20 +31,19 @@ class Advanced_Object_Detector(BaseTool):
             "threshold": "Detection score threshold. Only objects above this score will be returned.",
             "save_object": "Whether to save cropped images of detected objects (bool).",
             "saved_image_path": "Directory to save cropped object images if `save_object` is True.",
-            "mask": "Whether to return segmentation masks (binary mask: 255 inside object regions, 0 elsewhere) for each detected object (bool)."
             },
             output_types={
             "results": ("A dictionary grouped by label, each containing list of detection entries with box, score, and optional mask/saved image path.",
-                        "e.g., {'person': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'mask': <numpy array>, 'saved_path': 'path/to/saved/image.png'}]}"),
+                        "e.g., {'person': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_path': 'path/to/saved/image.png'}]}"),
             "object_counts": ("A dictionary with count of detected objects for each label.",
                              "e.g., {'person': 2, 'tree': 1}")
             },
             demo_commands=[{
-                "command": "result, object_counts = tool.execute(image='demo.jpg', labels=['person', 'bicycle'], threshold=0.4, save_object=False, mask=True)",
-                "description": "Detect 'person' and 'bicycle' in the image return dictionary with key `label` :  bounding boxes and pixel-level masks.",
+                "command": "result, object_counts = tool.execute(image='demo.jpg', labels=['person', 'bicycle'], threshold=0.4, save_object=False)",
+                "description": "Detect 'person' and 'bicycle' in the image return dictionary with key `label` :  bounding boxes and confidence score.",
                 "output_example": """
-                results :  {'person': [{'box': (50, 30, 200, 400), 'score': 0.92, 'mask': '<numpy array representing mask>', 'saved_path': None}],
-                            'bicycle': [{'box': (400, 200, 550, 420), 'score': 0.85, 'mask': '<numpy array representing mask>', 'saved_path': None}]}
+                results :  {'person': [{'box': (50, 30, 200, 400), 'score': 0.92, 'saved_path': None}],
+                            'bicycle': [{'box': (400, 200, 550, 420), 'score': 0.85, 'saved_path': None}]}
                 object_counts : {'person': 2, 'bicycle': 1}"""}],
             user_metadata={
                "potential usage": (
@@ -51,81 +52,82 @@ class Advanced_Object_Detector(BaseTool):
                 )
             }  
         )
-        self.DINO_KEY = os.environ.get("DINO_KEY") # Replace with your actual API key
+        # self.DINO_KEY = os.environ.get("DINO_KEY") # Replace with your actual API key
+        self.DINO_KEY = "5cf9118fa07590654271566b4599070f"
+        self.client = Client(Config(self.DINO_KEY))
+        self.output_dir = None
     
-    def save_detected_object(self, image, box, image_name, label, index, padding):
+    def save_detected_object(self, image, box, image_name, label, index, padding=20):
+        """
+        Save the detected object as an image with padding.
+        """
         object_image = image.crop(box)
         padded_image = ImageOps.expand(object_image, border=padding, fill='white')
         
         filename = f"{image_name}_{label}_{index}.png"
         os.makedirs(self.output_dir, exist_ok=True)
         save_path = os.path.join(self.output_dir, filename)
-        
         padded_image.save(save_path)
         return save_path
     
     
-    def execute(self, image, labels, threshold=0.45, save_object=False, saved_image_path="detected_objects", mask=False):
-            padding = 20 # default padding
+    def execute(self, image, labels, threshold=0.45, save_object=False, saved_image_path="detected_objects"):
+        """
+        """
+        if save_object:
+            self.output_dir = saved_image_path
+            image_pil = Image.open(image)
+            image_name = os.path.splitext(os.path.basename(image))[0]
+        infer_image_url = self.client.upload_file(image)
+        prompt_str = ".".join(labels)
+
+        task = V2Task(api_path="/v2/task/grounding_dino/detection", api_body={
+        "model": "GroundingDino-1.5-Pro",
+        "image": infer_image_url,
+        "prompt": {
+            "type": "text",
+            "text": prompt_str
+        },
+        "targets": ["bbox"],
+        "bbox_threshold": threshold,
+        "iou_threshold": 0.8
+        })
+        task.set_request_timeout(10)
+        
+        self.client.run_task(task)
+        print(f"{task.result}")
+        objects = task.result.get("objects", [])
+        
+        grouped = defaultdict(list)
+        object_counts = {}
+        
+        # Process the results
+        for obj in objects:
+            score = obj.get("score", 0)
+            if score < threshold:
+                continue
             
-            self.DINO_KEY = "5cf9118fa07590654271566b4599070f" ## Replace with your actual API key
-            gdino = GroundingDINOAPIWrapper(self.DINO_KEY)
-            prompt_str = " . ".join(labels)
+            category = obj.get("category", "unknown")
+            bbox = obj.get("bbox", [])
+            box = tuple(map(int, bbox))
             
-            prompts = dict(image=image, prompt=prompt_str)
+            entry = {
+            "box": box,
+            "score": score,
+            "saved_path": None
+            }
             
-            results = gdino.inference(prompts, return_mask= mask)
+            # Count the number of objects per category
+            object_counts[category] = object_counts.get(category, 0) + 1
+            index = object_counts[category]
             
             if save_object:
-                # Create the directory to save detected objects
-                image_path = prompts['image']
-                image = Image.open(image_path).convert("RGB")
-                image_name = os.path.splitext(os.path.basename(image_path))[0]
-                self.output_dir = saved_image_path
+                saved_path = self.save_detected_object(image_pil, box, image_name, category, index)
+                entry["saved_path"] = saved_path
+
+            grouped[category].append(entry)
             
-            grouped = defaultdict(list) # dict: list[dict]
-            object_counts = {}
-            has_mask = bool(results.get("masks"))
-            for box, category, score, *mask in zip(
-                results["boxes"],
-                results["categorys"],
-                results["scores"],
-                results["masks"] if has_mask else [None] * len(results["boxes"])
-            ):  
-                if score < threshold:  # optional filter
-                    continue
-                
-                entry = {
-                    "box": box,
-                    "score": score,
-                }
-                
-                if has_mask and mask[0] is not None:
-                    alpha = mask[0].split()[-1]
-                    alpha_array = np.array(alpha)  # binary mask
-                    entry["mask"] = alpha_array
-                    
-                
-                object_counts[category] = object_counts.get(category, 0) + 1
-                index = object_counts[category]
-                # Save the detected object image if requested
-                entry["saved_path"] = None
-                if save_object:
-                    saved_path = self.save_detected_object(
-                        image=image,
-                        box=box,
-                        image_name=image_name,
-                        label=category,
-                        index=index,
-                        padding=padding
-                    )
-                    entry["saved_path"] = saved_path
-                # Add the saved image path to the entry
-                grouped[category].append(entry)
-                
-            results = dict(grouped)
-            
-            return results, object_counts
+        return dict(grouped), object_counts
     
     def get_metadata(self):
         metadata = super().get_metadata()
@@ -133,15 +135,13 @@ class Advanced_Object_Detector(BaseTool):
     
 if __name__ == "__main__":
 
-    # Use provided token or fallback to hardcoded (for testing)
-    token = "5cf9118fa07590654271566b4599070f"
     
     tool = Advanced_Object_Detector()
     metadata = tool.get_metadata()
     
-    image_path = './asset/AB.png'
-    labels = ['woman']
-    results = tool.execute(image=image_path, labels=labels, threshold=0.35, save_object=True, mask=True)
+    image_path = './asset/01.png'
+    labels = ['bird']
+    results = tool.execute(image=image_path, labels=labels, threshold=0.30, save_object=True)
     
     results_dict, object_counts = results
     for label, entries in results_dict.items():
@@ -159,3 +159,36 @@ if __name__ == "__main__":
     with open('./asset/demo_output.json', 'w') as f:
         f.write(str(results_dict))
         print("Saved raw result dict to ./asset/demo_output.json")
+# 1. Initialize the client with your API token.
+# from dds_cloudapi_sdk import Config
+# from dds_cloudapi_sdk import Client
+
+# token = "5cf9118fa07590654271566b4599070f"
+# config = Config(token)
+# client = Client(config)
+
+# # 2. Upload local image to the server and get the URL.
+# # infer_image_url = "https://dds-frontend.oss-accelerate.aliyuncs.com/static_files/playground/grounding_DINO-1.6/02.jpg"
+# infer_image_url = client.upload_file("./asset/AB.png")  # you can also upload local file for processing
+
+# # 3. Create a task with proper parameters.
+# from dds_cloudapi_sdk.tasks.v2_task import V2Task
+
+# task = V2Task(api_path="/v2/task/dinox/detection", api_body={
+#     "model": "DINO-X-1.0",
+#     "image": infer_image_url,
+#     "prompt": {
+#         "type":"text",
+#         "text":"woman"
+#     },
+#     "targets": ["bbox"],
+#     "bbox_threshold": 0.25,
+#     "iou_threshold": 0.8
+# })
+# # task.set_request_timeout(10)  # set the request timeout in seconds，default is 5 seconds
+
+# # 4. Run the task.
+# client.run_task(task)
+
+# # 5. Get the result.
+# print(task.result)

@@ -1,0 +1,79 @@
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+
+def answer_question(question):
+    # Read the image
+    image_path = question["image_path"]
+
+    # Detect object labels
+    labels = question["labels"] if "object_labels" in question else []
+    labels.extend(["baseball"] * question["objects_count"])
+    labels.extend(["basket"] * question["basket_counts"])
+    labels.append("table")
+    labels.append("desk")
+
+    # Initialize the object detector
+    object_detector = Object_Detector_Tool(image_path, labels=labels, save_object=project.object_output, saved_image_path="detected_objects")
+
+    # Detect objects and retrieve the number of detections
+    detected_objects, object_counts = object_detector.execute(save_object=True, languages=["en", "de"])
+
+    # Check if there are more than one baseball or basket detected
+    if len(detected_objects) == 1:
+        detected_objects = detected_objects[0]
+        object_counts = object_counts[0]
+    else:
+        detected_objects = detected_objects[0]
+        object_counts = detected_objects["total"]
+
+    # Check if the number of detected objects does not match the expected count
+    if object_counts != question["objects_count"]:
+        print("Error:", "Expected object counts: Expected " + str(object_counts) + " but received " + str(len(detected_objects)))
+        return
+
+    # Print the detected objects for each object
+    for label, obj in detected_objects.items():
+        box = [obj["bbox"]]
+        text = obj["score"]
+        print(f"Object: {label} count: {obj['count']} score: {obj['score']}")
+        print(box)
+        print(f"Detected text: {text}")
+
+    print("Ball:", detected_objects["detect_ball"])
+    # If the ball is detected, print any bounding box, score
+    if len(detected_objects["detect_ball"]) > 0:
+        ball_box = [detected_objects["detect_ball"][0]["bbox"]]
+        ball_score = detected_objects["detect_ball"][0]["score"]
+        print(f"Ball detected bounding box: {ball_box}")
+        print(f"Ball detected score: {ball_score}")
+
+if __name__ == "__main__":
+    question = {
+        "image_path": "path/to/image.png",
+        "object_labels": ["baseball", "basket"],
+        "objects_count": 10,
+        "basket_counts": 10,
+        "object_output": True,
+    }
+    answer_question(question)
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+
+============================== END ==============================
+

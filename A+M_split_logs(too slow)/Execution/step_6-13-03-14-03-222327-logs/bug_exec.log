@@ -1,0 +1,93 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+detected_objects: object_number: {'baseball': 1, 'basket': 2}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+f-string: unterminated string (<string>, line 14)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Load image
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png')
+
+# Get chair (highlighted by a blue box) detection result
+chip_detection = filtered_objects['chip']['chip']
+chip_details = filtered_objects['image_details']['image_details']
+
+# Iterate through chair detections
+for entry in chip_detection:
+  # Print each detected camera with its coordinates and score
+  print(f"Detected chair with coordinates ({entry['bbox'][0]}, {entry['bbox'][1]}, {entry['bbox'][2]}, {entry['bbox'][3]}), score {entry['score]}.")
+  
+  # Check if chair has coordinates corresponding to Window (highlighted by a green box)
+  if entry['bbox'] == [630, 220, 760, 420]:
+    print(f"Chair found ({chip_details['score']:.4f}) in Window with coordinates ({entry['bbox'][0]}, {entry['bbox'][1]}, {entry['bbox'][2]}, {entry['bbox'][3]}).")
+else:
+  print("Chair not found in Window.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Pixel_Depth_Tool'
+code: 
+
+from Pixel_Depth_Tool import Pixel_Depth_Tool
+from object_detector import Object_Detector_Tool
+
+# Define the input image file and the window from which to detect objects
+image_path = '/path/to/input/image.png'
+window_path = '/path/to/window.png'
+
+# Create an object detector tool
+o_detector_tool = Object_Detector_Tool()
+
+# Create a pixel depth tool
+p_detector_tool = Pixel_Depth_Tool(mode='depth')
+
+# Detect objects in the input image and estimate depth in the window
+o_results = p_detector_tool.execute(image_path=[image_path], output=True, outdir=window_path)
+p_results = p_detector_tool.execute(image_path=[window_path])
+
+# Get the pixel-level depth maps for the objects in the input image
+image_depth = p_results['image1_depth'] if p_results else 'No depth detected'
+video_depth = p_results['video_depth']
+
+# Access the detected objects in the input image and estimate their relative positions
+detected_objects_image = o_detector_tool.execute(image=image_path, labels=['chair'])  # Only using chairs for example
+detected_objects = detected_objects_image['detected_objects']
+
+relative_positions = []
+
+# For each chair detected in the input image
+for det_objects in detected_objects:
+    for det in det_objects:
+        # Coordinates of the detected chair and the window
+        chair_box = det['box']
+        window_box = (coor[0], coor[1], coor[2], coor[3])
+        # Calculate distance between the chair coordinates and the window coordinates
+        chair_to_window_dist = ((coor[0] - chair_box[0]) ** 2 + (coor[1] - chair_box[1]) ** 2) ** 0.5
+
+        # Calculate chair-to-window distance relative to window size
+        relative_distance = (window_box[2] - window_box[0]) / 2.0 - chair_to_window_dist
+
+        # Append relative position as a list of [chair, window]
+        relative_positions.append((det['object_name'], window_name))
+
+print(relative_positions)
+
+
+============================== END ==============================
+

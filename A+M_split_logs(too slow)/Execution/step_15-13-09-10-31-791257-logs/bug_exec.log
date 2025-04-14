@@ -1,0 +1,183 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Execute the object detection tool on the image
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['bed'], save_object=True, saved_image_path='detected_objects')
+
+if isinstance(final_result["detected_objects"], list):
+    beds = final_result["detected_objects"][0]
+else:
+    beds = final_result["detected_objects"]
+
+len(beds)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() got an unexpected keyword argument 'saved_object'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Assuming the image path is 'path/to/image.png'
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['Bed'], saved_object=True, saved_image_path='detected_objects')
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 2 required positional arguments: 'self' and 'labels'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', save_object=True, saved_image_path='detected_objects')
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+detected_objects, object_number = Object_Detector_Tool.execute(image='path_to_image.png', labels=['bed'], save_object=True, saved_image_path='detected_objects')
+print(detected_objects)
+print(object_number)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Image' is not defined
+code: 
+
+def find_beds(image_path):
+    # Load the image
+    img = Image.open(image_path)
+
+    # Detect objects
+    results = object_detector(image=img, labels=['Bed'], save_objects=True)
+
+    # Count the number of beds
+    bed_count = len(results['object_number'].keys())
+
+    # Print the final answer
+    final_result = f"1 Bed\n"
+    if bed_count == 1:
+        final_result += f"{bed_count}床.\n"
+    if bed_count > 1:
+        final_result += f"{bed_count}-bed.\n"
+
+    return final_result
+
+final_result = find_beds('path/to/image.png')
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'pixel_depth_estimator'
+code: 
+
+# Import required tools
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+from pixel_depth_estimator import Pixel_Depth_Tool
+
+# Get the image path from the URL provided
+image_path = "/path/to/image.png"
+
+# Use the Text_Detector_Tool to detect text in the image
+text_results = Text_Detector_Tool.execute(image=image_path, languages=['en', 'de'])
+
+# Filter the text results to select the first one
+first_text_result = max(text_results, key=lambda x: x[1].get('score', 0.0))
+
+# Load the detected image with empty padding
+text = first_text_result[0]['saved_image_path']
+
+# Use the Object_Detector_Tool to detect objects in the image
+object_results = Object_Detector_Tool.execute(image=image_path, save_object=True)
+
+# Get the number of detected objects for each label
+objects_number = {label: len(results) for label, results in object_results.items()}
+
+# Use the Pixel_Depth_Tool to estimate pixel-level depth from the image
+depth_results = Pixel_Depth_Tool.execute(image_path=image_path)
+
+# Define a helper function to check if the detected text matches the expected text
+def is_text_matched(results, expected):
+    for detected in results:
+        print(f"Detected text: {detected['text']}")
+        expected_text = expected[0].decode('utf-8').strip()
+        if detected['text'] != expected_text:
+            print(f"Detected text does not match expected text (found: {detected['text']}, expected: {expected_text})")
+            return False
+    return True
+
+# Check if the detected text and depth correspond well
+if is_text_matched(text_results, first_text_result):
+    # Extract the detected text from results
+    detected_text = [detected['text'] for detected in text_results]
+
+    # Check if the depth results are correctly extracted
+    detected_depth = 0
+    for result in depth_results.values():
+        print(result)
+        detected_depth += sum(result)
+
+    # Adjust the detected depth by the pixel spacing
+    adjusted_depth = detected_depth - (detected_depth % object_results[0]['assets']['image1.jpg']['depth_map'].shape[0] * object_results[0]['assets']['image1.jpg']['depth_map'].shape[1])
+else:
+    # Report that there is no text or that the text does not match
+    detected_objects = object_results
+
+    print("No text detected")
+    print("Detected objects:")
+    for label in detected_objects:
+        print(f"{label}, {len(detected_objects[label])}")
+
+    print("Detected objects (by number):", objects_number)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'depth_anything_v2'
+code: 
+
+from pixel_level_depth_estimator import Pixel_Depth_Tool
+
+final_result = Pixel_Depth_Tool.execute(image_path=['path/to/image.png'],
+  output=True,
+  outdir='./vis_depth')
+
+
+============================== END ==============================
+

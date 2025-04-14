@@ -150,11 +150,48 @@ def code_exec_acc_reward(completions, solution, **kwargs):
     return rewards
 
 completions = [
-    "<command>final_result = 'cat'</command>",
-    "<command>final_result = 'fish'</command>"
+"""<command>
+import object_detector
+import image
+import letter_detector
+
+# Convert image to grayscale for text detection
+pixel_depth = object_detector.pixel_level_depth_estimator(input_type='image', mode='image')
+image_result = image.execute(image_path=filename, save_image=True)
+
+# Load the detected text from the image
+detected_text = image_result['depth_image_result']['text_output']
+
+# Detect letters in the detected text
+letter_results = letter_detector.execute(image='depth_image')
+
+# Find the first letter in the detected text
+first_char = letter_results[0][0][3]
+
+# Extract the bounding box coordinates and check if it matches any letters
+bbox, letter, score = letter_results[0][1]
+
+# Print the final result
+if bbox == first_char:
+  final_result = "1"
+else:
+  final_result = "0"
+
+print(final_result)  # Output: 1 </command>"""
 ]
 solutions = ["cat", "fish"]
-rewards = code_exec_acc_reward(completions, solutions)
+
+def format_reward(completions, **kwargs):
+    """Reward function that checks if the completion has a specific format."""
+    pattern = r"(?s)<command>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</command>"  # TODO - Done
+    if isinstance(completions[0],str):
+        completion_contents = [completion for completion in completions]
+    else:
+        completion_contents = [completion[0]["content"] for completion in completions]
+    matches = [re.fullmatch(pattern, content, re.DOTALL) for content in completion_contents]
+    return [1.0 if match else 0.0 for match in matches]
+
+rewards = format_reward(completions)
 print(rewards)  
 
 

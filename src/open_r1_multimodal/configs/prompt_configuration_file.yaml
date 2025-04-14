@@ -1,11 +1,11 @@
 prompt_template: |
   Please generate a Python program that can answer questions based on visual inputs.
-  Assign the final answer (as a string, e.g., "B") to a variable named final_result within the Python code.
-  Ensure that when the generated Python code inside the <command> tags is executed, it prints *only* the value of the `final_result` variable to standard output, and nothing else.
-  Enclose the generated Python code and any necessary comments within <command></command> tags.
-
   Question: {question}.
   The paths of images: {image_paths}, which are related to the question.
+
+  Assign the final answer (as a string) to a variable named final_result within the Python code.
+  Ensure that when the generated Python code inside the <command> tags is executed, it prints only the value of the `final_result` variable to standard output, and nothing else.
+  Enclose the generated Python code and any necessary comments within <command></command> tags.
 
   Please consider using the following available tools if they are helpful for solving the problem.
   Available Tools: 
@@ -92,8 +92,7 @@ toolbox_metadata:
   Letter_Detector_Tool:
     tool_module_name: letter_detector
     tool_class_name: Letter_Detector_Tool
-    tool_description: A tool that detects filtered letters in an image.
-    tool_version: "1.0.0"
+    tool_description: A tool that detects specific letters in an image.
     input_types:
       image: "str - The path to the image file."
     output_types: "list - A list of detected letters with bounding box coordinates, recognized text, and confidence score."
@@ -170,19 +169,18 @@ toolbox_metadata:
       threshold: "Detection score threshold. Only objects above this score will be returned."
       save_object: Whether to save cropped images of detected objects (bool).
       saved_image_path: Directory to save cropped object images if `save_object` is True.
-      mask: "Whether to return segmentation masks (binary mask: 255 inside object regions, 0 elsewhere) for each detected object (bool)."
     output_types:
       results: >
-        A dictionary grouped by label, each containing list of detection entries with box, score, and optional mask/saved image path.
-        e.g., {'person': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'mask': <numpy array>, 'saved_path': 'path/to/saved/image.png'}]}
+        A dictionary grouped by label, each containing list of detection entries with box, score, and optional saved image path.
+        e.g., {'person': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_path': 'path/to/saved/image.png'}]}
       object_counts: "A dictionary with count of detected objects for each label. e.g., {'person': 2, 'tree': 1}"
     demo_commands:
-      command: result, object_counts = tool.execute(image='demo.jpg', labels=['person', 'bicycle'], threshold=0.4, save_object=False, mask=True)
+      command: result, object_counts = tool.execute(image='demo.jpg', labels=['person', 'bicycle'], threshold=0.4, save_object=False)
       description: "Detect 'person' and 'bicycle' in the image return dictionary with key `label`: bounding boxes and pixel-level masks."
       output_example: |
-        results: {'person': [{'box': (50, 30, 200, 400), 'score': 0.92, 'mask': '<numpy array representing mask>', 'saved_path': None}],'bicycle': [{'box': (400, 200, 550, 420), 'score': 0.85, 'mask': '<numpy array representing mask>', 'saved_path': None}]}
+        results: {'person': [{'box': (50, 30, 200, 400), 'score': 0.92, 'saved_path': None}],'bicycle': [{'box': (400, 200, 550, 420), 'score': 0.85, 'saved_path': None}]}
         object_counts: {'person': 2, 'bicycle': 1}
     user_metadata:
       potential_usage: >
-        The bounding box and masks can be used to determine precise object regions and pixel-level coordinates, enabling integration
-        with downstream tasks such as depth estimation, instance segmentation, or regions localization for sparse matching.
+        The bounding box can be used to determine precise object regions and pixel-level coordinates, enabling integration
+        with downstream tasks such as depth estimation, object segmentation, or regions localization for sparse matching.

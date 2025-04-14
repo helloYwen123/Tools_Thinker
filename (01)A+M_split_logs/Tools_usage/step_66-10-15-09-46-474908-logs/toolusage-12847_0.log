@@ -1,0 +1,66 @@
+
+[QAid]12847_0
+
+[Code Includes Tools Usage]
+code: 
+
+def answer_dining_table_location(question_image_path):
+    from object_detector import Object_Detector_Tool, letter_detector
+    from text_detector_tool import Text_Detector_Tool
+    from letter_detector_tool import Letter_Detector_Tool
+    from pixel_depth_tool import Pixel_Depth_Tool
+
+    results = {}
+
+    # Detect objects in the image
+    object_detection = Object_Detector_Tool()
+    detected_objects_result = object_detection.execute(image=question_image_path, labels=["desk"], language=["en"], save_object=False)
+    detected_objects = detected_objects_result['detected_objects']
+    
+    # Detect text in the image
+    text_detection_result = Text_Detector_Tool().execute(image=question_image_path, languages=["english", "german"])
+    text = []
+    for detection in text_detection_result['results']:
+        text.append(detection['text'])
+
+    letter_detector_result = Letter_Detector_Tool().execute(image=question_image_path)
+    letters = []
+    for letter in letter_detector_result['results']:
+        letters.append(letter['text'].lower())
+
+    # Save detected objects
+    final_result = "right"
+    
+    results["detected_objects"] = detected_objects
+    results["object_number"] = len(text) + len(letters)
+
+    # Save text
+    text = " ".join(text)
+    results["text"] = text
+
+    # Save letters
+    results["letters"] = letters
+    results["letter_number"] = len(letters)
+
+    # Save depth map if depth image is not empty
+    depth_image_path = f"output_depth/{questions['image_name']}.png"
+    if detected_objects and detected_objects[0]["bbox"] != []:
+        depth_image_path = f"output_depth/{questions['image_name']}_depth.png"
+        results["depth_map"] = object_detection.execute(image=depth_image_path, labels=["wood"], save_object=True, outdir='./output_depth')["depth_map"]
+
+    if results["depth_map"]:
+        results["output_image_path"] = f"output_depth/{questions['image_name']}_depth.png"
+        results["depth_image"] = results["depth_map"]
+
+    # Detect writing (assuming only English writing is detected)
+    text_analysis_result = letter_detector.execute(image=question_image_path, language=["english"])
+    detected_text = {letter['text'].lower(): 1 for letter in text_analysis_result['results']}
+
+    # Detect writing number if writing is found
+    detection_number_result = letter_detector.execute(image=question_image_path)
+    text_number = {letter['text'].lower(): 1 for letter in detection_number_result['results']}
+
+    return final_result
+
+============================== END ==============================
+

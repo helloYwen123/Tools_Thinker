@@ -102,7 +102,8 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
         max_pixels: Optional[int] = 12845056,
         min_pixels: Optional[int] = 3136,
         attn_implementation: str = "flash_attention_2",
-        torch_dtype: str = None  # Debug
+        torch_dtype: str = None,  # Debug
+        reward_weights: list[float] = None
         
     ):
 
@@ -217,7 +218,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                     reward_func, num_labels=1, **model_init_kwargs
                 )
         self.reward_funcs = reward_funcs
-
+        self.reward_weights = reward_weights
         # Reward processing class
         if reward_processing_classes is None:
             reward_processing_classes = [None] * len(reward_funcs)
@@ -354,6 +355,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                             else None
                         ),
                         max_model_len=args.max_prompt_length + args.max_completion_length,
+                        limit_mm_per_prompt={"image": 3}, # Debug multi-images inputs
                     )
                 self.sampling_params = SamplingParams(
                     temperature=args.temperature,
@@ -401,6 +403,20 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
     ):
         pixel_values = pixel_values.to(model.device)
         image_grid_thw = image_grid_thw.to(device=model.device)
+        # if self.accelerator.is_main_process:
+            # image_token_id_to_check = 151655
+            # print(f"[_get_per_token_logps] Checking input_ids (shape {input_ids.shape}) right before model call...")
+            # all_contain_token = True
+            # for i in range(input_ids.shape[0]):
+            #     if not torch.any(input_ids[i] == image_token_id_to_check):
+            #         print(f"[_get_per_token_logps] FATAL DEBUG: Sample {i} in batch passed to model DOES NOT contain image token {image_token_id_to_check}!")
+            #         # print(input_ids[i].tolist()) 
+            #         all_contain_token = False
+            # if all_contain_token:
+            #     print(f"[_get_per_token_logps] OK: All {input_ids.shape[0]} samples passed to model contain image token {image_token_id_to_check}.")
+            # 打印 pixel_values 和 image_grid_thw 形状
+        #    print(f"[_get_per_token_logps] pixel_values shape: {pixel_values.shape if pixel_values is not None else 'None'}")
+        #    print(f"[_get_per_token_logps] image_grid_thw shape: {image_grid_thw.shape if image_grid_thw is not None else 'None'}")
         logits = model(
             input_ids,
             attention_mask=attention_mask,
@@ -410,11 +426,13 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
         logits = logits[
             :, :-1, :
         ]  # (B, L-1, V), exclude the last logit: it corresponds to the next token pred
+            
         input_ids = input_ids[
             :, -logits_to_keep:
         ]  # (B, L-1), exclude the first input ID since we don't have logits for it
         # Compute the log probabilities for the input tokens. Use a loop to reduce memory peak.
         logits = logits[:, -logits_to_keep:]
+        
         per_token_logps = []
         for logits_row, input_ids_row in zip(logits, input_ids):
             log_probs = logits_row.log_softmax(dim=-1) ### log softmax computation
@@ -445,11 +463,17 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
             add_special_tokens=False,
         )
         prompt_ids, prompt_mask = prompt_inputs["input_ids"].to(device), prompt_inputs["attention_mask"].to(device)
-        
+
         if self.max_prompt_length is not None:
             prompt_ids = prompt_ids[:, -self.max_prompt_length :]
             prompt_mask = prompt_mask[:, -self.max_prompt_length :]
-
+        # # --- Debug ---
+        # if self.accelerator.is_main_process:
+        #     image_token_id_to_check = 151655 # 或者 self.processing_class.tokenizer.img_token_id
+        #     print(f"[DEBUG] after truncation, prompt_ids shape: {prompt_ids.shape}")
+        #     print(f"[DEBUG] after truncation, contains image token ({image_token_id_to_check})? {torch.any(prompt_ids == image_token_id_to_check)}")
+        #     print(f"[DEBUG] after truncation, prompt_ids[0]: {prompt_ids[0]}") # 打印第一个样本看看
+        # # --- End Debug ---
         if self.args.use_vllm:
             # First, have main process load weights if needed
             if self.state.global_step != self._last_loaded_step:
@@ -474,7 +498,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
             all_images = gather_object(images)
             # group into pairs
             all_multimodal_inputs = []
-            start_gen = time.perf_counter() # start inference
+
             use_naive_loop_sampling = False
             if use_naive_loop_sampling:
                 # in this implementation, one sample will repeat `self.num_generations` times
@@ -491,6 +515,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                             batch_inputs,
                             sampling_params=self.sampling_params,
                             use_tqdm=False,
+                            
                         )
                         batch_completion_ids = [out.token_ids for completions in outputs for out in completions.outputs]
                     else:
@@ -505,8 +530,14 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
             # this is a better implementation for vLLM sampling.
             for prompt, image in zip(all_prompts_text, all_images):
                 all_multimodal_inputs.append({"prompt": prompt, "multi_modal_data": {"image": image}})
+                
+            completion_ids = None #
+            generation_time = 0.0
             # Create sampling params with num_generations
             if self.accelerator.is_main_process:
+                ########################
+                start_gen = time.perf_counter() # start inference
+                ########################
                 # Clone to avoid modifying original params
                 sampling_params = copy.deepcopy(self.sampling_params)
                 sampling_params.n = self.num_generations
@@ -519,20 +550,23 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                     )
                 # Flatten outputs: [prompt1_gen1, prompt1_gen2, ..., prompt2_gen1, prompt2_gen2, ...]
                 completion_ids = [out.token_ids for completion in outputs for out in completion.outputs]
+                ###################################################################
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
+                end_gen = time.perf_counter() #Timer Group Inference Stop 
+                generation_time = end_gen - start_gen
+                ####################################################################
             else:
                 completion_ids = [None] * len(all_multimodal_inputs) * self.num_generations
-            ###################################################################
-            if torch.cuda.is_available():
-                torch.cuda.synchronize()
-            end_gen = time.perf_counter() #Timer Group Inference Stop 
-            generation_time = end_gen - start_gen
+            ####################################################################
             # record inference time for one device
             local_time = torch.tensor([generation_time], device=self.accelerator.device)
-            
             # gather_for_metrics `local_time` tensor
             global_times = self.accelerator.gather_for_metrics(local_time)
-            self._metrics["avg_inference_time"].append(global_times.mean().item())
+            if self.accelerator.is_main_process:
+                self._metrics["total_inference_time_main_process"].append(global_times.sum().item())
             ###################################################################
+            
             # broadcast and slice
             completion_ids = broadcast_object_list(completion_ids, from_process=0)
             process_slice = slice(
@@ -541,8 +575,37 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
             )
             completion_ids = completion_ids[process_slice]
 
+             # --- START: Debug Check After Broadcast and Slice ---
+             
+            #print(f"[RANK {self.accelerator.process_index} DEBUG] After broadcast & slice:")
+            #print(f"  - Type of original completion_ids: {type(completion_ids)}")
+            #print(f"  - Number of completion sequences for this rank: {len(completion_ids)}")
+
+            processed_completion_ids = []
+            if completion_ids: # Check if the list is not empty
+                image_token_id_to_check = 151655  # image_token_id for qwen2-vl is 151655
+                # print(f"[RANK {self.accelerator.process_index} DEBUG] Processing completions to remove token {image_token_id_to_check} while keeping list[tuple] structure...")
+
+                for idx, completion_tuple in enumerate(completion_ids):
+                    # print(f"  - Original Tuple {idx} (type {type(original_tuple)}): {original_tuple}")
+                    if image_token_id_to_check in completion_tuple:
+                        filtered_list = [self.processing_class.pad_token_id if token_id == image_token_id_to_check else token_id for token_id in completion_tuple]
+                        processed_tuple = tuple(filtered_list)
+                        processed_completion_ids.append(processed_tuple)
+                        # print(f"    -> Filtered Tuple {idx} (len {len(processed_tuple)}): {processed_tuple}")
+                    else:
+                        processed_completion_ids.append(completion_tuple)
+                        # print(f"    -> Kept Original Tuple {idx} (len {len(original_tuple)}): {original_tuple}")
+
+                #print(f"[RANK {self.accelerator.process_index} DEBUG] Finished processing completions.")
+
+            # list[tuple]
+            completion_ids = processed_completion_ids
+            # --- END: Debug Check After Broadcast and Slice ---
+            
             # Pad the completions, and concatenate them with the prompts
             completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
+
             completion_ids = pad(
                 completion_ids, padding_value=self.processing_class.pad_token_id
             )
@@ -555,7 +618,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
             prompt_mask = prompt_mask.repeat_interleave(self.num_generations, dim=0)
         else:
             raise ValueError("Only vLLM generation is supported in this version ")
-
+        
         # below are the same with yifan's code
         # Mask everything after the first EOS token
         is_eos = completion_ids == self.processing_class.eos_token_id
@@ -567,7 +630,12 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
 
         # Concatenate prompt_mask with completion_mask for logit computation
         attention_mask = torch.cat([prompt_mask, completion_mask], dim=1)  # (B*G, P+C)
-
+        
+        # # --- Debug ---
+        # if self.accelerator.is_main_process:
+        #     print(f"[DEBUG] after truncation, pixel_values shape: {prompt_inputs['pixel_values'].shape}")
+        #     print(f"[DEBUG] after truncation, image_grid_thw shape: {prompt_inputs['image_grid_thw'].shape}")
+        # # --- End Debug ---
         pixel_values = prompt_inputs["pixel_values"][None].repeat_interleave(self.num_generations, dim=0)
         image_grid_thw = prompt_inputs["image_grid_thw"].repeat_interleave(self.num_generations, dim=0)
         logits_to_keep = completion_ids.size(1)
@@ -592,7 +660,6 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                         image_grid_thw,
                         logits_to_keep,
                     )
-
         # Decode the generated completions
         completions = self.processing_class.batch_decode(
             completion_ids, skip_special_tokens=True
@@ -631,23 +698,64 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                 with torch.inference_mode():
                     rewards_per_func[:, i] = reward_func(**reward_inputs).logits[:, 0]  # Shape (B*G,)
             else:
-                # Repeat all input columns (but "prompt" and "completion") to match the number of generations
-                reward_kwargs = {
-                    key: []
-                    for key in inputs[0].keys()
-                    if key not in ["prompt", "completion"]
-                }
-                for key in reward_kwargs:
-                    for example in inputs:
-                        # Repeat each value in the column for `num_generations` times
-                        reward_kwargs[key].extend([example[key]] * self.num_generations)
-                output_reward_func = reward_func(
-                    prompts=prompts, completions=completions, **reward_kwargs
-                )
-                rewards_per_func[:, i] = torch.tensor(
-                    output_reward_func, dtype=torch.float32, device=device
-                )
+                ########################################################################################
+                if hasattr(reward_func, "reward_type") and reward_func.reward_type == "execution":
+                    reward_kwargs = {key: [] for key in inputs[0].keys() if key not in ["prompt", "completion"]}
+                    for key in reward_kwargs:
+                        for example in inputs:
+                            # Repeat each value in the column for `num_generations` times
+                            reward_kwargs[key].extend([example[key]] * self.num_generations)
+                    # execution reward 
+                    exec_reward_list,exec_result_list = reward_func(prompts=prompts, completions=completions, step=self.state.global_step , **reward_kwargs) # completions
+                    rewards_per_func[:, i] = torch.tensor(exec_reward_list, dtype=torch.float32, device=device)
+                
+                elif hasattr(reward_func, "reward_type") and reward_func.reward_type == "accuracy":
+                    # ensure there is execution reward
+                    if exec_reward_list is None or exec_result_list is None:
+                        raise ValueError("No Execution Reward Found before Accuracy Reward!!")
+                    
+                    # Repeat all input columns (but "prompt" and "completion") to match the number of generations
+                    reward_kwargs = {key: [] for key in inputs[0].keys() if key not in ["prompt", "completion"]}
+                    for key in reward_kwargs:
+                        for example in inputs:
+                            # Repeat each value in the column for `num_generations` times
+                            reward_kwargs[key].extend([example[key]] * self.num_generations)
+                    output_reward_func = reward_func(  # exec_reward list, exec result and QAid
+                                      exec_reward_list=exec_reward_list,
+                                      exec_result_list=exec_result_list,
+                                      step=self.state.global_step,
+                                      **reward_kwargs)
+                    rewards_per_func[:, i] = torch.tensor(output_reward_func, dtype=torch.float32, device=device)
+                #################################################################################################
+                else:
+                    # Repeat all input columns (but "prompt" and "completion") to match the number of generations
+                    reward_kwargs = {
+                        key: []
+                        for key in inputs[0].keys()
+                        if key not in ["prompt", "completion"]
+                    }
+                    for key in reward_kwargs:
+                        for example in inputs:
+                            # Repeat each value in the column for `num_generations` times
+                            reward_kwargs[key].extend([example[key]] * self.num_generations)
+                    output_reward_func = reward_func(
+                        prompts=prompts, completions=completions, step=self.state.global_step, **reward_kwargs
+                    )
+                    rewards_per_func[:, i] = torch.tensor(
+                        output_reward_func, dtype=torch.float32, device=device
+                    )
         rewards_per_func = gather(rewards_per_func)
+        ##################################################
+        # Store a clone of the raw, unweighted rewards BEFORE applying weights
+        unweighted_rewards_per_func = rewards_per_func.clone()
+        if self.reward_weights is not None:
+            # Convert weights list to tensor on the correct device
+            weights_tensor = torch.tensor(self.reward_weights, dtype=torch.float32, device=device)
+            # Perform weighted multiplication using broadcasting
+            rewards_per_func = rewards_per_func * weights_tensor
+        # (Num_Generation, Num_function) * (N,) -> (Num_Generation, Num_function)
+        ##################################################
+        
         # Sum the rewards from all reward functions
         rewards = rewards_per_func.sum(dim=1)
 
@@ -673,6 +781,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
 
         # Log the metrics
         reward_per_func = rewards_per_func.mean(0)
+        unweighted_reward_per_func = unweighted_rewards_per_func.mean(0) ##
         for i, reward_func in enumerate(self.reward_funcs):
             if isinstance(
                 reward_func, nn.Module
@@ -680,9 +789,10 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                 reward_func_name = reward_func.config._name_or_path.split("/")[-1]
             else:
                 reward_func_name = reward_func.__name__
-            self._metrics[f"rewards/{reward_func_name}"].append(
+            self._metrics[f"weighted_rewards/{reward_func_name}"].append(
                 reward_per_func[i].item()
             )
+            self._metrics[f"rewards/original_{reward_func_name}"].append(unweighted_reward_per_func[i].item()) ##
 
         self._metrics["reward"].append(rewards.mean().item())
         self._metrics["reward_std"].append(std_grouped_rewards.mean().item())

@@ -64,7 +64,7 @@ class GRPOScriptArguments(ScriptArguments):
             List of reward functions. Possible values: 'accuracy', 'format'.
     """
     reward_weights: list[float] = field(
-        default_factory=lambda: [1.0, 1.0, 2.0, 1.0],
+        default_factory=lambda: [1.0, 1.0, 2.0, 2.0],
         metadata={
             "help": "Weights for the reward functions specified in --reward_funcs, in the *same order*. \
             Example: if --reward_funcs format execution accuracy tool, \
@@ -176,32 +176,41 @@ def check_correctness(task: dict, log_path, current_time) -> float:
     evaluation_log_path = os.path.join(log_path, f"evaluation-{task['QAid']}.log")
     # in evaluation includes all cased in reward computation
     # Code extraction,Code Bug and Successfual Execution: Correct(Wrong) result.
-    manager = multiprocessing.Manager()
-    result = manager.list()
-    ########################################################################################
-    p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], 60, result, log_path)) 
-    # here unsafe execute part could be replaced with communication between Executor Server and Reward function(Evaluator Client)
-    ###########################################################################################
-    p.start()
-    p.join(61)
-    if p.is_alive():
-        p.kill()
-    result = result[0] if result else (0.0, None)
-    end_time = time.perf_counter()  # timer stop
-    elapsed = end_time - start_time
-    with open(evaluation_log_path, "a+") as f:
-        f.write(f"------------- {current_time} Execution reward: {result[0]} -------------\n")
-        f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n")
-        f.write(f"QAid: {task['QAid']}\n")
-        f.write(f"Code: \n{task['code']}\n")
-        f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+    if task["code"] == None:
+        with open(evaluation_log_path, "a+") as f:
+            f.write(f"------------- {current_time} Code Extraction Failed -------------\n")
+            f.write(f"Reward: 0.0\n")
+            f.write(f"QAid: {task['QAid']}\n")
+            f.write(f"Code: [EMPTY]\n")
+            f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+        result = (0.0, None)  # code reward is 0.0
+    else:
+        manager = multiprocessing.Manager()
+        result = manager.list()
+        ########################################################################################
+        p = multiprocessing.Process(target=unsafe_execute, args=(task["code"], 60, result, log_path)) 
+        # here unsafe execute part could be replaced with communication between Executor Server and Reward function(Evaluator Client)
+        ###########################################################################################
+        p.start()
+        p.join(61)
+        if p.is_alive():
+            p.kill()
+        result = result[0] if result else (0.0, None)
+        end_time = time.perf_counter()  # timer stop
+        elapsed = end_time - start_time
+        with open(evaluation_log_path, "a+") as f:
+            f.write(f"------------- {current_time} Execution reward: {result[0]} -------------\n")
+            f.write(f"[Reward computation time: {elapsed:.4f} seconds]\n")
+            f.write(f"QAid: {task['QAid']}\n")
+            f.write(f"Code: \n{task['code']}\n")
+            f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
     return result
 
 async def run_all_checks_async(tasks, log_root_dir, current_time):
     loop = asyncio.get_event_loop()
     rewards = []
     # mp_context = multiprocessing.get_context('spawn')  mp_context=mp_context
-    with ProcessPoolExecutor(max_workers=2) as pool:  # max num Processes 
+    with ProcessPoolExecutor(max_workers=1) as pool:  # max num Processes 
         futures = [
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
             for task in tasks
@@ -224,9 +233,9 @@ def execution_reward(completions, QAid, step,**kwargs):
     def extract_code(completion):
             match = re.search(r"<command>(.*?)</command>", completion, re.DOTALL)
             if match:
-                return match.group(1).strip()
+                return match.group(1)
             else:
-                return completion.strip()
+                return None
     
     tasks = []
     for content, id in zip(contents, QAid):
@@ -273,7 +282,7 @@ def accuracy_reward(exec_reward_list, exec_result_list, step, solution, QAid, **
                         f.write("\n[Verification Correct Result]\n\n")
             except Exception:
                 pass
-            
+
             if result == sol or result == sol.lower():
                 reward = 1.0
                 with open(acc_log_path, "a") as f:
@@ -290,15 +299,26 @@ accuracy_reward.reward_type = "accuracy"
 ####################################################################
 #                            FORMAT REWARD                         #
 ####################################################################
-def format_reward(completions, **kwargs):
+def format_reward(completions,step, **kwargs):
     """Reward function that checks if the completion has a specific format."""
-    pattern = r"<command>.*?final_result\s*=.*?</command>"
+    pattern = r"(?s)<command>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</command>"  # TODO - Done
     if isinstance(completions[0],str):
         completion_contents = [completion for completion in completions]
     else:
         completion_contents = [completion[0]["content"] for completion in completions]
     matches = [re.fullmatch(pattern, content, re.DOTALL) for content in completion_contents]
-    return [1.0 if match else 0.0 for match in matches]
+    rewards = [1.0 if match else 0.0 for match in matches]
+    
+    current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
+    log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Format", f"step_{step}-{current_time}-logs")
+    os.makedirs(log_root_dir, exist_ok=True)
+    format_log_path = os.path.join(log_root_dir, f"format-{id}.log")
+    with open(format_log_path, "a+") as f:
+        for i, (content, reward) in enumerate(zip(completion_contents, rewards)):
+            f.write(f"--- Completion {i+1} ---\n")
+            f.write(content + "\n")
+            f.write(f"Reward: {reward}\n\n")
+    return rewards
 #####################################################################
 
 ####################################################################
@@ -322,14 +342,15 @@ def tool_usage_reward(completions, QAid, step , **kwargs):
     def extract_code(completion):
         match = re.search(r"<command>(.*?)</command>", completion, re.DOTALL)
         if match:
-            return match.group(1).strip()
+            return match.group(1)  # TODO
         else:
-            return completion.strip()
+            raise ValueError("No Python code block found in completion.")
         
     for content, id in zip(contents, QAid):
-        reward = -1.0 
+        reward = -1.0
         tool_log_path = os.path.join(log_root_dir, f"toolusage-{id}.log")
         try:
+            execute_found = False
             code = extract_code(content)
             tree = ast.parse(code) # Abstract Syntax Tree
             for node in ast.walk(tree):
@@ -338,18 +359,23 @@ def tool_usage_reward(completions, QAid, step , **kwargs):
                     if isinstance(node.func, ast.Attribute):
                         if node.func.attr == "execute":
                             reward = 1.0
-                            with open(tool_log_path, "a+") as f:
-                                f.write(f"\n[QAid]{id}\n")
-                                f.write("\n[Code Includes Tools Usage]\n")
-                                f.write(f"code: \n{code}")
-                                f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+                            execute_found = True
                             break # found execute() calling
+            with open(tool_log_path, "a+") as f:
+                f.write(f"\n[QAid]{id}\n")
+                if execute_found:
+                    f.write("\n[Code Includes Tools Usage]\n")
+                else:
+                    f.write("\n[Code does not include Tools Usage]\n")
+                f.write(f"code: \n{code}")
+                f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
         except Exception as e:
             with open(tool_log_path, "a+") as f:
                 f.write(f"\n[QAid]{id}\n")
                 f.write("\n[Code Extraction Failed or Parse Failed]\n\n")
                 f.write(str(e) + "\n")
                 f.write(f"\nCompletion Content: \n{content}")
+                f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
                 
         rewards.append(reward)
     return rewards
@@ -390,13 +416,13 @@ def main(script_args, training_args, model_args,conf):
         # get answer
         answer = example["messages"][1]["content"].strip()
         image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
-        images = [Image.open(path) for path in image_paths ]
+        images = [Image.open(path) for path in image_paths]
         idx = os.path.splitext(os.path.basename(example["images"][0]))[0] # image name as index
         
          # Format the final prompt text using the provided strings
         formatted_question_part = PROMPT_TEMPLATE.format(
         question=example["messages"][0]["content"].strip(),
-        image_paths=", ".join(image_paths),
+        image_paths=",".join(image_paths),
         available_tools=available_tools_str,        # Use the pre-formatted string
         toolbox_metadata=filtered_metadata_str      # Use the filtered metadata string
         )
@@ -408,8 +434,25 @@ def main(script_args, training_args, model_args,conf):
             \nUser: {formatted_question_part} \nAssistant: <command>"""
             
             image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
+            images = []
             images = [Image.open(path) for path in image_paths]
-            message_content = [ {"type": "image"} for _ in images ]
+            for img in images:
+                try:
+                    # Ensure minimum dimensions of 28 pixels
+                    w, h = img.size
+                    if w < 28 or h < 28:
+                    # Calculate new dimensions maintaining aspect ratio
+                        if w < h:
+                            new_w = 28
+                            new_h = int(h * (28/w))
+                        else:
+                            new_h = 28
+                            new_w = int(w * (28/h))
+                    img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                except:
+                    pass
+                images.append(img)
+            message_content = [ *({'type': 'image', 'text': None} for _ in range(len(example["images"])))]
             message_content.append({
                 "type": "text" , "text": "<image>" + prompt
             })
@@ -423,7 +466,7 @@ def main(script_args, training_args, model_args,conf):
         else:
             image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
             images = [Image.open(path) for path in image_paths]
-            message_content = [ {"type": "image"} for _ in images ]
+            message_content = [*({'type': 'image', 'text': None} for _ in range(len(example["images"])))]
             message_content.append({
                             "type": "text",
                             "text": formatted_question_part
@@ -474,7 +517,7 @@ def main(script_args, training_args, model_args,conf):
     all_samples = []
     
     dataset_path = f"filtered_output_file.json"
-   
+
     full_path = os.path.join(dataset_prefix, dataset_path)
     with open(full_path, 'r') as f:
         raw_dataset = json.load(f)
@@ -490,7 +533,7 @@ def main(script_args, training_args, model_args,conf):
     #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
 
     trainer_cls = Qwen2VLGRPOTrainer if not training_args.use_vllm else Qwen2VLGRPOVLLMTrainerModified
-    # trainer_cls = Qwen2VLGRPOTrainer
+
 
     # Initialize the GRPO trainer
     trainer = trainer_cls(
@@ -533,7 +576,7 @@ if __name__ == "__main__":
 
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
-    #print("Parsed training_args:", training_args)
+    print("Parsed training_args:", training_args)
     #print("Parsed model_args:", model_args)
    
     configuration_file = script_args.confile

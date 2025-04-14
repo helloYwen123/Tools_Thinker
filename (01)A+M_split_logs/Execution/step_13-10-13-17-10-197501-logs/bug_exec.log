@@ -1,0 +1,80 @@
+
+[Exctuion Failed]
+
+name 'pedestal_sink_with_a_wide_basin_above' is not defined
+code: 
+final_result = "below"
+
+# Calculate final_result based on visual inputs and answer the question
+if pedestal_sink_with_a_wide_basin_above in A:
+    final_result = "below"
+else:
+    final_result = "above"
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+final_result = "above"
+</command>
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Object_Detector_Tool' is not defined
+code: 
+def find_object_position(detector_tool, image_path, labels, save_object=True, saved_image_path="detected_objects"):
+    try:
+        detected_objects_result = {}
+        object_number_result = {}
+
+        for label in labels:
+            object_number_result[label] = Text_Detector_Tool.execute(image=image_path, languages=[label.upper()])
+            if not object_number_result[label]:
+                object_number_result[label] = 0
+
+        object_coordinates = {}
+
+        for label in object_number_result:
+            if label == "A":
+                target_box_result = Text_Detector_Tool.execute(image=image_path, languages=["en"])
+                target_box_result = [[(x[0], y[0]), (x[1], y[1]), (x[2], y[2]), (x[3], y[3])] for x in target_box_result for y in x]
+            else:
+                target_box_result = Text_Detector_Tool.execute(image=image_path, languages=[label.upper()], detail=0)
+            target_box_result = [[(x[0], y[0]), (x[1], y[1]), (x[2], y[2]), (x[3], y[3])] for x in target_box_result for y in x]
+
+            for object_id, image_path in detected_objects_result.items():
+                if label not in object_id:
+                    detected_objects_result[label].append(image_path)
+            for object_id, box in target_box_result:
+                if object_coordinates.get(box, 0) == 0:
+                    object_coordinates[box] = {}
+                    object_coordinates[box]["bounding_box"] = [(x, y) for (x, y) in zip(box[0], box[1])]
+                    object_coordinates[box]["number_of_objects"] = len(detected_objects_result[label])
+                    object_coordinates[box]["label"] = label
+
+        final_result = "B"
+        for label, objects in object_coordinates.items():
+            if label == "B":
+                for obj in objects["bounding_box"]:
+                    if "number_of_objects" in objects:
+                        final_result = [j for j in object_coordinates[final_result] if object_coordinates[final_result][j]["number_of_objects"] == objects["number_of_objects"]][0]
+        return final_result
+    except Exception as e:
+        print(f"Error: {e}")
+        final_result = "B"
+        return final_result
+
+final_result = find_object_position(Object_Detector_Tool,
+            image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/5707_0.png",
+            labels=["baseball", "basket"],
+            save_object=True,
+            saved_image_path="detected_objects")
+
+============================== END ==============================
+

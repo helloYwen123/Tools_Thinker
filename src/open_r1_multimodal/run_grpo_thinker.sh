@@ -4,7 +4,7 @@ export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 export WANDB_PROJECT="code_gen_GRPO"
 export NCCL_P2P_DISABLE=1
-export TOKENIZERS_PARALLELISM=false
+# export TOKENIZERS_PARALLELISM=true
 mkdir -p Debug_logs
 timestamp=$(date +"%m%d_%H%M%S")
 
@@ -37,8 +37,8 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --output_dir outputs/Qwen2-VL-2B-Instruct-GRPO-BLINK \
     --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
     --dataset_name BLINK_visual_counting \
-    --max_prompt_length 8192 \
-    --max_completion_length 4096 \
+    --max_prompt_length 4096 \
+    --max_completion_length 2024 \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 2 \
     --logging_steps 1 \
@@ -49,7 +49,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --max_pixels 401408 \
     --num_train_epochs 2 \
     --temperature 1.0 \
-    --run_name Qwen2-VL-2B-GRPO-BLINK \
+    --run_name Qwen2-VL-2B-GRPO-SAT \
     --save_steps 100 \
     --save_only_model true \
     --report_to wandb \

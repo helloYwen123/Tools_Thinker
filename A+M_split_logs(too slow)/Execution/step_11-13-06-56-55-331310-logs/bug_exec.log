@@ -1,0 +1,122 @@
+
+[Exctuion Failed]
+
+No module named 'depth_anything_v2'
+code: 
+
+from pixel_level_depth_estimator import Pixel_Depth_Tool
+
+# Define input parameters
+image_path = ['4868_0.png']  # 'path/to/image.png'
+output = True  # If True, save the depth image or depth video
+outdir = './vis_depth'  # The output directory to save the depth images/video
+
+# Call the tool with path and output
+depth_image_results = Pixel_Depth_Tool.execute(image_path=image_path, output=output, outdir=outdir)
+
+# Print the final result
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+module 'object_detector' has no attribute 'Execute'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def detect_objects_and_count(labels=['baseball', 'basket'], image_path='image.png', save_object=True):
+    result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object)
+    
+    predicted_labels = []
+    predicted_objects = {}
+
+    for label in labels:
+        prediction = result["detected_objects"][label]
+        predicted_labels.append(label)
+        predicted_objects[label] = prediction
+        if prediction:
+            box = prediction["bbox"]
+            box = [min(box[0] + box[2] * 0.5, result["image_shape"][1] - 2 * box[2] + 1), 
+                    min(box[1] + box[3] * 0.5, result["image_shape"][0] - 2 * box[3] + 1), 
+                    max(box[0] + box[2] * 0.5, 1), 
+                    max(box[1] + box[3] * 0.5, 1)]
+            predicted_objects[label] = {"bbox": box, "score": prediction["score"], "saved_image_path": prediction["saved_image_path"]}
+    
+    return {"predicted_labels": predicted_labels, "predicted_objects": predicted_objects}
+
+# Example usage
+import sys
+sys.path.append('/path_to/object_detector_tool')
+import object_detector
+
+result = object_detector.Execute.execute(image="image.png", labels=["baseball", "basket"], save_object=True)
+detected_objects = result[0]["detected_objects"]
+predicted_labels = result[1]["detected_objects"]
+predicted_objects = result[2]["detected_objects"]
+
+final_result = {"predicted_labels": predicted_labels, "predicted_objects": predicted_objects}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Get the coordinates of the Television from the image
+tv_coordinates = (Object_Detector_Tool.execute(image="path/to/image.png", labels=["Television"])[0])
+
+# Count the total number of Televisions in the scene
+total_tvs = [len(cv.waitall()) for cv in cv](image="path/to/image.png")[0]
+
+print(total_tvs)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+expected an indented block after 'elif' statement on line 25 (<string>, line 29)
+code: 
+
+from pixel_level_depth_estimator import Pixel_Depth_Tool
+
+# Initialize the object detector
+detector_tool = Object_Detector_Tool()
+
+# Load the image file
+detector_tool.load_image(image_path='image.png')
+
+# Execute the object detector tool
+response = detector_tool.execute()
+
+# Now, we have an object detection result dictionary with the following structure:
+# detected_objects : {'baseball': [{'box': (34, 50, 200, 220), 'score': 0.95, 'saved_image_path': 'detected_objects/detection_result.png'}], 'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/detection_result.png'}]}
+# The 'boxes' field contains bounding box coordinates for each detected object
+
+# We need to get the image path of each detected object
+im_paths = response['boxes'][1].keys()
+
+# Now, we can process each detected object by checking if it is a TV
+for i, item in enumerate(response['boxes'][1].values()):
+    if item['label'] == 'TV':
+        # This is the main part
+        tv_count += 1
+    elif item['label'] == 'other':
+        # Handle other objects here as needed
+
+# The value for tv_count will give you the number of TVs in the scene
+final_result = tv_count
+
+
+============================== END ==============================
+

@@ -1,0 +1,228 @@
+--- Completion 1 ---
+To estimate the real world distances between objects in the image, we will use the Object_Detector_Tool tool. Since the question does not provide information about the objects, we will use the default values provided by the tool.
+
+<command>
+```python
+from object_detector import Object_Detector_Tool
+
+# Detect objects in the image
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', save_object=True)
+print(detected_objects)
+print(object_number)
+```
+
+After extracting the detected objects and their bounding box properties, we can estimate the real world distances as follows:
+
+1. Observe the bounding box properties of the objects:
+   - Black basic chair: [(x1, y1, x2, y2), (bx1, by1, bx2, by2)]
+   - L-shaped desk with integrated file cabinets: [(bx, by], (bxA, bxAy), (byA, bxAAy), (bxA, byA) @ 'x0', 'y0', 'x1', 'y1')
+
+2. Calculate distances using Euclidean distance formula:
+   - Distance between bed and black basic chair: (x2 - x1, y2 - y1)
+   - Distance between bed and L-shaped desk with integrated file cabinets: (bx - bxA, by - byA)
+
+3. Note the bounding box properties of the black basic chair:
+   - Distance between bed (approximate position of the bed) and black basic chair: bbx - x1, by - y1
+
+4. Use bounding box properties of objects to calculate approximate distances:
+   - Bed: Approximate position on X (x1) and (x2), approximate position on Y (y1 and y2)
+   - Black basic chair: bbx (x coordinate), by (y coordinate)
+   - L-shaped desk with integrated file cabinets: (bx, by) @ X
+
+5. Choose one of the options: black basic chair or L-shaped desk with integrated file cabinets.
+
+<command>
+```python
+# Calculate distances from bed to objects
+bed_bbx = detected_objects['bed'][0]['bx']
+bed_byy = detected_objects['bed'][0]['by']
+
+bed_bbx, bed_byy
+
+# Calculate distance between bed and black basic chair
+Distance = bed_bbx - detected_objects['black basic chair'][1][0]
+
+print('Black basic chair is closer to the bed: ', Distance)
+
+final_result = 'distance'
+```
+Reward: 0.0
+
+--- Completion 2 ---
+To estimate the real-world distances between objects in the image, we will use the `Pixel_Depth_Tool`. However, we need to define the path to the image first. Then, the tool will run and return the depth images.
+
+Let's start by defining the path to the image. We'll need to provide a class that accepts the image file path and can run with optional output and output directory settings.
+
+```python
+import object_detector
+import text_detector
+import letter_detector
+import pixel_depth_tool
+
+# Define the image path
+image_path = "/path/to/image.png"
+
+# Run the image depth estimator
+image_results = pixel_depth_tool.execute(image_path=image_path)
+print(f"Image depth results: {image_results}")
+
+# Assuming the output_path was set, this will return:
+#   {
+#       'assets/image1.jpg': {'depth_map': numpy array with shape (H, W)},
+#       'assets/image2.jpg': {'depth_map': numpy array with shape (H, W)},
+#   }
+#
+# Alternatively, for this example, we will only display the output for the image with a bed:
+depth_image = image_results[image_path]
+depth_image, _, _ = image_results[image_path]
+```
+Reward: 0.0
+
+--- Completion 3 ---
+<command>
+def calculate_distances(obj_location):
+    return {'distance_a_b': calculate_distance(obj_location['bbox_b'][0], obj_location['bbox_b'][2]), 
+            'distance_b_c': calculate_distance(obj_location['bbox_b'][1], obj_location['bbox_b'][3]), 
+            'distance_c_a': calculate_distance(obj_location['bbox_c'][0], obj_location['bbox_c'][2]), 
+            'distance_c_b': calculate_distance(obj_location['bbox_c'][1], obj_location['bbox_c'][3])}
+
+def calculate_distance(x1, y1):
+    # estimate the Euclidean distance
+    return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+final_result = calculate_distances({'bbox_b': [50, 50, 100, 100], 'bbox_c': [100, 100, 200, 150]})
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+def estimate_distances(image_path, labels=['baseball'], show=False, save_output=True):
+    objects = []
+    object_count = {}
+    for label in labels:
+        detected_objects = []
+        for detection_object in detected_objects:
+            if 'bbox' in detection_object:
+                x1, y1, x2, y2 = detection_object['bbox']
+                detected_object['bbox'] = [x1, y1, x2, y2]
+                x1, y1, x2, ey3y = detection_object['bbox']
+                detected_object['bbox'] = [x1, y1, x2, ey3y]
+            x1, y1, x2, ey3y = detection_object['box']
+            if 'score' in detection_object:
+                detected_object['score'] = detection_object['score']
+                detected_object['box'] = [x1, y1, x2, ey3y]
+            if 'bbox' in detected_object:
+                box = [x1, y1, x2, ey3y]
+                objects.append({'bbox': box, 'label': label, 'score': detected_object['score'], 'saved_image_path': detected_object['saved_image_path']}) 
+        if show:
+            for key, detections in objects.items():
+                print(f'The detected object {key} was found in {detections[0]} with bbox: {detections[0]} and score: {detections[0]["score"]}')
+        object_count[label] = len(detections)
+        if save_output:
+            obj_dict = {'bbox': [[0, 0, 100, 100, 0.9], [50, 50, 150, 150, 0.95]])]}}
+            img_folder = "./vis_depth"
+            img_results = {'assets/image1.jpg': {'depth_map': detected_object['bbox'][0][:, :, 0], 'output_image_path': Path(img_folder) / Obj_label} for Obj_label in detected_objects}
+            if save_output:
+                obj_results = {'assets/image1.jpg': {}}
+                for key, detections in obj_dict.items():
+                    obj_results['assets/image1.jpg'][key] = {'depth_map': detected_object['bbox'][0][:, :, 0], 'output_image_path': Path(img_folder) / Obj_label}
+                Pixel_Depth_Tool.execute(image_path='assets/image1.jpg', img_results=obj_results, outdir="/vis_depth")
+                return img_results
+
+final_result = estimate_distances(image_path="path/to/image.png", labels=['baseball'], show=True, save_output=True)
+print(final_result)
+Reward: 0.0
+
+--- Completion 5 ---
+To estimate the real world distances between objects in the image, we can utilize the objects_detector tool with the following parameters:
+- image: 'path/to/image.png'
+- labels: ['baseball', 'basket']
+- threshold: 0.35
+- model_size: 'tiny'
+- save_object: True
+- saved_image_path: 'detected_objects'
+
+When executed, the tool returns a tuple containing multiple dictionaries. The first element of the tuple contains the detection results for each object:
+```python
+detected_objects : { 'baseball': [{'bbox': [[34, 50, 200, 220], 'T', 0.92], 'outputpath': 'detected_objects/baseball_1.png'}], 'basket': [{'bbox': [220, 100, 400, 350], 'T', 0.85], 'outputpath': 'detected_objects/basket_1.png'}]
+```
+
+Here, 'bbox' represents the bounding box coordinates, 'T' stands for the type of object (baseball or basket), and 'score' is the confidence score.
+
+To determine which object is closer to the room with the bed covered in bedsheet, we need to access the second element of the tuple:
+```python
+distance_to_basket = detected_objects['basket'][0]['bbox'][1]
+distance_to_baseball = detected_objects['baseball'][0]['bbox'][3]
+```
+
+The first item index of 'distance_to_baseball' will be 3. Thus, the closest object is the black basic chair.
+
+Let's execute the code:
+```python
+from object_detector import Object_Detector_Tool
+from object_detector import Detected_objects, object_number
+detected_objects = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], threshold=0.35, save_object=True, saved_image_path='detected_objects')
+
+print(detected_objects, object_number)
+detected_objects['basket'][0]['bbox'][3][1], detected_objects['baseball'][0]['bbox'][3][1]
+```
+
+Note: The values may vary based on the image provided and the label list.
+Reward: 0.0
+
+--- Completion 6 ---
+A and C
+Reward: 0.0
+
+--- Completion 7 ---
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+# Detection results
+detected_objects = []
+for obj_label in labels:
+    bbox, text, score = object_detector.execute(Image=open(image_name, 'rb'), labels=open(label_file), save_object=True)
+    detected_objects.append([bbox, text, score])
+
+object_number = {'baseball': 1, 'basket': 2}
+final_result = 'None'
+
+# Total count for each detected label
+total_objects = {}
+
+for obj_label in detected_objects:
+    if obj_label[1] in total_objects.keys():
+        total_objects[obj_label[1]] = total_objects[obj_label[1]] + 1
+    else:
+        total_objects[obj_label[1]] = 1
+
+total_objects = dict(sorted(total_objects.items(), key=lambda x: x[1], reverse=True))
+
+# Detection results
+detect_result = 'None'
+for label in total_objects.keys():
+    text_blocks = text_detector.execute(image=image_name, languages=languages, detail=detail)
+    for t_bbox, t_text, t_score in text_blocks:
+        det_bbox = [t_bbox[0], t_bbox[1], t_bbox[0] + t_bbox[2], t_bbox[1] + t_bbox[3]]
+        if det_bbox in detected_objects:
+            det_bbox = [det_bbox[0], det_bbox[1], det_bbox[0] + det_bbox[2], det_bbox[1] + det_bbox[3]]
+            if t_bbox != det_bbox and tbbox[0]-bbox[0]+1 == 0 and tbbox[1]-bbox[1]+1 == 0 and tbbox[2]-bbox[2]+1 == 0 and tbbox[3]-bbox[3]+1 == 0:
+                break
+
+        if not final_result:
+            detect_result = f"A {label} with confidence score = {t_score}"
+        detect_result = f"B {label} {det_bbox} ({label} {bbox}.confidence score = {t_score})"
+        if label in object_number.keys():
+            object_number[label] = object_number[label] +1
+
+print("Detected objects:", detected_objects)
+print("Number of detected objects:", object_number)
+print(final_result)
+Reward: 0.0
+
+--- Completion 8 ---
+</code>
+</pre>
+Reward: 0.0
+

@@ -1,0 +1,82 @@
+
+[Exctuion Failed]
+
+'{' was never closed (<string>, line 6)
+code: 
+
+from object_detector import Object_Detector_Tool
+from letter_detector import Letter_Detector_Tool
+
+# Define the positions of interest
+interest_position = {#(x1, y1), (x2, y2), ...}
+
+# Use Text_Detector_Tool to detect text in the image
+text_results = Object_Detector_Tool.execute(image=image_path, languages=['eng', 'de'], detail=3)
+
+# Extract information about the detected text blocks
+text_blocks = [
+    *[item[1] for item in text_results] # Only include the detected letter and its coordinates
+    if item[1] # Include the detected letter
+]
+letter_detected = Letter_Detector_Tool.execute(image=image_path)
+
+# Combine the detected text information
+detected_text = [
+    item[1] if isinstance(item[1], str) else item[1]['text'] for item in text_blocks
+]
+
+final_result = []
+for letter in letter_detected:
+    bounding_box = (letter['bbox'])
+    bounding_box_text = bounding_box[0].decode('UTF-8') # Convert the text bounding box from its original format to "x, y, w, h"
+    
+    if bounding_box_text in detected_text:
+        detected_text.remove(bounding_box_text)
+        final_result.append({"bbox": bounding_box, "text": bounding_box_text, "score": 0})
+    else:
+        final_result.append({"bbox": bounding_box, "text": "", "score": 0})
+
+# Output the final results
+print(f"Detected text: {final_result}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 2 required positional arguments: 'self' and 'labels'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Assume the test image path is 'test_img.png'
+detected_objects, object_number = Object_Detector_Tool.execute(image='test_img.png')
+
+# Extract bounding box and score for the brown cube shape wooden material
+for label in detected_objects:
+    if label['box'][0] == 450 and label['box'][2] == 650 and label['box'][3] == 569 and label['box'][1] == 567:
+        num_objs = len(detected_objects)
+        break
+
+if num_objs > 0:
+    # Calculate distance of the wooden material from the countertop
+    if label['bbox'] != []:
+        x, y, width, height = (round(x) for x, y, w, h in label['bbox'])
+        x1 = x - width // 2
+        x2 = x + width // 2
+        y1 = y - height // 2
+        y2 = y + height // 2
+        
+        dx = x2 - x1
+        dy = y2 - y1
+        
+        # Calculate the distance of the wooden material from the countertop
+        distance = (dx * dx + dy * dy) ** 0.5
+        print(f"The distance from the wooden material to the countertop is: {distance:.2f} units")  
+else:
+    print("No bounding box detected for the wooden material")
+
+
+============================== END ==============================
+

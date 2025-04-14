@@ -1,0 +1,74 @@
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+from Object_Detector_Tool import Object_Detector_Tool
+from Letter_Detector_Tool import Letter_Detector_Tool
+
+# Generate dictionaries for each highlighted object
+detected_objects = {}
+label_counter = {label: detection_count for label, detection_count in object_number.items()}
+
+final_result = ""
+
+# Detect and save objects
+detected_objects = []
+label_counter = {}
+for image_path, labels in detected_objects.items():
+    object_labels = labels["labels"]
+    for obj in object_labels:
+        if obj["label"] not in object_labels: continue
+        name = obj
+        if name not in labels: labels[name] = 0
+        if name in object_labels:
+            detected_objects.append({name: labels})
+            object_counts = detected_objects
+            for label, detection_count in object_labels.items():
+                if detection_count < labels[label]:
+                    labels[label] = detection_count
+                elif detection_count > labels[label]:
+                    labels[label] = detection_count
+            label_counter = {}
+    
+final_result = "Detected chairs: {}".format(final_result) if final_result else "Detected chairs: []"
+
+# Save the final result
+if final_result:
+    for image_path, labels in detected_objects.items():
+        for name, object_count in object_counts.items():
+            for label, detection_count in object_labels.items():
+                if name in labels and labels[name] < object_count:
+                    detected_objects[name].remove(object_count)
+                    if len(detected_objects[name]) == 0:
+                        del detected_objects[name]
+                    object_labels[name] = len(detected_objects)
+                if name in detected_objects: detected_objects[name].remove(object_labels[name])
+            for label, detection_count in labels.items():
+                labels[label] = detection_count
+
+# Detect text
+text = {text for text in object_labels.values()} or []
+if text:
+    for image_path, labels in detected_objects.items():
+        for name, object_count in object_counts.items():
+            if name in labels and labels[name] < object_count and label_counter and "text" in object_labels[name]:
+                for text, conf_score in object_labels[name][text]:
+                    final_result += "Detected text: " + text + ", " + str(conf_score) + "."
+
+# Detect letters
+letters = Letter_Detector_Tool.execute(image_path=image_path)
+if letters:
+    final_result += "Detected letters: " + " & ".join([letter for letter, conf_score in letters]) + "."
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unexpected character after line continuation character (<string>, line 1)
+code: 
+\n\n
+
+============================== END ==============================
+

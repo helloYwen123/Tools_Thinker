@@ -1,0 +1,74 @@
+
+[Exctuion Failed]
+
+f-string expression part cannot include a backslash (<string>, line 15)
+code: 
+
+from object_detector import Object_Detector_Tool, text_detector
+
+detected_objects, object_number = Object_Detector_Tool.execute(image='SAT_images_train/10924_0.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+letter_results = Letter_Detector_Tool.execute(image='10924_0.png')
+
+for obj in detected_objects['baseball']:
+    det_box = obj['box']
+    det_score = obj['score']
+
+for letter in letter_results['a']:
+    letter_box = letter['bbox']
+    letter_score = letter['score']
+    print(f"Detected letter: {letter['bbox']}{', ' + '\n' + f'score: {letter_score}' if letter['score'] else ''}")
+
+
+distances = Pixel_Depth_Tool.execute(mode='video', image_path=['SAT_images_train/10924_0.mp4'], output=True, outdir=None).get('video_depth_map')
+
+results = {
+    'baseball': {
+        'bbox': [(det_box[0][0], det_box[0][1]), (det_box[1][0], det_box[1][1]), (det_box[2][0], det_box[2][1]), (det_box[3][0], det_box[3][1])],
+        'letters': [letter_box, letter_score]
+        for obj in detected_objects
+    },
+    'basket': {
+        'bbox': [(bbox[0][0], bbox[0][1]), (bbox[1][0], bbox[1][1]), (bbox[2][0], bbox[2][1]), (bbox[3][0], bbox[3][1])]
+        for letter_result in letter_results
+    }
+}
+
+print(results)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+input_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10924_0.png"
+
+# Detect objects using the Grounding DINO model
+detected_objects, object_count = Object_Detector_Tool.execute(image=input_image_path, labels=["brown colour desk  shape square", "Doorway"], save_object=True, saved_image_path="detected_objects")
+
+print(f"Detected objects: {detected_objects}")
+print(f"Total number of detected objects: {object_count}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['brown colour desk  shape square'])
+print(final_result)
+
+
+============================== END ==============================
+

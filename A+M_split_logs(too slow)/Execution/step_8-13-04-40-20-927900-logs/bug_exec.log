@@ -1,0 +1,45 @@
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Read the image
+image_path = 'image.png'
+detector = Object_Detector_Tool()
+labels = [ 'baseball', 'basket']  # Replace with the actual labels if any
+
+result = detector.execute(image=image_path, labels=labels)
+
+detected_objects = result[0]['detected_objects']
+total_objects = result[0]['object_number']
+
+# Search for the brown square dresser
+brown_square_dresser = [obj['bbox'] for obj in detected_objects['brown_square_dresser']]
+brown_square_dresser_width = [obj['x2-x1'] for obj in brown_square_dresser if 'x2' in obj]
+brown_square_dresser_width = max(brown_square_dresser_width)
+brown_square_dresser_height = [obj['y3-y1'] for obj in brown_square_dresser if 'y3' in obj]
+brown_square_dresser_height = max(brown_square_dresser_height)
+
+# Search for the blue tartan-patterened dog bed nearby
+blue_dog_bed = [obj['bbox'] for obj in detected_objects['blue_dog_bed'][:2]]
+
+# Calculate the bounding box coordinates for the blue tartan-patterened dog bed
+blue_dog_bed_width = [obj['x2'] for obj in blue_dog_bed if obj['x3'] == min(blue_dog_bed_width)]
+blue_dog_bed_height = [obj['y2'] for obj in blue_dog_bed if obj['y3'] == max(blue_dog_bed_height)]
+
+# Positional relationship between the brown square dresser and the blue tartan-patterened dog bed
+if brown_square_dresser[0] > blue_dog_bed[0]:
+    final_result = 'b'  # left
+elif brown_square_dresser[0] < blue_dog_bed[0]:
+    final_result = 'r'  # right
+else:
+    final_result = 'c'  # none
+
+print(final_result)
+
+
+============================== END ==============================
+
