@@ -261,7 +261,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
         self.generation_config = GenerationConfig(
             max_new_tokens=self.max_completion_length,
             do_sample=True,
-            temperature=1,  # HACK
+            temperature=1.0,  # HACK
             num_return_sequences=self.num_generations,
             pad_token_id=pad_token_id,
         )
@@ -582,27 +582,33 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
             #print(f"  - Number of completion sequences for this rank: {len(completion_ids)}")
 
             processed_completion_ids = []
-            if completion_ids: # Check if the list is not empty
-                image_token_id_to_check = 151655  # image_token_id for qwen2-vl is 151655
-                # print(f"[RANK {self.accelerator.process_index} DEBUG] Processing completions to remove token {image_token_id_to_check} while keeping list[tuple] structure...")
+            found_locations = []
+            # if completion_ids: # Check if the list is not empty
+            #     image_token_id_to_check = 151655  # image_token_id for qwen2-vl is 151655
+            #     print(f"[RANK {self.accelerator.process_index} DEBUG] Processing completions to remove token {image_token_id_to_check} while keeping list[tuple] structure...")
 
-                for idx, completion_tuple in enumerate(completion_ids):
-                    # print(f"  - Original Tuple {idx} (type {type(original_tuple)}): {original_tuple}")
-                    if image_token_id_to_check in completion_tuple:
-                        filtered_list = [self.processing_class.pad_token_id if token_id == image_token_id_to_check else token_id for token_id in completion_tuple]
-                        processed_tuple = tuple(filtered_list)
-                        processed_completion_ids.append(processed_tuple)
-                        # print(f"    -> Filtered Tuple {idx} (len {len(processed_tuple)}): {processed_tuple}")
-                    else:
-                        processed_completion_ids.append(completion_tuple)
-                        # print(f"    -> Kept Original Tuple {idx} (len {len(original_tuple)}): {original_tuple}")
+            #     for idx, completion_tuple in enumerate(completion_ids):
+            #         # print(f"  - Original Tuple {idx} (type {type(original_tuple)}): {original_tuple}")
+            #         if image_token_id_to_check in completion_tuple:
+            #             indices = [i for i, token in enumerate(completion_tuple) if token == image_token_id_to_check]
+            #             if indices:
+            #                 # location_info = {"seq_idx_local": idx, "indices": indices, "seq_length": len(completion_tuple)}
+            #                 # found_locations.append(location_info)
+            #                 print(f"  - Found image token in local sequence {idx} at indices: {indices}. Sequence length: {len(completion_tuple)}.")
+            #             filtered_list = [self.processing_class.pad_token_id if token_id == image_token_id_to_check else token_id for token_id in completion_tuple]
+            #             processed_tuple = tuple(filtered_list)
+            #             processed_completion_ids.append(processed_tuple)
+            #             # print(f"    -> Filtered Tuple {idx} (len {len(processed_tuple)}): {processed_tuple}")
+            #         else:
+            #             processed_completion_ids.append(completion_tuple)
+            #             # print(f"    -> Kept Original Tuple {idx} (len {len(original_tuple)}): {original_tuple}")
 
-                #print(f"[RANK {self.accelerator.process_index} DEBUG] Finished processing completions.")
+            #     #print(f"[RANK {self.accelerator.process_index} DEBUG] Finished processing completions.")
 
-            # list[tuple]
-            completion_ids = processed_completion_ids
+            # # list[tuple]
+            # completion_ids = processed_completion_ids
             # --- END: Debug Check After Broadcast and Slice ---
-            
+
             # Pad the completions, and concatenate them with the prompts
             completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
 
@@ -789,7 +795,7 @@ class Qwen2VLGRPOVLLMTrainerModified(Trainer):
                 reward_func_name = reward_func.config._name_or_path.split("/")[-1]
             else:
                 reward_func_name = reward_func.__name__
-            self._metrics[f"weighted_rewards/{reward_func_name}"].append(
+            self._metrics[f"rewards/weighted_{reward_func_name}"].append(
                 reward_per_func[i].item()
             )
             self._metrics[f"rewards/original_{reward_func_name}"].append(unweighted_reward_per_func[i].item()) ##

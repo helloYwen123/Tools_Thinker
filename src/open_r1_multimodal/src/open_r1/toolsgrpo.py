@@ -322,7 +322,7 @@ accuracy_reward.reward_type = "accuracy"
 ####################################################################
 #                            FORMAT REWARD                         #
 ####################################################################
-def format_reward(completions,step, **kwargs):
+def format_reward(completions,step,QAid, **kwargs):
     """Reward function that checks if the completion has a specific format."""
     pattern = r"(?s)<command>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</command>"  # TODO - Done
     if isinstance(completions[0],str):
@@ -335,9 +335,9 @@ def format_reward(completions,step, **kwargs):
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
     log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Format", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
-    format_log_path = os.path.join(log_root_dir, f"format-{id}.log")
-    with open(format_log_path, "a+") as f:
-        for i, (content, reward) in enumerate(zip(completion_contents, rewards)):
+    for i, (content, reward,id) in enumerate(zip(completion_contents, rewards, QAid)):
+        format_log_path = os.path.join(log_root_dir, f"format-{id}.log")
+        with open(format_log_path, "a+") as f:
             f.write(f"--- Completion {i+1} ---\n")
             f.write(content + "\n")
             f.write(f"Reward: {reward}\n\n")
@@ -599,8 +599,8 @@ if __name__ == "__main__":
 
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
-    print("Parsed training_args:", training_args)
-    #print("Parsed model_args:", model_args)
+    # print("Parsed training_args:", training_args)
+    # print("Parsed model_args:", model_args)
    
     configuration_file = script_args.confile
     with open(configuration_file, "r") as stream:

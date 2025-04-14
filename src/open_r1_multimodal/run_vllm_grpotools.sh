@@ -52,8 +52,8 @@ mkdir -p "$WANDB_CONFIG_PATH"
 export WANDB_CONFIG_DIR="$WANDB_CONFIG_PATH"
 # BUG
 
-    torchrun \
-    --nproc_per_node="5" \
+torchrun \
+    --nproc_per_node="4" \
     --nnodes="1" \
     --node_rank="0" \
     --master_addr="127.0.0.1" \
@@ -85,7 +85,7 @@ export WANDB_CONFIG_DIR="$WANDB_CONFIG_PATH"
     --report_to wandb \
     --temperature 1.0 \
     --num_generations 7 \
-    --vllm_device "cuda:5" \
+    --vllm_device "cuda:4" \
     --vllm_gpu_memory_utilization 0.8 \
     --deepspeed ${DS_CONFIG} \
     2>&1 | tee "Debug_logs/training_log_${timestamp}.txt"
