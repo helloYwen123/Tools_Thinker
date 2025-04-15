@@ -38,7 +38,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
     --dataset_name BLINK_visual_counting \
     --max_prompt_length 4096 \
-    --max_completion_length 512 \
+    --max_completion_length 1024 \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 2 \
     --logging_steps 1 \
