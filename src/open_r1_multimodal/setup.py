@@ -61,11 +61,12 @@ _deps = [
     "safetensors>=0.3.3",
     "sentencepiece>=0.1.99",
     "torch>=2.5.1",
-    "transformers @ git+https://github.com/huggingface/transformers.git@336dc69d63d56f232a183a3e7f52790429b871ef",
+    "transformers @ git+https://github.com/huggingface/transformers.git@main",
     "trl==0.14.0",
     "vllm==0.6.6.post1",
     "wandb>=0.19.1",
     "pillow",
+    "timm",
 ]
 
 # this is a lookup table with items like:
@@ -106,12 +107,16 @@ install_requires = [
 ]
 
 setup(
-    name="r1-v",
-    version="0.1.0",  # expected format is one of x.y.z.dev0, or x.y.z.rc1 or x.y.z (no to dashes, yes to dots)
-    author="The r1-v team and the Hugging Face team (past and future)",
-    description="R1-V",
+    name="open-r1",
+    version="0.1.0.dev0",  # expected format is one of x.y.z.dev0, or x.y.z.rc1 or x.y.z (no to dashes, yes to dots)
+    author="The Hugging Face team (past and future)",
+    author_email="lewis@huggingface.co",
+    description="Open R1",
+    long_description=open("README.md", "r", encoding="utf-8").read(),
+    long_description_content_type="text/markdown",
+    keywords="llm inference-time compute reasoning",
     license="Apache",
-    url="https://github.com/Deep-Agent/R1-V",
+    url="https://github.com/huggingface/open-r1",
     package_dir={"": "src"},
     packages=find_packages("src"),
     zip_safe=False,

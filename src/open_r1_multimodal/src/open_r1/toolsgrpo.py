@@ -442,9 +442,11 @@ def main(script_args, training_args, model_args,conf):
         images = [Image.open(path) for path in image_paths]
         idx = os.path.splitext(os.path.basename(example["images"][0]))[0] # image name as index
         
+        question=example["messages"][0]["content"].strip()
+        question = question.replace("<image>", "")
          # Format the final prompt text using the provided strings
         formatted_question_part = PROMPT_TEMPLATE.format(
-        question=example["messages"][0]["content"].strip(),
+        question=question,
         image_paths=",".join(image_paths),
         available_tools=available_tools_str,        # Use the pre-formatted string
         toolbox_metadata=filtered_metadata_str      # Use the filtered metadata string
