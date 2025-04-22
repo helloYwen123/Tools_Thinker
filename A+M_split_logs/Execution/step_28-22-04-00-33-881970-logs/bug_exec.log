@@ -1,0 +1,112 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'labels'
+code: 
+
+from object_detector import Object_Detector_Tool as OD_Tool
+
+# Define file paths
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/9327_0.png"
+labels_to_detect = ['baseball', 'basket']
+save_objects = True
+
+# Initialize tool with user-defined parameters
+object_detector = OD_Tool(image_path, labels=labels_to_detect, threshold=0.35, model_size='tiny')
+all_objects, object_count = object_detector.execute()
+if save_objects:
+    image_path = f"detected_objects/{object_detector.get_final_name_all_objects()[:100]}"
+
+# Extract object data
+object_labels = {label: boxes for label, boxes in all_objects.items() if label in labels_to_detect}
+object_count_str = f"{object_count}"
+
+# Prepare final result
+final_result = [{"label": label, "box": [x for y in box for x in boxes if y[2] - y[0] < 50 and y[3] - y[1] < 50], "score": score, "saved_image_path": os.path.join("detected_objects", image_path)} for label, boxes in object_labels.items()]
+final_result = {"detected_objects": final_result, "object_count": object_count_str} if object_count else {"detected_objects": []}
+final_result.update({"object_count": object_count_str})
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Text_Detector_Tool' is not defined
+code: 
+
+import_text_detector = Text_Detector_Tool()
+result = import_text_detector.execute(image='path_to_image', languages=['en', 'de'])
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+from tool(object_detector_tool) import Object_Detector_Tool
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/9327_0.png"
+labels = ['baseball', 'basket']
+save_object = True
+final_result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object)
+if final_result is not None:
+    detected_objects = final_result[0]
+    total_objects = final_result[1]
+    text = final_result[2]
+    if not text:
+        text.append("UNABLE TO DETECT TEXT")
+    print(f"Detected Objects: {"".join([f"'{d['label']}'" for d in detected_objects])} ({', '.join([f"'{d['label']}'" for d in detected_objects if d['score'] > 0.5])})")
+    print(f"Text Count: {''.join([f"'{d['label']}'" for d in detected_objects if d['score'] > 0.5])}")
+else:
+    print("Text Detection Failed")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+closing parenthesis '}' does not match opening parenthesis '[' (<string>, line 9)
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()
+
+detected_objects, object_number = object_detector_tool.execute(image='path/to/scene_image.png', labels=['bed', 'baseball'], save_object=True, saved_image_path='detected_objects')
+
+final_result = {
+  "detected_objects": (detected_objects, {['bed': 1, 'baseball': 2})),
+  "object_number": object_number
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+list indices must be integers or slices, not str
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_beds(image_path):
+    total_beds = 0
+    object_detector = Object_Detector_Tool()
+    result = object_detector.execute(image=image_path, labels=['bed'], save_object=True, saved_image_path='detected_objects')
+    for detected_object in result['detected_objects']:
+        bed = detected_object['bbox'][0]  # Assuming bed is at the bottom of the image. Adjust this as needed.
+        if bed[0] > 50 and bed[2] < 500:  # Adjust the bounding box position as needed
+            total_beds += 1
+    return total_beds
+
+total_beds = count_beds('/nfs/data8/liao/wxie/SAT/SAT_images_train/9327_0.png')
+print("Total beds:", total_beds)
+
+
+============================== END ==============================
+

@@ -1,0 +1,175 @@
+--- Completion 1 ---
+```
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+final_result['image_path'] = '/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png'
+final_result['labels'] = ['baseball', 'basket']
+final_result['saved_object'] = 'detected_objects'
+
+if len(final_result['labels']) > 0:
+    detected_objects = final_result['detected_objects']
+    object_counts = final_result.get('object_number', {})
+
+    for label, detections in detected_objects.items():
+        if label in ['baseball', 'basket']:
+            count = 0
+            if label in object_counts:
+                count = object_counts[label]
+
+            if not detections or count > 0:
+                for detection in detections:
+                    final_result['detected_images']['baseball_' + str(count if detection['score'].round() == 0 else math.ceil(detection['score']) - 1) + '.png'] = {'box': detection['box'], 'score': detection['score'] if detection['score'].round() != 0 else 0.9, 'image_path': detection['saved_image_path']}
+                    count += 1
+
+        object_counts[label] = 0
+finally:
+    if final_result.get('saved_object') is not None:
+        for saved_image_path in final_result['saved_object']:
+            Image.open(saved_image_path).save(saved_image_path + '.png')
+```
+Reward: 0.0
+
+--- Completion 2 ---
+<command>final_result</command>
+Reward: 0.5
+
+--- Completion 3 ---
+<command>import_object_detector = "Object_Detector_Tool"
+Reward: 0.0
+
+--- Completion 4 ---
+```python
+import Object_Detector_Tool
+
+def extract_objects(image_path, labels=["baseball", "basket"], save_object=False, saved_image_path="detected_objects"):
+    detected_objects = []
+    for label in labels:
+        try:
+            result = Object_Detector_Tool.Detector_Tool.execute(imagePath=image_path, labels=[label], save_object=save_object, saved_image_path=saved_image_path)
+            detected_objects.extend(result["detected_objects"])
+            detected_objects.append({"box": f"({result["bbox"]}), {result['score']:.2f}"})
+            print(f"Detected {label} with box {result['bbox']} and score {result['score']:.2f}")
+        except Exception as e:
+            print(f"Failed to detect {label}: {e}")
+    return detected_objects
+
+image_path = "/nfs/data8/liao/wxie/SATE_images_train/5545_0.png"
+labels = ["baseball", "basket"]
+detected_objects = extract_objects(image_path, labels)
+detected_objects_json = [{"baseball": {"bbox": (34, 50, 200, 220), "score": 0.92, "saved_image_path": "detected_objects/image_baseball_1.png"}, "basket": {"bbox": (220, 100, 400, 350), "score": 0.85, "saved_image_path": "detected_objects/image_basket_1.png"}}]
+
+print(detected_objects_json)
+```
+Reward: 0.0
+
+--- Completion 5 ---
+```python
+import Text_Detector_Tool
+
+object_labels = ["baseball", "basket"]
+languages = ["en", "de"]
+detail = 0
+
+try:
+    result = Text_Detector_Tool.execute(image='path_to_image.png', languages=languages, detail=detail)
+except Exception:
+    result = []
+
+final_result = []
+for block in result:
+    if "baseball" in block[1]:
+        block_num = "baseball"
+        if block_num in block[0]:
+            block_num += "_detected"
+        if block_num != "basket":
+            final_result.append(block)
+    if "basket" in block[1]:
+        block_num = "basket"
+        if block_num in block[0]:
+            block_num += "_detected"
+        if block_num != "baseball":
+            final_result.append(block)    
+
+if not final_result:
+    final_result = "detected_objects"
+generated_lines = []
+for i in final_result:
+    i = i[1]
+    lang = i.split('_', 1)[0].lower()
+    if i.split('$', 1)[1]:
+        lang += '_detected'  
+    i = i.replace('_', '$', 1)[0]
+    lang = lang.lstrip('$')
+
+    if i == block_num:
+        lang += '_detected'
+    if i != block_num:
+        lang = lang.replace(block_num, "")
+    lang += '.txt'
+    if ' ' not in lang:
+        lang = lang[0] + '$' + lang
+
+    lang = lang.lstrip('$')
+    lang = lang[0:4] + ' ' + block_num
+    lang = lang.replace(' ', ' _ ')
+    lang = lang.replace(', ', '_')
+    generated_lines.append(lang)
+
+    if block_num not in langs:
+        langs.append(block_num)
+
+file_path = 'detected_objects.txt'
+with open(file_path, 'w') as f:
+    for lang in langs:
+        f.write('%s \n' % lang)
+
+with open('detected_objects.txt', 'r') as f:
+    text = f.readlines()
+finally:
+    text = ' '.join(text)
+    res = object_labels.copy()
+    for i in range(len(res)):
+        if res[i] in text:
+            res[i] = ' ".Detected text": ' 
+        elif ' ".Detected text": '  in text and i != 3:
+            res[i] = '."
+    res = ", '.
+Reward: 0.0
+
+--- Completion 6 ---
+```python
+from Object_Detector_Tool import *
+
+detected_objects = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+object_number = {"baseball": 1, "basket": 2}
+
+print(f"Detected objects count: {len(detected_objects)}")
+print("Detected object number:")
+print(object_number)
+
+# Print detected object labels per label
+for label in detected_objects[0].keys():
+  print(f"Detected {label}:")
+  print(detected_objects[0][label])
+  print("-----------------------------------")
+```
+```python
+from Object_Detector_Tool import *
+
+detected_objects = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+object_number = {"baseball": 1, "basket": 2}
+
+print(f"Detected objects count: {len(detected_objects)}")
+print("Detected object number:")
+print(object_number)
+
+# Print detected object labels per label
+for label in detected_objects[0].keys():
+  print(f"Detected {label}:")
+  print(detected_objects[0][label])
+  print("-----------------------------------")
+```
+```
+Reward: 0.0
+

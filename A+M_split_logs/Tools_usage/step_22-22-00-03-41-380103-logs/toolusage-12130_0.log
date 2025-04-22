@@ -1,0 +1,208 @@
+
+[QAid]12130_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/12130_0.png", labels=["Doorman", "Pillow1"], save_object=True, saved_image_path="")
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]12130_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = {}
+
+# Define the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/12130_0.png"
+
+# Set the parameters
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+
+# Execute the object detection
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path='detected_objects')
+
+if type(detected_objects) is tuple:
+    detected_objects, object_number = tuple(detected_objects)
+
+# Determine the number of doorways
+total_objects = len(detected_objects)
+total_number_of_objects = int(object_number['baseball']) + int(object_number['basket'])
+
+if total_objects == total_number_of_objects:
+    doorways = total_objects
+else:
+    doorways = 0
+
+final_result['doorways'] = doorways
+final_result['total_objects'] = total_objects
+
+# Display the result
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]12130_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tool_module import object_detector_tool, text_detector_tool
+
+def count_doors(image_path):
+    detections = object_detector_tool.execute(image=image_path, save_object=True, saved_image_path="counted_objects")
+    door_count = 0
+    for detection in detections:
+        if 'baseball' in detection['labels'] and 'door' in detection['coordinates']:
+            door_count += 1
+    return door_count, len(detections)
+
+def count_text(image_path, languages=['en', 'de']):
+    result = text_detector_tool.execute(image=image_path, languages=languages)
+    text_blocks = result['result']
+    text_count = 0
+    for block in text_blocks:
+        if block[2] >= 0.75:
+            text_count += 1
+    return text_count
+
+if __name__ == '__main__':
+    image_path = '' # Path to the image file
+    door_count, _ = count_doors(image_path)
+    text_count = count_text(image_path, languages=['en', 'de'])
+
+    print(f"Number of doors in the image: {door_count}")
+    print(f"Number of text blocks in the image: {text_count}")
+
+    # Assuming the text blocks represent different door types, e.g., doors with a baseball emblem, a basketball emblem, etc.
+    if text_count == 3:
+        print(f"Detected 3 doors in the image.")
+    else:
+        print("No detected doors.")
+
+============================== END ==============================
+
+
+[QAid]12130_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>
+import os
+
+def count_doorways(image_path):
+    directory_content = {}
+    with open(image_path, 'r') as file:
+        detected_objects = []
+        label_count = {}
+        languages = ['en', 'de']
+        for line in file:
+            if "image=" in line:
+                try:
+                    image_data = line.split('=')[1].replace('"', '').replace("'", "")
+                    if not image_data:
+                        return False
+
+                    text_lines = image_data.split('\n')
+                    detected_objects_by_language = {}
+
+                    for t in text_lines:
+                        for lang in languages:
+                            try:
+                                text_result = text_detector_tool.execute(image=image_data, languages=[lang], detail=0)
+                                if not text_result:
+                                    break
+
+                                detected_objects_by_language[lang] = text_result
+
+                                detected_objects.extend([{["x0", "y0"], ["x1", "y1"], ["x2", "y2"], ["x3", "y3"]}, {"Detected text"; detected_objects_by_language[lang][label], detected_objects_by_language[lang][label].get('score', 0.0)})
+                            except Exception as e:
+                                continue
+
+                    detected_objects.extend([{["x0", "y0"], ["x1", "y1"], ["x2", "y2"], ["x3", "y3"]}, detected_objects])
+                    detected_objects.sort(key=lambda x: (x['x0'], x['x1'], x['y0', 'y1'], x['y2', 'y3']))
+
+                    for obj in detected_objects:
+                        obj_label = obj['Detected text']
+                        if obj_label not in label_count:
+                            label_count[obj_label] = 0
+                        label_count[obj_label] += 1
+
+                except Exception as e:
+                    return False
+
+    for label in label_count:
+        # Assuming 'baseball' and 'basket' are the labels of interest
+        if label == 'baseball' or label == 'basket':
+            objects = detected_objects[0:2]
+            objects.extend(detected_objects[2:])
+
+            # Create a dictionary mapping each label to the number of detected objects in the image
+            lab_to_objects = {label: {"text": {"Detected text": objects[label]}, "count": len(objects)}}
+
+            lab_to_count = [{"label": label, "count": len(detected_objects)}]
+            lab_to_count_label = "{"label": label,
+============================== END ==============================
+
+
+[QAid]12130_0
+
+[Code Includes Tools Usage]
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+def check_rooms(images):
+    for image in images:
+        object_detector = Object_Detector_Tool()
+        objects, num_objects = object_detector.execute(image=image, labels=['door'], languages=['en'])
+        detected_doorways = []
+        for obj in objects:
+            if obj['box'][0] < 100 and obj['box'][1] < 100:
+                detected_doorways.append((obj['box'][0], obj['box'][1]))
+        return detected_doorways
+
+def count_object_in_image(images, labels):
+    result = []
+    for image in images:
+        result.append(len([obj for obj in object_detector.execute(image=image, labels=labels) if obj['box'][0] < 100 and obj['box'][1] < 100]))
+    return result
+
+final_result = []
+for i in range(len(tool_data['images']) + tool_data['model_size']):
+    final_result.append(check_rooms(tool_data['images']))[i]  # checking doorways
+    final_result.append(count_object_in_image(tool_data['images'], tool_data['labels']))[1]
+    final_result.append(count_object_in_image(tool_data['images'], tool_data['labels']))[0][0]['score']
+
+[5]
+
+============================== END ==============================
+
+
+[QAid]12130_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image='path/to/image', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+print(final_result)
+
+============================== END ==============================
+

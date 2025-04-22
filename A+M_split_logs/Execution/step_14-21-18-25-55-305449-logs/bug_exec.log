@@ -1,0 +1,76 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+```python
+from object_detector_tool import Object_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()
+labels = ['counterboard']
+save_object = False
+
+detected_objects, object_number = object_detector_tool.execute(
+    image="/nfs/data8/liao/wxie/SAT/SAT_images_train/6378_0.png",
+    labels=labels,
+    save_object=save_object,
+    threshold=0.35
+)
+
+object_number = {label: len(detected_objects[labels].get(label).get('objects')) for label, detected_objects in object_detector_tool.output_types['object_number']['detected_objects'].items()}
+detected_objects.pop_label("detected_objects", "counterboard")
+
+detected_objects.pop_label("detected_objects", "basin")
+detected_objects.pop_label("detected_objects", "baseball")
+detected_objects.pop_label("detected_objects", "basket")
+
+detected_objects.pop_label("detected_objects", "sink_top")
+
+final_result = ",".join([f"{box[0]}" for _, _, box in detected_objects.get('objects') for _ in ["X1", "Y1", "X2", "Y2"]]) + ", " + ", ".join([box[2] for _, _, box in detected_objects.get('objects') for _ in ["X1", "Y1", "X2", "Y2"]]) + ", " + str(object_number)
+final_result
+```
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image=open(image_path).read(), labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+detected_objects, object_number = final_result
+detected_objects
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'toolkit'
+code: 
+
+from toolkit.object_detector import Object_Detector_Tool, save_detection_objects, get_image_info
+
+# Load the model
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the detection with labels
+# Possible labels might include 'baseball', 'basket', 'chair', etc.
+detected_objects, object_number = object_detector_tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/6378_0.png", labels=['baseball', 'basket'], save_object=False, saved_image_path=f"/detected_objects")
+
+# Get the detailed information about the detected objects
+object_info = sorted(detected_objects, key=lambda x: x["score"], reverse=True)
+object_details = [{'label': 'baseball', 'bbox': detected_objects[0]["bbox"]}]
+
+final_result = f"Detected 'baseball' objects: {object_details}"
+
+
+============================== END ==============================
+

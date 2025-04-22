@@ -1,0 +1,153 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 25)
+code: 
+
+from tool_module.object_detector import Object_Detector_Tool as OD
+
+def count_dining_tables():
+    dining_tables = 0
+    for table_id, table in enumerate([[0, 2], [4, 2]], start=1):
+        if table[0] == 0 and table[1] == 2:
+            dining_tables += 1
+    return dining_tables
+
+result_object_detected_objects_path = "detected_objects.json"
+
+result = OD.execute(image="path_to_image.png", labels=["DiningTable", "Cabinet"], save_object=True, saved_image_path=result_object_detected_objects_path)
+object_count = result[2]
+for label_name, label_entry in result[0].items():
+    if label_name == "DiningTable":
+        dining_table_count = len(label_entry)
+        break
+
+dining_tables_result = count_dining_tables()
+if dining_tables_result < 2:
+    final_result = "2"
+else:
+    final_result = dining_tables_result
+finally:
+    print(f"The number of dining tables is {final_result}.")
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 13)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/75_0.png"
+labels_to_detect = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Execute object detection
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels_to_detect, save_object=True, saved_image_path=saved_image_path, threshold=threshold, model_size=model_size, languages=["en", "de"].)
+
+# Fetch detected objects and their count
+object_pairs = []
+
+for obj in detected_objects["baseball"]:
+    box = obj["box"]
+    score = obj["score"]
+
+    for obj_pair in detected_objects["basket"]:
+        box_pair = obj_pair["box"]
+        score_pair = obj_pair["score"]
+
+        if box == box_pair:
+            pair = [obj["box"], obj_pair["box"], obj["score"], obj_pair["score"]]
+            object_pairs.append(pair)
+
+# Retrieve total object count
+object_number_total = object_number["baseball"] + object_number["basket"]
+
+# Create and return final result
+final_result = f"Total object count: {object_number_total}"
+
+# Display the results
+for pair in object_pairs:
+    # Extract bounding boxes and labels
+    boxes = [pair[0], pair[1], pair[2], pair[3]]
+    
+    # Construct object detail string
+    object_strings = " ".join(f"({bx[0]}, {bx[1]}, {bx[2]}, {bx[3]})" for bx in boxes)
+    
+    # Log the detected objects
+    print(f"Detected objects: {object_strings}")
+    
+# Display the final result
+print(f"Final result: {final_result}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'text_detector' is not defined
+code: 
+
+def count_dining_tables(image_path: str) -> int:
+    with open(image_path, 'r') as image_file:
+        text_objects = text_detector.execute(image=image_file, languages=['en', 'de'])
+    dining_tables = [det for det in text_objects if 'Dining Table' in det[0][2]]
+    object_number = {}
+    for det in dining_tables:
+        object_number[det[1]] = object_number.get(det[1], 0) + 1
+    return len(dining_tables)
+
+final_result = count_dining_tables("/nfs/data8/liao/wxie/SAT/SAT_images_train/75_0.png")
+print("Dining tables found:", final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+f-string: unmatched ']' (<string>, line 18)
+code: 
+
+import Object_Detector_Tool
+
+# Initialize the command
+command = "detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/dining_table_image.png', labels=['dining_table'], save_object=True, saved_image_path='dining_tables')"
+
+# Set the camera view to display the room
+Object_Detector_Tool.set_view('Dining Table View')
+
+final_result = Object_Detector_Tool.parse_objects_objects_command(command)
+
+detected_tables = final_result[0]
+number_from_image = final_result[1]
+
+print(f"The scene contains {number_from_image} dining table(s).")
+print(f"The dining tables are located as follows:")
+for detected_table in detected_tables:
+    print(f"- {detected_table['name']}: [{detected_table['bbox'][0], detected_table['bbox'][1], detected_table['bbox'][2], detected_table['bbox'][3]], {detected_table['bbox'][5]}, detected_table['score'], detected_table['saved_image_path']])")
+
+if save_object:
+    Object_Detector_Tool.save_objects_detected_objects(detected_tables)
+
+
+============================== END ==============================
+

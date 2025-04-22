@@ -1,0 +1,172 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool, save_object, detected_objects, object_number
+
+# Define labels, confidence threshold, model size, and save directory
+labels = ['baseball', 'basket']
+confidence_threshold = 0.35
+model_size = 'tiny'
+saved_image_path = 'detected_objects'
+
+# Execute the object detector
+obj = Object_Detector_Tool.conf_int(threshold=confidence_threshold, model_size=model_size)
+
+# Detect and save objects if required
+if save_object:
+  save_object(obj['detected_objects'], saved_image_path)
+
+final_result = [
+  {
+    'label': [obj['labels'][i]] if 'labels' in obj else [],
+    'num': obj['label_number'][i] if 'label_number' in obj else []
+  } for i in range(len(obj['detected_objects']))]
+</command>
+
+# Define the input and output
+input_image = 'path/to/image.png'
+language = 'en'
+
+# Execute the text detector
+result = Text_Detector_Tool.execute(image=input_image, languages=[language], detail=1)
+
+# Detect text and organize into a list
+detected_text = [[[(x0, y0), (x1, y1), (x2, y2), (x3, y3)], text, conf_score] for x0, y0 in result['bounding_boxes'].values() for x1, y1 in result['bounding_boxes'].values() for x2, y2 in result['bounding_boxes'].values()]
+detected_text = detected_text + [[(x0, y0), (x1, y1), (x2, y2), (x3, y3)], text, conf_score] for x0, y0 in result['bounding_boxes'].values() for x1, y1 in result['bounding_boxes'].values() for x2, y2 in result['bounding_boxes'].values() for x3, y3 in result['bounding_boxes'].values() for text, conf_score in result['text_blocks']
+
+# Convert dict to list for output
+detected_text = [detected for detected in detected_text]
+
+final_result = [
+  {'detected_objects': detected, 'detected_text': [detected_text[i]] + ['(text detected: ' + text + ' for confidence ' + str(conf_score) + ')'] for i in range(len(detected_text))}]
+
+final_result
+```
+Reward: 0.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = {
+    "how_many_doors": 1,
+    "number_of_detected_doors": 1,
+    "how_many_drawing_rooms": 1,
+    "number_of_detected_drawings": 1
+}
+
+print("Number of doors:", final_result["how_many_doors"])
+print("Number of detected doors:", final_result["number_of_detected_doors"])
+print("Number of drawing rooms:", final_result["how_many_drawing_rooms"])
+print("Number of detected drawings:", final_result["number_of_detected_drawings"])
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+import_name = 'Object_Detector_Tool'
+demo_command = "generated_lines"
+
+saved_image_path = 'detected_objects'
+saved_image_path_default = 'detected_objects'
+
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'base'
+
+saved_image_path = saved_image_path
+detected_objects, object_number = Object_Detector_Tool.execute(image=imgpath, labels=labels, save_object=True, saved_image_path=saved_image_path)
+
+detected_objects = [{'box': (x1, y1, x2, y2), 'score': score, 'saved_image_path': path} for _, result in detected_objects.items()]
+detected_objects = [{'box': (box[0], box[1], box[2], box[3]), 'score': score, 'saved_image_path': saved_image_path_default + f"/{image}"}] + detected_objects
+object_number = len(detected_objects)
+
+final_result = {label: {'box': (bbox[0], bbox[1], bbox[2], bbox[3]), 'score': obj_score, 'count': len(detected_objects)} for label, obj_dict in detected_objects.items()}
+if save_object:
+    for image in saved_objects:
+        Image.open(image).save(os.path.join(root, image), format='PNG')
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Calculate the total number of objects detected in the scene
+total_objects = len(Object_Detector_Tool.execute(image="path/to_image.png", save_object=True, saved_image_path="detected_objects"))
+
+final_result = {"Doorways": total_objects}
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+def count_dectected_objects(image_path, labels=None, model_size='tiny', save_object=False, saved_image_path='detected_objects'):
+    if labels is None:
+        labels = []
+
+    object_labels = {
+        'baseball': 1,
+        'basket': 2,
+        'chair': 3,
+        'desk': 4,
+        'drawer': 5,
+        'floor': 6,
+        'guitar': 7,
+        'head': 8,
+        'light': 9,
+        'mirror': 10,
+        'nightstand': 11,
+        'piano': 12,
+        'record_player': 13,
+        'stove': 14,
+        'table': 15,
+        'wiring': 16,
+        'window': 17,
+        'lamp': 18,
+        'cabinet': 19,
+        'chimney': 20,
+        'curtain': 21,
+        'door': 22,
+        'fireplace': 23,
+        'furniture': 24,
+        'glass_door': 25,
+        'lock': 26,
+        'mirror_door': 27,
+        'mirror_glass': 28,
+        'open_door': 29,
+        'mirror_window': 30,
+        'open_door_with_window': 31,
+        'cabinet_door': 32,
+        'chimney_holes': 33,
+        'water_pipes': 34,
+        'light_fixture': 35,
+        'light_panel': 36,
+        'piped': 37
+    }
+    image_data = Image.open(image_path).convert("L")
+    detect_result = object_labels
+    if save_object:
+        cropped_image, bbox = detect_object(image_data, model_size)
+
+    if detect_result is not None:
+        for label, detection in detect_result.items():
+            objects_with_labels = []
+            for detected_objects in detection["results"]:
+                objects_with_labels.extend([i["bbox"] for i in detected_objects])
+            objects_with_labels = [i[0] for i in objects_with_labels if not objects_with_labels[-1]]
+            objects_with_labels = "".join(objects_with_labels)
+            label_name = label.title()
+            total_detected_objects = len(label_name.split())
+            if "
+Reward: 0.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['chair', 'table'], save_object=True, saved_image_path='detected_objects')
+</command>
+Reward: 1.0
+

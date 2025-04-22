@@ -1,0 +1,138 @@
+------------- 21-04-10-36-294013 Execution reward: 0.0 -------------
+[Reward computation time: 2.7452 seconds]
+QAid: 3414_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = []
+
+# Detect houseplants
+detected_objects = Object_Detector_Tool.execute(image='path/to/image.png', languages=['ti'], detail=1)
+for obj in detected_objects:
+    final_result.append({"label": obj[0][0], "count": 1})
+
+# If more than 1 houseplant is detected, add them to the list
+if detected_objects:
+    final_result.append({"label": "HousePlants", "count": len(detected_objects)})
+
+final_result
+
+
+============================== END ==============================
+
+------------- 21-04-10-36-294013 Execution reward: 0.0 -------------
+[Reward computation time: 2.6603 seconds]
+QAid: 3414_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="path/your_image.jpg",
+                                            labels=["baseball", "basket"],
+                                            save_object=True,
+                                            saved_image_path="detected_objects")
+
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-04-10-36-294013 Execution reward: 0.0 -------------
+[Reward computation time: 2.7368 seconds]
+QAid: 3414_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['houseplant'], save_object=True, saved_image_path='detected_objects')
+
+if final_result[0]>0:
+    num_houseplants = final_result[0]
+    print('There are ', num_houseplants, 'HousePlants visible in the scene.')
+else:
+    print('There are no HousePlants visible in the scene.')
+
+
+============================== END ==============================
+
+------------- 21-04-10-36-294013 Execution reward: 0.0 -------------
+[Reward computation time: 2.6922 seconds]
+QAid: 3414_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png', labels=[1, 2], save_object=True, saved_image_path='detected_objects')
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-04-10-36-294013 Execution reward: 0.0 -------------
+[Reward computation time: 2.7468 seconds]
+QAid: 3414_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png', labels=['HousePlants'], save_object=True, saved_image_path='detected_objects')
+
+
+============================== END ==============================
+
+------------- 21-04-10-36-294013 Execution reward: 0.0 -------------
+[Reward computation time: 2.5807 seconds]
+QAid: 3414_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_objects(image_path, labels, save_object=True, saved_image_path="detected_objects"):
+    try:
+        results = Object_Detector_Tool.execute(image=image_path, labels=labels)
+        return (results, len(results.keys()))
+    except Exception as e:
+        print(e)
+        return None
+
+def process_image(image_path, languages=None, detail=0):
+    try:
+        results = Object_Detector_Tool.execute(image=image_path, languages=languages)
+        if not results:
+            print("Text detection failed")
+            return None
+        else:
+            text_blocks = [result["box"] + [result["score"]] + [result["saved_image_path"]] for result in results.values()]
+            if languages:
+                languages = ", ".join(languages)
+            else:
+                languages = ""
+            return zip(["Detected " + l for l in languages if l], text_blocks)
+    except Exception as e:
+        print("Error during text detection:", str(e))
+        return None
+
+def analyze_image(image_path, languages, detail):
+    try:
+        final_labels = process_image(image_path, languages=languages, detail=detail)
+        if final_labels is None:
+            return None
+        else:
+            final_result = {"Labels": list(final_labels[0]), "Number of Objects": len(final_labels[1])}
+            return final_result
+    except Exception as e:
+        print("Error analyzing image:", str(e))
+        return None
+
+def analyze_image_command():
+    final_result = analyze_image("/nfs/data8/liao/wxie/SAT/SAT_images_train/3414_0.png", languages=["en", "de"], detail=0)
+    if final_result is not None:
+        print("Number of objects found:", final_result["Number of Objects"])
+        print("Labels detected:", final_result["Labels"])
+    else:
+        print("Text detection failed")
+
+
+============================== END ==============================
+

@@ -1,0 +1,151 @@
+------------- 19-03-52-36-291998 Execution reward: 0.0 -------------
+[Reward computation time: 2.7527 seconds]
+QAid: 4664_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Define input parameters and command
+tools = [
+    {
+        "tool_module_name": "object_detector",
+        "tool_class_name": "Object_Detector_Tool",
+        "tool_description": "A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.",
+        "tool_version": "1.0.0",
+        "input_types": {
+            "image": "str - The path to the image file.",
+            "labels": "list - A list of object labels to detect.",
+            "threshold": "float - The confidence threshold for detection (default: 0.35).",
+            "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
+            "save_object": "bool - Whether to save the detected objects as images (default: False).",
+            "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects')."
+        },
+        "output_types": "\"tuple - A tuple containing two elements: (1) a dictionary mapping each detected label to a list of detection entries, e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}]}, (2) a dictionary mapping each label to the number of detected objects in the image. e.g. {'baseball': 2, 'basket': 1}\".\n"
+    },
+]
+
+# Define variable for storing the results
+result = []
+
+# Loop through the tool definitions and run them
+for tool in tools:
+    command = "detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', labels=[], save_object=True, saved_image_path='detect_objects')"
+    result.extend(tool["demo_commands"].update(command))
+    tools[0]["tool_output_example"] = tool["tool_output_example"]
+
+# Fetch the object detection and text detection results
+final_result = tools[1][0].values()
+
+# Filter out the object detection results
+final_result = [item for sublist in final_result for item in sublist]
+
+for res in final_result:
+    print(res)
+
+
+
+============================== END ==============================
+
+------------- 19-03-52-36-291998 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 4664_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 19-03-52-36-291998 Execution reward: 0.0 -------------
+[Reward computation time: 2.5416 seconds]
+QAid: 4664_0
+Code: 
+
+from image_object_detector import Object_Detector_Tool
+
+def detect_objects(image, labels, save_object):
+    label_output = {}
+    object_output = {}
+
+    for label in labels:
+        (bbox, score, saved_image_path) = Object_Detector_Tool.detect_object(image, label, False, 1, "base", save_object)
+
+        if len(bbox) > 0:
+            label_output[label] = bbox
+            object_output[label] = len(label_output) + 1
+
+    return label_output, object_output
+
+# Example usage: Detect objects in a sample image
+import_name: "Text_Detector_Tool"
+image_path: "/Users/user/documents/data8/images/test.png"
+language_codes: ["en", "de"]
+
+result_texts = Text_Detector_Tool.execute(image=image_path, languages=language_codes)
+detected_objects, object_number = detect_objects(image_path, result_texts, False)
+
+print(f"Detected objects: {detected_objects}")
+print(f"Number of objects: {object_number}")
+
+# Save objects detected text
+if save_object:
+    from object_detector_tool import Object_Detector_Tool
+    label_output, object_output = object_detector_Tool.execute(image_path)
+    det_text = Label(text=result_texts)
+    det_text.append( Label(label="Detected text", bbox=label_output['basket'], score=det_text['score'], saved_image_path="/Users/user/documents/data8/images/test.png"))
+    det_text.append( Label(label="Detected text", bbox=label_output['baseball'], score=det_text['score'], saved_image_path="/Users/user/documents/data8/images/test.png"))
+    image_text = Image(image_path, label_count=None)
+    image_text.text(det_text)
+    image_text.save("/Users/user/documents/data8/images/test.png", format="png")
+print(f"Detected objects text saved to 'test.png'")
+
+
+============================== END ==============================
+
+------------- 19-03-52-36-291998 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 4664_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 19-03-52-36-291998 Execution reward: 0.0 -------------
+[Reward computation time: 2.5288 seconds]
+QAid: 4664_0
+Code: 
+
+import pyopenexif as pe
+
+# Load the image
+with open('/nfs/data8/liao/wxie/SAT/SAT_images_train/4664_0.png', 'rb') as image_file:
+    image_data = image_file.read()
+
+# Perform text detection
+result = pe.extract_text(image=image_data)
+
+# Extract detected text
+text_blocks = []
+for text_block in result:
+    detected_text = text_block[0][2]
+    text_blocks.append({'bounding_box': text_block[0][0], 'recognized_text': detected_text, 'confidence_score': text_block[1]})
+
+# Check if any text was detected
+if len(text_blocks) > 0:
+    detected_text_count = {block['recognized_text']: len(text_blocks) for block in text_blocks}
+else:
+    detected_text_count = {}
+   
+# Define final result
+final_result = {" chairs": [0]}
+if text_blocks:
+    final_result[" chairs"] = detected_text_count
+    
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 19-03-52-36-291998 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 4664_0
+Code: [EMPTY]
+
+============================== END ==============================
+

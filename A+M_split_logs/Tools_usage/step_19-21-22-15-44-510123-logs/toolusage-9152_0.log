@@ -1,0 +1,213 @@
+
+[QAid]9152_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<python_code>
+from torch.utils.data import DataLoader
+import torch
+from object_detector_tool import Object_Detector_Tool
+
+def count_shelving_units(image_path, labels=['shed'],
+                         save_object=True, saved_image_path=None):
+    """Detect and count the number of shelves in a scene."""
+    object_detector = Object_Detector_Tool()
+    detected_objects = object_detector.execute(image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+    object_number = {obj['labels'][0]: obj['count'] for obj in detected_objects.get('num', 0)}
+    
+    return object_number
+
+def detect_text(image_path, languages=['en', 'de'],
+                detail=0):
+    """Detect text in an image using EasyOCR."""
+    text_detector = Text_Detector_Tool()
+    text_results = text_detector.execute(image_path, filters=languages, detail=detail)
+
+    return text_results
+
+def main():
+    import os
+    import sys
+    sys.path.append('path_to_tools')  # Adjust the path as needed
+
+    image_path = '/path/to/image.png'
+
+    shelving_units = count_shelving_units(image_path)
+    print(f"Number of shelves: {shelving_units}")
+</python_code>
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Includes Tools Usage]
+code: 
+from object_detector import Object_Detector_Tool
+final_result = Object_Detector_Tool().execute(image='path/to/image', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+for label in final_result:
+    detected_objects = label[1]
+    object_number = label[0]
+    detected_blocks = []
+
+    for block in detected_objects:
+        bounding_box = list(block[0])
+        text = block[2]
+        confidence_score = block[4]
+
+        detected_blocks.append([bounding_box, text, confidence_score])
+
+    detected_blocks.reverse()
+
+    text_result = [detected_blocks for i in range(len(detected_blocks))][0]
+
+    if not text_result:
+        final_result.pop()
+
+final_result
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import object_detector_tool
+
+# Execute the tool
+detected_objects, object_number = object_detector_tool.execute(image="path/to_image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Extract total object detection counts
+object_number = {"baseball": len(detected_objects["baseball"]), "basket": len(detected_objects["basket"])}
+
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>
+import Text_Detector_Tool
+import Object_Detector_Tool
+
+# Get labels for detection
+labels = [ "baseball" , "basket" ]
+
+# Load model (tiny or base)
+model_size = "tiny"
+
+# Load image
+image_path = "nfs/data8/liao/wxie/SAT/SAT_images_train/9152_0.png"
+
+# Detect baseball
+if Text_Detector_Tool.execute(image=image_path, languages=["en", "de"], detail=0).len() == 1:
+    detected_object = Text_Detector_Tool.execute(image=image_path, languages=["en", "de"], detail=0)[0]
+    baseball_result = {
+        "box": detected_object[0][1],
+        "score": detected_object[0][2],
+        "saved_image_path": f"detected_objects/{model_name}_(0).png"
+    }
+    object_number = 1
+elif Baseball_Catcher_Detection_Tool.execute(image=image_path, languages=["en", "de"], detail=0).len() == 1:
+    baseball_result = {
+        "box": Baseball_Catcher_Detection_Tool.execute(image=image_path, languages=["en", "de"], detail=0)[0][0].bbox,
+        "score": Baseball_Catcher_Detection_Tool.execute(image=image_path, languages=["en", "de"], detail=0)[0][1],
+        "saved_image_path": f"detected_objects/{model_name}_(0).png"
+    }
+    object_number = 1
+else:
+    object_number = 0
+
+# Detect basketball
+if Text_Detector_Tool.execute(image=image_path, languages=["en", "de"], detail=0).len() == 1:
+    detected_object = Text_Detector_Tool.execute(image=image_path, languages=["en", "de"], detail=0)[0]
+    basketball_result = {
+        "box": detected_object[0][1],
+        "score": detected_object[0][2],
+        "saved_image_path": f"detected_objects/{model_name}_(0).png"
+    }
+else:
+    basketball_result = None
+
+# Combine results
+if baseball_result:
+    detected_objects = [
+        {
+            "baseball": baseball_result,
+            "score": baseball_result["score"],
+            "box": baseball_result["box"],
+            "saved_image_path": f"detected_objects/{object_name}.png"
+        }
+    ]
+
+if basketball_result:
+
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Includes Tools Usage]
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image',
+                                            labels=[],
+                                            save_object=True,
+                                            saved_image_path='detected_objects')
+
+if final_result['object_count'] == 0:
+    final_result = []
+
+final_result = {
+    'total_objects': len(final_result),
+    'detected_objects': final_result
+}
+
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+import_name: "Object_Detector_Tool"
+import_module: "Object_Detector_Tool"
+
+def count_shelving_units(object_labels, image_path):
+    detected_objects = []
+    object_count = {}
+    max_attempts = 3
+
+    for labels in object_labels:
+        for i in range(max_attempts):
+            detected_objects, object_count = object_detector_tool.execute(image=image_path, labels=labels, languages=['en', 'de'], detail=0)
+            if detected_objects:
+                break
+
+        if detected_objects:
+            break
+
+    if detected_objects:
+        detected_objects = [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': f'detected_objects/{labels}_{object_count[labels]}.png'}]
+        return detected_objects, object_count
+    else:
+        return []
+
+final_result = count_shelving_units('baseball', '/nfs/data8/liao/wxie/SAT/SAT_images_train/9152_0.png')
+print(final_result)
+
+============================== END ==============================
+

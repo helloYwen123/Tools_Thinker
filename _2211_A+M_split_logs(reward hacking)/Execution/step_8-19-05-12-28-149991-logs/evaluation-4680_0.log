@@ -1,0 +1,185 @@
+------------- 19-05-12-28-149991 Execution reward: 0.0 -------------
+[Reward computation time: 2.2611 seconds]
+QAid: 4680_0
+Code: 
+
+from text_detector import Text_DETECTOR_TOOL
+
+# Path to the image
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/4680_0.png"
+
+# Languages
+# languages = ['ja', 'en']
+
+# Level of detail
+# detail = 1
+
+# Create a text detector object
+result = Text_DETECTOR_TOOL.execute(image=image_path, languages=languages, detail=detail)
+
+# Print the detected text blocks [box, text, confidence score]
+for block_info in result:
+    print(block_info)
+    text, _ = block_info
+    print(f"Detected text: {text}, confidence score: {block_info['confidence_score']}")
+
+
+============================== END ==============================
+
+------------- 19-05-12-28-149991 Execution reward: 0.0 -------------
+[Reward computation time: 2.6891 seconds]
+QAid: 4680_0
+Code: 
+
+import object_detector
+
+path_to_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/4680_0.png"
+
+# Detect sports objects using the object_detector tool
+detected_objects, object_number = object_detector.execute(image=path_to_image, labels=['basket', 'baseball'], save_object=True, saved_image_path="detected_objects")
+
+for detected_object in detected_objects:
+    # Check if the object is a basket or baseball based on the labels list
+    if 'baseball' in detected_object[0]:
+        detected_objects['baseball'].append({'box': (detected_object[1], detected_object[2], detected_object[3], detected_object[4]), 'score': detected_object[5]})
+        break
+    elif 'basket' in detected_object[0]:
+        detected_objects['basket'].append({'box': (detected_object[1], detected_object[2], detected_object[3], detected_object[4]), 'score': detected_object[5]})
+        break
+
+for object in detected_objects.values():
+    # Check if more detail is needed and retrieve text
+    if object_number and len(detected_objects) < len(object['baseball']) + len(object['basket']):
+        language = object_number.pop('baseball')
+        result = object_detector.text_detector.execute(image=''.join(detected_objects['baseball'][0]), languages=language, detail=1)
+        for block in result:
+            print(block)
+
+
+============================== END ==============================
+
+------------- 19-05-12-28-149991 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 4680_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 19-05-12-28-149991 Execution reward: 0.0 -------------
+[Reward computation time: 1.6411 seconds]
+QAid: 4680_0
+Code: 
+
+from tool_object_detector_with_l1_l2_model import Object_Detector_Tool
+
+# Path to the image
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/4680_0.png'
+
+# Labels to detect
+labels_to_detect = ['baseball', 'basket']
+
+# Confidence threshold
+confidence_threshold = 0.3
+
+# Save image with bounding box
+save_with_boxes = True
+
+# Set the model size
+model_size = 'tiny'
+
+# Save object images
+save_object = True
+
+# Set save object path
+saved_object_path = 'detected_objects'
+
+# Initialize the object_detector tool
+obj_detector = Object_Detector_Tool()
+
+# Execute the object_detector tool
+detected_objects, object_number = obj_detector.execute(image_path=image_path, labels=labels_to_detect, save_object=save_with_boxes, saved_object_path=saved_object_path, language=['de'], threshold=confidence_threshold)
+
+# Print the results
+print("Detected Objects:")
+for label, detection in detected_objects:
+    print("Label:", label)
+    print("Details:", detection)
+    for detection in detection:
+        print("\tBox: (", detection['box'])
+        print("\tConfidence Score:", detection['score'])
+
+
+============================== END ==============================
+
+------------- 19-05-12-28-149991 Execution reward: 0.0 -------------
+[Reward computation time: 2.2854 seconds]
+QAid: 4680_0
+Code: 
+
+```python
+from object_detector import Object_Detector_Tool
+
+tool_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/4680_0.png'
+
+label_to_check = ['baseball', 'basket']
+
+model_size = 'tiny'
+
+saved_image_path = 'detected_objects'
+
+object_number = 0
+
+try:
+    object_numbers, object_labels = Object_Detector_Tool.execute(image=tool_path, labels=label_to_check, save_object=True, model_size=model_size, saved_image_path=saved_image_path)
+
+except Exception as e:
+    print(e)
+    object_labels = []
+
+    print("Failed to detect baseball and basket.")
+
+else:
+    object_labels = list(set(object_labels))
+
+    print("Detected", len(object_labels), "objects.")
+    print("The objects can be grouped by their labels are:", object_labels)
+    
+    # Count the total number of objects
+    object_numbers = len(object_labels) + 3
+
+    final_result = {
+        "final_count": object_numbers,
+        "label_to_object": object_labels
+    }
+
+    if object_numbers > 0:
+        for obj in object_labels:
+            final_result['label_to_object'][obj] = object_numbers
+
+    print(final_result)
+
+total_labels = 3
+
+if (object_labels) and (len(object_labels)):
+    for label in object_labels:
+        if label not in label_to_check:
+            total_labels -= 2
+else:
+    print("No labels detected. ")
+
+total_labels += 3
+total_labels += len(label_to_check)
+total_labels += 1
+total_labels += 3
+```
+
+
+============================== END ==============================
+
+------------- 19-05-12-28-149991 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 4680_0
+Code: [EMPTY]
+
+============================== END ==============================
+

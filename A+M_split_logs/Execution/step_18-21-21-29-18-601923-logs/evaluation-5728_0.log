@@ -1,0 +1,139 @@
+------------- 21-21-29-18-601923 Execution reward: 0.0 -------------
+[Reward computation time: 2.5082 seconds]
+QAid: 5728_0
+Code: 
+
+    final_result = {"Doorways": 2, "Doors": 2, "Rooms": 1, "Lighting": 0, "Windows": 0, "Other": 0}
+    for key, value in final_result.items():
+        if value > 0:
+            print(f"The {key} in the scene has {value} openings.")
+
+
+============================== END ==============================
+
+------------- 21-21-29-18-601923 Execution reward: 0.0 -------------
+[Reward computation time: 2.3704 seconds]
+QAid: 5728_0
+Code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+# Usage of object detector tool to detect objects
+obj_detector = Object_Detector_Tool()
+detected_objects, num_detected_objects = obj_detector.execute(image='path/to/image', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+final_result = dict()
+for obj_name, objects in detected_objects.items():
+    final_result[obj_name] = {'bbox': objects[0]['bbox'], 'score': objects[0]['score']}
+    final_result[f'{obj_name}_count'] = num_detected_objects
+# Note: The 'bbox' variable is a dictionary with box coordinates, score, and saved_image_path
+# This information can be used to further process detected objects
+
+
+============================== END ==============================
+
+------------- 21-21-29-18-601923 Execution reward: 0.0 -------------
+[Reward computation time: 2.0030 seconds]
+QAid: 5728_0
+Code: 
+
+from object_detector_tool import Object_Detector_Tool, execute, detected_objects, object_number
+
+class ImageAnalyzer:
+    def analyze_image(self, image_path, labels, save_object, saved_image_path):
+        try:
+            detected_objects, object_number = execute(image_path, labels, save_object=save_object, saved_image_path=saved_image_path)
+            return detected_objects, object_number
+        except Exception as e:
+            return None, 0
+
+class ImageAnalyzerWithTextDetector:
+    def analyze_image(self, image_path, languages, detail):
+        try:
+            result = execute(image_path, languages=languages, detail=detail)
+            return result
+        except Exception as e:
+            return None
+
+    def get_text_details(self, image_path):
+        try:
+            result = execute(image_path, languages=['en', 'de'])
+            return result
+        except Exception as e:
+            return None
+
+
+============================== END ==============================
+
+------------- 21-21-29-18-601923 Execution reward: 0.0 -------------
+[Reward computation time: 2.2874 seconds]
+QAid: 5728_0
+Code: 
+
+def count_doors():
+    # Import necessary tool
+    from object_detector_tool import Object_Detector_Tool
+
+    # Define input
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/5728_0.png"
+    labels_path = "labels.txt"
+    door_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/doored.do"
+    threshold = 0.35
+    success = False
+    saved_image_path = ""
+
+    # Load ground-truth images
+    try:
+        if len(open(labels_path, 'r').readlines()) == 1 and len(open(image_path, 'r', encoding="utf-8")) > 1:
+            detection_results = Object_Detector_Tool().execute(image=image_path, labels=labels_path, threshold=threshold, model_size="tiny", save_object=True, saved_image_path=door_path)
+            print(f"Object ID: {len(detection_results)}")
+
+        elif len(open(image_path, 'r', encoding="utf-8".splitlines())) == 1:
+
+            if detection_results is None:
+                print("Dropping image")
+                success = True
+                saved_image_path += ' 1.jpg'
+            else:
+                print("Success loading image")
+                success = True
+                saved_image_path += ' 1.png'
+
+        elif len(open(labels_path, 'r').readlines()) >= len(open(image_path, 'r', encoding="utf-8").readlines()):
+            detection_results = Object_Detector_Tool().execute(image=image_path, labels=labels_path, threshold=threshold, model_size="tiny", save_object=True, saved_image_path=door_path)
+            print(f"Object ID: {len(detection_results)}")
+    except Exception as e:
+        print(f"Error executing object detection: {e}")
+        success = False
+
+    return success, saved_image_path
+
+# Call the function to count doored
+result, saved_image_path = count_doors()
+
+# Print the results
+if result:
+    print(f"Door count: {result[0]}")
+    print(f"Doored: {int(result[1])}")
+    if saved_image_path:
+        print(f"Detected doors at positions: {saved_image_path}")
+else:
+    print("Failed to count doors")
+
+
+============================== END ==============================
+
+------------- 21-21-29-18-601923 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 5728_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-21-29-18-601923 Execution reward: 0.0 -------------
+[Reward computation time: 2.0710 seconds]
+QAid: 5728_0
+Code: 
+output = {'baseball': 1, 'basket': 2}final_result: "<object_number : {}>".format(output)
+
+============================== END ==============================
+

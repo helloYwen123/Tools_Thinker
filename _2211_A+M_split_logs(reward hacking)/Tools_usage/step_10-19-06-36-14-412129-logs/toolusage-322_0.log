@@ -1,0 +1,162 @@
+
+[QAid]322_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/322_0.png", labels=["sink"], save_object=True)
+
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]322_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def detect_objects(image_path, labels=[], save_path="", model_size="tiny", threshold=0.35):
+    try:
+        # Load the model and image file
+        tool = Object_Detector_Tool(image_path, labels=labels, model_size=model_size)
+        objects = tool.execute()
+
+        # Process and save the detected objects
+        if save_path:
+            saved_objects = {}
+            for label, boxes in objects.items():
+                for box in boxes:
+                    item = {"box": box, "label": label, "confidence": objects[label][label]}
+                    if label not in saved_objects:
+                        saved_objects[label] = 0
+                    saved_objects[label] += 1
+
+            saved_objects = {label: saved_objects[label] for label in saved_objects if saved_objects[label] >= threshold}
+
+            os.makedirs(save_path, exist_ok=True)
+
+            for label, count in saved_objects.items():
+                box = box[0].item()
+                x1, y1 = box[0]
+                x2, y2 = box[1]
+                x3, y3 = box[2]
+                x4, y4 = box[3]
+
+                resized_image = image_path.split(os.extsep)[-1][:-4]
+                image_path = f"{save_path}/{label}_{count}_{resized_image}.png"
+
+                img = cv2.imread(image_path)
+                if img is not None:
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                    cv2.rectangle(img, (x3, y3), (x4, y4), (255, 0, 0), 2)
+                    cv2.imwrite(image_path, img)
+                else:
+                    pass
+
+    except Exception as e:
+        print(e)
+
+    return objects, saved_objects
+
+objects, saved_objects = detect_objects(image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/322_0.png", languages=["en", "de"])
+print(f"{len(objects)} objects detected in the image.\n")
+print(f"Total number of detected objects: {sum((obj['labels'][label] for label in saved_objects))}")
+
+============================== END ==============================
+
+
+[QAid]322_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/322_0.png', labels=['sink'], save_object=True, saved_image_path='detected_objects')
+
+print(f"Number of sinks found: {len(final_result['detected_objects'][0])}")
+
+============================== END ==============================
+
+
+[QAid]322_0
+
+[Code does not include Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool as ObjectDetector
+
+final_result = {
+  "Sinks": 1
+}
+
+for i in final_result:
+  print(i, ': ', final_result[i])
+
+============================== END ==============================
+
+
+[QAid]322_0
+
+[Code does not include Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_sinks_in_room(image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/322_0.png"):
+    sinks_found = False
+
+    # Load the image and detect sinks
+    image = Image.open(image_path)
+    sinks = image.objects('sink')
+
+    if sinks:
+        sinks_found = True
+
+    return sinks_found
+
+sinks_found = count_sinks_in_room("/nfs/data8/liao/wxie/SAT/SAT_images_train/322_0.png")  # Replace with the actual image path
+print(f"Number of sinks found: {sinks_found}")
+
+
+============================== END ==============================
+
+
+[QAid]322_0
+
+[Code Includes Tools Usage]
+code: 
+
+def count_sinks(image_path):
+    # Path to the image file
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/322_0.png"
+    
+    # Demo command to execute the Object Detector Tool
+    result = Object_Detector_Tool.execute(image=image_path, labels=['sink'], save_object=True, saved_image_path="detected_objects")
+    
+    # Initialize counters for total and detected sinks
+    total_sinks = 0
+    detected_sinks = 0
+    
+    # Iterate through each detected sink
+    for detected_objects in result['detected_objects']:
+        # Check if the detected sink is in the "sink" label class
+        if detected_objects['label'] == "sink":
+            # Increment total_sinks by 1
+            total_sinks += 1
+        else:
+            detected_sinks += 1
+            
+    return total_sinks, detected_sinks
+
+# Call the function to calculate the number of sinks in the image
+total_sinks, detected_sinks = count_sinks(image_path)
+final_result = {"total_sinks": total_sinks, "detected_sinks": detected_sinks}
+
+============================== END ==============================
+

@@ -1,0 +1,196 @@
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+
+final_result = []
+
+image_path = '/path/to/image.png'
+
+# Detect chairs using the Object_Detector_Tool
+result = Object_Detector_Tool.execute(image=image_path, labels=['chair'], save_object=True, saved_image_path='chairs')
+
+if result:
+    chairs = result['chair']
+    detected_objects = result['detected_objects']
+    object_count = len(detected_objects)
+
+    for _, _, _, _, saved_image_path in detected_objects:
+        chair = next(i for i in chairs if i['bbox'][0] <= saved_image_path[0] <= saved_image_path[2] and i['bbox'][1] <= saved_image_path[1] <= saved_image_path[3])
+        final_result.append({
+            'label': chair['label'],
+            'score': chair['score'],
+            'boxes': chair['bbox']
+        })
+for chair in chairs:
+    final_result.append({
+        'label': chair['label'],
+        'score': chair['score'],
+        'boxes': chair['bbox']
+    })
+
+    for i in detected_objects:
+        if i['bbox'][0] <= chair['bbox'][0] <= i['bbox'][2] and i['bbox'][1] <= chair['bbox'][1] <= i['bbox'][3]:
+            chair['boxes'].append((i['bbox'][0], i['bbox'][1]))
+
+Text_Detector_Tool.languages = ['en', 'de']
+
+result = Text_Detector_Tool.execute(image=image_path, languages=['en', 'de'], detail=1)
+
+if result:
+    detected_texts = result['text']
+
+    for detected_text in detected_texts:
+        final_result.append({
+            'detected_text': detected_text['detected_text'],
+            'score': detected_text['score']
+        })
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'objdet'
+code: 
+
+from objdet import Object_Detector_Tool
+
+final_result = {"chairs": []}
+
+def check_for_chairs(image_path):
+    detected_objects = Object_Detector_Tool.execute(image_path, labels=["chair"], threshold=0.4)
+    chair_objects = detected_objects['baseball']
+    
+    if chair_objects:
+        for chair_object in chair_objects:
+            chair_object['saved_image_path'] = image_path + '/' + chair_object['saved_image_path'][chair_object['saved_image_path'].rindex('/'):]
+            chair_objects[chair_object['object_name']] = chair_object
+    
+    return chair_objects
+
+chair_objects = check_for_chairs('path/to/image.png')
+chair_count = chair_objects['chair']
+chair_objects = chair_objects['baseball']
+chair_objects['count'] = chair_count['count']
+chair_count['count'] = chair_objects.get('count', 0) + 1
+
+if chair_objects:
+    chairs = chair_objects['count']
+else:
+    chairs = 0
+
+final_result['chairs'] = chairs
+
+print("Number of chairs found:", chairs)
+print()
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+f-string: unterminated string (<string>, line 21)
+code: 
+
+
+from object_detector import Object_Detector_Tool
+import_name: "object_detector"
+tool_module_name: "Object_Detector_Tool"
+tool_class_name: "Object_Detector_Tool"
+
+# Call the tool with required parameters
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', labels=['basketball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+# Print the detected objects
+final_result = {
+    "detected_objects": detected_objects,
+    "object_number": object_number
+}
+
+# Generate the formatted text with the count for each detected label
+count_result = {key: len(detected_objects.keys()) for key in detected_objects}
+
+# Print the final result and text
+output = f"Detected {count_result.keys()} Objects\n{', '.join([f'"{key}": ' + str(value) + ' objects' for key, value in count_result.items() if value != 0])}\n"
+
+final_result = json.dumps(final_result, indent=4)
+print(f"The number of basketball objects detected is {len(detected_objects)}.\n")
+print(f"Total objects detected in the image are {len(detected_objects)}.\n")
+print(output)
+
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+```python
+import Object_Detector_Tool
+
+# Sample image file path
+sample_image_path = "/nfs/data8/liao/wxie/SAT/880_0.png"
+
+# Create an instance of the Object_Detector_Tool tool
+tool = Object_Detector_Tool.Object_Detector_Tool(debug=True, model_size="tiny", save_object=True, saved_image_path="detected_objects")
+
+# Execute the tool
+result = tool.execute(image=sample_image_path, languages=["en", "de"])
+
+detected_objects = result[0][0]["saved_image_path"]
+object_number = result[1].values().most_common()
+
+final_result = f"{detected_objects} - {len(object_number)} objects detected"
+
+print(final_result)
+```
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_chairs():
+    # Define the image path
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/880_0.png"
+
+    # Call the object detector tool with the image path
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=['chair'], save_object=True, saved_image_path="detected_objects")
+
+    # Extract chair coordinates
+    chair_x_coordinates = [int(detected_objects[i]['box'][0]) for i in detected_objects if 'chair' in detected_objects[i]['labels']][0]
+    chair_y_coordinates = [int(detected_objects[i]['box'][1]) for i in detected_objects if 'chair' in detected_objects[i]['labels']][0]
+
+    # Count chairs
+    chairs_count = detected_objects['chair'].numel()
+
+    return chairs_count
+
+result_4 = count_chairs()
+
+print(f"Detections of chairs: {result_4}")
+print(f"Number of chairs found: {result_4}")
+
+final_result = {'chairs': result_4, 'total_objects': '5'}
+final_result
+
+
+============================== END ==============================
+

@@ -1,0 +1,30 @@
+
+[Exctuion Failed]
+
+invalid character '“' (U+201C) (<string>, line 11)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {
+    "label_count": 0,
+    "label_list": {}
+}
+
+# Running the object detector tool
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=[“baseball”, “basket”], save_object=True, saved_image_path="detected_objects")
+
+if detected_objects:
+    final_result["label_count"] = len(detected_objects)
+    for label, detections in detected_objects.items():
+        if label in object_number:
+            object_number[label] += 1
+        else:
+            object_number[label] = 1
+        for detection in detections:
+            final_result["label_list"][label].append({"box": [detection["box"][0], detection["box"][1], detection["box"][2], detection["box"][3]], "score": detection["score"], "saved_image_path": f"detected_objects/{label}_detected.png"})
+
+
+============================== END ==============================
+

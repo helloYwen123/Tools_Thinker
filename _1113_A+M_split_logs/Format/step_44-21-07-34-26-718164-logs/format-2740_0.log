@@ -1,0 +1,99 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['floorlamp'])
+print(final_result['object_number'])
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['floor lamp', 'chair'], threshold=0.8, model_size='tiny')
+
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path_to_image.png', labels=['lamp', 'chair'], save_object=True, saved_image_path='detected_objects')
+print("Found {} objects in the scene:".format(len(final_result.keys())))
+for obj in final_result.get('baseball'):
+    print(obj)
+finally:
+    final_result['object_number'] = len(final_result)
+    print("Total number of detected objects: {}".format(final_result['object_number']))
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['bed', 'chair', 'lamp'], save_object=False, saved_image_path='detected_objects')
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/interior_scene.png', labels=['floorlamp'], save_object=True, saved_image_path='detected_objects')
+
+if len(final_result[1]) == 3:
+    print('3 FloorLamps visible in the scene.')
+elif len(final_result[1]) == 2:
+    print('2 FloorLamps visible in the scene.')
+elif len(final_result[1]) == 1:
+    print('1 FloorLamp visible in the scene.')
+else:
+    print('Number of FloorLamps unknown.')
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+final_result = {}
+
+# Detect floor lamp
+final_result["floor_lamps"] = Object_Detector_Tool.execute(image='path/to/image.png', labels=['floor_lamp'], save_object=True, saved_image_path='detected_objects', model_size='tiny')
+
+# Detect a wall mirror behind the lamp
+wall_mirror = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en'])
+final_result["wall_mirrors"] = []
+
+if wall_mirror is not None:
+  wall_mirror_text = wall_mirror[0][2]
+  final_result["wall_mirrors"] = [{'label': 'wall_mirror', 'description': wall_mirror_text}]
+
+# Detect a TV set on the wall near the wall mirror
+wall_mirror_tv = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en'])
+final_result["wall_mirrors"] = []
+
+if wall_mirror_tv is not None:
+  wall_mirror_tv_text = wall_mirror_tv[0][2]
+  final_result["wall_mirrors"] = [{'label': 'wall_mirror_tv', 'description': wall_mirror_tv_text}]
+
+# Check for a computer monitor on the wall near the wall mirror
+wall_mirror_computer_monitor = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en'])
+final_result["wall_mirrors"] = []
+
+if wall_mirror_computer_monitor is not None:
+  wall_mirror_computer_monitor_text = wall_mirror_computer_monitor[0][2]
+  final_result["wall_mirrors"] = [{'label': 'wall_mirror_computer_monitor', 'description': wall_mirror_computer_monitor_text}]
+
+# Detect the bed
+final_result["bed"] = Object_Detector_Tool.execute(image='path/to/image.png', labels=['bed'], save_object=True, saved_image_path='detected_objects')
+
+print(final_result)
+</command>
+Reward: 1.0
+

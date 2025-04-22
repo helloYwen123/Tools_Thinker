@@ -1,0 +1,199 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 1)
+code: 
+from_tool_module: "Object_Detector_Tool", "obj_detector_tool", "detect_object_labels", "Object_Detector_Tool", "detect_text_blocks"
+final_result = obj_detector_tool.executetools(input="/nfs/data8/liao/wxie/SAT/SAT_images_train/9497_0.png",labels_=["baseball", "basket"], save_object=False)
+print(final_result)
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 31)
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+from text_detector_tool import Text_Detector_Tool
+
+# Demonstration setup
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/9497_0.png"
+labels = ['baseball', 'basket']
+total_objects = 4
+
+object_detector_tool = Object_Detector_Tool()
+object_detector_tool.tool_class_name = "Object_Detector_Tool"
+object_detector_tool.tool_description = "Detects 'baseball' and 'basket' in the image. Returns a tuple containing the total count for detected objects in the image."
+object_detector_tool.tool_version = "1.0.0"
+object_detector_tool.set_labels([labels])
+object_detector_tool.threshold = 0.35
+object_detector_tool.model_size = 'tiny'
+object_detector_tool.save_object = True
+object_detector_tool.saved_imagePath = "detected_objects"
+predicted_objects, object_count = object_detector_tool.execute(image=image_path, labels=labels, save_object=True)
+
+text_detector_tool = Text_Detector_Tool()
+text_detector_tool.tool_class_name = "Text_Detector_Tool"
+text_detector_tool.tool_description = "Detect text in an image using EasyOCR. It supports multiple languages, including a detailed output."
+text_detector_tool.tool_version = "1.0.0"
+text_detector_tool.language_input = 'all'
+text_detector_tool.detail = 1
+text_detector_tool.threshold = None
+text_detector_tool.threshold_details = 1.0
+
+result = text_detector_tool.execute(image=image_path)
+final_result = [{"label": label, "boxes": box, "confidence": score, "count": count} for (boxes, score, count) in text Detector tool result]
+detected_objects_result = [{"label": label, "confidence": confidence} for (boxes, score, count, confidence) in predicted_objects]
+label_count = {label: number for (label, number) in text Detector tool result}
+
+final_result = detected_objects_result + [('total', {'objects': num} for num in object_count) + label_count]
+final_result
+
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tools'
+code: 
+
+from tools.text_detector import Text_Detector_Tool
+
+# Call the tool to detect text in the given image with multiple languages
+result = Text_Detector_Tool.execute(image='path/to/your/image.png', languages=['en', 'de'])
+print(result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Check the number of paintings
+def count_paintings(image_path):
+    # Load the image using OpenCV
+    cap = cv2.VideoCapture(image_path)
+    if not cap.isOpened():
+        return 0
+
+    numberOfPaintings = 0
+    # 1. Detect objects by class ('baseball', 'basket') using object detection and save each detected baseball or basketball
+    for label in ["baseball", "basket"]:
+        ret, frame = cap.read()  # Read the active object frame
+        result = object_detector_tool.execute(image=frame, labels=[label], save_object=True)
+        numberOfPaintings += len(result.get('baseball', [])) + len(result.get('basket', []))
+
+    return numberOfPaintings
+
+result = count_paintings("/nfs/data8/liao/wxie/SAT/SAT_images_train/9497_0.png")
+final_result = {"number of paintings detected": result}
+print(json.dumps(final_result, indent=2))
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import object_detector_tool
+
+# image path and labels
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/9497_0.png"
+label_list = ["baseball", "basket"]
+
+# confidence threshold
+confidence_threshold = 0.35
+
+# model size
+model_size = "tiny"
+
+# save object
+save_object = True
+saved_image_path = "/detected_objects/"
+
+# execute function
+result = object_detector_tool\
+  .execute(image=image_path, labels=label_list, model_size=model_size, confidence_threshold=confidence_threshold, save_object=save_object, saved_image_path=saved_image_path)
+
+# get the number of detected objects
+object_number = {}
+for detection in result[1]:
+    label = detection[1]
+    object_number[label] = int(detection[2])
+    
+final_result = {
+    "detected_objects": result[0],
+    "object_number": object_number
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+import Object_Detector_Tool
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/9497_0.png"  # Replace with the actual image path
+
+label_to_count = ['baseball', 'basket']
+label_to_image_path = []
+
+counted_labels = Object_Detector_Tool.execute(image=image_path, labels=label_to_count, save_object=True)
+
+final_result = {}
+total_counted = 0
+for label, detections in counted_labels.items():
+    if detections:
+        if len(label_to_image_path) < 1:
+            label_to_image_path.append(f'detected_objects')
+        else:
+            label_to_image_path.append(label_to_image_path[-1] + "/" + label)
+            total_counted += len(label_to_image_path)
+            for det in detections:
+                if det['score'] >= 0.35 and det['score'] <= 0.45:
+                    total_counted += int(det['score'])
+                    det['box'].remove(det['bbox'][0] + det['bbox'][1])
+                    det['bbox'][1] = max(det['bbox'][1], det['bbox'][3] + 10)
+                    det['bbox'][3] = min(det['bbox'][3], det['bbox'][2])
+                    det['bbox'][4] = max(det['bbox'][4], det['bbox'][2] + 10)
+                    det['bbox'][5] = min(det['bbox'][5], det['bbox'][4] - 10)
+                    det['bbox'].remove(det['bbox'][0])
+            del count
+
+counted_labels = {"baseball": []}
+counted_labels["basket"] = []
+
+for label, image_path in zip(label_to_count, label_to_image_path):
+    if image_path:
+        counted_labels[label].append({"bbox": det, "score": det['score'], "box": [det['bbox'][0], det['bbox'][1], det['bbox'][2], det['bbox'][3]],
+                                       "num_boxes": len(det['bbox'])})
+counted_labels = {**counted_labels, **counted_labels}
+
+final_result = {
+  **counted_labels["baseball"],
+  **counted_labels["basket"]
+}
+final_result["Object Number"] = total_counted
+final_result["Object Labels"] = label_to_count
+print(final_result)
+
+
+============================== END ==============================
+

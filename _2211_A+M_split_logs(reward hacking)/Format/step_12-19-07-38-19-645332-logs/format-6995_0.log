@@ -1,0 +1,161 @@
+--- Completion 1 ---
+<command>python
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['painting'], save_object=True, saved_image_path='detected_objects')
+
+print("The scene has", len(final_result[0]), "paintings visible in the image.")
+</command>
+Reward: 0.5
+
+--- Completion 2 ---
+<command>
+from mmseg.utils.text_detection.text_detector import Text_Detector_Tool
+from mmseg.utils.utils.text import Text_Detector_Tool
+
+# Image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6995_0.png"
+
+# Languages to detect
+languages = ['en', 'de', 'zh_sim']
+
+# Limit the complexity of the output
+detail = 1
+
+# Create a Text Detection Toolkit instance
+tool = Text_Detector_Tool(image_path, languages, detail)
+
+# Perform the text detection and get the result
+result = tool.execute()
+
+# Display the detected text
+print(result)
+</command>
+Reward: 0.5
+
+--- Completion 3 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+
+def count_paintings(image_path, languages=None):
+    tool = Object_Detector_Tool()
+    if tool is not None:
+        tool.init()
+        output = tool.execute(image_path)
+        if output.data_result is not None:
+            for item in output.data_result:
+                if item["label"] == "painting" and languages is None:
+                    languages = []
+                elif item["label"] == "painting" and languages:
+                    languages.append(item["label"])
+        if tools is not None:
+            tool.shutdown()
+            return len(languages)
+    else:
+        return 0
+
+final_result = count_paintings("/nfs/data8/liao/wxie/SAT/SAT_images_train/6995_0.png", languages=["en", "de"])  
+print("Number of paintings:", final_result)
+</command>
+Reward: 0.5
+
+--- Completion 4 ---
+<command>
+from Tool_Dummy import Object_Detector_Tool, Text_Detector_Tool
+
+# Set default image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/6995_0.png'
+
+result_objects = Object_Detector_Tool.execute(image_file=image_path, labels=['baseball', 'basket'], save_object=False, saved_image_path='detected_objects')
+
+print(result_objects)
+
+result_languages = Text_Detector_Tool.execute(image=image_path, languages=['en', 'de'])
+print(result_languages)
+</command>
+Reward: 0.5
+
+--- Completion 5 ---
+<command>
+  import_name: "Object_Detector_Tool"
+  import_path: "tool_module_name"
+
+  def detect_objects(image_path, labels=['baseball', 'basket'], save_object=True, saved_image_path="detected_objects"):
+    output = {}
+    for label in labels:
+      result = object_detector_tool.execute(image_path, labels=label, threshold=0.35, model_size="tiny", save_object=save_object, saved_image_path=saved_image_path)
+      
+      if save_object:
+        object_objects = []
+      else:
+        object_objects = []
+        
+      for data in result["detected_objects"]:
+        box_coordinates = data["box"]
+        confidence_score = data["score"]
+        
+        # Check if the label is present in the detected_objects dictionary
+        if label in detected_objects:
+          if 'box' in detected_objects[label]:
+            object_objects.append((box_coordinates, confidence_score, data["saved_image_path"] if "saved_image_path" in data else ""))
+            
+          elif 'box' in detected_objects:
+            for obj_data in detected_objects[label]:
+              object_objects.append((obj_data["box"][0], box_coordinates, obj_data["saved_image_path"] if "saved_image_path" in obj_data else " "))
+            
+        if save_object:
+          object_objects = detected_objects[label] + object_objects
+
+    output["detected_objects"] = object_objects
+    output["object_number"] = {label: detected_objects[label].count()} if labeled_objects else {label: 0}
+    
+    return output
+
+  return "Generated code: \n" + str(generated_code)
+</command>
+Reward: 0.5
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+def count_paintings():
+    # Provided image path
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6995_0.png"
+
+    # Possible labels, including "painting" in your case
+    labels = ["painting"]
+
+    # Confidence threshold
+    threshold = 0.35
+
+    # Size of the model to use ('tiny' or 'base')
+    model_size = "tiny"
+
+    # Path to save the detected objects images
+    saved_image_path = "detected_objects"
+
+    # Try-count and save with specified details
+    retry = 1
+    saved_objects = []
+
+    for _ in range(retry):
+        try:
+            object_dict = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=True, saved_image_path=saved_image_path)
+            for label in object_dict:
+                if label.get('saved_image_path') is not None:
+                    saved_objects.append(object_dict[label.get('saved_image_path')])
+
+            break
+        except Exception as e:
+            print(f"Error occurred with label {label.get('label_num')}: {e}")
+
+    if len(saved_objects) >= 2:
+        print(f"Total paintings found: {len(saved_objects)}")
+    else:
+        print("No paintings found.")
+
+generated_code = \
+f"count_paintings()\n"
+</command>
+Reward: 0.5
+

@@ -1,0 +1,132 @@
+--- Completion 1 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="image_path.png", labels=["Doorway"], save_object=True)
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png')
+print("Detected object(s):")
+for (labels, objects) in final_result[0]:
+    print(f"Object(s) detected: {labels} -> {objects}")
+</command>
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png', languages=['en', 'de'])
+print("Detected language(s):")
+for l in final_result[2]:
+    print(f"Detected language: {l}")
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png',
+    labels=['baseball', 'basket'], 
+    save_object=True,
+    saved_image_path='detected_objects')
+
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+tools = [
+  {"tool_name": "Object_Detector_Tool", "tool_class_name": "Object_Detector_Tool", "tool_description": "A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.", 
+   "tool_version": "1.0.0", "input_types": {
+    "image": "str - The path to the image file.", 
+    "labels": "list - A list of object labels to detect.", 
+    "threshold": "float - The confidence threshold for detection (default: 0.35).",
+    "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
+    "save_object": "bool - Whether to save the detected objects as images (default: False).",
+    "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects')"},
+  },
+  {"tool_name": "text_detector", "tool_class_name": "Text_Detector_Tool", "tool_description": "A tool that detects text in an image using EasyOCR.", 
+   "tool_version": "1.0.0", "input_types": {
+    "image": "str - The path to the image file.", 
+    "languages": "list - A list of language codes for the OCR model.", 
+    "detail": "int - The level of detail in the output. Set to 0 for simpler output, 1 for detailed output.", 
+    "save_object": "bool - Whether to save the detected text to a file.", 
+    "saved_image_path": "str - The path to save the detected image."},
+  },
+]
+
+final_result = []
+images = ['path/to/image.png']
+
+# Detect objects
+detect_result = Object_Detector_Tool.execute(image=images, labels=['baseball', 'basket'], save_object=True)
+
+# Generate result
+for i in range(len(detect_result['baseball'])-1):
+    final_result.append({"baseball": {'bbox': [(t[2]-t[0], t[3]-t[1]), (t[2]+t[0]+3, t[3]+t[1]+1)], 'score': detect_result['baseball'][i]['score']}})
+for j in range(len(detect_result['basket'])-
+Reward: 0.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+labels_to_check = ['baseball', 'basket']
+for label in labels_to_check:
+    try:
+        objects = Object_Detector_Tool.execute(image='path/to/image.png', labels=[label], save_object=True, saved_image_path='detected_objects')
+    except Exception as e:
+        print(f"An error occurred while detecting {label}: {e}")
+        continue
+    detected_objects = objects['detected_objects']
+    
+    score_count = {obj['score']:{}, 'number': 0}
+    for _, obj in detected_objects.items():
+        score_count[obj['score']][obj['number']] = 1 + score_count.get(obj['score'], 0)  
+        obj_number = score_count.get(label)
+        if obj_number is not None:
+            obj_number += 1
+        score_count[label] = score_count.get(label, 0) + obj_number
+        final_result[label] = score_count
+    
+    if objects['object_number'] is not None:
+        final_result[label] = objects['object_number']
+    
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+def calculate_number_of_doorways(image_path, languages=['en', 'de'], detail=0):
+    try:
+        # Load the image
+        image = Image.open(image_path)
+        
+        # Detect the doors
+        results = object_detection(image=image, languages=languages, detail=detail)
+        
+        # Count the doorways
+        total_doorways = len([result[0] for result in results if result[1] == 'baseball'])
+        
+        return total_doorways
+    except Exception as e:
+        print(f"Error occurred while detecting doorways: {e}")
+        return None
+
+# Test the function
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/6902_0.png'
+total_doorways = calculate_number_of_doorways(image_path=.image_path)
+print(f"There are {total_doorways} doorways.")
+</command>
+Reward: 0.5
+

@@ -1,0 +1,264 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Import necessary class
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the tool
+detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+print(f"Total detected objects: ({len(detected_objects['baseball'])} for baseball, {len(detected_objects['basket'])} for basket)")
+<command>
+Reward: 0.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image', labels=['baseball', 'basket'], threshold=0.35, model_size='tiny', save_object=True, saved_image_path='detected_objects')
+
+if final_result[1]:
+    detected_objects = final_result[0]
+    object_number = len(detected_objects)
+
+    print("Total detected objects: ", object_number)
+else:
+    print("Object detection failed!")
+</command>
+</p>
+<command>
+from text_detector import Text_Detector_Tool
+
+result = Text_Detector_Tool.execute(image='path/to/image', languages=['en', 'de'], detail=1)
+
+if result:
+    detected_text = result[0]
+
+    print("Detected text:", detected_text)
+else:
+    print("Text detection failed!")
+</command>
+</p>
+<p>
+```
+Example output:
+The Python program first calls the `object_detector_tool` function with the parameters `image='path/to/image', labels=['baseball', 'basket']`, `save_object=True`, `saved_image_path='detected_objects'`, and returns a Python result that includes the total number of detected objects and a list of detected objects. The `text_detector_tool` function then calls the `execute` method with the parameters `execution_image='path/to/image', language=['en', 'de'], detail=1`. It returns a list of detected text blocks in the image, where the first element is a list of bounding box coordinates, the second element is the recognized text, and the third element is the confidence score. The output is provided as a string.
+The tool can be used for counting and locating specific interest-objects in images, but please make sure to extract the required text according to your needs.
+</p>
+</p>
+</p>
+<output>
+Detected objects:
+{'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}], 'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]}
+Number of detected objects: 2
+Detected text:
+Detected text: 'Detected text'
+
+Reward: 0.0
+
+--- Completion 3 ---
+<command>
+import numpy as np
+
+def detect_objects(image_path, labels, languages="['en', 'de']", detail=1):
+    if len(str(image_path).split("\\")) > 1:
+        image_path = image_path.split("\\")[-1]
+    
+    try:
+        # Load text detector
+        path = os.path.dirname(image_path) + "/fonts/Font.ttf"
+        cv2.FONT_HERSHEY_SIMPLEX = cv2.FONT_HERSHEY_SIMPLEX_SIMPLEX
+        cv2.FONT_HERSHEY_TRIPLEX = cv2.FONT_HERSHEY_TRIPLEX
+        cv2.FONT_HERSHEY_COMPLEX = cv2.FONT_HERSHEY_COMPLEX
+    
+        # Load languages
+        languages_list = []
+        for lang in languages.split(","):
+            if len(str(lang).split("-")) > 1:
+                lang = lang.split("-")[0]
+            languages_list.append(lang)
+        
+        # Check if languages are valid
+        if "ch_sim" in languages:
+            languages_list.remove("ch_sim")
+    
+        # Load text detector
+        text_detector_tool = Text_Detector_Tool()
+        
+        # Process the image
+        result = text_detector_tool.execute(image_image=image_path, languages=languages_list)
+        
+        # Create a list to store detected objects
+        detected_objects = []
+        object_number = {}
+        
+        if type(result) == list:
+            for block in result:
+                if type(block) == list:
+                    detected_objects.append([])
+                    for lang in languages_list:
+                        if lang in block[3].split():
+                            box = [np.int32(b[0]) for b in block[1].getBoxes()]
+                            score = float(block[3])
+                            detected_objects[-1].append({"box": box, "score": score, "detected_text": block[2], "detected_lang": lang})
+        
+        # Get the total number of detected objects
+        for block in detected_objects:
+            for obj in block:
+                if obj["detected_lang"] in object_number.keys():
+                    object_number[obj["detected_lang"]] += 1
+                else:
+                    object_number[obj["detected_lang"]] = 1
+    
+        if detected_objects and "baseball" in detected_objects:
+            ball_detection = True
+        elif "baseball" in detected_objects:
+            ball_detection = False
+        elif object_number["baseball"] < 2:
+            ball_detection = False
+        
+        if detected_objects and "basket" in detected_objects:
+            basket_detection = True
+        elif "basket"
+Reward: 0.0
+
+--- Completion 4 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+final_result = {}
+from texts import text_detector
+
+def detect_language(text):
+    if 'ch' in text: return 'simplifiedChinese'
+    elif 'en' in text: return 'english'
+    elif 'de' in text: return 'german'
+    else: return 'unknown'
+result = text_detector_tool = Text_Detector_Tool()
+result = text_detector_tool.execute(image='path/to/image', languages=['en'])
+language = result['detected_languages'][0]
+detected_languages = result['detected_languages']
+
+if language in {'simplifiedChinese', 'english', 'german'}:
+    detected_language = language
+else:
+    detected_language = 'unknown'
+
+fonts = text_detector_textDetected_languages + ', ' + text_detector_languages[-2] + ", 'simplifiedChinese'"
+
+fonts = [fonts]
+fonts.sort(key=lambda x: -len(x))
+
+for font in fonts:
+    result = text_detector_textDetected_languages[-1], "simplifiedChinese", font
+
+if result:
+    for (detected_language, detected_languages) in result:
+        if 'simplifiedChinese' not in detected_languages and detected_languages != 'simplifiedChinese': final_result['baseball'] = detected_languages
+        if 'basketball' not in detected_languages and detected_languages != 'basketball': final_result['basket'] = detected_languages
+        break
+elif font == 'simplifiedChinese': final_result['baseball'] = 'multi_language' 
+
+fonts = [fonts]
+fonts.sort(key=lambda x: -len(x))
+
+for font in fonts:
+    result = text_detector_simplifiedEnglish, "de", font
+
+if result:
+    for (detected_languages, text) in result:
+        if detected_languages != 'multi_language': final_result['baseball'] = detected_languages
+        if detected_languages != 'basketball': final_result['basket'] = detected_languages
+        break
+elif font == 'simplifiedEnglish':
+    final_result = {}
+
+if detected_languages == 'multi_language' and final_result['baseball'] != 'multi_language': final_result['baseball'] = detector_language(detected_languages)
+if detected_languages == 'multi_language' and final_result['basket'] != 'multi_language': final_result['basket'] = detector_language(detected_languages)
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()  # Import tool module
+
+# Define the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10461_0.png"
+
+# Detect objects
+labels = ["baseball", "basket"]
+result = object_detector_tool.execute(image=image_path, labels=labels, save_object=True)
+
+detected_objects = result['detected_objects']
+object_number = result['object_number']
+
+# Convert detected objects into a format suitable for text generation
+final_result = {"detected_objects": {}, "object_number": {}}
+
+if detected_objects:
+    for object in detected_objects:
+        name = object['name'].lower()  # Convert object name to lowercase for exact match
+        bounding_box = object['box']
+        confidence_score = object['score']
+
+        # Create a list to store detected objects
+        detected_objects[name].append({
+            "box": bounding_box,
+            "confidence_score": confidence_score,
+        })
+        
+        # Create a list to store the total number of detections for each object
+        detected_objects[name].append({'number': len(detected_objects[name])})
+
+        if save_object:
+            saved_image_path = object['saved_image_path']
+            # Save detected objects as images and extract them using numpy
+            for name in detected_objects[name]:
+                saved_image = save_object(name, image_path, bounding_box, confidence_score, saved_image_path)
+                
+                # Write detection results to a text file
+                text_generator = generate_text(name.lower())
+                text = text_generator.generate_text(bounding_box, confidence_score, saved_image_path)
+                with open(f"{saved_image}/result.txt", "w") as file:
+                    file.write(text)
+                    file.close()
+            
+    final_result["detected_objects"] = detected_objects
+    final_result["object_number"] = object_number
+else:
+    final_result["detected_objects"] = {}
+    final_result["object_number"] = {}
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Define the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10461_0.png"
+
+# Create an object detector instance
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the object detection algorithm
+detected_objects, object_count = object_detector_tool.execute(image=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+final_result = {
+  "number_of_SideTables": len(detected_objects["basket"]),
+  "detected_objects": detected_objects,
+  "object_count": object_count
+}
+
+# Convert the list of detected objects to a dictionary
+detected_objects["basket"] = [{"box": box, "score": score, "saved_image_path": path} for box, score, path in detected_objects["basket"]]
+
+# Convert the object_count to a dictionary
+object_count = {detected_objects["basket"]["basketball"][0]: len(detected_objects["basket"]["basketball"])}
+
+print(final_result)
+</command>
+Reward: 1.0
+

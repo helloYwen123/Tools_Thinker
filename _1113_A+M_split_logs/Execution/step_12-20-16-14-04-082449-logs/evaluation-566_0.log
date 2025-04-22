@@ -1,0 +1,110 @@
+------------- 20-16-14-04-082449 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 566_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-16-14-04-082449 Execution reward: 0.0 -------------
+[Reward computation time: 2.1042 seconds]
+QAid: 566_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool, text_detector
+
+def count_garbage_bags(detected_objects, object_number):
+    garbage_bags = 0
+    for detected_objects_list in detected_objects["baseball"]:
+        garbage_bags += detected_objects_list["score"] 
+    for detected_objects_list in detected_objects["basket"]:
+        garbage_bags += detected_objects_list["score"]
+    return garbage_bags
+
+garbage_bags = count_garbage_bags(detected_objects, object_number)
+final_result = garbage_bags if garbage_bags == 1 else "1"
+
+
+============================== END ==============================
+
+------------- 20-16-14-04-082449 Execution reward: 0.0 -------------
+[Reward computation time: 2.6513 seconds]
+QAid: 566_0
+Code: 
+
+from object_detector.Object_Detector_Tool import Object_Detector_Tool
+
+final_result = "<output>"
+
+# Assuming you have a path to an image, labels, and if you want to save objects
+image_path = '/path/to/image.png'
+labels = ['baseball', 'basket']
+save_objects = True
+saved_image_path = 'detected_objects'
+
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_objects, saved_image_path=saved_image_path)
+
+detected_objects = result['detected_objects']
+label_count = result['object_number']
+
+if label_count == 0:
+  detected_objects = []
+  final_result = f"{'1' if save_objects else '0'}"
+
+elif save_objects:
+  count, saved_im = max(detected_objects, key=lambda i: i[-2])
+  count = count * 5  # Assuming the first detected object has the highest score
+  for i in detected_objects:
+    if i[-3]:
+      if i[-2] > count:
+        count = i[-2]
+        saved_im_path = i[-3]['saved_image_path'] if i[-3]['saved_image_path'] else i[-1].replace('.jpg', '.png')
+
+  final_result = f"{'1' if save_objects else '0'}"
+else:
+  count = label_count
+  if labels:
+    count = label_count // len(labels) + (1 if labels[-1] in labels else 0)
+
+for i in detected_objects:
+  if i[-3]:
+    final_result += f"{'1' if save_objects else '0'} \n {i[-1]}"
+
+final_result = final_result[:-1]
+
+
+============================== END ==============================
+
+------------- 20-16-14-04-082449 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 566_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-16-14-04-082449 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 566_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-16-14-04-082449 Execution reward: 0.0 -------------
+[Reward computation time: 2.8076 seconds]
+QAid: 566_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/566_0.png'
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, save_object=False)
+
+# The number of detected objects
+final_result = "10"
+if detected_objects:
+    final_result += f" (count: {len(detected_objects)})"
+print(final_result)
+
+
+============================== END ==============================
+

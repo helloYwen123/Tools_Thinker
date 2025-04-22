@@ -1,0 +1,134 @@
+
+[Exctuion Failed]
+
+No module named 'tool_detection_object_detector'
+code: 
+
+from tool_detection_object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/6982_0.png", labels=["DiningTable"], save_object=True, saved_image_path="detected_objects")
+print("Number of DiningTables detected:", final_result["object_number"])
+print("DiningTables detected:", final_result["detected_objects"])
+print("Result:", final_result)
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+def count_objects(image_path, labels, save_to_dir, detail=0):
+    # Load the image and detect objects
+    tool = Object_Detector_Tool()
+    
+    objects = tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path=labels[0])
+
+    # Verify objects were detected
+    if not bool(objects):
+        result = {
+            'error': f"Object detection failed: {image_path}",
+            'details': []
+        }
+        return result
+
+    # Get only the top 5 detected objects
+    top_5_objects = objects[:5]
+    
+    objects_dict = {}
+    object_counts = {}
+    for det_obj in top_5_objects:
+        label, box, score = det_obj
+        object_counts.setdefault(label, 0)
+        object_counts[label] += 1
+        objects_dict[label] = det_obj
+        
+    # Write the results to the specified path
+    details = []
+    
+    for obj in objects_dict.values():
+        boxx, boxed = obj['box'].values()
+        if len(boxx) == 4:
+            boxx = list(map(list, zip(*boxed)))
+            box, y = boxx
+            boxed = {'box': box, 'y': y}
+            for i in range(len(boxx[0])):
+                if obj['saved_image_path']:
+                    details.append([boxed, obj['score'], label, save_to_dir] + obj['saved_image_path'])
+            if labels:
+                if labels[0] == label:
+                    details.append([boxed], None)
+    
+    if labels:
+        result = {
+            'total_objects': len(objects_dict),
+            'labels': sorted(set(labels)),
+            'detected_objects': sorted(set([labels[i[1]] for i in details]) if len(details) > 0 else []),
+            'labels_count': object_counts,
+            'total_detection_time': len(details),
+            'detected_object_time': sum(len(x) for x in details) if len(details) > 0 else -1
+        }
+    else:
+        result = None
+    
+    return result
+
+# Example usage
+result = count_objects('/nfs/data8/liao/wxie/SAT/SAT_images_train/6982_0.png', ['baseball', 'basket'], True, 5)
+type(result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {"count": 0}
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6982_0.png"
+
+detected_objects = None
+
+final_result = Object_Detector_Tool.execute(image=image_path,
+                                             labels=["DiningTable"],
+                                             save_object=True,
+                                             saved_image_path="detected_objects")
+
+if final_result:
+
+    if final_result[1]["count"] == 2:
+        final_result["count"] = 2
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Object_Detector_Tool' is not defined
+code: 
+final_result = {"detected_objects": {}, "total_objects": 0}
+for label in ["baseball", "basket"]:
+    detected_objects = Object_Detector_Tool.execute(image="path/to_image.png", labels=[label], save_object=True, saved_image_path="detected_objects")
+    if len(detected_objects.get(label, [])) > 0:
+        final_result["detected_objects"][label] = detected_objects.get(label)
+        final_result["total_objects"] += 1
+    else:
+        final_result["detected_objects"].setdefault(label, [])
+        final_result["detected_objects"][label] = [{"box": (0, 0, 200, 200), "score": 0.95, "saved_image_path": "detected_objects/image_" + label + "_" + str(final_result["total_objects"]) + ".png"}]
+print(final_result)
+
+
+============================== END ==============================
+

@@ -1,0 +1,177 @@
+
+[Exctuion Failed]
+
+name 'Image' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_counter_ops(image_path, labels='all', threshold=0.35, save_object=False, saved_image_path="detected_objects"):
+    # Load the image
+    image = Image.open(image_path)
+
+    # Detect objects
+    object_list = Object_Detector_Tool.execute(image=image, labels=labels, threshold=threshold, save_object=save_object, saved_image_path=saved_image_path)
+
+    # Count objects
+    object_number = {'baseball': 0, 'basket': 0}
+
+    for label, results in object_list.items():
+        object_number[label] += len(results)
+
+    return object_number, object_list
+
+# Load the image
+image_path = "/path/to/image.png"
+
+# Count counter_ops
+object_number, object_list = count_counter_ops(image_path)
+
+# Output the results
+print("Counter-Operators count:")
+for label, count in object_number.items():
+    print(f"{label}: {count}")
+
+print("Result:")
+for result in object_list:
+    print(result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+
+result = Object_Detector_Tool.execute(
+    image='/nfs/data8/liao/wxie/SAT/SAT_images_train/9106_0.png',
+    labels=['CounterTop'],
+    model_size='base',
+    save_object=True,
+    saved_image_path='/home/user/during_simulations'
+)
+
+if result:
+    # Assuming 7 is the total number of CounterTops
+    if 'CounterTop' in result['detections']['baseball']:
+        final_result = {
+            "CounterTop": len(result['detections']['baseball']),
+            "CounterTop_confidence": result['detection']['baseball']['score'],
+        }
+    else:
+        final_result = {}
+else:
+    final_result = "No CounterTops found"
+
+print(f"Number of CounterTops found: {final_result['CounterTop']}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() got an unexpected keyword argument 'languages'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Create the Object_Detector_Tool tool instance
+tool = Object_Detector_Tool()
+
+# Paths of the images
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/9106_0.png'
+
+# Execute the tool to detect text in the image
+result = tool.execute(image=image_path, languages=['en', 'de'])
+
+# Extract text blocks and calculate the count
+text_blocks = result[0]
+text_blocks_count = {}
+for block in text_blocks:
+    lang_index = block[2][0].split('-')[0]
+    language = tool.get_name(language_index=lang_index)
+    text = ''.join(block[3].split(' '))
+    if lang_index in tool.lang_dict:
+        text_blocks[lang_index].append((text, tool.confidences[lang_index]))
+
+count_dict = {}
+for languages, texts in text_blocks_count.items():
+    count_dict[languages] = sum(1 for texts in texts.values())
+
+# Replace text with its first occurrence in the count_dict for easier calculation
+text_blocks = [[[text, score] for score in result[0][1] if score and score in count_dict] for text in result[0][2]]
+
+# Display the results
+final_result = {}
+final_result['count_dict'] = count_dict
+final_result['text_blocks'] = text_blocks
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png', labels=['CounterTop'], save_object=True, saved_image_path='counter_tops')
+
+if isinstance(final_result, tuple):
+    if isinstance(final_result[0], dict) and 'CounterTop' in final_result[0]:
+        counter_tops = 1
+    else:
+        counter_tops = 0
+
+else:
+    counter_tops = 0
+
+if counter_tops > 0:
+    print('There are', counter_tops, 'CounterTop(s) visible in the scene.')
+else:
+    print('No CounterTop(s) detected in the scene.')
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unexpected indent (<string>, line 2)
+code: 
+
+    from object_detector import Object_Detector_Tool
+    from text_detector import Text_Detector_Tool
+
+    file_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/9106_0.png'
+    language_list = ['en', 'de']
+    
+    # Detection command with baseball and basket texts
+    detected_objects_result = Object_Detector_Tool.execute(image=file_path, labels=['baseball', 'basket'], languages=language_list, detail=0)    
+    total_baseball_objects = detected_objects_result['baseball']
+    total_basket_objects = detected_objects_result['basket']
+
+    total_objects = total_baseball_objects + total_basket_objects
+    final_result = {
+        'total_objects': total_objects
+    }
+    
+    # Detect and show the detected text for the baseball and basketball examples
+    detected_objects_result_text = Text_Detector_Tool.execute(image=file_path, languages=['en', 'de'])  
+    for temp_result in detected_objects_result_text:
+        print(temp_result)
+
+
+============================== END ==============================
+

@@ -1,0 +1,76 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 9)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def get_dressers_in_scene():
+    # Load the scene and retrieve the dresser coordinates
+    path_to_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11184_0.png"
+    detector_tool = Object_Detector_Tool(tool_module_name="object_detector", tool_class_name="Object_Detector_Tool", tool_description="Detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.", tool_version="1.0.0", input_types={
+      "image": path_to_image, "labels": [], "threshold": 0.35, "model_size": "tiny", "save_object": True, "saved_image_path": "detected_objects"}, export_types={
+      "detected_objects", "image_number": {}, "object_number": {}})
+    labeled_detection = detector_tool.execute()
+
+    # Access the dresser coordinates from the bounding boxes
+    dresser_coordinates = []
+    for det_dict in labeled_detection["detected_objects"]:
+        dresser_coordinates.append({
+            "label": "Dresser",
+            "bbox": [int(det_dict["bbox"][0]), int(det_dict["bbox"][1]), int(det_dict["bbox"][2]), int(det_dict["bbox"][3])],
+        })
+
+    return dresser_coordinates
+
+final_result = get_dressers_in_scene()
+print("Final result:", final_result)
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+final_result: 1
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Text_Detector_Tool' is not defined
+code: 
+final_result = {}
+result = Text_Detector_Tool.execute(image='11184_0.png', languages=['en', 'de'])
+result = {k: {v[0]} for k, v in result.items()}
+if len(result) > 2 and result[0][0]['text'] != 'DETECTED TEXT' and result[0][0]['text'] != 'Not recognized text':
+    final_result["detected_objects"] = {
+        "baseball": result[1][0],
+        "basket": result[2][0]
+    }
+else:
+    final_result["detected_objects"] = {
+        "general": 0
+    }
+
+result.clear()
+
+if result: final_result["total_objects"] = {"general": result[2][0][0]["score"] + 1}
+if saved_image_path_0:
+    saved_image_path_1 = saved_image_path_0
+    final_result["image"] = saved_image_path_1
+    saved_image_path_2 = saved_image_path_0
+    final_result["image_2"] = saved_image_path_2
+
+if saved_image_path_0 or saved_image_path_1 or saved_image_path_2:
+    final_result = {"text_decoration": final_result}
+del final_result['detected_objects'] ["general"]
+print({'text_decoration': final_result})
+
+============================== END ==============================
+

@@ -1,0 +1,166 @@
+------------- 21-00-41-37-530814 Execution reward: 0.0 -------------
+[Reward computation time: 2.8766 seconds]
+QAid: 4854_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Path to the image
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/4854_0.png"
+
+# Parameters for object detection
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Detect objects
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, model_size=model_size)
+
+# Variables for output
+final_result = {}
+
+# Determine whether there are any object detections
+if detected_objects:
+    # Determine the total count of objects
+    total_objects = object_number['baseball'] + object_number['basket']
+
+    # Count the objects for each label
+    for label, detections in object_number.items():
+        if label == "baseball":
+            count_baseball = detections[0]['score']
+        elif label == "basket":
+            count_basket = detections[0]['score']
+
+        # Add the count for the current label to the final result dictionary
+        final_result[label] = {'count': count_baseball, 'total_count': total_objects}
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-530814 Execution reward: 1.0 -------------
+[Reward computation time: 2.3835 seconds]
+QAid: 4854_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {"count": 1, "categories": {"baseball": 1, "basket": 2}}
+
+
+def count_dining_tables(image_path):
+    """
+    Counts the number of dining tables in the image path.
+    :param image_path: Path to the image file.
+    :return: The number of dining tables in the image.
+    """
+    try:
+        detect_obj = Object_Detector_Tool(image_path)
+        dining_tables = sum(1 for entry in detect_obj['detected_objects']['baseball'] if entry['score'] > 0.9)
+    except Exception as e:
+        print(f"Error while counting dining tables: {e}")
+        dining_tables = 0
+
+    return dining_tables
+
+final_result = {"count": count_dining_tables("/nfs/data8/liao/wxie/SAT/SAT_images_train/4854_0.png"), "categories": {"baseball": 1, "basket": 2}}
+print("Number of DiningTables within the specified image:", final_result['count'])
+final_result.update({"count": 0, "categories": {}})
+print("Number of DiningTables outside the specified image:", final_result['count'])
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-530814 Execution reward: 0.0 -------------
+[Reward computation time: 2.8630 seconds]
+QAid: 4854_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Set the input path and other parameters
+input_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/4854_0.png"
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+save_object = True
+saved_image_path = 'detected_objects'
+
+# Execute the object_detection script
+output = Object_Detector_Tool.execute(image=input_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+# Define the result class and its attributes
+class ObjectResult:
+    def __init__(self, object_name, labels_results):
+        self.label_name = object_name
+        self.labels_results = labels_results
+
+# Create the result object and calculate the count of the object
+object_result = ObjectResult('baseball', output[0]['baseball'])
+count = 0
+for label in output:
+    count += label['labels_results']
+
+# Generate the final result
+result = {
+    "labels": labels,
+    "count": count
+}
+result["detected_objects"] = {}
+for label in output:
+    for obj_result in label["labels_results"]:
+        object_result.label_name = label['label_name']
+        break
+    result["detected_objects"][label['label_name']] = [obj_result]
+final_result = result
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-530814 Execution reward: 0.0 -------------
+[Reward computation time: 2.5935 seconds]
+QAid: 4854_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['table'], save_object=True, saved_image_path='detected_objects')
+print("Number of DiningTables:", final_result['object_number']['table'])
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-530814 Execution reward: 0.0 -------------
+[Reward computation time: 2.5526 seconds]
+QAid: 4854_0
+Code: 
+
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+# Demonstration with a single object
+detected_objects, object_number = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/4854_0.png', labels=['basketball'], save_object=True, saved_image_path='detected_objects')
+
+# Demonstration with multiple objects
+detected_objects, object_number = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/4854_0.png', labels=['basketball', 'box'], languages=['en'], detail=1)
+
+final_result = {'total_objects': object_number}
+print("Total DiningTables detected:", final_result)
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-530814 Execution reward: 0.0 -------------
+[Reward computation time: 1.8702 seconds]
+QAid: 4854_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Execute the tool
+detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+detected_objects
+
+
+============================== END ==============================
+

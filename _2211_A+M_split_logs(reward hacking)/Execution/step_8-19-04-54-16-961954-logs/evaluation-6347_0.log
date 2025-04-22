@@ -1,0 +1,130 @@
+------------- 19-04-54-16-961954 Execution reward: 0.0 -------------
+[Reward computation time: 2.6028 seconds]
+QAid: 6347_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/6347_0.png'
+
+detected_objects, object_number = Object_Detector_Tool.execute(
+  image=image_path,
+  labels=['baseball', 'basket'],
+  save_object=True
+)
+
+total_objects = object_number['baseball'] + object_number['basket']
+
+final_result.update({'baseball': object_number['baseball'], 'basket': object_number['basket'], 'total_objects': total_objects})
+
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 19-04-54-16-961954 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6347_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 19-04-54-16-961954 Execution reward: 0.0 -------------
+[Reward computation time: 2.2940 seconds]
+QAid: 6347_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+class Command:
+    def execute(self, image_path, languages=['en'], detail=0):
+        model = "tiny"
+        output_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/detected_objects/"
+        
+        object_results = {}
+        text_result = {}
+        
+        if languages != []:
+            detected_objects = Object_Detector_Tool.execute(image_path, languages=languages, detail=detail)
+            if detected_objects:
+                for det_box, det_label, det_score in detected_objects["detected_objects"]:
+                    object_results[det_label] = det_results
+                
+                detected_objects["labels_count"] = len(detected_objects["labels"])
+            
+                if "baseball" in object_results:
+                    box = [det_box[0], det_box[1], det_box[2], det_box[3]]
+                    object_results["baseball"] = [[box, det_score, "baseball", det_box[4]]]
+                    print(f"Found baseball at: {det_box}")
+                elif "basket" in object_results:
+                    box = [det_box[0], det_box[1], det_box[2], det_box[3]]
+                    object_results["basket"] = [[box, det_score, "basket", det_box[4]]]
+                    print(f"Found basketball at: {det_box}")
+                else:
+                    print("No baseball or basketball found")
+            else:
+                print("Text detection failed.")
+                
+        if "text_results" in detected_objects:
+            text_results = Object_Detector_Tool.execute(image_path, languages=languages, detail=detail)
+            if text_results:
+                for text_box, text_content, text_score in text_results:
+                    text_result[text_content] = text_score
+                    print(f"Found text at: {text_box}, confidence: {text_score}")
+            else:
+                print("Text detection failed.")
+        else:
+            print("Text detection failed.")
+        
+        return object_results, text_result
+
+
+============================== END ==============================
+
+------------- 19-04-54-16-961954 Execution reward: 0.0 -------------
+[Reward computation time: 2.2427 seconds]
+QAid: 6347_0
+Code: 
+```python
+from text_detector_tool import TextDetectorTool
+from object_detector_tool import ObjectDetectorTool
+
+class SceneAnalyzer:
+    def analyze_scene(self, image_path, save_object=False):
+        detection_result = TextDetectorTool.execute(image_path, [['baseball']], 0.05, 'tiny', save_object)
+        detected_objects = defaultdict(list)
+
+        for item in detection_result:
+            for label, obj in item[1].items():
+                if label == "baseball" and obj['score'] > 0.25:
+                    box = *[bbox for bbox in obj['bbox'] if bbox[0] > 0 and bbox[1] > 0]
+                    detected_objects[label].append(box)
+
+        if not saved_objects:
+            saved_objects = {}
+
+        for label, boxes in detected_objects.items():
+            # Calculate the count of detections for each baseball
+            baseball_count = len(boxes)
+            save_objects[label] = {"count": baseball_count}
+
+        return saved_objects, detection_result
+```
+
+============================== END ==============================
+
+------------- 19-04-54-16-961954 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6347_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 19-04-54-16-961954 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6347_0
+Code: [EMPTY]
+
+============================== END ==============================
+

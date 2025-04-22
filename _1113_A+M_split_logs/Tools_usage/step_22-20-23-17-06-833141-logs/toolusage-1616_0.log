@@ -1,0 +1,215 @@
+
+[QAid]1616_0
+
+[Code Includes Tools Usage]
+code: 
+from Object_Detector_Tool import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+# Assuming 'path/to/image.png' is the path to the image
+result1 = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'], detail=0)
+final_result1 = result1[0][1]
+
+result2 = Object_Detector_Tool.execute(image='path/to/image.png', labels=[result1[0][1].split(", ")[0]], save_object=True)
+final_result2 = [obj["file_name"] for obj in result2]
+
+final_result = final_result1 + final_result2
+
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]1616_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute()
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]1616_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Define the variables
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1616_0.png"
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+save_object = True
+saved_image_path = 'detected_objects'
+
+# Execute the object detector
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+# Extract the total count for each detected label from the result
+object_number = result['object_number']
+
+# Print the results for the user
+final_result = {
+    'detected_objects': {
+        'baseball': result['detected_objects'].get('baseball', []),
+        'basket': result['detected_objects'].get('basket', [])
+    },
+    'object_number': object_number
+}
+
+============================== END ==============================
+
+
+[QAid]1616_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>from object_detector import Object_Detector_Tool
+
+def analyze_image(image_path, labels, save_object=True, saved_image_path='', languages=['en', 'de']):
+    result = Object_Detector_Tool.execute(image_path, labels=categories, save_object=save_object, languages=[language] if languages else languages, detail=1)
+    labeled_objects = result[0] if result else []
+    object_count = dict()
+    for i, box_num in enumerate(labeled_objects):
+        label = labels[i]
+        if label in object_count:
+            object_count[label] += box_num
+        else:
+            object_count[label] = box_num
+
+        for item in labeled_objects:
+            bbox = item['bbox']
+            item_label = item['label']
+            item_score = item['score']
+            obj_label = labels[i]
+
+            if obj_label in object_count:
+                object_count[obj_label] += 1
+
+                if 'saved_image_path' in item:
+                    saved_image_path = saved_image_path + (f'{obj_label}/image_{i+1}.png')
+                    object_count[obj_label] += 1
+                    object_count.pop(label)
+                    object_count.pop(item_label)
+
+                else:
+                    return [], object_count
+
+    if save_object:
+        path = os.path.join(saved_image_path, path.split('/')[-1] + 'image_' + str(len(labeled_objects)) + '.png')
+        object_count = dict(sorted(object_count.items(), key=lambda kv: kv[1], reverse=True))
+        for label in object_count:
+            bbox = item_label['bbox']
+            item_score = int(item_score)
+            object_label = labels[i]
+            object_count.pop(object_label)
+            object_count.pop(item_label)
+            object_count.pop(obj_label)
+            saved_image_path = saved_image_path + f"/{label}/image_{i+1}.png"
+            object_count = dict(sorted(object_count.items(), key=lambda kv: kv[1], reverse=True))
+
+        for i in range(0, len(labeled_objects)):
+            for item in labeled_objects:
+                bbox = item['bbox']
+                item_label = item['label']
+                item_score = int(item_score)
+                del item_label['bbox']
+                object_count.pop(item_label)
+                object_count.pop(item_label)
+
+                bbox = bbox[::-1]
+                with open(saved_image_path, 'w') as image_file:
+                    image_file.write(' '.join('%.4f' % val for val in bbox))
+                    bbox[
+============================== END ==============================
+
+
+[QAid]1616_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tools.object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='"path/to/image.png"', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+if final_result:
+    detected_objects = final_result['detected_objects']
+    object_number = final_result['object_number']
+    print(f'Number of detected objects: {object_number}\n')
+    for obj in detected_objects.values():
+        print(f'  - {obj["save_image_path"]} ({obj["score"]}: {obj["bbox"]})\n')
+else:
+    print('No text detected.')
+
+============================== END ==============================
+
+
+[QAid]1616_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>
+from object_detector import Object_Detector_Tool
+
+def count_labels(image_path, labels, threshold=0.35, model_size='tiny', Save_object=False, saved_image_path='detected_objects'):
+    detector_tool = Object_Detector_Tool(image_path, labels, threshold, model_size, Save_object, saved_image_path)
+    detected_objects_info = detector_tool.execute(image_path)
+
+    object_labels = []
+    label_counts = {}
+    for label, detections in detected_objects_info.items():
+        for detection in detections:
+            if 'box' in detection:
+                obj_labels = label + '-' + '-'.join(detection['box'])
+                object_labels.append(obj_labels)
+            if label not in label_counts:
+                label_counts[label] = 0
+            label_counts[label] += 1
+
+    object_labels_info = []
+    for label in label_counts:
+        object_labels_info.append({'label': label, 'count': label_counts[label]})
+
+    if Save_object:
+        saved_image_path = "{}_{}".format(saved_image_path, label_counts) if saved_image_path else "0"
+        saved_image_path = saved_image_path.replace("\\", "/")
+        for object_label in object_labels_info:
+            detector_tool.save_object(object_label, saved_image_path)
+
+    return object_labels_info, label_counts
+
+def text_analysis(image_path, languages, detail=None):
+    image_path = image_path.split("/")[-1]
+    language_list = languages.split(",") + ["Simplified Chinese"]
+    text_detection_tool = Text_Detector_Tool(image_path, languages, detail)
+
+    results = text_detection_tool.execute()
+    if not results:
+        return False
+
+    detected_text_blocks = []
+    text_info = [dict([(f'Detected text block: {result["bbox"]} [score: {result["score"]}]', result) for result in text])
+                for text in text[0]["words"]
+
+    return results, text_info
+
+result = text_analysis('/nfs/data8/liao/wxie/SAT/SAT_images_train/1616_0.png', ["en", "en", "ja", "de"])
+result, result_dict = count_labels(image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/1616_0.png", labels=["baseball", "basket"], threshold=0.35, model_size='base', Save_object=True, saved_image_path="detected_objects/")
+print(result)
+print(result_dict)
+</
+============================== END ==============================
+

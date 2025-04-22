@@ -1,0 +1,54 @@
+
+[Exctuion Failed]
+
+empty separator
+code: 
+
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+final_result = {}
+final_result["CounterTops"] = 2
+
+commands = [
+  "detected_objects, object_number = Object_Detector_Tool.execute(image='path/to_image.png', labels=['Counter'])",
+  "result = Text_Detector_Tool.execute(image='path/to_image.png', languages=['en', 'de'])",
+]
+
+for index, command in enumerate(commands):
+  result = command.split(", ")
+  object, score = result[1], result[2]
+  object = object.split("")
+
+  if index == 0 and "baseball" in object and bool(result[0]):
+    # Assume baseball is detected in the picture
+    detected_object = list(map(int, zip(*result[0][1])))
+
+    if "basket" not in object:
+      final_result["CounterTops"] += 1
+  
+detected_objects = []
+for label in object_number:
+  for object in detected_objects:
+    if object['labels'] == label:
+      detected_object = object['detected_objects'][label]
+      detected_object['score'] -= score
+
+detected_objects.sort(key=lambda x: x['score'], reverse=True)
+detected_objects = [detected_object for detected_object in detected_objects if not detected_object or detected_object['score'] > detected_object_number['basket']]
+detected_objects.sort(key=lambda x: x['box'], reverse=True)
+
+for found_label, detected_object in detected_objects:
+  found_label = list(found_label).pop()
+
+final_result["CounterTops"] -= 1
+final_result["CounterTops"] = int(final_result["CounterTops"])
+final_result["CounterTops"] = str(final_result["CounterTops"])
+detected_objects.sort(key=lambda x: x['score'], reverse=True)
+detected_objects.sort(key=lambda x: x['box'], reverse=True)
+
+print(final_result)
+
+
+============================== END ==============================
+

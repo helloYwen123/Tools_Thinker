@@ -1,0 +1,230 @@
+
+[Exctuion Failed]
+
+name 'chairs' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+
+def check_if_chair_is_visible(chairs):
+    for chair in chairs:
+        if "chair" in chair["label"]:
+            return True
+    return False
+
+def get_number_of_chairs(chairs):
+    chair_count = 0
+    for chair in chairs:
+        if "chair" in chair["label"]:
+            chair_count += 1
+    return chair_count
+
+room = {
+    "bed": {
+        "label": ["bed", "basket", "basketball"],
+        "image": "/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png",
+        "boxes": [[26, 150, 80, 300]],
+        "label_count": 1 + int(check_if_chair_is_visible(chairs))
+    }
+}
+
+detected_objects, object_number = Object_Detector_Tool.execute(image=room['bed']['image'], labels=object_detector_tools.label, save_object=True, saved_image_path="detected_objects")
+
+for item in detected_objects:
+    if any([l['label'] in item['label'] for l in object_number]):
+        final_result[l['label']] = len(detected_objects) 
+
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+import object_detector_tool
+from tool_objects import ImageTool, LabelList
+import os
+
+def find_chairs():
+    # Find all the chairs in the image
+    for chair_label, chair_box in chair_labels:
+        image_tool = ImageTool()
+        chair_coords = image_tool.find_objects(ChairTarget, chair_label, chair_box, 0.35, 'basic', save_object=True, saved_image_path='chair_coords')
+
+    chair_count = chair_map.get(chair_target, 0)
+    if chair_count > 0:
+        print(f'There are {chair_count} {chair_target}')
+
+if __name__ == '__main__':
+    # Load image data
+    img_name = '0.png'
+    img = ImageTool().load_image(img_name)
+    chair_labels = LabelList(['chair'])  # Create a label list with the chair target
+
+    # Run text detection
+    text = TextDet.detect_text(img, language='en', detail=1)
+    chair_coords = []
+    chair_map = {}
+
+    if text is not None:
+        chair_label = 'chair'
+        chair_coords.append(((x, y) for x, y in text[0].iloc[:, (0, 1)]))
+
+    if chair_coords:
+        find_chairs()
+
+        # Save coordinates to a text file
+        output_path = 'chair_coords.txt'
+        with open(output_path, 'w') as file:
+            for x, y in chair_coords:
+                file.write(f"Chair {chair_label} found at x={x}, y={y}\n")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'os' is not defined
+code: 
+output_list = []
+input_image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png'
+
+if input_image_path != None and os.path.isfile(input_image_path):
+    predictions = object_detection.detect_objects_from_image(input_image_path)
+    
+    object_num = len(predictions)
+    
+    for box, score in predictions.items():
+        for result in predictions[box]:
+            result_path = result['saved_image_path']
+        
+        output_list.append([result for result in predictions[box]])
+        
+    print(f"Number of detected objects: {object_num}")
+else:
+    print("Image path is not valid or not existed in the image list")
+    output_list = []
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tool_module_name'
+code: 
+
+from tool_module_name import *
+
+# Read image content
+try:
+    with open('/nf/data8/liao/wxie/SAT/SAT_images_train/5545_0.png', 'rb') as f:
+        image_data = np.array(bytearray(f.read()), dtype=np.uint8)
+except:
+    print("Failed to read image")
+
+# Detect objects
+detected_objects = Object_Detector_Tool.execute(image=image_data)
+
+# Create dictionary for object detection
+detection_dict = {label: [] for label in detected_objects['baseball'].keys()}
+
+# Iterate over detection results and add objects to detection_dict
+for result in detected_objects['baseball']:
+    if result['score'] > 0.5:
+        detection_dict[result['label']].append({'box': result['box'], 'x': result['bbox'], 'y': result['bbox'], 'z': result['bbox']})
+
+final_result = {"object_number": {}, "total_obj": 0}
+for label, detected_obj in detection_dict.items():
+    if len(detected_obj) == 1:
+        final_result["total_obj"] += 1
+        final_result["object_number"][label] = len(detected_obj)
+
+# Add detection results to detection_dict
+for detected_obj in detection_dict.values():
+    for det_obj in detected_obj:
+        det_obj.pop("saved_image_path")
+
+detected_objects, object_number = final_result["total_obj"], object_number
+
+print("Total detected objects: ", final_result["total_obj"])
+print("Detections: ", detected_objects)
+print("Objects detected with confidence score  > 0.5: ", object_number)
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+def count_objects(image_path, labels, save_object, saved_image_path):
+    try:
+        detected_objects = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path= saved_image_path)
+        detected_objects_list = []
+        object_count = {}
+        for label, detection in detected_objects['detected_objects']:
+            if label in labels:
+                detected_objects_list.append(detection)
+                if label not in object_count:
+                    object_count[label] = 1
+                else:
+                    object_count[label] += 1
+        detected_objects_list.sort(key=lambda x: x['score'])
+        return {"detected_objects": detected_objects_list, "object_count": object_count}
+    except Exception as e:
+        print(f"Error while counting objects: {str(e)}")
+        return None
+
+final_result = count_objects('/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png', ['baseball', 'basket', 'table'], save_object=True, saved_image_path='detected_objects')
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 1)
+code: 
+```python
+import object_detector as od
+
+# Assuming the image path is "/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png" and you want to detect "baseball" and "basket" with a threshold of 0.35:
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png"
+labels = ["baseball", "basket"]
+save_object = False
+object_detector = od.Object_Detector_Tool()
+
+if save_object:
+    objects = object_detector.execute(image=image_path, labels=labels, save_object=True)
+    detected_objects = [{"box": object["box"], "score": object["score"]} for object in objects["detected_objects"] if not object["score"] < 0.35]
+    if not detected_objects:
+        print("No detected objects")
+    else:
+        detected_objects_json = {"detected_objects": objects["detected_objects"]}
+        detected_objects_json["objects_number"] = len(objects["detected_objects"])
+else:
+    objects = object_detector.execute(image=image_path, labels=labels)
+    detected_objects = objects["detected_objects"]
+
+if not detected_objects:
+    print("No detected objects")
+else:
+    detected_objects_json = {"detected_objects": objects["detected_objects"]}
+    detected_objects_json["objects_number"] = len(objects["detected_objects"])
+
+
+============================== END ==============================
+

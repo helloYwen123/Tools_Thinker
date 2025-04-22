@@ -1,0 +1,65 @@
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_sinks(image_name: str, labels: list, save_object: bool = False, saved_image_path: str = ""):
+    model_size = "tiny"
+    saved_image_path_template = saved_image_path or f"detected_objects/{image_name}.png"
+    if not save_object:
+        return {"count": 0, "objects": []}
+
+    object_detector_tool = Object_Detector_Tool()
+    detected_objects, object_number = object_detector_tool.execute(image=image_name, labels=labels, save_object=True, saved_image_path=saved_image_path_template)
+    
+    sink_count = {label.split(':')[0]: 0 for label in labels}
+    for label, detections in detected_objects.items():
+        for detection in detections:
+            if label.lower() in 'sink, toiletbasin, urinal'.lower():
+                sink_count[label.split(':')[0]] += 1
+
+    if save_object:
+        for label, detection in detected_objects.items():
+            image_name = f"{image_name}_{label}.png"
+            object_detector_tool.save_object(image_name, detection)
+    
+    return {"count": int(sink_count.values().max()), "objects": detected_objects}
+
+result = count_sinks("/path/to/image.png", ["sink", "water_tap"], save_object=True, saved_image_path="Detected_Sinks")
+print(result)  
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+# Load the image and labels
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/3003_0.png"
+labels = ["baseball", "basket"]
+
+# Create an instance of the Object_Detector_Tool
+object_detector = Object_Detector_Tool()
+
+# Execute the object detector tool
+detected_objects, object_number = object_detector.execute(image=image_path, labels=labels)
+
+# Convert the object number dictionary to a string
+object_number_string = str(object_number)
+categories = object_number_string.split(", ")
+
+# Output the result
+final_result = f"Number of detected objects: {' '.join(categories)}"
+print(final_result)
+
+
+============================== END ==============================
+

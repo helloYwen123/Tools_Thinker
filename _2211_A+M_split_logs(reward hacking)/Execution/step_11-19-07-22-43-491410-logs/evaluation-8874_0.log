@@ -1,0 +1,178 @@
+------------- 19-07-22-43-491410 Execution reward: 0.0 -------------
+[Reward computation time: 2.2874 seconds]
+QAid: 8874_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def detect_objects(image_path, labels, threshold=0.35, model_type="tiny"):
+    detected_objects = []
+    object_count = {}
+
+    model_size = "tiny"  # available options: tiny or base
+
+    # Assuming object_detection_tool function is imported and has proper arguments and documentation
+
+    with Object_Detector_Tool(image_path, labels, model_size, save_object=False) as detected_objects_tool:
+        for label in labels:
+            object_count[label] = detected_objects_tool.execute(label=label)
+
+        for label in object_count:
+            for detection_entry in detected_objects_tool.objects():
+                object_count[label].append({"box": detection_entry["x"], "y", "score": detection_entry.get("score")})
+                object_count[label].append({"score": 1.0 - detection_entry.get("score", 0.0)})
+                detected_objects.append({"box": [detached_x, detached_y, detached_w, detached_h], "score": score, "label": label})
+
+    if "detect_objects" in detected_objects_tool and detected_objects and not detected_objects_tool.detect_objects(object_list=detected_objects):
+        print("No text detected in the image.")
+        with open(image_path, 'r') as file:
+            detected_objects = file.readlines()
+
+    return object_count, len(object_count)
+
+# Provided image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/8874_0.png'
+
+object_count, num_objects = detect_objects(image_path, ['baseball', 'basket'], languages=['en', 'de'])
+final_result = {"object_detection_results": object_count, "total_objects": num_objects}
+
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 19-07-22-43-491410 Execution reward: 0.0 -------------
+[Reward computation time: 2.6629 seconds]
+QAid: 8874_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Path of the image
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8874_0.png"
+
+# List of object labels to detect
+labels = ['fridge']
+
+# Confidence threshold (1.000 - any high value can be used like 0.99, default 0.35)
+threshold = 0.5
+
+# Model size ('tiny' or 'base', default: 'tiny')
+model_size = 'tiny'
+
+# Save object (set to False if no objects need saving)
+save_object = True
+
+# Saved image path (set to 'detected_objects' for convenience)
+saved_image_path = 'detected_objects'
+
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+if result.saved_image_path is None:
+    final_result = "0"
+else:
+    final_result = f"{result.saved_image_path}"
+
+final_result
+
+
+============================== END ==============================
+
+------------- 19-07-22-43-491410 Execution reward: 0.0 -------------
+[Reward computation time: 1.9842 seconds]
+QAid: 8874_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def find_fridge():
+    final_result = []
+    # Assume 'image' is in the file directory and 'labels' is a list containing 'fridge' and 'no_fridge'
+    labels_detected = Object_Detector_Tool.execute(image='path/to/image.png', model_size='tiny', labels=['fridge'], threshold=0.35, save_object=True)
+    labels_possible = labels_detected['fridge'].items()
+
+    for label detected in labels_possible:
+        if label[0] == 'fridge':
+            final_result.append({'box': detected[1]['box'], 'score': detected[1]['score']})
+            final_result.append({'box': detected[2]['box'], 'score': detected[2]['score']})
+            break
+
+    image_to_save_path = 'detected_fridge_images.jpg'
+    image_fridge = Image.open(image_to_save_path)
+    fridges_detected = len(final_result)
+    for detected in final_result:
+        ImageDraw.rectangle(image_fridge, (detected['box'][0], detected['box'][1], detected['box'][2], detected['box'][3]), (0, 0, 0))
+    image_fridge.save(image_to_save_path)
+
+    return fridges_detected
+
+fridges = find_fridge()
+print("Number of fridges detected:", fridges)
+
+# Test the tool with demo example
+import_text_detector = Text_Detector_Tool()
+import_text_detector.execute(image='path/to/image.png', languages=['en'])
+fridges = find_fridge()
+print(f"The number of fridges detected with both tools is: {fridges}")
+
+
+============================== END ==============================
+
+------------- 19-07-22-43-491410 Execution reward: 0.0 -------------
+[Reward computation time: 2.3632 seconds]
+QAid: 8874_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="path_to_image.png",
+                                            labels=["fridge"],
+                                            save_object=True)
+
+for detection in final_result[0]:
+    fridges = detection[1]
+    total_result = final_result[1]
+
+    if fridges:
+        for frig in fridges:
+            print(f"Ice Box", frig)
+    else:
+        print(None)
+
+
+============================== END ==============================
+
+------------- 19-07-22-43-491410 Execution reward: 0.0 -------------
+[Reward computation time: 2.2139 seconds]
+QAid: 8874_0
+Code: 
+object_detector
+
+============================== END ==============================
+
+------------- 19-07-22-43-491410 Execution reward: 0.0 -------------
+[Reward computation time: 2.1233 seconds]
+QAid: 8874_0
+Code: 
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png', labels=['fridge'], save_object=True)
+
+num_desp_fridge = final_result[0]['box'][-1]['score']
+num_desp_fridges = len(final_result)
+
+if num_desp_fridge > 0:
+    print("There are 0 fridges in the scene.")
+elif num_desp_fridges > 0:
+    print("There are {} fridge in the scene.".format(num_desp_fridges))
+else: 
+    print("There is no fridge in the scene.")
+
+if num_desp_fridges > 0:
+    result = Object_Detector_Tool.execute(image='path/to_image.png', languages=['en', 'de'], detail=0)
+    for box, score in result[0]['box'][box[-1]]: print("Detected {}/{} ({:.2f}%) fridge in the scene.".format(box,-1, score*100))
+else: pass
+
+
+============================== END ==============================
+

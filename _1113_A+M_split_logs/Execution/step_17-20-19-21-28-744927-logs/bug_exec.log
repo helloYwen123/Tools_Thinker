@@ -1,0 +1,174 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+```python
+import object_detector
+
+def get_number_of_objects(image, labels, save_object, saved_image_path):
+    try:
+        label_to_objects = object_detector.detect_objects(image, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+        # Return the number of objects detected by the same label
+        return label_to_objects[labels][0]["score"]
+    except Exception as e:
+        print(f"Error during text detection: {e}")
+        return 0
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13959_0.png"
+labels = ["baseball", "basket"]
+save_object = True
+saved_image_path = "detected_objects"
+
+number_of_objects = get_number_of_objects(image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+print(f"The number of objects is: {number_of_objects}")
+```
+
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+def count_desklamperes():
+    # Path to the image
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13959_0.png"
+    
+    # Detection options
+    labels = [ "desk", "desk_lamp", "table"]
+    threshold = 0.35
+    model_size = "tiny"
+    save_object = True
+    
+    # Detect objects
+    detected_objects = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object)
+
+    # Count the occurrence of each detected object
+    object_number = {}
+    for label, detection_list in detected_objects.items():
+        total_count = len(detection_list)
+        object_number[label] = total_count if "total" not in object_number else min(object_number["total"], total_count)
+    
+    return detected_objects, object_number
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() got an unexpected keyword argument 'confidence_threshold'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Path to image
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/13959_0.png'
+
+# Labels of interest
+labels = ['baseball', 'basket']
+
+# Confidence threshold for detection (default: 0.35)
+confidence_threshold = 0.35
+
+# Save object function
+# saved_object_path = '/path/to/saved/objects'
+
+# Detecting baseball and basket in the image
+detected_objects, object_number = \
+    Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=True, confidence_threshold=confidence_threshold)
+
+# Convert dictionary to list
+detected_objects = list(detected_objects)
+
+print(f"Detected objects: {detected_objects}")
+print(f"Number of detected objects: {object_number}")
+
+final_result = [detected_objects, object_number]
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'tool_module_name'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Get the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13959_0.png"
+
+# Construct the tool object with the appropriate parameters
+tool = Object_Detector_Tool(
+    tool_module_name="object_detector",
+    tool_class_name="Object_Detector_Tool",
+    tool_description="A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.",
+    tool_version="1.0.0",
+    tool_input_types={
+        "image": "str - The path to the image file.",
+        "labels": "list - A list of object labels to detect.",
+        "threshold": "float - The confidence threshold for detection (default: 0.35).",
+        "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
+        "save_object": "bool - Whether to save the detected objects as images (default: False).",
+        "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects')."
+    },
+    tool_output_types={
+        "detected_objects": "tuple - A tuple containing two elements: (1) a dictionary mapping each detected label to a list of detection entries, e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}]}, (2) a dictionary mapping each label to the number of detected objects in the image. e.g. {'baseball': 2, 'basket': 1}",
+        "object_number": "str - A string mapping each label to the number of detected objects in the image. e.g. {'baseball': 2, 'basket': 2}"
+    },
+    tool_client_version="1.0.0"
+)
+
+# Execute the tool
+result = tool.execute(image=image_path, labels=["baseball"], save_object=True, saved_image_path="detected_objects")
+
+# Extract result data
+detected_objects = result["detected_objects"]
+object_number = result["object_number"]
+
+final_result = f"Number of detected objects: {object_number}"
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'image'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Define input parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13959_0.png"
+labels = ['baseball', 'basket']
+confidence_threshold = 0.35
+model_size = "tiny"
+save_object = False
+
+# Run the Object Detector Tool
+detected_objects = Object_Detector_Tool.execute(image_path, labels=labels, save_object=save_object)
+
+object_number = {}
+for label in detected_objects['objects']:
+    object_number[label['object_name']] = len(detected_objects['objects'][label['object_name']])
+
+# Final result
+final_result = "There are " + str(detected_objects.pop()) + " DeskLamps visible in the scene."
+
+# Return final result
+final_result
+
+
+============================== END ==============================
+

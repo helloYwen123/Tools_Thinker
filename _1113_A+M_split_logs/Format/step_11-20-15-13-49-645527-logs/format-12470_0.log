@@ -1,0 +1,189 @@
+--- Completion 1 ---
+from Object_Detector_Tool import Object_Detector_Tool as ODT
+
+def count_and_locations_on_image(image_path, languages=['en', 'ja'], detail=0):
+    # This function counts the number of Desks on the image.
+    # The input images are saved in the current directory, and each desk is returned as a list of bounding boxes and scores.
+    # The details specify the level of detail for the text detection in each image,
+    # which can be set to 0 for a simpler output or 1 for a more detailed one.
+    try:
+        os.makedirs(image.replace(image_path, ""), exist_ok=True)  # Create directories for saved objects
+        detected_object_list = ODT.execute(image=image_path, languages=languages, detail=detail)
+        object_numbers = {}
+
+        for label in set([obj['label'] for obj in detected_object_list]):
+            if label == 'Desk':
+                number_found = object_numbers.get(label, 0)
+                object_numbers[label] = number_found+1
+
+                image_path = image.replace(image_path, f"detected_objects/{label}/")
+                detected_objects_list = [
+                  [obj['bbox'], obj['text'], detection['score'] for obj in obj['detection']])
+                detected_objects = ' '.join([obj['text'] for obj in detected_objects_list])
+
+                # Check if there are more than one objects of the same type for the 'Desk' label
+                if number_found > 1:
+                    object_numbers[label] = number_found+1
+                    image_path = image.replace("/detected_objects/Desk/", f"detected_objects/Desk_{number_found}/")
+                    detected_objects_list = [
+                      [obj['bbox'], obj['text'], detection['score'] for obj in obj['detection']])
+                    detected_objects = ' '.join([obj['text'] for obj in detected_objects_list])
+
+                # Save the detected objects to separate directories for each label
+                if detected_object_list and 'saved_object' in detected_object_list[0]:
+                    detected_object = detected_object_list[0]['saved_object']
+                    save_path = f"detected_objects/{label}/"
+                    path = f"{save_path}{label}/"
+                    if path not in object_numbers.keys():  # Check if this label doesn't exist in object_numbers
+                        object_numbers[label] = 1  # Create a directory for this label if it doesn't exist
+                    else:
+                        object_numbers[label] += 1
+                   
+Reward: 0.0
+
+--- Completion 2 ---
+<command>
+from tool_object_detector_tool import Object_Detector_Tool
+from tool_text_detection_tool import Text_Detector_Tool
+
+# Initialize the tool class
+detector_tool = Object_Detector_Tool()
+
+# Set the image path and required parameters
+image_path = 'path_to_image.png'
+labels = ['table', 'desk']
+threshold = 0.25
+model_size = 'tiny'
+save_object = True
+saved_image_path = 'detected_objects'
+
+# Execute the tool
+result = detector_tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path, model_name=model_size)
+
+if result and result[0]:
+    detected_objects = []
+    total_objects = None
+
+    for i, obj_label in enumerate(result):
+        detected_objects.append({
+            'label': obj_label[1]['label'],
+            'objects': obj_label[0],
+            'count': obj_label[2],
+            'result': obj_label[1],
+        })
+
+        if total_objects is None:
+            total_objects = obj_label[0]
+        else:
+            total_objects = total_objects + obj_label[0]
+
+    result_str = ','.join([f'{t[1]}: {t[0]} ({t[2]})' for t in result])
+    total_objects_str = f'Общее количество обнаруженных объектов: {total_objects}'
+
+    final_result = {
+        'detected_objects': detected_objects,
+        'total_objects': total_objects,
+        'result': result_str,
+        'total_objects_str': total_objects_str
+    }
+
+    # Test detection by showing the images of detected objects
+    for obj in detected_objects:
+        img_name = f'detected_objects/{obj["label"]}_{obj["result"]}.png'
+        obj['result'] = obj["result"].split("\n")[:3]
+        obj['result'] = ' '.join(obj['result'])
+        obj['result'] = obj['result'].replace("\n", " ").replace(" ", "_") + " "
+        print(f"Detected {obj['label']} ({obj['result']})")
+
+    return final_result
+else:
+    return "Text detection failed after retries."
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<nodule object_detector.py>
+  <class_name>Object_Detector_Tool</class_name>
+  <python_module_name>object_detector</python_module_name>
+  <python_command>from object_detector import Object_Detector_Tool</python_command>
+</nodule>
+
+<nodule text_detector.py>
+  <class_name>Text_Detector_Tool</class_name>
+  <python_module_name>text_detector</python_module_name>
+  <python_command>from text_detector import Text_Detector_Tool</python_command>
+</nodule>
+
+<command>
+  generated_code
+  object: {'total_objects': 0}, 
+  text: [], 
+  objects: [{"label": "desk", "bbox": [15, 380, 250, 620]}, {"label": "table", "bbox": [2, 380, 25, 620]}]
+</command>
+
+<div class="answer">There is 1 desk in the scene.</div>
+Reward: 0.0
+
+--- Completion 4 ---
+```python
+from object_detector import Object_Detector_Tool
+
+def count_objects_in_scene(filepath):
+    detector = Object_Detector_Tool()
+    object_labels = detector.execute(image=filepath, labels=['desk', 'bed'], threshold=0.35, model_size='tiny', save_object=False, saved_image_path=os.path.splitext(filepath)[0])
+
+    result = {}
+    for label in object_labels["baseball"]:
+        if "box" in label:
+            result["baseball"] = 1
+        elif "basket" in label:
+            result["basket"] = 2
+
+    return result
+
+final_result = count_objects_in_scene("/nfs/data8/liao/wxie/SAT/SAT_images_train/12470_0.png")
+print(f"Number of beds in the scene: {final_result['bed']}")
+```
+Reward: 0.0
+
+--- Completion 5 ---
+```python
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/12470_0.png", labels=["desk"], save_object=False, saved_image_path="detected_objects") is None
+
+if final_result is not None:
+    detected_objects_result = final_result[0]
+    detected_objects_result = detected_objects_result[5]  # Assuming the last item in the tuple is the objects list
+
+    if len(detected_objects_result) == 2:
+        desks = detected_objects_result[4]
+
+        if len(desks) == 0:
+            final_result = 0
+        else:
+            final_result = len(detected_objects_result[4])
+```
+Reward: 0.0
+
+--- Completion 6 ---
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='image.png', labels=[], save_object=True, saved_image_path='detected_objects')
+
+if final_result:
+  detected_objects = final_result['detected_objects']
+  object_number = final_result['object_number']
+else:
+  detected_objects = []
+  object_number = {}
+
+print(detected_objects)
+print(object_number)
+
+if object_number:
+  print(f'Number of detected objects: {object_number["baseball"]} or {object_number["basket"]}')
+else:
+  print('No objects detected')
+Reward: 0.0
+

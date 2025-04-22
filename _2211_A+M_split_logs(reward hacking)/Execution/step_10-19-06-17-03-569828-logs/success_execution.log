@@ -1,0 +1,43 @@
+
+============================== New Completed Execution ==============================
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+
+# Attempt to detect 'baseball' and 'basket'
+try:
+    detected_objects = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True)
+except Exception as e:
+    detected_objects = []
+
+final_result['detected_objects'] = detected_objects
+
+# Total count for detected objects
+total_objects = len(detected_objects)
+
+# Check the result
+if isinstance(detected_objects, tuple) and total_objects >= 1:
+    for label, entries in detected_objects.items():
+        detected_objects = sorted(entries, key=lambda item: item['score'], reverse=True)
+        if detected_objects:
+            detected_objects = detected_objects[0]
+        else:
+            print(f"No detected text for label '{label}' after retries.")
+        final_result[f'object_number_{label}'] = total_objects  # Update the number of objects detected for each label
+        if detected_objects:
+            final_result['detected_objects'] = [{**detected_objects[0], 'object_number': label}]
+
+final_result['total_objects'] = total_objects
+
+print(final_result)
+
+[THE PRINT OUTPUT]
+{'detected_objects': [], 'total_objects': 0}
+
+[GENERATE VALID FINAL_RESULT]
+{'detected_objects': [], 'total_objects': 0}
+
+============================== END ==============================
+

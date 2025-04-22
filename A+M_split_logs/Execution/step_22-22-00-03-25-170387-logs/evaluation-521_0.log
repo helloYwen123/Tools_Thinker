@@ -1,0 +1,191 @@
+------------- 22-00-03-25-170387 Execution reward: 0.0 -------------
+[Reward computation time: 2.0520 seconds]
+QAid: 521_0
+Code: 
+
+from object_detector_tool import Object_Detector_Tool
+from text_detector_tool import Text_Detector_Tool
+
+final_result = []
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/521_0.png"
+languages = ["en", "de"]
+detail = 1
+
+try:
+    object_results = Object_Detector_Tool.execute(image=image_path, languages=languages, detail=detail)
+    detected_objects = []
+
+    for object_label, object_detection in object_results.items():
+        object_detection = [det for det in object_detection if det['score'] > 0.35]
+
+        if object_label in ["baseball", "basket"]:
+            box = object_detection[0]['box']
+            detected_objects.append({'box': box, 'label': object_label})
+
+        if object_label == "box":
+            if len(object_detection) > 1:
+                box = object_detection[1]['box']
+                detected_objects.append({'box': box, 'label': object_label})
+
+    if len(detected_objects) == 0:
+        detected_objects = []
+        object_number = {}
+        object_results[object_label] = 0
+
+    object_labels = set([det['label'] for det in detected_objects])
+
+    object_number = {label: len(detected_objects) for label in object_labels}
+
+    if save_object:
+        # Crop and save detected objects
+        for obj_obj in detected_objects:
+            if obj_obj['label'] == "baseball":
+                image_path = "detected_objects/image_baseball_{0}.png".format(obj_obj['score'])
+            elif obj_obj['label'] == "basket":
+                image_path = "detected_objects/image_basket_{0}.png".format(obj_obj['score'])
+
+            from_bbox_tool import bbox_tool
+            to_bbox, bbox = bbox_tool(image_path)
+            bbox_tool.bbox_tool.to_bbox_tool(bbox)
+            bbox_tool.bbox_tool.to_txt_tool()
+
+    final_result.append({"detected_objects": detected_objects, "object_number": object_number})
+    final_result.append({
+        "detected_objects": detected_objects
+            if object_label == "baseball"
+            else {label: {len(detected_objects)}}
+    })
+except Exception as e:
+    final_result.append({"detected_objects": {}, "object_number": {}})
+    print(f"Error: {e}")
+
+
+============================== END ==============================
+
+------------- 22-00-03-25-170387 Execution reward: 1.0 -------------
+[Reward computation time: 3.3644 seconds]
+QAid: 521_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image='path/to/image', labels=['baseball'], save_object=True)
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 22-00-03-25-170387 Execution reward: 0.0 -------------
+[Reward computation time: 2.2471 seconds]
+QAid: 521_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Initialize the object detector with a confidence threshold of 0.35 and the "tiny" model size.
+
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the tool to detect the objects in the image.
+detected_objects = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+final_result = {"detected_objects": detected_objects, "object_number": object_detector_tool.object_number}
+
+object_detector_tool.save_object_output(final_result)
+
+<command>final_result
+
+============================== END ==============================
+
+------------- 22-00-03-25-170387 Execution reward: 0.0 -------------
+[Reward computation time: 2.5518 seconds]
+QAid: 521_0
+Code: 
+
+from tool_module_name import *
+
+# Check if image is provided
+if 'path_to_image' in locals():
+    image_path = 'path_to_image'
+
+# Detect baseball and basket in the image
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=['basketball', 'baseball'], save_object=True, saved_image_path='detected_objects')
+
+final_result = {
+  'detected_objects': detected_objects,
+  'object_number': object_number
+}
+
+# Check if any text is detected
+if 'text' in globals():
+    result = text_detector_tool.execute(image=image_path, languages=['EN', 'DE'])
+    for text_block in result:
+        if text_block[4] == 1.0 and text_block[3] == 'basketball':
+            final_result['basketball'] += 1
+        elif text_block[4] == 1.0 and text_block[3] == 'baseball':
+            final_result['baseball'] += 1
+        elif text_block[4] == 1.0:
+            final_result['english'] += 1
+else:
+    final_result['english'] = 0
+
+
+============================== END ==============================
+
+------------- 22-00-03-25-170387 Execution reward: 0.0 -------------
+[Reward computation time: 1.9524 seconds]
+QAid: 521_0
+Code: 
+
+import object_detector_tool
+
+# Path to the image (You have a Python script here)
+image_path = 'path/to/image'
+
+# Labels to detect, assuming there is 'baseball' and 'basket' in these image files
+labels = ['baseball', 'basket']
+
+# Confidence threshold
+threshold = 0.35
+
+# Specify model size
+model_size = 'tiny'
+
+# Specifies to save detected objects as images
+save_object = True
+
+# Specifies where to save the saved image
+saved_image_path = 'detected_objects'
+
+# Call the function to detect the labels in the image and save detected objects if specified
+detected_objects, object_number = object_detector_tool.execute(image_path=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size, saved_image_path=saved_image_path)
+
+final_result = {"detected_objects": detected_objects, "object_number": object_number}
+
+
+============================== END ==============================
+
+------------- 22-00-03-25-170387 Execution reward: 0.0 -------------
+[Reward computation time: 1.8445 seconds]
+QAid: 521_0
+Code: 
+from Object_Detector_Tool import Object_Detector_Tool, execute
+from Text_Detector_Tool import text_detector_tool
+import_name: "Object_Detector_Tool", "text_detector_tool"
+file_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/521_0.png'
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+save_object = True
+saved_image_path = "detected_objects"
+
+object_detector = Object_Detector_Tool()
+object_results, object_number = object_detector.execute(image=file_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path, threshold=threshold, model_size=model_size)
+print(f"Detected objects: {object_results}")
+final_result = object_detector.execute(image=file_path, labels=labels, languages=["/zh"], detail=0)
+print(f"Text detection: {final_result}")
+
+
+============================== END ==============================
+

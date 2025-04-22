@@ -1,0 +1,42 @@
+
+[Exctuion Failed]
+
+f-string: empty expression not allowed (<string>, line 23)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/3049_0.png"
+
+# List of languages to use in OCR
+languages = ["en", "de"]
+
+# Level of detail in the output
+detail = 1
+
+# Create the tool instance and execute the command
+tool = Object_Detector_Tool()
+result = tool.execute(image=image_path, languages=languages, detail=detail)
+
+# Print the result
+if result["save_object"]:
+    file_name = result["saved_image_path"].split('/')[-1]  # Replace with the desired path
+    detected_objects = result["detected_objects"]
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/3049_0_img_{}.png".format(file_name)  # Example filename
+    for det in detected_objects:
+        dest_path = f"/nfs/data8/liao/wxie/SAT/SAT_images_train/{det['labels'][0]}img_{}.png"
+        dest_path_2 = "/nfs/data8/liao/wxie/SAT/SAT_images_train/{det['labels'][0]}/img_{}.png"
+        det["box"] = det["box"].tolist()  # Convert list to tuple for saving
+        res = {"detected_objects": det["detected_objects"], "object_number": det["object_number"]}
+        with open(dest_path, 'w') as fd:
+            fd.write(result[f"{}{}".format(file_name, "")]["text"]["img_1/{}".format(det["labels"][0])])
+        with open(dest_path_2, 'w') as fd:
+            fd.write(result[f"{}{}_{file_name}_{}.png".format(det["labels"][0], det["labels"][1], det["labels"][2], det["labels"][3:])]["text"])
+    print(f"Detected objects saved as {file_name} images.")
+else:
+    print("Text detection failed.")
+
+
+============================== END ==============================
+

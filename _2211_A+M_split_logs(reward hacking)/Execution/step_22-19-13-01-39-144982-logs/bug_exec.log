@@ -1,0 +1,34 @@
+
+[Exctuion Failed]
+
+name 'Text_Detector_Tool' is not defined
+code: 
+
+def count_shelving_units(image_path):
+    # Load text OCR model with multiple supported languages
+    model = Text_Detector_Tool()
+
+    # Read the image
+    image = Image.open(image_path)
+
+    # Detect text in the image
+    results = model.execute(image, [model.latin, model.ethan, model.hebrew, model.chinese])
+    
+    # Find bounding boxes with confidence scores above the threshold
+    for i, (box, text) in enumerate(results):
+        if text and text in {"shelf": "shelf_units"}:
+            shelves = [box]  # Only one shelf unit is detected
+            break
+    
+    # Return the number of detected shelves using the confidence score
+    if shelves:
+        return sum(1 for det_box in shelves if det_box[2] > 0.02)
+
+    return 0
+
+final_result = count_shelving_units('/nfs/data8/liao/wxie/SAT/SAT_images_train/13927_0.png')
+print('Number of ShelvingUnits: ', final_result)
+
+
+============================== END ==============================
+

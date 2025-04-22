@@ -1,0 +1,165 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+model = "tiny"
+image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6252_0.png"
+labels = ["baseball", "basket"]
+
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image=image, labels=labels, model_size=model, save_object=True, saved_image_path="detected_objects")
+
+output = []
+
+for label, detections in detected_objects.items():
+    if detections:
+        detected_rectangle = {"bbox": (detections[0]["box"][0], detections[0]["box"][1], detections[0]["box"][2], detections[0]["box"][3]),
+                              "bbox2d":
+                              (np.round(detections[0]["box"][0], 2),
+                               np.round(detections[0]["box"][1], 2)),
+                              "bbox2d": [detections[0]["bbox"][0]+.1, detections[0]["bbox"][1]+.1, detections[0]["bbox"][2]-.1, detections[0]["bbox"][3]-.1],
+                              "bbox2d": [detections[0]["bbox"][0]-.1, detections[0]["bbox"][1]-.1, detections[0]["bbox"][2]+.1, detections[0]["bbox"][3]+.1],
+                              "bbox2d": [detections[0]["bbox"][0]+.2 + detections[0]["bbox2d"][0], detections[0]["bbox"][1]+.2 + detections[0]["bbox2d"][1], detections[0]["bbox"][0]+.8 + detections[0]["bbox2d"][2], detections[0]["bbox"][1]+.8 + detections[0]["bbox2d"][3]],
+                              "confidence": detections[0]["score"],
+                              "label": label}
+        output.append([[detected_rectangle, "Detected text", object_number['baseball']]])
+
+print(output)
+final_result = f"Based on the given images, there are 2 beds in the scene."
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+
+final_result = {
+  "Bed visible": 0,
+  "Dresser visible": 1
+}
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+```python
+from object_detector_tool import object_detector_tool as object_detector
+
+result = object_detector.execute(image="path/to/image",
+                                  labels=["baseball", "basket"],
+                                  save_object=True,
+                                  saved_image_path="detected_objects")
+
+detected_objects = result[0]
+object_number = result[1]
+
+final_result = (
+    f"Number of beds in the scene: {len(detected_objects)}"
+    + str(object_number["basket"]) + "/" + str(object_number["baseball"])
+)
+
+print(final_result)
+```
+Reward: 0.0
+
+--- Completion 4 ---
+<command>
+from module_name import object_detector_tool, text_detector_tool
+
+# Sample question data
+question = {
+  "image_path": "/nfs/data8/liao/wxie/SAT/SAT_images_train/6252_0.png",
+  "labels": ["baseball", "basket"],  # Test question: Number of Baseballs and Baskets
+  "threshold": 0.35,  # Confidence threshold for detection 
+  "model_size": "tiny",  # Model to use
+  "save_object": True,  # Saving detections as images (optional)
+  "saved_image_path": "detected_objects"
+}
+
+# Python program
+object_result = object_detector_tool.execute(image=question["image_path"], labels=question["labels"], save_object=True, saved_image_path=question["saved_image_path"])
+object_number = object_result["object_number"]
+
+text_result = text_detector_tool.execute(image=question["image_path"], languages=["en", "de"], detail=0)
+text_blocks = text_result["result"]
+
+# Answer to the question
+final_result = f"{len(object_result['detected_objects'].keys())}/{len(text_result['result'])} Beds in the scene"
+for block in text_blocks:
+    if len(block) > 0:
+        final_result += "\n" + str(block[0][2].split("\n")[1].strip()) # Ex: [[''Detected text 'basketball', 0.97], ]
+for block in text_blocks:
+    if len(block) > 0:
+        final_result += " ({}-{})".format(block[0][8], "Basketball" if "basketball" in final_result else "Baseball")
+final_result += "."
+result = {
+  "detected_objects": object_result["detected_objects"],
+  "object_number": object_number,
+  "detected_objects_result": object_result["result"],
+  "text_blocks_result": text_blocks
+}
+# final_result = {"detected_objects": {"baseball": [{"bbox": [(34, 50, 200, 220)], "score": 0.92}, {"bbox": [(220, 100, 400, 350)], "score": 0.85}]},
+#               "object_number": 2,
+#               "detected_objects_result": "Detected baseball and basket",
+#               "text_blocks
+Reward: 0.0
+
+--- Completion 5 ---
+```python
+from object_detector_tool import object_detector_tool as ODTC
+
+# Path to the image to be detected
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6252_0.png"
+
+# Use the object_detector_tool to detect objects
+detected_objects_result = ODTC.execute(image=image_path, labels=['baseball', 'basket'], save_object=True, saved_image_path="detected_objects")
+
+# Collect the detected objects' information
+detected_objects = detected_objects_result["detected_objects"]["baseball"]
+object_number = detected_objects_result["object_number"]
+
+# Final result
+final_result = {"detected_objects": [{"box": (x1, y1, x2, y2), "score": 0.92, "saved_image_path": "detected_objects/image_baseball_1.png"}], "object_number": 1}
+```
+Reward: 0.0
+
+--- Completion 6 ---
+<command>
+from tools.text_detector import Text_Detector_Tool
+
+# Import Object_Detector_Tool class
+object_detector_tool = __import__("toolbox.object_detector")
+
+question_description = """
+Question: How many Beds are visible in the scene? Choose between the following options: 1, 0, 2, 3 or 4
+"""
+
+# Demographic information
+object_labels_to_check = {'bed': {}}
+confidence_threshold = 0.3
+model_size = 'base'
+
+# Execute object detection algorithm with demography information
+executed_data = object_detector_tool.execute(
+    image='path/to/dormitory.png', 
+    languages=['en', 'de'],
+    detail=0
+)
+
+# Check the output for correct answer
+if executed_data['object_number']['bed'] == 2:
+    final_result = '2'
+else:
+    final_result = '0'
+
+# Answer based on extracted information
+if executed_data['detected_objects']:
+    if final_result == '2':
+        final_result = '1'
+    final_result += ' (' + str(executed_data['object_number']['bed']) + ')'
+else:
+    final_result = '0'
+
+final_result
+</command>
+Reward: 1.0
+

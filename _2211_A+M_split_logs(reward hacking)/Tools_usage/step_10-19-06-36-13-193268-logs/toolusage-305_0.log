@@ -1,0 +1,223 @@
+
+[QAid]305_0
+
+[Code Includes Tools Usage]
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+label = ["baseball", "basket"]
+count = {"baseball": 1, "basket": 2}
+
+def count_objects(image_path, label_list, save_image=True):
+    # Initialize the Object_Detector_Tool
+    det_tool = Object_Detector_Tool(
+        input_types={
+            "image": image_path,
+            "labels": label_list,
+            "threshold": 0.35,
+            "model_size": "tiny",
+            "save_object": save_image,
+            "saved_image_path": "detected_objects"
+        }
+    )
+
+    # Execute the detection tool
+    (detected_objects, object_number) = det_tool.execute()
+
+    if not detected_objects:
+        return False
+
+    return (detected_objects, detected_objects.keys(), object_number)
+
+# Provide an image path with a list of labels
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/305_0.png"
+label_list = ["baseball", "basket", "rug"]
+count_result, detected_objects, object_number = count_objects(image_path, label_list, save_image=True)
+
+final_result = {
+    "count_result": count_result,
+    "detected_objects": detected_objects["baseball"] + detected_objects["basket"],
+    "object_number": detected_objects["basket"]
+}
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]305_0
+
+[Code does not include Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Read image
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/305_0.png'
+image = open(image_path, 'rb').read()
+
+# Initialize tool
+tool = Object_Detector_Tool()
+
+# Detect objects
+labels_to_detect = ['DogBed']
+tool.detect_objects(image, labels=labels_to_detect, save_object=True)
+
+# Extract output dictionary
+detected_objects = tool.object_result['detected']
+
+# Extract number of DogBeds
+dogbed_counts = dict(tool.label_to_object_number)
+total_detected_objects = sum([len(objects['label_list']['DogBed']) for objects in detected_objects])
+
+final_result = f"Detected {total_detected_objects} {object_number:6} out of {len(labels_to_detect)} DogBeds."
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]305_0
+
+[Code Includes Tools Usage]
+code: 
+
+from_tool_object_detector = Object_Detector_Tool()
+paths_of_objects = []
+for i in range(1):  # Loop through the dogbeds
+    label_detection = from_tool_object_detector.execute(image=f"https://path/to/image/0.png", labels=["dogbed"], save_object=True, threshold=0.35, model_size='tiny')
+
+    for label in label_detection:
+        path_of_object = f"https://path/to/image/0/{label['score']}/detected_object_{label['score']}.png"
+        paths_of_objects.append(path_of_object)
+
+final_result = {"DogBeds": {1: len(paths_of_objects)}, "Total_Dogs": 1}  # Extract the number of dogbeds and dogs
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]305_0
+
+[Code does not include Tools Usage]
+code: 
+
+from tool_object_detector import Object_Detector_Tool
+
+def count_dogbeds(image_path):
+    try:
+        with open(image_path, 'rb') as image_file:
+            labels = object_detector_tool(image_file, {"threshold": 0.3, "model_size": "base", "save_object": False})
+            dogbeds = 0
+            for label in labels["baseball"]:
+                if label["bbox"][0] < 35 and label["bbox"][2] > 120:
+                    dogbeds += 1
+            return dogbeds
+    except Exception as e:
+        return "0"
+
+result = count_dogbets("/nfs/data8/liao/wxie/SAT/SAT_images_train/305_0.png")
+print(f"Number of DogBeds: {result}")
+
+generated_code = '''
+from tool_object_detector import Object_Detector_Tool
+
+def count_dogbets(image_path):
+    try:
+        with open(image_path, 'rb') as image_file:
+            labels = object_detector_tool(image_file, {"threshold": 0.3, "model_size": "base", "save_object": False})
+            dogbeds = 0
+            for label in labels["baseball"]:
+                if label["bbox"][0] < 35 and label["bbox"][2] > 120:
+                    dogbeds += 1
+            return dogbeds
+    except Exception as e:
+        return 0
+
+result = count_dogbets("/nfs/data8/liao/wxie/SAT/SAT_images_train/305_0.png")
+print(f"Number of DogBeds: {result}")
+'''
+
+print(generated_code)
+
+============================== END ==============================
+
+
+[QAid]305_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 1)
+
+Completion Content: 
+<command>```python
+# Import the object_detector tool
+from object_detector import Object_Detector_Tool
+
+# Set the image file path and load the model
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/305_0.png'
+model_size = 'base'
+model_path = '/path/to/model'
+model_json_path = '/path/to/model.json'
+
+# Run the object_detector tool
+object_detector_tool = Object_Detector_Tool(
+    image_path=image_path,
+    labels=['DogBed'],
+    save_object=True,
+    model_size=model_size,
+    model_json_path=model_json_path
+)
+
+# Process the object results
+object_results = object_detector_tool.execute()
+
+# Check for missing Detection Results
+if not object_results:
+    print("The image contains no DogBeds.")
+else:
+    # Create a dictionary mapping each label to its detected objects count
+    dogbed_detection_counts = {'DogBed': [0]}
+    for detection in object_results:
+        try:
+            label = detection[0]  # Extract the label from each detected object
+            dogbed_detection_counts[label] = [result[3]]  # Update the counts for detected objects
+        except:
+            pass
+
+    print("The image contains:")
+    print('\n'.join(f"DogBed {'x times' if x in dogbed_detection_counts else ''}" for x in dogbed_detection_counts))
+
+# Check for empty values in the results list
+if not object_results:
+    print("The image contains no DogBeds.")
+else:
+    print("The image contains:")
+    print('\n'.join(f"DogBed {'x times' if x in object_results else ''}" for x in object_results))
+</command>
+============================== END ==============================
+
+
+[QAid]305_0
+
+[Code Extraction Failed or Parse Failed]
+
+'[' was never closed (<unknown>, line 4)
+
+Completion Content: 
+<command>
+from tool_module_name import tool_class_name
+with tool_class_name(input_type="image", input_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/305_0.png", languages=["en", "de"]) as detected_objects:
+    objects_with_languages = [dict(zip([lang for lang in languages], detected_objects.get([lang], [])))[0] for languages in [languages for languages in detected_objects.keys() if languages.startswith("text.")]
+    print(f"Detected texts: {objects_with_languages}")
+    for languages, results in objects_with_languages:
+        result = {"languages": languages}
+        for block, text, score in results:
+            result["text"] = text
+            result["text_block"] = dict(zip([lang for lang in languages], block))
+            if languages and languages in languages_to_language_map:
+                result["text_block"]["language"] = languages_to_language_map[languages]
+            result["confidence"] = score
+            yield result
+</command>
+============================== END ==============================
+

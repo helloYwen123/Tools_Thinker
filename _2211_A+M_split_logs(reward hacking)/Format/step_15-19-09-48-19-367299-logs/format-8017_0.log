@@ -1,0 +1,152 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+final_result
+</command>
+Reward: 0.5
+
+--- Completion 2 ---
+<command>from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+print(final_result)
+</command>
+Reward: 0.5
+
+--- Completion 3 ---
+<command>from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='8017_0.png',
+                                             labels=['tv_stand'],
+                                             save_object=True,
+                                             saved_image_path='detected_objects')
+detected_objects = final_result["detected_objects"]
+object_number = final_result["object_number"]
+
+if detected_objects:
+  detected_objects_list = [{'label': label, 'objects': object_number[label].values()} for label, object_number in detected_objects.items()]
+  detected_objects_list.append({'label': 'all', 'objects': object_number.values()})
+else:
+  detected_objects_list = [['all', 0]]
+
+result = []
+for label, data in detected_objects_list:
+  lang_code = 'es'
+  if len(data) > 0:
+    data = data[0]
+    lang_code = data[4]
+  detected_text_blocks = Text_Detector_Tool.execute(image='8017_0.png', languages=[lang_code])
+  for detected_text_block in detected_text_blocks:
+    if detected_text_block['label'] == label:
+      for i, obj_num in enumerate(data):
+        result.append({'box': [detected_text_block['bbox'][i] - 50, detected_text_block['bbox'][i] + 50, detected_text_block['bbox'][i] + 200, detected_text_block['bbox'][i] + 100], 'text': detected_text_block['text'], 'score': i+1})
+
+result[0]["box"][0] += 500
+result[0]["box"][2] = 500
+result[0]["box"][1] = result[0]["box"][3]  # set the origin to lower left
+
+</command>
+Reward: 0.5
+
+--- Completion 4 ---
+<command>from_tool_object_detector import Object_Detector_Tool
+from tool_module import Object_Detector_Tool
+from tool_module import text_detector
+
+# Specify required input parameters
+input_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8017_0.png"
+label_list = ["baseball", "basket"]
+
+# Create object detection tool instance
+tool_det_obj = Object_Detector_Tool(input_path, label_list=label_list)
+
+# Detect objects in the image
+labels, saved_images = tool_det_obj.execute()
+print(f"Detected object labels: {labels}")
+print(f"Number of objects detected: {len(labels)}")
+
+# Extract object number information
+object_number = {label: len(labels) for label in labels}
+print(f"Object number per label: {object_number}")
+
+# Detect text in multiple languages
+languages = ["en", "de"]
+
+# Create text detection tool instance
+tool_text_obj = text_detector.Text_Detector_Tool(input_path, languages=languages)
+
+# Detect text in the image
+result = tool_text_obj.execute()
+
+# Check output and extract required information
+if result:
+    detected_text_blocks = result[0]
+    text_info = [detected_text_block for detected_text_block in detected_text_blocks if detected_text_block["score"] >= 0.5]
+    
+    text_info = [{"box": detected_text_block["box"], "text": detected_text_block["text"], "score": detected_text_block["score"]}]
+    
+    total_texts = len(text_info)
+    
+    print(f"Total detected texts: {total_texts}")
+else:
+    print("No detected texts found.")
+</command>
+Reward: 0.5
+
+--- Completion 5 ---
+<command>import os
+import numpy as np
+from torchvision.io import read_image
+
+def count_objects(target_image, object_labels):
+    image_path = os.path.abspath(target_image)
+    image = read_image(torch.utils.data.DataLoader(np.array([image_path], dtype=np.uint8), 
+                                                   batch_size=1, num_workers=0, 
+                                                   pin_memory=False, worker_init_fn=None))[0]
+    boxes, labels, scores = object_detector(image=image, labels=object_labels, 
+                                            threshold=0.35, model_size="tiny", save_object=False)
+    object_count = {'baseball': 0, 'basket': 0}
+
+    for label, box in sorted(((l, b) for (l, box) in boxes.items() if l in labels), reverse=True):
+        if label == 'baseball':
+            object_count['baseball'] += 1
+        elif label == 'basket':
+            object_count['basket'] += 1
+
+    return object_count
+
+final_result = count_objects('/nfs/data8/liao/wxie/SAT/SAT_images_train/8017_0.png', ['baseball', 'basket'])
+print(final_result)
+</command>
+Reward: 0.5
+
+--- Completion 6 ---
+<command>
+from tool_object_object_detector_tool import Object_Detector_Tool
+
+output = Object_Detector_Tool.execute(image="path/to_image.png", labels=[('basketball', 'Basketball'), ('basket', 'Basket')], save_object=True)
+
+if 'detected_objects' in output:
+    final_result = {
+        'detected_objects': {
+            'basketball': [detected for detected in output['detected_objects'] if 'basketball' in detected['labels']][0]
+        },
+        'object_number': len(output['detected_objects'])
+    }
+else:
+    final_result = {
+        'detected_objects': {},
+        'object_number': 0
+    }
+else:
+    final_result = {
+        'detected_objects': {},
+        'object_number': 0
+    }
+</command>
+Reward: 0.5
+

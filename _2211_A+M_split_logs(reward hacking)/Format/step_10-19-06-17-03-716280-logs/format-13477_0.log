@@ -1,0 +1,209 @@
+--- Completion 1 ---
+<command>
+from object_detector.object_detector import Object_Detector_Tool
+
+def detect_objects(image_path, labels, threshold, model_name, save_object=True, saved_image_path="detected_objects"):
+    try:
+        detected_objects = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+        object_number = len(labels)  # Assuming all objects are detected
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return
+
+    object_number_output = {}
+    for key, value in detected_objects.items():
+        object_number_output[key] = len(value)
+
+    return detected_objects, object_number_output
+    </command>
+Reward: 0.5
+
+--- Completion 2 ---
+<command>
+from text_detector import Text_Detector_Tool
+
+def count_dining_tables(image_path):
+    language_codes = ["en", "de"]
+    language_options = {"languages": language_codes}
+    detail_level = 1
+    result = []
+
+    try:
+        text_blocks = Text_Detector_Tool.execute(image=image_path, languages=language_codes, detail=detail_level)
+        texts = [block for block in text_blocks]
+        for lang in texts:
+            content = lang["text"]
+            confidence_score = lang["confidence_score"]
+            text_content = content["text"]
+        # count number of dining tables
+        table_count = text_content.count("Dining Table")
+    except Exception as e:
+        print(f"Error detecting text: {e}")
+        table_count = 0
+
+    return table_count
+</command>
+Reward: 0.5
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+def count_dining_tables(image_path, save_object=False, saved_image_name='detected_objects', lang='en', detail=1):
+    return Count_Dining_Tables.execute(image_path, lang=lang, detail=detail)
+
+def generate_dining_table_images(objects, language='en', detail=1):
+    dining_table_objects = []
+
+    for object in objects:
+        name = object['label']
+        box = object['box']
+        score = object['score']
+
+        dining_table_index = find_dining_table_index(name, objects)
+
+        if len(dining_table_objects) < 2:
+            dining_table_objects = [{}]
+        else:
+            if dining_table_objects[tuple(dining_table_index).index(0)]['score'] < score:
+                dining_table_objects[tuple(dining_table_index).index(0)]['box'] = box
+                dining_table_objects[tuple(dining_table_index).index(0)]['score'] = score
+
+        if len(dining_table_objects) == 2:
+            dining_table_objects = [{}]
+
+        if dining_table_objects[tuple(dining_table_index).index(0)]['score'] > 0.5:
+            dining_table_index = tuple(dining_table_index)
+        else:
+            dining_table_index = 0
+
+        if save_object:
+            img = Object_Detector_Tool.execute(image_path, label=name, labels=[1], threshold=0.35, saved_image_path=saved_image_name)[[1]]
+            Object_Detector_Tool.save_image(img['path'], save_object=save_object, saved_image_path=saved_image_name)
+
+        if dining_table_index == len(dining_table_objects) - 1:
+            dining_table_index = 0
+
+        if dining_table_index != 0:
+            dining_table_objects[dining_table_index]['box'].append(box)
+
+    return dining_table_objects
+
+count_dining_tables('/nfs/data8/liao/wxie/SAT/SAT_images_train/13477_0.png')
+</command>
+Reward: 0.5
+
+--- Completion 4 ---
+<command>
+```python
+from Object_Detector_Tool import Object_Detector_Tool
+
+def count_dining_tables(image_path: str):
+    object_detector = Object_Detector_Tool()
+
+    # Attempt to detect objects in the image
+    result = object_detector.execute(image=image_path)
+
+    dining_tables_count = 0
+
+    for det_label, det_results in result.items():
+        for det_result in det_results:
+            if det_result["label"] == "Dining Tables":
+                dining_tables_count += 1  # Count the number of dining tables detected
+
+    return dining_tables_count
+
+# Provided data
+data = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13477_0.png"
+
+dining_tables_count = count_dining_tables(data)
+print(f"The number of dining tables in the scene is: {dining_tables_count}")
+
+# Path to image with table
+table_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13477_0.png"
+
+# Create a new image if not existing
+if not object_detector.exists(table_image_path):
+    object_detector.creating(table_image_path)
+
+# Draw the table and count the number of detection
+
+detected_objects, object_count = object_detector.execute(image=table_image_path, languages=['en','de'])
+
+detected_table_objects = []
+for found_label, detected_items in detected_objects.items():
+    if 'baskettable' in found_label:
+        detected_table_objects.append({'label': found_label, 'det_box': detected_items})
+
+# Save the detected table to a new image if no detected
+if not object_detector.exists(table_image_path):
+    object_detector.creating(table_image_path)
+    object_detector.copy_object(table_image_path,  det_table_objects)
+
+print(f"The number of dining tables detected in the image is: {len(detected_table_objects):,}")
+```
+Reward: 0.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13477_0.png"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+if result["object_number"]["baseball"] > 0:
+    print(f"Number of baseball detected objects: {result['object_number']['baseball']}")
+else:
+    print("No baseball detected objects in the image.")
+# Check for basketball
+if result["object_number"]["basket"] > 0:
+    print(f"Number of basketball detected objects: {result['object_number']['basket']}")
+else:
+    print("No basketball detected objects in the image.")
+
+if result["object_number"]["basket"] > 0:
+    for basketball in result["detected_objects"]:
+        if basketball[0] == [220, 100, 400, 350]:
+            x2, y2 = basketball[1]
+            image_path = f"detected_objects/image_basket_2.png"
+            Object_Detector_Tool.save_object(image=image_path, labels=["basket"],
+                                           object_entry=[(x2, y2, x2, y2),
+                                                         "Basketball", 1.0],
+                                           object_number=result["object_number"]["basket"])
+else:
+    print("Basketball detected objects not in the image.")
+</command>
+Reward: 0.5
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+def count_dining_tables(detected_objects):
+    total_objects = len(detected_objects)
+    diningtables = 0
+
+    for obj in detected_objects:
+        # Assuming 'diningtables' is the label of dining tables
+        if obj.get_label() == 'diningtables':
+            diningtables += obj.get_score()
+
+    return diningtables
+
+# Example usage
+object_detector = Object_Detector_Tool()
+object_detector.detect_labels(label=['baseball', 'basket'], save_object=True, saved_image_path='')  # Placeholder, not used in the example
+
+detected_objects = object_detector.execute(image='path/to/scene.png')
+
+diningtables = count_dining_tables(detected_objects)
+print(f"Number of dining tables: {diningtables}")
+</command>
+Reward: 0.5
+

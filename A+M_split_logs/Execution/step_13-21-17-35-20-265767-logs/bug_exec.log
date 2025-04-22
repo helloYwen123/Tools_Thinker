@@ -1,0 +1,98 @@
+
+[Exctuion Failed]
+
+not enough values to unpack (expected 2, got 0)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+model = "tiny"
+image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6252_0.png"
+labels = ["baseball", "basket"]
+
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image=image, labels=labels, model_size=model, save_object=True, saved_image_path="detected_objects")
+
+output = []
+
+for label, detections in detected_objects.items():
+    if detections:
+        detected_rectangle = {"bbox": (detections[0]["box"][0], detections[0]["box"][1], detections[0]["box"][2], detections[0]["box"][3]),
+                              "bbox2d":
+                              (np.round(detections[0]["box"][0], 2),
+                               np.round(detections[0]["box"][1], 2)),
+                              "bbox2d": [detections[0]["bbox"][0]+.1, detections[0]["bbox"][1]+.1, detections[0]["bbox"][2]-.1, detections[0]["bbox"][3]-.1],
+                              "bbox2d": [detections[0]["bbox"][0]-.1, detections[0]["bbox"][1]-.1, detections[0]["bbox"][2]+.1, detections[0]["bbox"][3]+.1],
+                              "bbox2d": [detections[0]["bbox"][0]+.2 + detections[0]["bbox2d"][0], detections[0]["bbox"][1]+.2 + detections[0]["bbox2d"][1], detections[0]["bbox"][0]+.8 + detections[0]["bbox2d"][2], detections[0]["bbox"][1]+.8 + detections[0]["bbox2d"][3]],
+                              "confidence": detections[0]["score"],
+                              "label": label}
+        output.append([[detected_rectangle, "Detected text", object_number['baseball']]])
+
+print(output)
+final_result = f"Based on the given images, there are 2 beds in the scene."
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = {
+  "Bed visible": 0,
+  "Dresser visible": 1
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tools'
+code: 
+
+from tools.text_detector import Text_Detector_Tool
+
+# Import Object_Detector_Tool class
+object_detector_tool = __import__("toolbox.object_detector")
+
+question_description = """
+Question: How many Beds are visible in the scene? Choose between the following options: 1, 0, 2, 3 or 4
+"""
+
+# Demographic information
+object_labels_to_check = {'bed': {}}
+confidence_threshold = 0.3
+model_size = 'base'
+
+# Execute object detection algorithm with demography information
+executed_data = object_detector_tool.execute(
+    image='path/to/dormitory.png', 
+    languages=['en', 'de'],
+    detail=0
+)
+
+# Check the output for correct answer
+if executed_data['object_number']['bed'] == 2:
+    final_result = '2'
+else:
+    final_result = '0'
+
+# Answer based on extracted information
+if executed_data['detected_objects']:
+    if final_result == '2':
+        final_result = '1'
+    final_result += ' (' + str(executed_data['object_number']['bed']) + ')'
+else:
+    final_result = '0'
+
+final_result
+
+
+============================== END ==============================
+

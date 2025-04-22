@@ -2,9 +2,9 @@ export DEBUG_MODE="true" # Enable Debug if you want to see the rollout of model 
 export LOG_PATH="./debug_log_2b.txt"
 export CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
-export WANDB_PROJECT="code_gen_GRPO"
+export WANDB_PROJECT="Debug"
 export NCCL_P2P_DISABLE=1
-export TOKENIZERS_PARALLELISM=true
+export TOKENIZERS_PARALLELISM=False
 mkdir -p Debug_logs
 timestamp=$(date +"%m%d_%H%M%S")
 
@@ -34,11 +34,11 @@ export WANDB_CONFIG_DIR="$WANDB_CONFIG_PATH"
 
 accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src/open_r1/toolsgrpo.py \
     --confile configs/prompt_configuration_file.yaml \
-    --output_dir outputs/Qwen2-VL-2B-Instruct-GRPO-BLINK \
+    --output_dir outputs/Qwen2-VL-2B-Instruct-GRPO-SAT \
     --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
-    --dataset_name BLINK_visual_counting \
+    --dataset_name SAT_visual_counting \
     --max_prompt_length 4096 \
-    --max_completion_length 1024 \
+    --max_completion_length 512 \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 2 \
     --logging_steps 1 \
@@ -47,12 +47,13 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --gradient_checkpointing true \
     --attn_implementation flash_attention_2 \
     --max_pixels 401408 \
-    --num_train_epochs 2 \
+    --num_train_epochs 1 \
     --temperature 1.0 \
     --run_name Qwen2-VL-2B-GRPO-SAT \
     --save_steps 100 \
     --save_only_model true \
     --report_to wandb \
     --use_cpu False \
-    --num_generations 8 \
+    --num_generations 6 \
+    --beta 0.04 \
     2>&1 | tee "Debug_logs/training_log_${timestamp}.txt"

@@ -1,0 +1,153 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+```python
+  
+import torch
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+# Load the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8498_0.png"
+
+# Load the input labels as a list of objects to find
+labels_to_detect = ["baseball", "basket"]
+
+# Create the Object_Detector_Tool instance
+object_detector_tool = Object_Detector_Tool()
+
+# Call the function to detect objects with the specified labels
+object_results = object_detector_tool.execute(image_path, labels=labels_to_detect)
+
+# Check if the object detection was successful
+if not object_results:
+  print("Object detection failed.")
+else:
+  # Extract the objects detection results and their corresponding text blocks if available
+  extracted_results = []
+  for det_label in object_results:
+    box = det_label["box"]
+    text_blocks = []
+    for tblk in det_label["tblocks"]:
+      tblk_info = tblk[0][1]
+      text = tblk_info["c"]
+      text_blocks.append({"bbox": tblk_info["bbox"], "text": text, "confidence_score": det_label["score"]})
+    extracted_results.append([box, text_blocks])
+
+  final_result = {
+    "counted_labels": {
+      *labels_to_detect: extracted_results
+    }
+  }
+
+  print(final_result)
+```
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tool_module_names'
+code: 
+
+from tool_module_names import Object_Detector_Tool, Text_Detector_Tool
+
+# Example usage (input image path and list of languages):
+result = Text_Detector_Tool.run(image='path/to/image.png', languages=['en', 'de'])
+
+for detection in result:
+    if detection[0][2] > 0.5:  # Change threshold as needed
+        print(f"Detected text: {detection[0][1]} ({detection[0][3]:.1f} confidence score)")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() got an unexpected keyword argument 'confidence_threshold'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_doors(image_path):
+    labels = ['door', 'window']
+    confidence_threshold = 0.35
+    model_size = 'tiny'
+    save_object = False
+    final_result = {"object_number": {},}
+    
+    detections = Object_Detector_Tool.execute(
+        image=image_path,
+        labels=labels,
+        confidence_threshold=confidence_threshold,
+        model_size=model_size,
+        save_object=save_object
+    )
+    
+    if not save_object:
+        final_result['object_number'] = {"door": len(detections['objects']['door']), "window": len(detections['objects']['window'])}
+    else:
+        for label in detections['object_categories']:
+            result = detections['objects'][label]['box'][1][3]
+            final_result[label] = len(result)
+    
+    return final_result
+
+result = count_doors("/nfs/data8/liao/wxie/SAT/SAT_images_train/8498_0.png")
+final_result = {
+    "detected_objects": {
+        "baseball": [
+            {
+                "box": (215, 160, 305, 300),
+                "score": 0.95,
+                "saved_image_path": "detected_objects/baseball_baseball_s6.png"
+            }
+        ],
+        "basket": [
+            {
+                "box": (225, 160, 305, 300),
+                "score": 0.85,
+                "saved_image_path": "detected_objects/basket_basket_s1.png"
+            }
+        ]
+    },
+    "object_number": {
+        "baseball": 2,
+        "basket": 2
+    }
+}
+print("Object Count:")
+for k, v in final_result.items():
+    print(f"{k}: {v}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['lamp', 'table'], threshold=0.35, model_size='tiny', save_object=True, saved_image_path='detected_objects')
+
+print("Detected images:")
+for label in set(final_result['labels']):
+    for detection in final_result['detected_objects']:
+        if detection['label'] == label:
+            print(f"{label}:")
+            print("- Object detected: {0}".format(detection['label']))
+            print("- Box coordinates: [{0}, {1}].".format(*detection['box']))
+            print("- Confident score: {0}% accuracy.".format(int(100 * detection['score']) if 'score' in detection and 'score' in detection else 0))
+            print("- Saved image with bounding box coordinates: {0}".format(detection['saved_image_path'])) if 'saved_image_path' in detection else None
+
+
+============================== END ==============================
+

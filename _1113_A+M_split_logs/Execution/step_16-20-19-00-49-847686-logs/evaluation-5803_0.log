@@ -1,0 +1,190 @@
+------------- 20-19-00-49-847686 Execution reward: 0.0 -------------
+[Reward computation time: 2.5219 seconds]
+QAid: 5803_0
+Code: 
+
+from object_detector import Object_Detector_Tool as tool
+
+def count_objects(image_path, labels, languages=None, threshold=0.35, model_size='tiny'):
+    """
+    Counts the number of objects detected in an image.
+    """
+    try:
+        tool_args = locals()
+        if language not in tool_args:
+            tool_args['languages'] = [language]  # Set default if it's not specified
+        tool_args.pop('language')  # Remove the language argument to match the function signature of Text_Detector_Tool
+        result = tool(**tool_args)
+        return result
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
+
+def detect_objects(image_path="path/to/image.png"):
+    """
+    Detects objects and their bounding boxes in an image.
+    """
+    return count_objects(image_path, ["baseball"])
+
+def extract_text(image_path="path/to/image.png", languages=["en", "de"], detail=0):
+    """
+    Detects text in an image using multiple languages.
+    """
+    try:
+        result = count_objects(image_path, languages)
+        return result
+    except Exception as e:
+        return [
+            [[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], f'{text}', conf_score] for _, _, conf_score, text in [
+            t for t in result if t[2] > 0.3 & (tl < tl + w or bl>bl - w or tl > th or dr < wr) for conf_score, text in t
+        ]]
+        return []
+
+def extract_text_image(image_path):
+    """
+    Determines the number of texts and extracts the first text from an image.
+    """
+    result = count_objects(image_path)
+    text = [t for t in result if t[2] > 0.3 & (tl < tl + w or bl>bl - w or tl > th or dr < wr)]
+    return text[0][1]
+
+
+# Sample use of Text_Detector_Tool
+result = extract_text_image("path/to/image.png")
+print(result)
+
+
+============================== END ==============================
+
+------------- 20-19-00-49-847686 Execution reward: 0.0 -------------
+[Reward computation time: 2.3752 seconds]
+QAid: 5803_0
+Code: 
+
+    # For Text Detection in English and German
+    languages = ['en', 'de']
+    detail = 1
+    result = Text_Detector_Tool.execute(image='path/to/image.png', languages=languages, detail=detail)
+    
+    # For Object Detection in the image, we use a loop to detect objects and count them.
+    detected_objects = []
+    for object_label in result['objects']:
+        for object_result in object_label['results']:
+            (x1, y1, x2, y2) = object_result['bbox']
+            score = object_result['score']
+            detected_objects.append({'bbox': (x1, y1, x2, y2), 'score': score, 'saved_image_path': 'results/' + object_result['filename']})
+    
+    object_count = len(detected_objects)
+    final_result = {
+        'detected_objects': detected_objects,
+        'object_count': object_count
+    }
+    
+    return final_result
+
+
+============================== END ==============================
+
+------------- 20-19-00-49-847686 Execution reward: 0.0 -------------
+[Reward computation time: 2.6017 seconds]
+QAid: 5803_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+class Generator:
+    def generate_answer(self, image_path, labels, threshold, model_size, save_object):
+        try:
+            generated_objects = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size)
+
+            number_of_objects = {}
+            for label, detection_entries in generated_objects.items():
+                detected_objects = []
+                for detection_entry in detection_entries:
+                    detected_objects.append({'box': detection_entry['box'], 'score': detection_entry['score'], 'label': label})
+                number_of_objects[label] = len(detected_objects)
+
+            if save_object:
+                object_names = []
+                for label, detected_objects in number_of_objects.items():
+                    object_names.extend([f'{label}_{i}' for i in range(1, detected_objects[-1] + 1)])  # Additional names for detected objects
+                Object_Detector_Tool.export_detected_objects(image_path.split('.')[0], generated_objects, object_names, save_object=True, save_image=True)
+
+            return '\n'.join(f'**{key}** : `{number_of_objects[key]}`' for key in number_of_objects.keys())
+
+        except Exception as e:
+            return f'Error: {str(e)}'
+
+
+============================== END ==============================
+
+------------- 20-19-00-49-847686 Execution reward: 0.0 -------------
+[Reward computation time: 2.7863 seconds]
+QAid: 5803_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = []
+result = Object_Detector_Tool.execute(image='path/to/image.png',
+                                   labels=['desk'],
+                                   threshold=0.35,
+                                   model_size='tiny', 
+                                   save_object=False)
+
+for det_confidence, obj_label, obj_pose in result:
+    if det_confidence > 0.35:
+        final_result.append(
+            {'box': obj_pose.box,
+             'score': det_confidence,
+             'label': obj_label
+            }
+        )
+
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 20-19-00-49-847686 Execution reward: 0.0 -------------
+[Reward computation time: 1.8070 seconds]
+QAid: 5803_0
+Code: 
+
+  from object_detector import Object_Detector_Tool
+
+  labels = ['desk']  # Replace with specific labels to detect
+  confidence_threshold = 0.35
+  model_size = 'tiny'  # Use 'tiny' for small models or 'base' for larger models
+
+  def get_desk_count():
+    image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/5803_0.png'  # Replace with actual image path
+    result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path='detected_objects')
+    desk_count = len([detected_objects for detected_objects in result[0].values() if 'desk' in detected_objects[1]['labels']])
+
+    return desk_count
+
+  final_result = get_desk_count()
+
+  print(f"Number of desks in the scene: {final_result}")
+
+
+============================== END ==============================
+
+------------- 20-19-00-49-847686 Execution reward: 0.0 -------------
+[Reward computation time: 2.1640 seconds]
+QAid: 5803_0
+Code: 
+generate_objects = Object_Detector_Tool.execute(image='path/to/image.png', labels=['desk', 'bed'], save_object=True, saved_image_path='detected_objects')
+final_result = {"detected_objects": { "desk": [{"box": (464, 150, 664, 400), "score": 0.99}, {"box": (253, 400, 453, 750), "score": 0.99}]}, "object_number": {"desk": 2, "bed": 1}}
+print(f"Number of desks found: {final_result['object_number']['desk']}")
+print(f"Number of beds found: {final_result['object_number']['bed']}")
+
+from text_detector import Text_Detector_Tool
+result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en'])
+final_result = {"result": [result]}
+print(final_result)
+
+
+============================== END ==============================
+

@@ -1,0 +1,94 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+command = """
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', labels=['fridge'], save_object=True, saved_image_path='detected_objects/')
+result = {
+  "detected_objects": {
+    "fridge": [
+      {"box": (300, 200, 500, 400), "score": 0.95, "saved_image_path": "detectores/0.jpg"}
+    ]
+  },
+  "object_number": 1
+}
+"""
+
+final_result = eval(command)
+print(f"The kitchen consists of {final_result['object_number']} refrigerator in the scene.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+list index out of range
+code: 
+
+def count_fridges(image_path, languages='ch_sim', detail=1):
+    try:
+        detection_output = Text_Detector_Tool.execute(image=image_path, languages=languages, detail=detail)
+        fidge_details = []
+        for text_block in detection_output:
+            text = text_block[2]
+            if "fridge" in text:
+                total_fridge = text_block[-1][1]
+                fidge_details.append({"text": text, "total_fridge": total_fridge})
+        return fidge_details
+    except Exception as e:
+        return [{"text": "Error", "total_fridge": 0}]
+
+final_result = count_fridges('/nfs/data8/liao/wxie/SAT/SAT_images_train/8468_0.png')
+printFINAL_RESULT = [final_result[0]] + [(e["text"], e["total_fridge"]) for e in final_result[1]]
+print(printFINAL_RESULT)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 32)
+code: 
+from object_detector import Object_Detector_Tool
+
+class Kitchen:
+    def __init__(self, image_path):
+        self.image = Image.open(image_path)
+        self.object_labels = ["fryer", "fridge"]
+        self.laptop_labels = []
+        self.threshold = 0.35
+        self.save_object = False
+        self.object_number = {}
+        self.detected_objects = {}
+
+    def execute(self, image_path, labels, save_object=True, saved_image_path="detected_objects"):
+        """Dectects objects in a particular object labels, saves detected objects as images, and returns their counts."""
+        tool = Object_Detector_Tool()
+        result = tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path, model_size="tiny")
+        for obj, detected_results in result["detected_objects"].items():
+            try:
+                object_count = self.object_number.get(obj, 0) + detected_results["object_number"]
+                self.object_number[obj] = object_count
+            except ValueError:
+                self.laptop_labels.append(obj)
+        return result
+
+
+# Sample Use
+kitchen = Kitchen('/nfs/data8/liao/wxie/SAT/SAT_images_train/8468_0.png')
+detected_results = kitchen.execute(image_path='/nfs/data8/liao/wxie/SAT/SAT_images_train/8468_0.png', labels=['fryer', 'fridge'], save_object=True)
+print(detected_results)
+print(kitchen.object_number)
+
+finally:
+    tool.disconnect()
+
+
+============================== END ==============================
+

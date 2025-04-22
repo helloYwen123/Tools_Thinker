@@ -1,0 +1,117 @@
+------------- 21-01-44-36-975718 Execution reward: 0.0 -------------
+[Reward computation time: 2.2840 seconds]
+QAid: 6902_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="image_path.png", labels=["Doorway"], save_object=True)
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-01-44-36-975718 Execution reward: 0.0 -------------
+[Reward computation time: 2.9777 seconds]
+QAid: 6902_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png')
+print("Detected object(s):")
+for (labels, objects) in final_result[0]:
+    print(f"Object(s) detected: {labels} -> {objects}")
+
+
+============================== END ==============================
+
+------------- 21-01-44-36-975718 Execution reward: 0.0 -------------
+[Reward computation time: 3.0402 seconds]
+QAid: 6902_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png',
+    labels=['baseball', 'basket'], 
+    save_object=True,
+    saved_image_path='detected_objects')
+
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-01-44-36-975718 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6902_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-01-44-36-975718 Execution reward: 1.0 -------------
+[Reward computation time: 2.6583 seconds]
+QAid: 6902_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+labels_to_check = ['baseball', 'basket']
+for label in labels_to_check:
+    try:
+        objects = Object_Detector_Tool.execute(image='path/to/image.png', labels=[label], save_object=True, saved_image_path='detected_objects')
+    except Exception as e:
+        print(f"An error occurred while detecting {label}: {e}")
+        continue
+    detected_objects = objects['detected_objects']
+    
+    score_count = {obj['score']:{}, 'number': 0}
+    for _, obj in detected_objects.items():
+        score_count[obj['score']][obj['number']] = 1 + score_count.get(obj['score'], 0)  
+        obj_number = score_count.get(label)
+        if obj_number is not None:
+            obj_number += 1
+        score_count[label] = score_count.get(label, 0) + obj_number
+        final_result[label] = score_count
+    
+    if objects['object_number'] is not None:
+        final_result[label] = objects['object_number']
+    
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-01-44-36-975718 Execution reward: 0.0 -------------
+[Reward computation time: 2.2190 seconds]
+QAid: 6902_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def calculate_number_of_doorways(image_path, languages=['en', 'de'], detail=0):
+    try:
+        # Load the image
+        image = Image.open(image_path)
+        
+        # Detect the doors
+        results = object_detection(image=image, languages=languages, detail=detail)
+        
+        # Count the doorways
+        total_doorways = len([result[0] for result in results if result[1] == 'baseball'])
+        
+        return total_doorways
+    except Exception as e:
+        print(f"Error occurred while detecting doorways: {e}")
+        return None
+
+# Test the function
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/6902_0.png'
+total_doorways = calculate_number_of_doorways(image_path=.image_path)
+print(f"There are {total_doorways} doorways.")
+
+
+============================== END ==============================
+

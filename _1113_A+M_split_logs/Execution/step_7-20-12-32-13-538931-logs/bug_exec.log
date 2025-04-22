@@ -1,0 +1,41 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() got an unexpected keyword argument 'saved_object'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = ""
+# Generate an empty list for detected objects
+detected_objects = []
+object_number = {}
+
+# Load the image file
+with open("/nfs/data8/liao/wxie/SAT/SAT_images_train/14330_0.png", "rb") as f:
+    input_image = f.read()  
+
+# Detect objects 'baseball' and 'basket'
+result = Object_Detector_Tool.execute(image=input_image, labels=['baseball', 'basket'], saved_object=True)
+detected_objects, object_number = result
+
+# Extract coordinates and confidence scores for "basket"
+basket_coordinates = [(int(x), int(y)) for x, y in zip(*detected_objects[0]['box'])]
+basket_confidence = detected_objects[0]['score']
+
+# Extract coordinates and confidence scores for "baseball"
+baseball_coordinates = [(int(x), int(y)) for x, y in zip(*detected_objects[1]['box'])]
+baseball_confidence = detected_objects[1]['score']
+
+# Determine if balls are present in the image
+if detected_objects[0]['score'] >= baseball_confidence or detected_objects[1]['score'] >= baseball_confidence:
+    final_result = "Basket"  # Since baseball is not present in the image, a different value can be added if desired
+else:
+    final_result = "Baseball"
+
+print(final_result)
+
+
+
+============================== END ==============================
+

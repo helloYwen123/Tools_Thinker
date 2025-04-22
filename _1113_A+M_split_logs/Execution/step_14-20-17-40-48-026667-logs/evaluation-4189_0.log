@@ -1,0 +1,116 @@
+------------- 20-17-40-48-026667 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 4189_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-17-40-48-026667 Execution reward: 0.0 -------------
+[Reward computation time: 2.9824 seconds]
+QAid: 4189_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Parameters for the tool
+tool_params = {
+  'tool_class_name': 'Object_Detector_Tool',
+  'tool_description': 'Detects objects in an image',
+  'tool_version': '1.0.0'}
+  
+tool_params['label'] = 'ประตู'
+tool_params['threshold'] = 0.35
+tool_params['model_size'] = 'base'
+tool_params['input_types'] = {'image': 'str', 'labels': 'list'}
+tool_params['output_types'] = {'tuple': 'dict'}
+tool_params['saved_image_path'] = 'detected_objects'
+tool_params['save_object'] = True
+
+# Execute the tool to detect objects in the image
+result = Object_Detector_Tool.execute(image='path/to/image.png', labels=[tool_params['label']], save_object=True, saved_image_path='detected_objects') 
+
+final_result = result
+
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 20-17-40-48-026667 Execution reward: 0.0 -------------
+[Reward computation time: 2.3993 seconds]
+QAid: 4189_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/4189_0.png"
+
+# Initialize the detection tool
+tool = Object_Detector_Tool()
+
+# Detect objects in the image
+result = tool.execute(image=image_path, labels=[], languages=['eng', 'de'])
+
+# Convert the result to a Python dict
+result_dict = {"detected_objects": result}
+
+# Extract object number
+total_objects = {}
+object_labels = [item for sublist in result_dict["detected_objects"] for item in sublist]
+object_labels.sort()
+
+for label in object_labels:
+    object_num = total_objects.get(label, 0)
+    total_objects[label] = object_num + 1
+    result_dict["object_number"][label] = object_num + 1
+
+final_result = {"label_number": result_dict, "object_number": total_objects}
+
+
+============================== END ==============================
+
+------------- 20-17-40-48-026667 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 4189_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-17-40-48-026667 Execution reward: 0.0 -------------
+[Reward computation time: 2.0678 seconds]
+QAid: 4189_0
+Code: 
+y\n
+
+============================== END ==============================
+
+------------- 20-17-40-48-026667 Execution reward: 0.0 -------------
+[Reward computation time: 2.2952 seconds]
+QAid: 4189_0
+Code: 
+
+def count_doorways(image_path, languages=['en', 'de'], detail=0):
+    from object_detector import Object_Detector_Tool
+
+    # Load the object detector tool
+    object_detector = Object_Detector_Tool(
+        model_size="tiny", save_object=False, threshold=0.35
+    )
+
+    # Perform text detection on the image
+    result = object_detector.execute(image=image_path, languages=languages, detail=detail)
+
+    # Count the number of doors
+    door_count = 0
+    for box in result:
+        # Check if the box corresponds to a door
+        if box[4] + box[2] >= 300:
+            door_count += 1
+
+    return door_count
+
+final_result = count_doorways("/nfs/data8/liao/wxie/SAT/SAT_images_train/4189_0.png")
+print("The number of doorways visible in the scene is:", final_result)
+
+
+============================== END ==============================
+

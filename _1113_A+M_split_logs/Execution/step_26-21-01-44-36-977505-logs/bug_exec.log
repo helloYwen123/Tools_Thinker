@@ -1,0 +1,210 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6052_0.png"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Perform object detection
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+detected_objects = result[1]
+for detected_obj in detected_objects:
+    for object_data in detected_obj:
+        detected_obj_names = object_data[0].split("[")[1].split("]", 1)
+        for detected_obj_name in detected_obj_names:
+            if detected_obj_name == 'baseball':
+                print(f"Number of baseball objects is {len(detected_obj)}")
+            else:
+                print(f"Number of {detected_obj_name} objects is {len(detected_obj)}")
+                detected_obj.pop(0)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'path_to_image' is not defined
+code: 
+
+import object_detector as od 
+
+class ImageProcessor:
+    def detect_objects(self, image_path, labels, threshold, model_size, save_object=True, saved_image_path="detected_objects"):
+        """
+        DETECTION OBJECTS IN AN IMAGE
+        """
+        labels = labels if isinstance(labels, list) else [labels]
+        
+        detection_results = od.object_detector.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+        
+        object_count = {}
+        
+        for label in labels:
+            for detection_result in detection_results:
+                if detection_result["label"] == label:
+                    object_count[label] = detection_result["label"]
+                    box = detection_result["box"]
+                    score = detection_result["score"]
+                    if save_object:
+                        from_module: 'object_detector'
+                        object_detector: from_module.Object_Detector_Tool
+                        object_detector.execute(image=f'image with label {label}', labels='[' + label + ']', details=True)
+        
+        return object_count 
+
+# Generate the final result
+final_result = ImageProcessor().detect_objects(image_path=path_to_image),
+labels=['baseball', 'basket'],
+threshold=0.35,
+model_size='base',
+save_object=True,
+saved_image_path="detected_objects"
+[{'baseball': 1, 'basket': 2}]
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+result = Object_Detector_Tool.execute(
+  image='image_path.png',  # Path to the image file to be analyzed
+  labels=['baseball', 'basket'],  # Labels to detect in the image
+  threshold=0.3,  # Confidence threshold for object detection
+  model_size='tiny'
+)
+
+detected_object_results = result["detected_objects"]
+
+baseball_objects = [obj for obj in detected_object_results["baseball"] if obj["score"] > 0.95]
+basket_objects = [obj for obj in detected_object_results["basket"] if obj["score"] > 0.95]
+
+# Calculate the total number of baseball and basketball objects
+total_baseball_objects = len(baseball_objects)
+total_basket_objects = len(basket_objects)
+
+final_result = {"number_of_baseball_objects": total_baseball_objects, "number_of_basket_objects": total_basket_objects}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'image_path' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+result = {}
+final_result = {}
+
+# Demanding text detection in the image
+text_result = Text_Detector_Tool.execute(image=image_path, languages=['en', 'de'])
+for line in text_result:
+    languages = {"en": True, "de": True}
+    if line:
+        result['detected text'] = [' '.join(line[0])]
+        confidence = line[1]
+        final_result['detected text'] = {language: score for language, score in zip(languages, confidence)}
+    
+result = {} if not result else result
+
+if result and 'detected_text' in result['detected_text']:
+    label_index = None
+    for label, boxes in result['detected_text'].items():
+        for box in boxes:
+            if box['score'] > 0.35:
+                final_result[label_index] = dict(box=box['box'], score=box['score'])
+                label_index = label.index(label)
+
+if 'detected_objects' in detected_objects:
+    boxes = {}
+    for object in detected_objects['detected_objects']:
+        boxes[object['label']] = object['box']
+    del boxes
+
+    for label, box in boxes.items():
+        final_result[label] = dict(box=box, count=len(detected_objects['detected_objects']) - final_result[label])
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/6052_0.png', labels=['chair'], threshold=0.35, save_object=True)
+
+if 'chair' in final_result:
+    chairs = sum([x["box"] for x in final_result['chair']])
+    print(f"Visible {chairs} chair(s) in the scene.")
+else:
+    print("No chairs detected in the scene.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'path_to_image' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {
+    "Chair Quantity": 4,
+    "Object Counts": {
+        "Chair": 4,
+        "Bed": 0,
+        "Fridge": 0
+    }
+}
+
+Object_Detector_Tool.execute(image=path_to_image, labels=['Chair'], save_object=True, saved_image_path='detected_objects')
+result = Object_Detector_Tool.execute(image='path_to_image', languages=['en', 'de'])
+final_result = {
+    "Chair Quantity": len(result),
+    "Object Counts": {
+        "Chair": {
+            "Chairsdetected": len(result[0]),
+            "ChairsTotal": len(result)
+        },
+        "Bed": {
+            "Bedsdetected": len(result[1]),
+            "BedsTotal": len(result[1])
+        },
+        "Fridge": {
+            "FridgeDetected": len(result[2]),
+            "FridgeTotal": len(result[2])
+        }
+    }
+}
+
+print(json.dumps(final_result, indent=4))
+
+
+============================== END ==============================
+

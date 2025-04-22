@@ -1,0 +1,69 @@
+--- Completion 1 ---
+for item in detected_objects['baseball']:
+    if item['score'] >= 0.95:
+        print('baseball', item['score'])
+        break
+
+final_result: detected_objects['basket'] if detected_objects['basket'] else detected_objects['baseball']:
+    number_of_basket = len(detected_objects['basket'])
+    print('basket', number_of_basket)
+    break
+Reward: 0.0
+
+--- Completion 2 ---
+final_result = generated_lines()
+print(final_result)
+Reward: 0.0
+
+--- Completion 3 ---
+<command>
+final_result = "3"
+</command>
+Reward: 0.5
+
+--- Completion 4 ---
+final_result: (1, 5)
+Reward: 0.0
+
+--- Completion 5 ---
+final_result: 1
+Reward: 0.0
+
+--- Completion 6 ---
+final_result = generated_code
+```python
+from object_detector_tool import object_detector_tool
+from text_detector_tool import text_detector_tool
+
+def get_dresser_count(image_file):
+    img_file = "/nfs/data8/liao/wxie/SAT/SAT_images_train/12132_0.png"
+    labels = ["dressing_table"]
+    detected_objects = []
+    object_number = {}
+    detected_objects, object_number = object_detector_tool.execute(image=img_file, labels=labels, save_object=True, saved_image_path="detected_objects")
+    
+    if len(detected_objects) > 6:
+        # More than six objects detected
+        detected_objects = detected_objects[1:]
+    
+    while det_obj := detected_objects[-1]:
+        desc, score = detected_obj['box'][2], detected_obj['score']
+        desc += " (" + str(det_obj['score']) + ","
+        descriptions = ["baseball", "basket", "baseball", "baseball", "baseball", "baseball"]
+        
+        if desc not in object_number:
+            object_number[desc] = 1
+            detected_objects = detected_objects[0:-1]
+            for text_block in result:
+                if text_block[3].upper() in descriptions:
+                    detected_objects.append(text_block)
+
+        result.append([det_obj['box'], desc, float(score)])
+    return object_number
+
+image_file = "/nfs/data8/liao/wxie/SAT/SAT_images_train/12132_0.png"
+detected_objects = get_dresser_count(image_file)
+final_result = generated_code.format(image=image_file, detected_objects=detected_objects, object_number=detected_objects)
+```
+Reward: 0.0
+

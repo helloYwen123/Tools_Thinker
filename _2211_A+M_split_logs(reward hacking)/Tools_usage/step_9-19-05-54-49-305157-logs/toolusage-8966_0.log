@@ -1,0 +1,216 @@
+
+[QAid]8966_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>
+```python
+Object_Detector_Tool.execute(image='path_to_image.png', labels=['basketball', 'basket'], save_object=True, saved_image_path='detected_objects')
+```
+============================== END ==============================
+
+
+[QAid]8966_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+```python
+import image_object_detector as object_detector
+import text_detector as text_detector
+
+# Sample image path
+sample_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8966_0.png"
+
+# Detect text in image, using language English and German
+result = object_detector.execute(image=sample_image_path, languages=["en", "de"], detail=1)
+text_blocks = result[0]
+
+# Check if text is detected
+if text_blocks:
+    detected_blocks = []
+    for block in text_blocks:
+        detected_blocks.extend(
+            text_detector.execute(image=sample_image_path, languages=["de"], detail=0).get()["detected_text"]
+        )
+    detected_blocks = [block for block in detected_blocks if "." in block]
+    print(detected_blocks)
+
+# Print results
+if text_blocks:
+    for block in text_blocks:
+        print(block)
+else:
+    print("No detected text.")
+```
+
+This Python program uses the `object_detector` and `text_detector` tools to count and locate texts in an image. It runs the image under analysis, extracts the detected texts in both English and German languages, and checks if any texts are detected. The program then prints the detected texts for validation.
+
+Remember to run this program with the actual path to your image.
+============================== END ==============================
+
+
+[QAid]8966_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>
+from object_detector import Object_Detector_Tool
+
+# Read image data
+input_image = Image.open("path/to/image.png")
+
+# Input data
+labels = ['baseball', 'basket']
+model_size = 'tiny'
+threshold = 0.35
+save_objects = True
+
+# Execute object detector
+result = Object_Detector_Tool.execute(image=input_image, labels=labels, save_objects=save_objects, model_size=model_size, threshold=threshold)
+
+# Convert tuple to dict for demonstration
+final_result = {
+    'detected_objects': result['detected_objects'],
+    'object_number': result['object_number']
+}
+```
+
+Make sure to replace `"path/to/image.png"` with the actual path to the image file you want to analyze.
+============================== END ==============================
+
+
+[QAid]8966_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_dining_tables(input_image):
+    detected_objects = []
+    object_number = {}
+
+    for label in ['DiningTable']:
+        result = Object_Detector_Tool.execute(image=input_image, labels=[label], save_object=True, saved_image_path='detected_objects')
+
+        if result:
+            if isinstance(result[0], int):
+                if result[0] == 0:
+                    return []
+                else:
+                    return [result[0]]
+            detected_objects.extend(result[1])
+
+            object_number[label] = len(result[1])
+
+    return detected_objects, object_number
+
+final_result = count_dining_tables('/nfs/data8/liao/wxie/SAT/SAT_images_train/8966_0.png')
+final_result
+
+============================== END ==============================
+
+
+[QAid]8966_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>:python
+def count_dining_tables(image_path, save_object=True, languages=['en', 'de']):
+    """
+    Counts the number of dining tables in an image.
+    
+    :param image_path: String - The path of the image file to be analyzed, in JPEG format.
+    :param save_object: Boolean - Whether to save the detected objects as images. Defaults to True.
+    :param languages: List of strings - The language codes for the OCR model, including English and German.
+    
+    :return: Tuple - A tuple containing two elements:
+              (1) a dictionary mapping each detected label to a list of detection entries,
+              (2) a dictionary mapping each label to the total number of objects found in the image.
+              If the text detection fails after retries, returns an empty list and an empty dictionary.
+    """
+    if image_path[-4:] != '.jpg':
+        image_path += '.jpg'
+    
+    detector_tool = Text_Detector_Tool()
+    
+    result = detector_tool.execute(image_path, languages=languages, detail=1)
+    
+    if result == []:
+        return {}, {}
+    
+    # Extract detection data
+    dining_tables = []
+    for block in result:
+        if block[0][2] == "table":
+            for x0, y0, x1, y1 in block[0]:
+                if 'table' in block[1]:
+                    dining_tables.append((x0, y0, x1, y1))
+    
+    # Extract label count
+    label_count = {}
+    for block in result:
+        if block[0][2] == "table":
+            for x0, y0, x1, y1 in block[0]:
+                if 'table' in block[1]:
+                    label_count[block[0][2]] += 1
+    
+    # Save detected objects
+    if save_object:
+        saved_image_path = f"detected_objects/{image_path}")
+        for i in dining_tables:
+            if not i[0][2] in ["baseball", "basket"]:
+                with open(saved_image_path, 'a') as saved_image:
+                    saved_image.write(f"{i[0][0]}{i[0][1]}{i[0][2]}{i[0][3]}\n")
+        
+    return {'dining_tables': dining_tables, 'total_tables': len(label_count)}, label_count
+
+# Example usage
+image_path = './8966_0.png
+============================== END ==============================
+
+
+[QAid]8966_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8966_0.png"
+
+# Labels to detect
+label_to_detect = "baseball, basket"
+
+# Confidence threshold
+confidence_threshold = 0.35
+
+# Image size
+model_size = "tiny"
+
+# Whether to save objects
+save_objects = True
+
+# The path where to save detected objects.
+saved_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8966_objects"
+
+# Counting and locating objects
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=label_to_detect, save_object=save_objects, saved_image_path=saved_image_path, threshold=confidence_threshold, model_size=model_size)
+
+detected_objects
+
+============================== END ==============================
+

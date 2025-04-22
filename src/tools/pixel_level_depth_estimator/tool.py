@@ -42,15 +42,18 @@ class Pixel_Depth_Tool(BaseTool):
             },
             demo_commands= [
             {
-                "command": "image_results = Pixel_Depth_Tool.execute(image_path=['assets/image1.jpg', 'assets/image2.jpg'], output=True, outdir= './vis_depth') ",
+                "command": """
+                depth_estimator = Pixel_Depth_Tool()
+                image_results = depth_estimator.execute(image_path=['assets/image1', 'assets/image2'], output=True, outdir= './vis_depth') 
+                """,
                 "description": "Processes a list of input images, estimates their depth maps, and returns genereated depth images paths.",
                 "output_examples": (
                         "{\n"
-                        "  'assets/image1.jpg': {\n"
+                        "  'assets/image1': {\n"
                         "      'depth_map': <numpy array with shape (H, W)>,\n"
                         "      'output_image_path': './vis_depth/image1.png'\n"
                         "  },\n"
-                        "  'assets/image2.jpg': {\n"
+                        "  'assets/image2': {\n"
                         "      'depth_map': <numpy array with shape (H, W)>,\n"
                         "      'output_image_path': './vis_depth/image2.png'\n"
                         "  }\n"

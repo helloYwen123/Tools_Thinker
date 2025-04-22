@@ -1,0 +1,67 @@
+
+[Exctuion Failed]
+
+'list' object has no attribute 'split'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_objects(image_path, labels, threshold=0.35, model_size='tiny', save_object=True, saved_image_path="detected_objects"):
+    # Convert from str to list for labels
+    labels_list = labels.split(", ")
+
+    # Create the object detector
+    object_detector = Object_Detector_Tool(image_path=image_path, labels=labels_list, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+    # Count the number of objects
+    total_number_of_objects = object_detector.object_number
+
+    # Loop through each label and number of objects
+    for label in object_detector.detected_objects:
+        if label.get("label") not in labels_list:
+            total_number_of_objects += label.get("number_of_objects")
+
+    return total_number_of_objects
+
+final_result = count_objects(image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/14749_0.png", labels=["baseball", "basket"], saved_image_path="detected_objects")
+print(f"Total number of objects detected from the image: {final_result}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.__init__() takes 1 positional argument but 7 were given
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Define the question parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/14749_0.png"
+labels = ["ball"]
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Initialize the object detection tool
+tool = Object_Detector_Tool(image_path, labels, threshold, model_size, save_object, saved_image_path)
+
+# Detect the objects and retrieve the object number for each
+detected_objects, object_number = tool.execute()
+
+# Extract the necessary details from the object detection results
+if object_number:
+    object_details = {label: [bbox, score] for label, bbox, score in detected_objects.values()}
+    object_labels = sorted(object_details.keys())
+else:
+    object_details = {}
+    object_labels = []
+
+# Print the detected objects and object numbers
+final_result = f"Detected objects:\n{object_details}\nObject number: {object_number}"
+
+
+============================== END ==============================
+

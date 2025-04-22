@@ -1,0 +1,64 @@
+
+============================== New Completed Execution ==============================
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+def find_objects(image_path):
+    try:
+        detector = Object_Detector_Tool()
+        results = detector.execute(image_path, labels=['baseball', 'basket'], save_object=False)
+        confidence_scores = []
+        for label, entry in results.items():
+            confidence = entry[4] if entry else 0.0  # Assuming no scores for certain labels are retrieved correctly
+            confidence_scores.append(confidence)
+        total_count = sum(confidence_scores)
+        detected_objects = {
+            'baseball': [i for i, _ in enumerate(confidence_scores[:-1]) if confidence_scores[i - 1] >= confidence_scores[i] * 0.8],
+            'basket': [i for i, _ in enumerate(confidence_scores[:-1]) if confidence_scores[i - 1] >= confidence_scores[i] * 0.8]
+        }
+        return total_count, detected_objects
+    except Exception as e:
+        return 0, {}
+
+final_result = find_objects('/nfs/data8/liao/wxie/SAT/SAT_images_train/615_0.png')
+final_result[0]
+
+[THE PRINT OUTPUT]
+Error building the Object Detection tool: Cannot re-initialize CUDA in forked subprocess. To use CUDA with multiprocessing, you must use the 'spawn' start method
+Error detecting objects: Failed to build the Object Detection tool.
+Failed to detect objects after 10 attempts.
+
+[GENERATE VALID FINAL_RESULT]
+(0, {})
+
+============================== END ==============================
+
+
+============================== New Completed Execution ==============================
+[EXEC CODE]
+
+import object_detector
+
+def count_armchairs(image_path):
+    try:
+        detected_labels, object_number = object_detector.execute(image=image_path, labels=['armchair'])
+        if detected_labels and 'armchair' in detected_labels:
+            total_objects = len(detected_labels)
+            return {"armchair": total_objects}
+        else:
+            return {}
+    except Exception as e:
+        return {"result": f"Failed to detect armchairs due to {e}"}
+
+final_result = count_armchairs("/nfs/data8/liao/wxie/SAT/SAT_images_train/615_0.png")
+print(final_result)
+
+[THE PRINT OUTPUT]
+{'result': "Failed to detect armchairs due to module 'object_detector' has no attribute 'execute'"}
+
+[GENERATE VALID FINAL_RESULT]
+{'result': "Failed to detect armchairs due to module 'object_detector' has no attribute 'execute'"}
+
+============================== END ==============================
+

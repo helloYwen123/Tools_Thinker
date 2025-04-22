@@ -1,0 +1,236 @@
+
+[QAid]13446_0
+
+[Code does not include Tools Usage]
+code: 
+
+from text_detector import Text_Detector_Tool
+
+final_result = {
+  "doors": 0,
+  "windows": 0
+}
+
+text_detector = Text_Detector_Tool(
+  image='path/to/image.png',
+  languages=['en', 'de']
+)
+
+for text_block in text_detector.result:
+  if 'baskets' in text_block[1][2]:
+    final_result["windows"] += 1
+  elif 'baseball' in text_block[1][2]:
+    final_result["doors"] += 1
+
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]13446_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png',
+                                             labels=['baseball', 'basket'],
+                                             save_object=True, saved_image_path='detected_objects')
+
+if len(final_result[0]) == 2:
+    total_detected_objects = len(final_result[0][0])
+else:
+    total_detected_objects = 1
+
+    if total_detected_objects != 0:
+        final_result.append({})
+
+    total_detected_objects
+
+============================== END ==============================
+
+
+[QAid]13446_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 16)
+
+Completion Content: 
+<command>
+from text_detector import Text_Detector_Tool
+
+result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'], detail=0)
+
+if result:
+    detected_texts = result[0]
+    final_result = []
+    for detected_text in detected_texts:
+        final_result.append({
+            "text": detected_text[4],
+            "confidence": detected_text[2]
+        })
+else:
+    final_result = []
+finally:
+    return final_result
+</command>
+============================== END ==============================
+
+
+[QAid]13446_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Import necessary libraries
+import text_detector
+
+# Set up the object detection model
+model = Object_Detector_Tool.Model("tiny")
+
+# Call the object detection function
+objects, object_count = Object_Detector_Tool.execute(
+    image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects"
+
+)
+detected_objects = [{"box": ([box[0] for box in objects[label].box][4]), "box": [objects[label].box[0], objects[label].box[2]], "score": objects[label].score, "saved_image_path": saved_image_path, "label": label} for label, objects in objects.items()]
+object_list = {"baseball": object_count["baseball"] + 1, "basket": object_count["basket"] + 1}
+
+# Print the results
+print(f"Detected objects:\n{' ' * 20}")  # Add a couple of spaces for spacing
+print(f"{detected_objects}")  # Print the detected objects
+print(f"Total number of detected items: {object_list}")  # Print the object count for 'baseball' and 'basket' separately
+
+============================== END ==============================
+
+
+[QAid]13446_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<script>
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+# Initialize object detector
+object_detector = Object_Detector_Tool(
+    tool_module_name="object_detector",
+    tool_class_name="Object_Detector_Tool",
+    tool_description="Detects objects in an image using the Grounding DINO model.",
+    tool_version="1.0.0",
+    input_types={
+        "image": "str",
+        "labels": "list",
+        "threshold": "float",
+        "model_size": "str",
+        "save_object": "bool",
+        "saved_image_path": "str"
+    },
+    output_types={
+        "tuple": {
+            "1": "dict",
+            "2": "dict",
+        },
+        "demo_commands": {
+            "command": "detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')",
+            "description": "Detects 'baseball' and 'basket' in the image. Returns a tuple: (1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path); (2) a dict with the total count for each detected label. If 'save_object' is True, detected objects are cropped and saved to the specified directory.",
+        },
+        "user_metadata": {
+            "user_metadata": {
+                "potential usage": "The tool can be used for counting and locating interest-objects in images by utilizing the bounding boxes.",
+                "frequently_used_language": {
+                    "en": "English",
+                    "ja": "Japanese",
+                    "ch_sim": "Traditional Chinese",
+                    "de": "German",
+                },
+                "important_note": "\"The text detector may return additional text beyond the correct result. Make sure to extract the required text according to your needs.\""
+            }
+        },
+    },
+)
+
+# Initialize text detector
+text_detector = Text_Detector_Tool(
+    tool_module_name="text_detector",
+    tool_class_name="Text_Detector_Tool",
+    tool_description="Detect text in an image using EasyOCR.",
+    tool_version="1.0.0",
+    input_types={
+        "image": "str",
+        "languages": "list",
+        "detail": "int"
+    },
+    output_types={
+        "list": "list",
+        "detail": "
+============================== END ==============================
+
+
+[QAid]13446_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+def count_doors(image_path):
+    """
+    Counts the number of doorways visible in an image.
+    """
+    doorways = 0
+    object_detector = Object_Detector_Tool(image_path, labels=['doorway'])
+    detected_objects = object_detector.execute()
+    
+    for detected_object in detected_objects:
+        if 'box' in detected_object[0]:
+            xmin = int(detected_object[0]['box'][0])
+            xmax = int(detected_object[0]['box'][2])
+            ymin = int(detected_object[0]['box'][1])
+            ymax = int(detected_object[0]['box'][3])
+            if (xmin == xmax or xmax == 0) \
+               and (xmin == ymax or ymax == 0) \
+               and (ymin == ymax or ymin == 0) and (ymin == 0):
+                doorways += 1
+
+    return doorways
+
+def detect_and_count_text(image_path, languages=['en', 'de']):
+    """
+    Detects text in an image using the Text_Detector_Tool tool.
+    """
+    text_detector = Text_Detector_Tool(image_path, languages=languages)
+    text_output = text_detector.execute()
+    
+    text_result = []
+    for text_object in text_output:
+        for object in text_object:
+            if 'bbox' in object:
+                x = int(object['bbox'][0][0])
+                y = int(object['bbox'][0][1])
+                width = int(object['bbox'][2][0] - object['bbox'][0][0])
+                height = int(object['bbox'][2][1] - object['bbox'][0][1])
+                text_result.append([x, y, width, height, 'Detected text', object['score']])
+                
+    return text_result
+
+def find_number_of_doors(image_path):
+    doorways = count_doors(image_path)
+    return doorways
+
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', save_object=True, saved_image_path='detected_objects')
+
+# Check correctness with provided image_path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/13446_0.png'
+doors_count = find_number_of_doors(image_path)
+final_result = detected_objects, object_number, doors_count
+
+============================== END ==============================
+

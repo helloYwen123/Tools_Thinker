@@ -1,0 +1,168 @@
+
+[Exctuion Failed]
+
+name 'generated_code' is not defined
+code: 
+final_result = generated_code(object=Detected_objects, object_number=object_number, languages=language_codes, detail=detail, save_objects=save_objects, save_image_path=save_image_path, filename=filename)
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+labels = ['baseball', 'basket']
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', labels=labels, save_object=True)
+result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'])
+final_result = {}
+final_result['detected_objects'] = detected_objects
+final_result['object_number'] = {}
+for label in detected_objects:
+    object_num = object_number[label]
+    for obj in detected_objects[label]:
+        if obj.score < 0.4: continue
+        det_dir = f'detected_objects/{label}'
+        if not os.path.exists(det_dir): os.makedirs(det_dir)
+        filename = os.path.join(det_dir, obj.box[2] - obj.box[0] + 'x.txt')
+        if not os.path.exists(filename):
+            print(f'Failed to create file {filename}')
+            continue
+        with open(filename, 'a') as f:
+            f.write(obj.box[0] - 1, obj.box[1] - 1, obj.box[2] - obj.box[0] + 1, obj.box[3] - obj.box[1] + 1, obj.box[4] - obj.box[3] + 1, obj.box[5] - obj.box[4] + 1)
+
+        if label == 'baseball':
+            final_result['detected_objects'][label].append({'object_name': 'baseball', 'score': obj.score, 'file_path': filename})
+        else:
+            final_result['detected_objects'][label].append({'object_name': 'basket', 'score': obj.score, 'file_path': filename})
+
+final_result['object_number'] = object_number
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+from tool_module_name: 'object_detector' import Object_Detector_Tool
+
+def find_paintings(image_path):
+    with open(image_path, 'rb') as image_file:
+        labels = ['Painting']
+        try:
+            result = Object_Detector_Tool.execute(image=image_file, labels=labels)
+            if 'baseball' not in result:
+                print("No paintings detected")
+            else:
+                total_paintings = len(result['baseball'])
+                print(f"Found {total_paintings} paintings")
+                for painting in result['baseball']:
+                    box = painting['box']
+                    name = painting['label']
+                    box = [0, 0, 300, 200]
+                    saved_image_path = f"detected_objects/painting_{name}.png"
+                    drawing_duck_with_paint = Painting(box, image=None, name=name, saved_image_path=saved_image_path)
+                    print(f"Painting detected: `{name}`")
+                    drawing_duck_with_paint.plot_drawing_dino_saved_image(image_image)
+        except Exception as e:
+            print(f"Exception: {e}")
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8220_0.png"
+find_paintings(image_path)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Initialize the object detector
+detector = Object_Detector_Tool(
+    image="/nfs/data8/liao/wxie/SAT/SAT_images_train/8220_0.png",
+    labels=["baseball", "basket"],
+    threshold=0.35,
+    model_size="tiny",
+    save_object=False,
+    saved_image_path="saved_images"
+)
+
+# Count the detected objects
+object_count = len(detector.execute())
+
+# Get the count of baseball and basketball
+baseball_count = detector.execute(detector.output_types["object_number"])[f"{'baseball' in detector.output_types['labels']}"]
+
+basketball_count = detector.execute(detector.output_types["object_number"])[f"{'basket' in detector.output_types['labels']}"]
+
+final_result = [{"baseball": baseball_count}, {"basket": basketball_count}]
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+```python
+from tool_object_detector import Object_Detector_Tool
+
+# Import the Text_Detector_Tool from the required list
+from tool_text_detector import Text_Detector_Tool
+
+# Read the image file
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/8220_0.png'
+
+# Use Object_Detector_Tool to detect objects, including 'baseball' and 'basket'
+result = Object_Detector_Tool.execute(image=image_path, labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+# Convert the result into a Python list
+detected_objects = result['detected_objects'] if isinstance(result['detected_objects'], dict) else result
+
+# The program will process detected objects using the Text_Detector_Tool to count occurrences
+detected_objects = [obj for obj in detected_objects if 'objects' in obj]  # Filter for objects that match the required label
+
+# Print the number of detected objects and text results
+total_objects = sum((1 for obj in detected_objects if isinstance(obj, dict) and 'objects' in obj))  # Filter out non-objects
+if 'objects' in obj:
+    objects = [obj for obj in detected_objects if isinstance(obj, dict) and 'objects' in obj]
+else:
+    objects = []
+print(f"Total detected objects: {total_objects}")
+if total_objects == 0:
+    print("No text found.")
+else:
+    result = []
+    for obj in detected_objects:
+        text_result = Text_Detector_Tool.execute(image=obj['image'], languages=['en', 'de'])[0]
+        if text_result:
+            text_result = text_result[-1]
+        result.extend(text_result)
+result = [r for r in result if r[1] > 0.85]  # Filter for confidence scores greater than 0.85
+
+# Print the detected text blocks
+if result:
+    for r in result:
+        print(f"Detected text: {r[0]}, Conf: {r[1]}, Box: {r[2]}, Text: {r[3]}, Count: {r[4]}")
+else:
+    print("No text found.")
+```
+
+
+============================== END ==============================
+

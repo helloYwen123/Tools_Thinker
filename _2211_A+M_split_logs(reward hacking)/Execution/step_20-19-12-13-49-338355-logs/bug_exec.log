@@ -1,0 +1,107 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+    image="path/to/image.png", labels=["bed"], save_object=True, saved_image_path="detected_objects",
+    threshold=0.3, model_size="base",)
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Text_Detector_Tool' is not defined
+code: 
+final_result = []
+for path in ["path/to/image.png"]:
+  result = Text_Detector_Tool.execute(image=path, languages=['en', 'de'], detail=1)
+  final_result.extend(result)
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], threshold=0.35, model_size='base', save_object=False)
+
+if final_result[0][1] == 1:
+    object_dict = OrderedDict({
+        'baseball': ({}), 'basket': ({}),
+    })
+    for labels, result in sorted(final_result[0][0].items(), key=lambda t: t['box']):
+        if labels in object_dict and 'baseball' in labels:
+            i = 1
+        else:
+            i = 0
+        if 'basket' in labels:
+            if 'baseball' in labels:
+                i += 1
+        else:
+            object_dict[labels][0][i] = {'box': result[2], 'score': result[1], 'saved_image_path': None}
+    print(object_dict)
+else:
+    print("No objects detected in the image.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+'return' outside function (<string>, line 35)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {
+    "count": 2,
+    "detected_items": {}
+}
+
+try:
+    image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6593_0.png"
+    labels = ["baseball", "basket"]
+    save_object = True
+    saved_image_path = "detected_objects"
+    
+    detector_tool = Object_Detector_Tool(image=image, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+    
+    object_results = detector_tool.execute()
+    
+    for label, result in object_results.items():
+        found = False
+        for item in result["detected_objects"]:
+            if item["label"] == label:
+                found = True
+                break
+            
+        if found:
+            detected_items = {"baseball": len(result["detected_objects"]), "basket": len(result["detected_objects"]), "total": result["detected_objects"].count()}
+            final_result["count"] = detected_items["total"]
+            final_result["detected_items"] = detected_items
+        else:
+            final_result["detected_items"] = {}
+except Exception as e:
+    print(f"Error occurred {e}")
+finally:
+    return final_result
+
+
+============================== END ==============================
+

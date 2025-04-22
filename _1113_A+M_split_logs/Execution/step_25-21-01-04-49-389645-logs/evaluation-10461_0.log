@@ -1,0 +1,172 @@
+------------- 21-01-04-49-389645 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 10461_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-01-04-49-389645 Execution reward: 0.0 -------------
+[Reward computation time: 4.5662 seconds]
+QAid: 10461_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Set up the Object_Detector_Tool
+tool = Object_Detector_Tool()
+
+# Get the input parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10461_0.png"
+label_set = ['baseball', 'basket']  # Replace with true detections
+threshold = 0.35
+model_size = 'tiny'  # Default: 'small'
+save_object = True
+saved_image_path = 'detected_objects'
+
+result = tool.execute(image=image_path, labels=label_set, save_object=save_object, saved_image_path=saved_image_path)
+
+final_result = {
+    'labels': result[0],
+    'object_number': result[1]
+}
+
+print(f"Detected objects: {final_result['labels']}, Total number of objects: {final_result['object_number']}")
+
+
+============================== END ==============================
+
+------------- 21-01-04-49-389645 Execution reward: 0.0 -------------
+[Reward computation time: 2.0813 seconds]
+QAid: 10461_0
+Code: 
+
+from tool_module.object_detector import Object_Detector_Tool
+
+# Set the path to the image
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10461_0.png"
+
+# Set the labels for DetectBaseball and DetectBasketball
+labels = ["DetectBaseball", "DetectBasketball"]
+
+Object_Detector_Tool.register_tool("object_detector", "Object_Detector_Tool")
+
+# Run the object detector
+detected_objects, object_numbers = Object_Detector_Tool.execute(image=image_path, labels=labels, languages=["en", "de"], detail=0)
+
+# Convert the detected objects to a JSON format
+json_output = {
+    "object_numbers": object_numbers,
+    "object_count": len(detected_objects)
+}
+
+# Extract DetectBaseball and DetectBasketball from the object list
+detect_labels = []
+for i in object_numbers:
+    if "DetectBaseball" in i or "DetectBasketball" in i:
+        detect_labels.append(i.split(" ")[3])
+
+json_output["detect_labels"] = detect_labels
+
+final_result = json_output
+
+
+============================== END ==============================
+
+------------- 21-01-04-49-389645 Execution reward: 0.0 -------------
+[Reward computation time: 2.0778 seconds]
+QAid: 10461_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Input data
+image_path = '10461_0.png'
+table_labels = ['desk', 'chair']
+chair_label = 'chair'
+table_1 = {'description': {'box': (470, 160, 809, 800), 'score': 0.82, 'saved_image_path': 'table_1_1.png'}, 'label': 'desk'}
+chair_1 = {'description': {'box': (40, 100, 80, 300), 'score': 0.95, 'saved_image_path': 'chair_1_1.png'}, 'label': 'chair'}
+
+detected_objects = Object_Detector_Tool.execute(image=image_path, labels=[chair_label, table_labels], table_1)  # Detect objects
+object_number = Object_Detector_Tool.object_number  # Get the number of detected objects
+
+final_result = {
+  "final_result": {
+    "detected_objects": tuple(detected_objects),
+    "object_number": {chair_label: object_number[chair_label]}
+  }
+}
+final_result
+
+
+============================== END ==============================
+
+------------- 21-01-04-49-389645 Execution reward: 0.0 -------------
+[Reward computation time: 2.6563 seconds]
+QAid: 10461_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+labels_to_search = ['side_table']
+object_number_for_search = {}
+threshold = 0.35
+model_size = 'tiny'
+
+label_results = ['side_table']
+
+# Call the tool to search for objects with desired labels
+result = Object_Detector_Tool.execute(image="path_to_image.png", labels=label_results, threshold=threshold, model_size=model_size, save_object=False, saved_image_path="detected_objects")
+
+for detected_object in result:
+    label = detected_object[0]
+    if label in label_results:
+        if 'box' in detected_object:
+            x1, y1, x2, y2 = detected_object['box']
+            score = detected_object['score']
+            saved_image_path = detected_object.get('saved_image_path', None)
+            # Check if a save was set
+            if saved_image_path:
+                saved_image_path = saved_image_path.replace('.png', '')
+                # Import the image
+                from_module = import_name
+                import_name = 'import_module_name'
+                module_object = eval(f"{import_name}.ImageObject(path_to_saved_image, threshold={threshold}, saved_image_path=saved_image_path)")
+                # Create a dictionary with the relevant information
+                if from_module == Object_Detector_Tool:
+                    detected_object[0].append({'image': f'<module>.save_image({x1}, {y1}, {x2}, {y2})', 'label': label})
+                elif from_module == Text_Detector_Tool:
+                    detected_object[0].append({"text": detected_object[0][0]['content'], 'confidence': detected_object[0][0]['score'],
+                                                'language': 'en'})
+        object_number_for_search[label] = object_number_for_search.get(label, 0) + 1
+        # Save detected objects as images if 'save_object' is True
+
+final_result['object_number'] = object_number_for_search
+final_result['detected_objects'] = result
+
+# Print the results
+print(final_result)
+
+# Final results
+if saved_image_path:
+    print(f'Image with {label} detected: {saved_image_path}')
+
+if 'detected_objects' in result:
+    print(f'Number of objects for {label}: {result["detected_objects"][0]}')
+
+
+============================== END ==============================
+
+------------- 21-01-04-49-389645 Execution reward: 0.0 -------------
+[Reward computation time: 2.1592 seconds]
+QAid: 10461_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path_to_image.png', save_object=True, saved_image_path='saved_objects')
+print(final_result)
+
+
+============================== END ==============================
+

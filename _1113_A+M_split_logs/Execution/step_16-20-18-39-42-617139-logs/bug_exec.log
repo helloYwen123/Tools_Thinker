@@ -1,0 +1,101 @@
+
+[Exctuion Failed]
+
+unexpected indent (<string>, line 2)
+code: 
+
+  from Object_Detector_Tool import Object_Detector_Tool
+  from text_detector import Text_Detector_Tool
+
+  with open('/path/to/image.png', 'rb') as image_file:
+    image_content = image_file.read()
+    detected_objects = Object_Detector_Tool.execute(image=image_content)
+    text_blocks = Text_Detector_Tool.execute(image=image_content, languages=['en', 'de'])
+
+    object_number = {}
+    object_labels = {}
+    detection_results = []
+
+    for detected_object in detected_objects:
+      if detected_object['labels'][0] not in object_labels:
+        object_labels[detected_object['labels'][0]] = 1
+      else:
+        object_labels[detected_object['labels'][0]] += 1
+
+      object_number[detected_object['labels'][0]] = detected_object['object_number']
+
+    for text in text_blocks:
+      if text[1] not in object_labels:
+        object_labels[text[1]] = 1
+      else:
+        object_labels[text[1]] += 1
+
+    detection_results.append((object_labels, object_number))
+
+    final_result = {
+      'total_objects': len(detection_results),
+      'detected_objects': detection_results
+    }
+
+  print(f"Total objects detected: {final_result['total_objects']}")
+  print(f"Detected objects: {final_result['detected_objects']}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+```python
+from object_detector import Object_Detector_Tool
+
+# Set the image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/3248_0.png'
+
+# The object label to detect
+label_toDetect = 'basket'
+
+# Convert object label to lowercase for the model
+label_toDetect = label_toDetect.lower()
+
+# Execute the object detection tool
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=[label_toDetect], save_object=True)
+
+detected_objects = detected_objects[label_toDetect]
+
+detected_objects[0]['score'] = float(detected_objects[0]['score'])
+detected_objects = detected_objects[[detected_objects['box'][0][3] > 100, detected_objects['score'][0] >= 0.8]]
+detected_objects = detected_objects[['box', 'score']]
+detected_objects = detected_objects.rename(columns={'box': 'coordinates', 'score': 'confidence'})
+
+# Create a dictionary to count the number of detected objects of each label
+object_count = {label_toDetect: len(detected_objects)}
+detected_objects_count = object_count
+
+final_result = 'Detected ' + str(len(detected_objects)) + ' ' + label_toDetect
+for key, value in object_count.items():
+  final_result += ' (' + str(value) + '),'
+final_result += '\nDetected ' + str(len(detected_objects)) + ' ' + label_toDetect
+
+print(final_result)
+detected_objects_count
+```
+
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+"""No final result available with the provided tools."""
+
+
+============================== END ==============================
+

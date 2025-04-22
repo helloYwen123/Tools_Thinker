@@ -1,0 +1,311 @@
+
+[QAid]1335_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>
+import numpy as np
+from object_detector_tool import Object_Detector_Tool
+from text_detector_tool import Text_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()
+object_detector_tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/1335_0.png")
+
+text_detector_tool = Text_Detector_Tool()
+result = text_detector_tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/1335_0.png", languages=["en", "de"])
+
+objects = {}
+object_count = {}
+
+for detection in result:
+    label = detection[0]
+    box = detection[1]
+    score = detection[2]
+    if label in objects:
+        objects[label].append([box, score])
+    else:
+        objects[label] = [[box, score]]
+        object_count[label] = 0
+
+detected_objects = {"".join([min(block[0][0], block[0][2], 1000) for block in objects.values()]): [len(block[0][0]) for block in objects.values()]}
+
+result = []
+for det in detected_objects:
+    for block in detected_objects[det]:
+        if len(block[0][0]) < 1000:
+            continue
+        else:
+            objects[det].remove([block[0][0], block[0][1]])
+            text_ocr_result = [det for det in text_detector_tool.languages if len(result) + 1 in result[-1][0][0]]
+            if text_ocr_result == []:
+                objects[det].append(["".join([block[0][0], det]), block[0][1]])
+                det_count_object = 1 + sum(1 for det in text_ocr_result)
+                text_ocr_result.append(det_count_object)
+                det_count_text = tuple(text_detector_tool.languages)
+            else:
+                det_count_object = sum(1 for det in text_ocr_result)
+                det_count_text = list(set(tuple(text_ocr_result)) | {tuple(text_detector_tool.languages)})
+            
+            det_string = "".join([f" {det}, {result[-1]}_{object_count[det]}"])
+                if det_count_object == 1:
+                    det_string += f", {det_count_text}"
+                for language in det_count_text:
+                    det_string += f", {det_count_text[language]}"
+            det_string = "
+============================== END ==============================
+
+
+[QAid]1335_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tool_path import Object_Detector_Tool, Text_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1335_0.png"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "base"
+save_object = True
+
+saved_image_path = "detected_objects"
+detected_objects, object_number = object_detector_tool.execute(
+    image=image_path,
+    labels=labels,
+    save_object=save_object,
+    saved_image_path=saved_image_path,
+    model_size=model_size,
+    threshold=threshold
+)
+
+if detected_objects:
+    object_detection_results = [
+        {"key": "baseball", "labels": [labels[0], labels[1]], "bbox": detected_objects[labels[0]][0], "score": detected_objects[labels[0]][1], "image_path": saved_image_path}
+    ]
+    object_detection_results += [
+        {"key": "basket", "labels": [labels[1], labels[0]], "bbox": detected_objects[labels[1]][0], "score": detected_objects[labels[1]][1], "image_path": saved_image_path}
+    ]
+else:
+    object_detection_results = {}
+
+text_detector_tool = Text_Detector_Tool()
+
+languages = ["en", "de"]
+detail = 1
+
+try:
+    text_blocks = text_detector_tool.execute(
+        image=image_path,
+        languages=languages,
+        detail=detail
+    )
+except Exception as e:
+    final_result = "Failed to extract text."
+else:
+    text_blocks = [
+        block
+        for block in text_blocks
+        if block["bbox"] and block["detected text"]
+    ]
+    object_detection_results += [
+        {"key": "baseball", "labels": ["baseball"], "bbox": text_blocks[0]["bbox"], "score": text_blocks[0]["score"]}
+    ]
+    object_detection_results += [
+        {"key": "basket", "labels": ["basket"], "bbox": text_blocks[1]["bbox"], "score": text_blocks[1]["score"]}
+    ]
+
+final_result = {"detected_objects": object_detection_results, "object_number": object_number}
+
+============================== END ==============================
+
+
+[QAid]1335_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+To count the number of windows in the scene, you can use the "text_detector" tool with a list of languages and a detailed output level. Specify the image file path and "en", "de" as the languages. Set the output level to 0 (simpler output) and the confidence threshold to 0.35. The Python program to count windows would look like this:
+
+```python
+from object_detector_tool import object_detector_tool
+
+# Image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1335_0.png"
+
+# List of languages
+languages = ["en", "de"]
+
+# Confidence threshold
+confidence_threshold = 0.35
+
+# Detailed output (higher level of detail)
+output_level = 0
+confidence_threshold_deactivated = 0.0
+
+# Create Object Detector Tool instance
+object_detector_tool = object_detector_tool()
+
+# Execute the object_detector_tool with the input details
+detected_objects, object_number = object_detector_tool.execute(image=image_path, languages=languages, output_level=output_level, confidence_threshold=confidence_threshold_deactivated)
+
+# If the output_level is set to 0
+if output_level == 0:
+    for label in detected_objects:
+        detected_objects_for_label = label['labels']
+        for detected_object in detected_objects_for_label:
+            detected_boxes = detected_object['box']
+            detected_text = detected_object['recognized_text']
+            detected_confidence_score = detected_object['score']
+            # Create a dictionary with window as key and list of detected objects as value
+            window_dict = {'window': [int(detected_boxes[0]), int(detected_boxes[1]), int(detected_boxes[2]), int(detected_boxes[3])]}
+            # Save the detected objects as images if save_object flag is True
+            if "save_object" in detected_object and detected_object["save_object"] == True:
+                detected_object_image_path = f"/nfs/data8/liao/processed_images_{window_dict['window'][3]}/window_{window_dict['window'][1]}.png"
+                object_detector_tool.object.save_object(detected_object_image_path)
+
+        # Create the dictionary map with total count for each detected label
+        for label in detected_objects_for_label:
+            detected_objects_for_label[label['labels']] += 1
+
+        # Create the dictionary map with count of texts detected in each window
+        for object in detected_objects_for_label:
+            window_dict =
+============================== END ==============================
+
+
+[QAid]1335_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_windows(image_path):
+    # Load the detector model and save file name
+    detector_tool = Object_Detector_Tool()
+    save_path = 'detected_objects'
+    detected_objects, object_number = detector_tool.execute(image=image_path, labels='all', save_object=True)
+    if not detected_objects:
+        return None  # No windows detected
+
+    # Calculate the number of windows
+    total_objects = []
+    saved_images = []
+    for label in detected_objects.keys():
+        detected_entries = detected_objects[label]
+        for detection_entry in detected_entries:
+            box = detection_entry['box']
+            window = detection_entry['name']
+            box = (box[1], box[0], box[3], box[2])
+            total_objects.append((window, len(detection_entry)))
+            saved_files = []
+            for f in detection_entry:
+                if '.png' in f:
+                    saved_files.append(f)
+            saved_image = f'{label}_windows_{f}.jpg'
+            saved_images.append(saved_image)
+            if saved_image in saved_images:
+                total_objects.append(1)
+            else:
+                total_objects.append(0)
+        if saved_image not in saved_images:
+            warning = f"No saved window image for {label} found among the detected objects."
+            total_objects.append(0)
+
+    if object_number in object_number:
+        object_number[object_number.keys()] = len(total_objects)
+    else:
+        object_number.clear()
+
+    return total_objects, object_number
+
+============================== END ==============================
+
+
+[QAid]1335_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 2)
+
+Completion Content: 
+<command>
+```python
+import object_detector_tool
+
+# Image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1335_0.png"
+
+# Labels to detect
+labels = []
+
+# Confidence threshold
+confidence_threshold = 0.35
+
+# Size of the model
+model_size = "tiny"
+
+# Whether to save the detected objects as images
+save_object = True
+
+# Path to save the detected object images
+saved_image_path = "detected_objects" if save_object else "detected_objects_image"
+
+# Initialize object_detector_tool
+object_detector_tool = object_detector_tool.Object_Detector_Tool()
+
+# Execute object detection
+detected_objects, object_number = object_detector_tool.execute(image_path, labels=labels, save_object=save_object, threshold=confidence_threshold, model_size=model_size, saved_image_path=saved_image_path)
+
+print(f"Number of objects detected: {len(detected_objects)}")
+print(f"Detected objects and their coordinates: {detected_objects}")
+
+print(f"Object number: {object_number}")
+```
+</command>
+============================== END ==============================
+
+
+[QAid]1335_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 2)
+
+Completion Content: 
+<command>
+```python
+from object_detector_tool import Object_Detector_Tool
+
+def count_windows(image_path):
+    object_detector_tool = Object_Detector_Tool()
+    detected_objects, object_count = object_detector_tool.execute(image=image_path, labels=['Window'], save_object=False)
+    if len(detected_objects) == 0:
+        return {"window_count": 0}
+    else:
+        window_count = {
+            "window": len(detected_objects)
+        }
+        return {"window_count": window_count}
+
+def detect_windows(image_path, languages=['en', 'de']):
+    object_detector_tool = Object_Detector_Tool()
+    result = object_detector_tool.execute(image=image_path, languages=languages)
+    return result
+
+def detect_windows_image(image_path, languages=['en', 'de']):
+    object_detector_tool = Object_Detector_Tool()
+    result = object_detector_tool.execute(image=image_path, languages=languages, save_object=False)
+    return result
+```
+
+</command>
+============================== END ==============================
+

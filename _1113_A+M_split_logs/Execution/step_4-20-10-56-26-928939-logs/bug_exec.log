@@ -1,0 +1,89 @@
+
+[Exctuion Failed]
+
+name 'Object_Detector_Tool' is not defined
+code: 
+final_result = []
+for image_path in ['/nfs/data8/liao/wxie/SAT/SAT_images_train/4744_0.png']:
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+    if len(detected_objects) > 0:
+        detected_objects = [detected_objects]
+    else:
+        detected_objects = []
+for label in object_number:
+    if label in detected_objects:
+        object_number[label] = (object_number[label] + 1) * 2
+    else:
+        object_number[label] = 2
+final_result.extend([detected_objects, object_number])
+del image_path, detected_objects, object_number
+print(final_result)
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unterminated string literal (detected at line 1) (<string>, line 1)
+code: 
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png\", labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')\nobject_number : {'baseball': 1, 'basket': 2}
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+positional argument follows keyword argument (<string>, line 18)
+code: 
+
+def find_objects(image_path):
+    detections = {"baseball": [], "basket": []}
+
+    try:
+        model_size = "tiny"
+        save_object = True
+        saved_image_path = "detected_objects"
+
+        if model_size == "big":
+            model_size = "base"
+        else:
+            model_size += "big"
+
+        tool_result = []
+        for label in detections:
+            if label in model_size:
+                tool_result = object_detector.execute(image=image_path.format(label=label), labels[label].split(), save_object=True, saved_image_path=save_image_path, threshold=0.35, model_size=model_size)
+                break
+
+        if len(tool_result) > 0:
+            for item in tool_result:
+                for label in item:
+                    detections[label].append({"box": [item[label]["box"][0], item[label]["box"][1], item[label]["box"][2], item[label]["box"][3]], "score": item[label]["score"], "saved_image_path": item[label]["saved_image_path"].split()})
+
+    except Exception as e:
+        print(f"An error occurred while processing the image: {e}")
+        return []
+
+    return detections
+
+text_detector = Text_Detector_Tool
+result = text_detector.execute(image= "/nfs/data8/liao/wxie/SAT/SAT_images_train/4744_0.png", languages=['en', 'de'])   
+text_detected = result
+    
+for text in text_detected[0][0]:
+    print(text[2])
+
+detected_objects = find_objects("/nfs/data8/liao/wxie/SAT/SAT_images_train/4744_0.png")
+
+for label, data in detected_objects["baseball"].items():       
+    print(label, data)
+
+object_number = {"baseball": len(detected_objects["baseball"])}
+
+final_result = {"detections": detected_objects, "object_number": object_number}
+
+print(final_result)
+
+
+============================== END ==============================
+

@@ -1,0 +1,108 @@
+--- Completion 1 ---
+<command>import object_detector_tool as object_detector
+final_result = object_detector.execute(image="path/to/scene_image.jpg", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+```
+Now, you can use `final_result` to get the count of baseballs and basketballs from the scene if needed.
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = ""
+final_result += f"Number of Paintings: {len(image_info)}<br/><br/>"
+
+if len(image_info) == 2:
+  final_result += f"Two Paintings are visible in the scene: <ul> {', '.join(["<li>Painting1</li>", f'<li>Painting2')}</ul><br/><br/>"
+elif len(image_info) == 3:
+  final_result += f"Three Paintings are visible in the scene: <ul> {', '.join(["<li>Painting1</li>", '<li>Painting2</li>', '<li>Painting3')}</ul><br/><br/>"
+elif len(image_info) == 4:
+  if image_info[3]["score"] >= 0.9:  # Replace with a custom threshold
+    final_result += f"Four Paintings are visible in the scene: <ul> {', '.join(["<li>Painting1</li>", 'Painting2', '<li>Painting3', '<li>Painting4')}</ul><br/><br/>"
+  else:
+    final_result += f"Three Paintings are visible in the scene: <ul> {', '.join(["<li>Painting1</li>", '<li>Painting2</li>', '<li>Painting3')}</ul><br/><br/>"
+else:
+  final_result += f"Five Paintings are visible in the scene: <ul> {', '.join(["<li>Painting1</li>", '<li>Painting2</li>', '<li>Painting3', '<li>Painting4</li>', '<li>Painting5')}</ul><br/><br/>"
+
+if image_info[-1]["score"] >= 0.9:  # Replace with a custom threshold
+  final_result += f"Five Paintings are visible in the scene: <ul> {', '.join(["<li>Painting1</li>", '<li>Painting2', '<li>Painting3', '<li>Painting4', '<li>Painting5')}</ul><br/><br/>"
+else:
+  final_result += f"Four Paintings are visible in the scene: <ul> {', '.join(["<li>Painting1</li>", '<li>Painting2', '<li>Painting3', '<li>
+Reward: 0.0
+
+--- Completion 3 ---
+<command>
+final_result = {
+    "paintings": 0,
+    "number_of_paintings": {
+        "baseball": 1,
+        "basket": 2
+    }
+}
+</command>
+Reward: 0.5
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(label=["baseball", "basket"], save_object=True)
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from Object_Detector_Tool import object_detector
+from Text_Detector_Tool import text_detector
+
+try:
+    detected_objects, object_number = object_detector.execute(image='path/to_image.jpg')
+
+    # Use text_detector to obtain more detailed text information
+    result = text_detector.execute(image='path/to_image.jpg', languages=['en', 'de'])
+
+    with_result = dict()
+    for detected_object in detected_objects:
+        block = result[detected_object[0]]
+        if block:
+            with_result[detected_object[0]] = {'bbox': detected_object[1], 'text': block['text'], 'confidence': block['score']}
+
+    final_result = {
+        'Number of detected objects': len(detected_objects),
+        'Objects and their information': with_result
+    }
+
+except Exception as e:
+    final_result = {
+        'Exception': str(e)
+    }
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image='path/to_image')
+if final_result[0][0].get('number_count', 0):
+  numberOfObjects = int(final_result[0][0].get('number_count'))
+else:
+  numberOfObjects = 0
+final_result['text_objects'] = [{
+  'box': [bbox[0], bbox[1], bbox[0]+bbox[2], bbox[1]+bbox[3]],
+  'words': words,
+  'confidence': confidence
+} for boxes, words, confidence in final_result[0][0].values()]
+final_result['total_objects'] = {
+  'baseball': int(final_result[0][0].get('number_count', 0)),
+  'basket': int(final_result[0][0].get('number_count', 0))
+}
+if numberOfObjects == 0:
+  print("No objects detected.")
+else:
+  print(f"{numberOfObjects} detected objects.")
+</command>
+Reward: 1.0
+

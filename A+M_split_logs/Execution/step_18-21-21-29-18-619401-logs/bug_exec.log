@@ -1,0 +1,116 @@
+
+[Exctuion Failed]
+
+name 'object_detector_tool' is not defined
+code: 
+
+def count_chairs(image_path):
+    objects_output = object_detector_tool.execute(image=image_path, labels=['chair'], save_object=True)
+    chair_boxes = [obj_output['bbox'] for obj_output in objects_output['detected_objects']]
+    chair_count = sum(1 for box in chair_boxes if box[2] is not None)
+    return chair_count, objects_output
+
+chair_count, chair_objects = count_chairs(image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/14638_0.png")
+
+if chair_count > 0:
+    print("There are", chair_count, "chairs in the scene.")
+else:
+    print("There are no chairs in the scene.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tool_object_detector'
+code: 
+
+from tool_object_detector import Object_Detector_Tool
+
+# Sample image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/14638_0.png"
+
+# Sample labels ['baseball', 'basket']
+labels = ['baseball', 'basket']
+
+# Save object detection results as images
+save_object = False
+saved_object_path = "detected_objects"
+
+# Initialize the Object_Detector_Tool
+object_detector = Object_Detector_Tool()
+
+# Execute object detection using the sample image
+output, metadata = object_detector.execute(image=image_path, labels=labels, save_object=save_object, saved_object_path=saved_object_path)
+
+# Format output and extract relevant information
+detected_objects = metadata[0]
+object_number = metadata[1]
+
+final_result = {
+    "detected_objects": detected_objects,
+    "object_number": object_number
+}
+final_result
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+{
+  "Object_Detector_Tool": {
+    "execute_image": "/nfs/data8/liao/wxie/SAT/SAT_images_train/14638_0.png",
+    "labels": ["baseball", "basket"],
+    "threshold": 0.35,
+    "model_size": "base",
+    "save_object": True,
+    "saved_image_path": "detected_objects"
+  }
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tool_module'
+code: 
+
+from tool_module.name.object_detector import Object_Detector_Tool
+output = Object_Detector_Tool().execute(
+    image="/nfs/data8/liao/wxie/SAT/SAT_images_train/14638_0.png",
+    labels=["chair"],
+    save_object=True,
+    saved_image_path="detected_objects"
+)
+from tool_module.name.text_detector import Text_Detector_Tool
+result = Text_Detector_Tool().execute(
+    image="/nfs/data8/liao/wxie/SAT/SAT_images_train/14638_0.png",
+    languages=["en", "de"],
+    detail=0
+)
+if result:
+    text_blocks = result[0][1].split("\n")
+    for block in text_blocks:
+        if "chair" in block:
+            print(f"Chair found at [{block.split()[0]}, {block.split()[1]}] with confidence score: {block.split()[2]}")
+
+final_result = {
+    "Number of chairs": len([element for element in output[0].values() if element[0] in ["chair"]]),
+    "Number of chairs with detailed results": len(result[0][1]),
+    "Chairs found": [item[1] for item in output[0].values() if item[0] == ["chair"]]
+}
+
+print(final_result)
+
+
+============================== END ==============================
+

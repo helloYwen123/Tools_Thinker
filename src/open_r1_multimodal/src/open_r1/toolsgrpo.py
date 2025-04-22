@@ -41,10 +41,7 @@ import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))))
 # sys.path.insert(0, root_dir)
-
-# External Tools Modules
-# from object_detector import Object_Detector_Tool
-
+import transformers
 from datasets import load_dataset, load_from_disk, concatenate_datasets
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 from open_r1.trainer import Qwen2VLGRPOTrainer, Qwen2VLGRPOVLLMTrainerModified
@@ -64,7 +61,7 @@ class GRPOScriptArguments(ScriptArguments):
             List of reward functions. Possible values: 'accuracy', 'format'.
     """
     reward_weights: list[float] = field(
-        default_factory=lambda: [1.0, 1.0, 2.0, 2.0],
+        default_factory=lambda: [1.0, 1.0, 1.0, 3.0],
         metadata={
             "help": "Weights for the reward functions specified in --reward_funcs, in the *same order*. \
             Example: if --reward_funcs format execution accuracy tool, \
@@ -324,13 +321,21 @@ accuracy_reward.reward_type = "accuracy"
 ####################################################################
 def format_reward(completions,step,QAid, **kwargs):
     """Reward function that checks if the completion has a specific format."""
-    pattern = r"(?s)<command>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</command>"  # TODO - Done
+    pattern1 = r"<command>(.*?)</command>" # no final_result but have correct tags
+    pattern2 = r"(?s)<command>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</command>"  # TODO - Done
     if isinstance(completions[0],str):
         completion_contents = [completion for completion in completions]
     else:
         completion_contents = [completion[0]["content"] for completion in completions]
-    matches = [re.fullmatch(pattern, content, re.DOTALL) for content in completion_contents]
-    rewards = [1.0 if match else 0.0 for match in matches]
+        
+    rewards = []    
+    for content in completion_contents:
+        if re.fullmatch(pattern2, content, re.DOTALL):
+            rewards.append(1.0)
+        elif re.fullmatch(pattern1, content, re.DOTALL):
+            rewards.append(0.5)
+        else:
+            rewards.append(0.0)
     
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
     log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Format", f"step_{step}-{current_time}-logs")
@@ -370,7 +375,7 @@ def tool_usage_reward(completions, QAid, step , **kwargs):
             raise ValueError("No Python code block found in completion.")
         
     for content, id in zip(contents, QAid):
-        reward = -1.0
+        reward = 0.0
         tool_log_path = os.path.join(log_root_dir, f"toolusage-{id}.log")
         try:
             execute_found = False
@@ -421,7 +426,8 @@ reward_funcs_registry = {
 ############################################################
 
 ######################MAIN############################
-def main(script_args, training_args, model_args,conf):
+def main(script_args, training_args, model_args, conf):
+
     # Get reward functions
     reward_funcs = [reward_funcs_registry[func] for func in script_args.reward_funcs]
     
@@ -429,85 +435,7 @@ def main(script_args, training_args, model_args,conf):
     base_model_prompt = False
     if model_args.model_name_or_path.split("/")[-1] == "Qwen2-VL-2B" or "Base" in model_args.model_name_or_path:
         base_model_prompt = True
-    
-    PROMPT_TEMPLATE = conf.get("prompt_template")
-    # for Blink Dataset
-    def make_conversation_sat(example, prefix,
-                        available_tools_str: str,
-                        filtered_metadata_str: str,
-                        base_model_prompt=False):
-        # get answer
-        answer = example["messages"][1]["content"].strip()
-        image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
-        images = [Image.open(path) for path in image_paths]
-        idx = os.path.splitext(os.path.basename(example["images"][0]))[0] # image name as index
         
-        question=example["messages"][0]["content"].strip()
-        question = question.replace("<image>", "")
-         # Format the final prompt text using the provided strings
-        formatted_question_part = PROMPT_TEMPLATE.format(
-        question=question,
-        image_paths=",".join(image_paths),
-        available_tools=available_tools_str,        # Use the pre-formatted string
-        toolbox_metadata=filtered_metadata_str      # Use the filtered metadata string
-        )
-
-        if base_model_prompt:
-            prompt = f"""A conversation between User and Assistant. 
-            The user asks a question about the image, and the Assistant solves it. 
-            The assistant first thinks about the reasoning process in the mind and then provides the user with the answer.
-            \nUser: {formatted_question_part} \nAssistant: <command>"""
-            
-            image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
-            images = []
-            images = [Image.open(path) for path in image_paths]
-            for img in images:
-                try:
-                    # Ensure minimum dimensions of 28 pixels
-                    w, h = img.size
-                    if w < 28 or h < 28:
-                    # Calculate new dimensions maintaining aspect ratio
-                        if w < h:
-                            new_w = 28
-                            new_h = int(h * (28/w))
-                        else:
-                            new_h = 28
-                            new_w = int(w * (28/h))
-                    img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-                except:
-                    pass
-                images.append(img)
-            message_content = [ *({'type': 'image', 'text': None} for _ in range(len(example["images"])))]
-            message_content.append({
-                "type": "text" , "text": "<image>" + prompt
-            })
-            idx = example["idx"]
-            return {"image": images, # images
-                "image_path": image_paths,
-                "prompt": message_content,
-                "solution": answer,  ###
-                "QAid": idx
-            }
-        else:
-            image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
-            images = [Image.open(path) for path in image_paths]
-            message_content = [*({'type': 'image', 'text': None} for _ in range(len(example["images"])))]
-            message_content.append({
-                            "type": "text",
-                            "text": formatted_question_part
-                        })
-            
-            return {"image": images, # images 
-                "image_path": image_paths,
-                "prompt": [
-                    {
-                        "role": "user",
-                        "content": message_content,
-                    },
-                ],
-                "solution": answer, ###
-                "QAid": idx
-            }
     # load selected tooldata from prompt yaml file        
     def load_tool_data(conf):
         # --- Tool Metadata Filtering Logic ---
@@ -526,33 +454,100 @@ def main(script_args, training_args, model_args,conf):
             if tool_name not in full_toolbox_metadata:
                 print(f"Warning: Tool '{tool_name}' listed in available_tools but not found in toolbox_metadata.")
 
-        # indent=2 makes it readable
-        filtered_metadata_str = json.dumps(filtered_metadata_dict, indent=2)
+        return active_tool_names, filtered_metadata_dict
 
-        available_tools_str = ", ".join(active_tool_names)
 
-        return available_tools_str, filtered_metadata_str
+    PROMPT_TEMPLATE = conf.get("prompt_template")
+    # for Blink Dataset
+    def make_conversation_sat(example, prefix, conf, base_model_prompt=False):
+        # get answer
+        answer = example["messages"][1]["content"].strip()
+        image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
+        images = [Image.open(path) for path in image_paths]
+        idx = os.path.splitext(os.path.basename(example["images"][0]))[0]  # image name as index
+        question=example["messages"][0]["content"].strip()
+        question = question.replace("<image> Answer in natural language. ", "")
+        
+        # get tools
+        active_tools, filtered_meta = load_tool_data(conf)
+        tools_list = ", ".join(active_tools)
+        # get clear json file
+        meta_json = json.dumps(filtered_meta, ensure_ascii=False, indent=2)
+        toolbox_block = f"```json\n{meta_json}\n```"
+         # Format the final prompt text using the provided strings
+        prompt_text = PROMPT_TEMPLATE.format(
+            question=question,
+            image_paths=",".join(image_paths),
+            available_tools=tools_list,
+            toolbox_metadata=toolbox_block
+        )
+
+        if base_model_prompt:
+            prompt = f"""A conversation between User and Assistant. 
+            The user asks a question about the image, and the Assistant solves it. 
+            The assistant first thinks about the reasoning process in the mind and then provides the user with the answer.
+            \nUser: {prompt_text} \nAssistant: <command>"""
+            
+            image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
+            images = []
+            images = [Image.open(path) for path in image_paths]
+            
+            message_content = [ *({'type': 'image', 'text': None} for _ in range(len(example["images"])))]
+            message_content.append({
+                "type": "text" , "text": "<image>" + prompt
+            })
+            idx = example["idx"]
+            return {"image": images, # images
+                "image_path": image_paths,
+                "prompt": message_content,
+                "solution": answer,  ###
+                "QAid": idx
+            }
+        else:
+            image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
+            images = [Image.open(path) for path in image_paths]
+            message_content = [*({'type': 'image', 'text': None} for _ in range(len(example["images"])))]
+            message_content.append({
+                            "type": "text",
+                            "text": prompt_text
+                        })
+            
+            return {"image": images, # images 
+                "image_path": image_paths,
+                "prompt": [
+                    {
+                        "role": "user",
+                        "content": message_content,
+                    },
+                ],
+                "solution": answer, ###
+                "QAid": idx
+            }
 
     #################### Data Loading Start ####################
 
-    dataset_prefix = "/nfs/data8/liao/wxie/SAT" #"/home/stud/wxie/"
-
+    dataset_prefix = "/nfs/data8/liao/wxie/SAT/" # "/home/stud/wxie/"
+    dataset_path = f"SAT_subtasks/SAT_Counting.json"
     # SAT Dataloader
     dataset = {}
     all_samples = []
     
-    dataset_path = f"filtered_output_file.json"
+    
 
     full_path = os.path.join(dataset_prefix, dataset_path)
     with open(full_path, 'r') as f:
         raw_dataset = json.load(f)
-        available_tools_str, filtered_metadata_str = load_tool_data(conf=conf)
-        processed_dataset = [make_conversation_sat(sample, dataset_prefix, available_tools_str, filtered_metadata_str,base_model_prompt) for sample in raw_dataset]
-        all_samples.extend(processed_dataset)
+        for sample in raw_dataset:
+            all_samples.append(make_conversation_sat(sample, dataset_prefix, conf, base_model_prompt=base_model_prompt))
 
     dataset = {"train": all_samples}
 
+    
     # test template and arg
+    # first_sample = all_samples[0]["prompt"][0]["content"][1]["text"].encode("utf-8").decode("unicode_escape")
+    # with open("first_sample_prompt.txt", "w", encoding="utf-8") as f:
+    #     f.write(first_sample)
+    # print(">>> 已将第一个 sample 保存到 first_sample.json")
     # save_path = "processed_dataset.json"
     # with open(save_path, "w") as f:
     #     json.dump(dataset["train"], f, indent=4, ensure_ascii=False)
@@ -580,9 +575,15 @@ def main(script_args, training_args, model_args,conf):
     elif script_args.freeze_llm:
         trainer.model.model.requires_grad_ = False
 
-    # Train and push the model to the Hub
+    
     trainer.train()
-
+    
+    # solve the warning: process group has NOT been destroyed before we destruct ProcessGroupNCCL
+    import torch.distributed as dist
+    if dist.is_initialized():
+        dist.destroy_process_group()
+        
+    # Train and push the model to the Hub
     # Save and push to hub
     trainer.save_model(training_args.output_dir)
     if training_args.push_to_hub:
@@ -591,14 +592,8 @@ def main(script_args, training_args, model_args,conf):
     # global_loop.close()  # close Global loop for `Asyncio` approach
 
 if __name__ == "__main__":
-    # Debug for sub-process CUDA issue
-    # try:
-    #     multiprocessing.set_start_method('spawn', force=True)
-    #     print("Set multiprocessing start method to 'spawn'")
-    # except RuntimeError:
-    #     print("Multiprocessing context already set.")
-    #     pass
-
+    seed = 42
+    transformers.set_seed(seed)
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
     # print("Parsed training_args:", training_args)

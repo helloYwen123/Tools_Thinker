@@ -1,0 +1,103 @@
+------------- 21-17-11-35-062781 Execution reward: 0.0 -------------
+[Reward computation time: 2.3140 seconds]
+QAid: 13089_0
+Code: 
+
+def identify_counting_objects(image_path, object_type, languages=['en', 'de'], detail=0):
+    from object_detector_tool import execute as oc
+
+    detected_objects, object_numbers = oc.execute(image=image_path, labels=[object_type], languages=languages, detail=detail)
+
+    if len(detected_objects) == 0:
+        return []
+  
+    detected_objects = {label: [] for label in detected_objects}
+    object_numbers = {label: len(detected_objects[label]) for label in detected_objects}
+
+    for label, objects in detected_objects.items():
+        for box in objects:
+            detected_objects[label].append({'box': box['box'], 'label': label, 'score': box['score']})
+    
+    # Sort objects by score
+    sorted_objects = sorted(detected_objects, key=lambda x: x['score'], reverse=True)
+    
+    detected_objects = [{'box': obj['box'], 'label': obj['label'], 'score': obj['score'], 'type': 'bounding_box'} for obj in sorted_objects]
+
+    # Create markdown output
+    markdown_output = '| ' + '| '.join(detected_objects) + '| '
+    markdown_output += '| '.join([f'{len(detected_objects)} | ' + str(i + 1) for i in object_numbers.values()]) + ' | '
+    
+    return markdown_output
+
+# Usage:
+# detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+# final_result = identify_counting_objects("path/to/image", "baseball", languages=["en", "de"], detail=0)
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-17-11-35-062781 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 13089_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-17-11-35-062781 Execution reward: 0.0 -------------
+[Reward computation time: 1.5248 seconds]
+QAid: 13089_0
+Code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = {}
+threshold = 0.35
+
+# Execute the tool
+result = Object_Detector_Tool().execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/13089_0.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects", threshold=threshold)
+
+# Filter detected objects
+for label, detection_result in sorted(result.items(), key=lambda x: x[1][1]["score"], reverse=True):
+    label_result = {
+        "bbox": [
+            float(x) for x in [d["box"][0], d["box"][2], d["box"][1], d["box"][3]]
+        ]
+        for d in detection_result
+        if "bbox" in d and "bbox" in d
+    }
+    label_result["bbox"].append(label)
+
+    total_objects = {"baseball": 0, "basket": 0}
+    for k, v in detection_result.items():
+        total_objects[k] = v["bbox"][-1][1]
+
+    final_result[label] = label_result
+
+final_result
+
+
+============================== END ==============================
+
+------------- 21-17-11-35-062781 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 13089_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-17-11-35-062781 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 13089_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-17-11-35-062781 Execution reward: 0.0 -------------
+[Reward computation time: 1.9202 seconds]
+QAid: 13089_0
+Code: 
+from_tool_command
+
+============================== END ==============================
+

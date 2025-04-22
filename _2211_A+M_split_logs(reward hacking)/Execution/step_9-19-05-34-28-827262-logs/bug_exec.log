@@ -1,0 +1,142 @@
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+def count_objects(image_path, labels, threshold=0.35, save_object=False, saved_image_path="detected_objects"):
+    tool = Object_Detector_Tool()
+    data = tool.execute(image_path, labels, save_object, saved_image_path)
+    object_number = len(labels)
+
+    if data:
+        for i, obj in enumerate(data['detected_objects']):
+            if save_object:
+                with open(f"{saved_image_path}_0{i}.png", "w") as f:
+                    f.write(obj['box'].numpy().astype(np.bool))
+            else:
+                # Object is not saved
+                pass
+    return data, object_number
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+count_objects() got an unexpected keyword argument 'language_codes'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_objects(image_path, labels=["baseball", "basket"], save_object=False, saved_image_path="detected_objects"):
+    if save_object:
+        det_objects = Object_Detector_Tool.execute(image_path=image_path, labels=labels, save_object=True, saved_image_path= saved_image_path)
+    else:
+        det_objects = Object_Detector_Tool.execute(image_path=image_path, labels=labels, threshold=0.35)
+
+    total_count = {}
+    detected_objects = det_objects[0]
+    for obj_key, obj_list in detected_objects.items():
+        count = 0
+        for obj_dict in obj_list:
+            if obj_dict.get("score", -1) - 0.05 < 0:
+                continue
+            key = f"{obj_key}: {len(obj_dict)}"
+            total_count[key] = 1 + total_count.get(key, 0)
+            count += 1
+        total_count[f"{obj_key}-count"] = count
+
+    return {"detected_objects": detected_objects, "total_count": total_count}
+
+# provided image
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11861_0.png"
+
+# execute the object detector tool
+result = count_objects(image_path=image_path, labels=["baseball", "basket"], language_codes=["en", "de"], detail=0)
+print(result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 4)
+code: 
+
+from text_detector import Text_Detector_Tool
+
+from_module: "text_detector", import_name: "Text_Detector_Tool"
+
+# Define the image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/11861_0.png'
+
+# Set the languages for the OCR model
+languages = ["en", "de"]
+
+# Set the output level of detail to 0 (for simplicity)
+detail = 0
+
+# Execute the text detection
+result = Text_Detector_Tool.execute(image=image_path, languages=languages, detail=detail)
+
+# Print the detected text blocks
+print(result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'image'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11861_0.png"
+
+# Flags for the tool
+labels = ['baseball', 'basket']
+threshold = 0.35
+save_object = True
+saved_image_path = "detected_objects"
+
+# Call the tool with the image path and other flags
+result = Object_Detector_Tool.execute(image_path, labels=labels, save_object=save_object, threshold=threshold, model_size="tiny")
+
+final_result = []
+object_number = {}
+
+for label in labels:
+    for detection in result:
+        if detection['label'] == label:
+            detected_object = detection
+            break
+
+for detected_object in detected_object:
+    if detected_object['label'] == 'baseball':
+        item = {'box': (detected_object['box'][0], detected_object['box'][1], detected_object['box'][2], detected_object['box'][3])}
+        final_result.append(item)
+        object_number[label] = detected_object['score']
+
+    elif detected_object['label'] == 'basket':
+        item = {'box': (detected_object['box'][0], detected_object['box'][1], detected_object['box'][2], detected_object['box'][3])}
+        final_result.append(item)
+        object_number[label] = detected_object['score']
+
+for label, score in object_number.items():
+    if score >= threshold:
+        object_count[item][label] += 1
+
+final_result.extend([x for x in object_count.values()])
+print(final_result)  
+
+
+============================== END ==============================
+

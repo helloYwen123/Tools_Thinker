@@ -1,0 +1,42 @@
+
+============================== New Completed Execution ==============================
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+class Text_Detector_Tool:
+    def execute(self, image_path: str, languages: list, detail: int):
+        """
+        Execute the text detection tool using the ground-truth model.
+        """
+        model = 'ch_sim'
+        tools = [{"code": "ch_sim"}, {"code": "germannic_transform", "params": {"char_type": "small", "substitution": ""}}]
+        output_text = {"tools": tools}
+
+
+if __name__ == '__main__':
+    final_result = 1
+
+    img_files = {'path/to/image.png': None}
+    final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')  
+    if final_result['object_number'] != 0:
+        final_result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'], detail=1)
+        texts = []
+        for language in [i["label"].split(' ')[0] for i in final_result]:  # 'baseball' or 'basket'
+            for output in [text for text in final_result if text['label'] == language]:
+                texts.append(output['text'])
+        texts = [f"[{text}] {'detected by {language}' if language != 'en' else ''}" for text in texts]
+
+        print(f"Detected texts: {texts}")
+else:
+    final_result = 0
+    print("Text detection failed.")
+
+[THE PRINT OUTPUT]
+Text detection failed.
+
+[GENERATE VALID FINAL_RESULT]
+0
+
+============================== END ==============================
+

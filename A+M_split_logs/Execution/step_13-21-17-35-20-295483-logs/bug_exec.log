@@ -1,0 +1,148 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 19)
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_tv_stands(image_path, labels=["tv_stand"], save_object=True, saved_image_path="detected_objects"):
+    """
+    Counts the number of TV stands in an image and saves the detected results as images.
+
+    Parameters:
+    image_path (str): The path to the image file.
+    labels (list of str): A list of labels in the form ['tv_stand', 'table', ...].
+    save_object (bool): Whether to save the detected objects as images.
+    saved_image_path (str, optional): The path to save the detected object images.
+    """
+    assert labels, "Labels must be provided when saving object images."
+    object_detector = Object_Detector_Tool()
+    detected_objects = object_detector.execute(image=image_path, labels=labels, threshold=0.35, save_object=save_object, saved_image_path=saved_image_path)
+    
+    if save_object:
+        detected_objects = [obj for obj in detected_objects if obj['score'] > 0.3, f'&{obj["label"]}']
+        return detected_objects, len(labels) - len(set(labels)) + 1
+
+# Usage
+final_result = count_tv_stands("path/to/image.jpg", ["tv_stand"])
+print(final_result)
+
+.generated_lines = ["obj: " + str(i + 1 + detected_objects[0]["label"]) + ", " + str(obj[0]["score"]) + ", " + obj[1]["box"][0] + "," + obj[1]["box"][1] + " " + f"{detected_objects[0]['label']}".replace("_", "_|") + "\n"
+for obj in detected_objects]
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_tv_stands():
+    detection_result = {"baseball": [], "basket": []}
+    total_count = {"baseball": 0, "basket": 0}
+
+    # Detect text in the image
+    text_detector_tool = Text_Detector_Tool()
+    if "Detected text" in text_detector_tool.execute(image=image_path, languages=['en', 'de']) or "Detected text" in text_detector_tool.execute(image, languages=['en', 'de']):
+        detection_result = text_detector_tool.execute(image_path)
+        total_count = {}  # Reset the total count for each detected label
+    
+    # Count the number of TV stands
+    tv_stand_count = {"baseball": 0, "basket": 0}
+    for label in detection_result:
+        if label == "baseball":
+            # Check if the detection is valid (ensure a bbox and score)
+            if detection_result[label][0] is not None and detection_result[label][2] < 0.8:
+                tv_stand_count["baseball"] += 1
+        elif label == "basket":
+            # Check if the detection is valid (ensure a bbox and score)
+            if detection_result[label][0] is not None and detection_result[label][2] < 0.8:
+                tv_stand_count["basket"] += 1
+    
+    return {"total_count": total_count, "tv_stand_count": tv_stand_count}
+
+image_path = "path/to/room/image.png"
+label_path = ["baseball", "basket"]
+tv_stand_count = count_tv_stands()
+tv_stand_count["tv_stand_count"]
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13340_0.png"  # Specify the image path here
+
+# detect baseball and basket in the image
+detected_objects, object_count = object_detector_tool.execute(image=image_path, labels=["baseball", "basket"], save_object=False)
+
+final_result = [[detected_objects.get(label, []) for label in detected_objects if label not in ["baseball", "basket"]] + [detected_objects.get("overall_count", 0)]]
+
+# Final results (formatted similar to the user's metadata output)
+print(f"Detected objects: {detected_objects}")
+print(f"Detected baseballs count: {detected_objects.get('baseball', [])}")
+print(f"Detected baskets count: {detected_objects.get('basket', [])}")
+print(f"Detected overall count: {detected_objects.get('overall_count', 0)}")
+
+# Save detected baseball and baskets images if the `save_object` flag is set to True
+if detected_objects.get("save_object", False):
+    for label, detection_dict in detected_objects.items():
+        image_path = "/tmp/" + label + "_" + " Baseball" if detected_objects.get("save_object", False) else "detected_objects/"
+        detection_dict.pop('saved_image_path')  # Remove 'saved_image_path' to avoid saving
+        detection_dict['box'] = (int(x) for x in detection_dict['box'])
+        detection_dict['score'] += 1 * detection_dict['score']
+        for key in detection_dict:
+            detection_dict[ key ] *= (detection_dict[ key ] >= 0.4) # Assuming a threshold of 0.4 for detection
+        detection_dict['category'] = label
+        for key, value in detection_dict.items():
+            detection_dict[key] = str(value)
+        shutil.copyfile("/tmp/" + label + "_" + " Baseball", image_path + "/" + str(key))
+        
+    print("Detected objects saved successfully.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+def find_gestalts(path_to_image):
+    object_detector_tool = Object_Detector_Tool()
+    output = object_detector_tool.execute(image=path_to_image, labels=['TVStand'], save_object=True, saved_image_path="gestalts")
+    num_objects = len(object_detector_tool.output['baseball'])
+    return num_objects
+
+gestalte = find_gestalts("/nfs/data8/liao/wxie/SAT/SAT_images_train/13340_0.png")
+
+final_result = {'gestalte': str(gestalte[0][1]).replace(",", "").strip().lower(), 'count': ""}
+
+if gestalte[0][1] == 0:
+    final_result['gestalte'] = "0"
+
+if "gestalte" in final_result:
+    print(final_result)
+    final_result['count'] = str(len(final_result['gestalte'])) if len(final_result['gestalte']) else "0"
+else:
+    print("Text Detection failed.")
+
+
+============================== END ==============================
+

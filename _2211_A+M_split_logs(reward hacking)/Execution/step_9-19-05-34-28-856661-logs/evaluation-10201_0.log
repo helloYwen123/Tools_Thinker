@@ -1,0 +1,217 @@
+------------- 19-05-34-28-856661 Execution reward: 0.0 -------------
+[Reward computation time: 2.5088 seconds]
+QAid: 10201_0
+Code: 
+
+from text_detector import Text_Detector_Tool
+import_object = Text_Detector_Tool()
+
+result = import_object.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/10201_0.png', languages=['en', 'de'])
+
+if not result:
+    print("Text detection failed. Please try again with different language options or resolution.")
+
+for block in result:
+    print(block)
+
+
+============================== END ==============================
+
+------------- 19-05-34-28-856661 Execution reward: 0.0 -------------
+[Reward computation time: 2.8967 seconds]
+QAid: 10201_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Demonstration command
+command = """
+detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=['baseball', 'basket'], save_object=True, saved_image_path="detected_objects")
+"""
+result = Object_Detector_Tool.execute(command)
+
+detected_objects = result['detected_objects']
+object_number = result['object_number']
+
+print(f"Detected objects: {detected_objects}")
+print(f"Total objects detected: {len(detected_objects)}")
+
+if save_object:
+    for object in detected_objects:
+        object_path = object['saved_image_path']
+        object_path = object_path.split('/')[-1]
+        save_path = object['saved_image_path'] if object_path else 'detected_objects/image_baseball_1.png'
+        save_path = f'detected_objects/{object_path[:-4]}' if object_path else 'detected_objects/image_baseball_1.png'
+        print(f'Saving detected object at: {save_path}')
+
+
+============================== END ==============================
+
+------------- 19-05-34-28-856661 Execution reward: 0.0 -------------
+[Reward computation time: 1.5459 seconds]
+QAid: 10201_0
+Code: 
+
+```py
+import import_name
+
+class ImageDetector:
+    def __init__(self, image_path):
+        self.image_path = image_path
+        self.objects = None
+        self.num_rotations = 0
+
+    def execute(self, labels, languages, detail=0):
+        for i, language in enumerate(languages):
+            for label in labels:
+                if label in self.objects:
+                    continue
+                response = self.object_detector.get_objects(self.image_path, label, language, detail)
+                self.objects[label] = response['detected']
+                self.objects[label].append({'box': response['box'], 'score': response['score'], 'detected_image_path': response['detected_image_path']})
+
+    def object_detector(self, **kwargs):
+        return Object_Detector_Tool.execute(**kwargs)
+
+    def count_objects(self, language):
+        return self.objects['baseball'][0]['score']
+
+with ImageDetector('/nfs/data8/liao/wxie/SAT/SAT_images_train/10201_0.png') as detector:
+    detector.execute(labels=['baseball', 'basket'], languages=['en', 'de'], detail=0)
+    detector.execute(labels=['baseball'], languages=['ja'], detail=0)
+    detector.execute(labels=['basket'], languages=['ja'], detail=0)
+    detector.execute(labels=['baseball', 'basket'], languages=['en'], detail=0)
+
+count = 0
+
+for label, detection in detector.objects.items():
+    if 'score' in detection:
+        count += detection['score']
+
+final_result = (1 if index == 0 else index, [None])
+```
+
+
+============================== END ==============================
+
+------------- 19-05-34-28-856661 Execution reward: 0.0 -------------
+[Reward computation time: 2.2083 seconds]
+QAid: 10201_0
+Code: 
+
+```python
+# Import the necessary tool
+from object_detector import Object_Detector_Tool
+
+# Set the path to the image file
+path_to_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10201_0.png"
+
+# Set the languages for text detection
+languages = ['en', 'de']
+
+# Set the level of detail
+level_of_detail = 1
+
+# Initialize the object detector
+obj_detector = Object_Detector_Tool()
+
+# Detect the objects in the image
+detected_objects, object_number = obj_detector.execute(image=path_to_image, languages=languages, detail=level_of_detail)
+
+final_result = {
+    "count": object_number.get('baseball', 0),
+    "label_distribution": {key: count for key, count in detector_object_num.get('baseball', 0).items()},
+    "image_number": 1,
+    "detected_objects": detected_objects
+}
+
+print(final_result)
+```
+
+
+============================== END ==============================
+
+------------- 19-05-34-28-856661 Execution reward: 0.0 -------------
+[Reward computation time: 2.5826 seconds]
+QAid: 10201_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Set the path to the image file
+path_to_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10201_0.png"
+
+# Define the labels to detect
+labels_to_detect = ['baseball', 'basket']
+
+# Set the confidence threshold
+threshold = 0.35
+
+# Set the optional model size
+model_size = 'base'
+
+# Set the optional save object and saved_image_path
+save_object = True
+saved_image_path = 'detected_objects'
+
+# Use the object_detector tool to detect the labels in the image
+result = Object_Detector_Tool.execute(image=path_to_image, labels=labels_to_detect, save_object=save_object, saved_image_path=saved_image_path, threshold=threshold, model_size=model_size)
+
+# Print the result
+print(result)
+
+
+============================== END ==============================
+
+------------- 19-05-34-28-856661 Execution reward: 0.0 -------------
+[Reward computation time: 1.9787 seconds]
+QAid: 10201_0
+Code: 
+
+```
+import numpy as np
+from object_detector.object_detector import Object_Detector_Tool
+from text_detector.text_detector import Text_Detector_Tool
+
+def estimate_fridges(image_path):
+    object_detector = Object_Detector_Tool()
+    text_detector = Text_Detector_Tool()
+
+    with open(image_path, 'r') as image_file:
+        try:
+            # Load image and predict
+            image = np.array(image_file.read())
+            object_labels = object_detector.predict(image=image)
+
+            # Predict text (if needed)
+            text_labels = text_detector.predict(image)
+            
+            # Combine results and count objects
+            results = []
+            for obj in object_labels:
+                detections = object_detector.execute(image=image, labels=[obj['name']])
+                if 'box' in detections:
+                    results.append([{'box': d['box'], 'score': d['score'], 'label': d['name'], 'saved_image_path': f'detected_objects/{obj["name"]}_{d["bbox_idx"]}.png' if obj['bbox_idx'] < len(detections['bbox']) else None} for d in detections['bbox']]
+            results = object_labels + results
+            total_objects = len(results)
+            text_objects = []
+
+            for text_result in text_labels:
+                box = ['[x0, y0]', '[x1, y1]', '0.0', '0.0']
+                box = ' '.join(box).replace('(', '').replace(')', '').replace(',', '').replace('[', '').replace(']', '').replace('0.0', '').split()
+                box.append(float(box[-1]))
+                text_objects.append({'bounding_box': box[:4], 'text': text_result, 'score': text_result})
+
+            total_objects += len(text_objects)
+
+            return {'results': results, 'total_objects': total_objects, 'fridges_found': object_labels, 'fridges_count': total_objects - 4 if text_detector.demo_mode else total_objects}
+        except Exception as e:
+            print(f"Error: {e}")
+            return {'results': [], 'total_objects': 0, 'fridges_found': None, 'fridges_count': None}
+
+    print("No fridge found.")
+    return {'results': [], 'total_objects': 0, 'fridges_found': None, 'fridges_count': None}
+
+
+============================== END ==============================
+

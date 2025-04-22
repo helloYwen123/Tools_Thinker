@@ -1,0 +1,64 @@
+--- Completion 1 ---
+final_result
+```python
+from object_detector_tool import *
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/7276_0.png'
+labels = ['baseball', 'basket']
+threshold = 0.2
+save_object = True
+saved_image_path = 'detected_objects'
+
+result, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+objects = [{'box': r['box'], 'score': r['score']}
+            for r in result]
+
+boxes, scores, object_count = [], [], []
+for label in labels:
+    object_count[str(label)] = 0
+    for i in range(len(boxes)):
+        if boxes[i]['bbox'][0] < (object_count[str(label)] + 1) * labels[i]['bbox'][2] and \
+                boxes[i]['bbox'][1] < (object_count[str(label)] + 1) * labels[i]['bbox'][3] and \
+                boxes[i]['bbox'][0] + boxes[i]['bbox'][2] > (object_count[str(label)] + 1) * labels[i]['bbox'][1] and \
+                boxes[i]['bbox'][1] + boxes[i]['bbox'][3] > (object_count[str(label)] + 1) * labels[i]['bbox'][0]:
+            if scores[i] >= threshold:
+                object_count[str(label)] += 1
+            boxes[i]['bbox'] = (boxes[i]['bbox'][0], boxes[i]['bbox'][1], boxes[i]['bbox'][0] + boxes[i]['bbox'][2] - 1, boxes[i]['bbox'][1] + boxes[i]['bbox'][3] - 1)
+            scores.append(scores[i])
+
+object_count['empty'] = 0
+for label, count in object_count.items():
+    if label != 'empty':
+        object_count[count] += 1
+
+result = [objects] if 'empty' not in object_count else [[]]
+for label, count in object_count.items():
+    if label != 'empty':
+        result = [{'bbox': box, 'text': text, 'score': score, 'label': label}
+                   for box, text, score in zip(result, objects, scores) if len(box) == 4 and len(text) > 0 and score == count]
+
+final_result = object_number
+```
+Reward: 0.0
+
+--- Completion 2 ---
+final_result
+Reward: 0.0
+
+--- Completion 3 ---
+final_result
+Reward: 0.0
+
+--- Completion 4 ---
+final_result
+Reward: 0.0
+
+--- Completion 5 ---
+final_result: 4
+final_result: 2
+final_result: generated lines
+Reward: 0.0
+
+--- Completion 6 ---
+final_result: 2
+Reward: 0.0
+

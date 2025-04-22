@@ -1,0 +1,214 @@
+------------- 20-23-55-21-972196 Execution reward: 0.0 -------------
+[Reward computation time: 2.6382 seconds]
+QAid: 3769_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+saved_image_path = "/path/to/save/image.png"  
+
+input_image = "/path/to/image.png"
+
+labels = ["baseball", "basket"]
+
+threshold = 0.35
+
+object_numbers = {}
+
+detected_objects = Object_Detector_Tool.execute(image=input_image, labels=labels, save_object=True, saved_image_path=saved_image_path, threshold=threshold)
+
+final_result = [{"label": "baseball", "num_objects": detected_objects["baseball"]}]
+
+for detected_object in detected_objects:
+    label = detected_object["label"]
+    obj_box = detected_object["box"]
+    label_details = detected_object["label"].split(', ')
+
+    if label not in object_numbers:
+        object_numbers[label] = {"num_objects": 0}
+
+    object_numbers[label]["num_objects"] += 1
+
+    if obj_box[3] < saved_image_path or obj_box[4] > saved_image_path:
+        object_numbers[label]["num_objects"] -= 1
+
+final_result = [final_result]
+for label, details in object_numbers.items():
+    final_result.append({"label": label, **details})
+
+print("Object Numbers")
+for label in object_numbers:
+    print(f"{label}: {object_numbers[label]['num_objects']}")
+print("\nFinal Recognized Labels")
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 20-23-55-21-972196 Execution reward: 0.0 -------------
+[Reward computation time: 2.6608 seconds]
+QAid: 3769_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+object_number = Object_Detector_Tool.execute(image="path/to_image.png", labels=["bed", "chair"], save_object=True, saved_image_path="detected_objects")
+
+final_result = {"1": {"bed": 1, "chair": 4}}
+for key, value in object_number.items():
+    if key.startswith("baseball"):
+        final_result[key] = {"baseball": 2, "basket": 0}
+    elif key.startswith("basket"):
+        final_result[key] = {"baseball": 0, "basket": 2}
+print(json.dumps(final_result, indent=2))
+
+
+============================== END ==============================
+
+------------- 20-23-55-21-972196 Execution reward: 0.0 -------------
+[Reward computation time: 2.6421 seconds]
+QAid: 3769_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Example image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/3769_0.png"
+
+# Example object labels
+object_labels = ['baseball', 'basket']
+
+# Confidence threshold and default model size
+confidence_threshold = 0.35
+model_size = "tiny"
+
+# Function call
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=object_labels, confidence_threshold=confidence_threshold, model_size=model_size, save_object=False)
+
+# Calculate total count for each detected object
+object_count = {obj_label: len(detected_objects) for obj_label, detected_objects in object_number.items()}
+
+# Example output
+final_result = {
+  "detected_objects": detected_objects,
+  "object_number": object_count
+}
+
+
+============================== END ==============================
+
+------------- 20-23-55-21-972196 Execution reward: 0.0 -------------
+[Reward computation time: 2.3176 seconds]
+QAid: 3769_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/3769_0.png"
+
+# Define labels to detect (choose between 'baseball' and 'basket')
+labels_to_detect = ['baseball', 'basket']
+
+# Set the confidence threshold and model size
+confidence_threshold = 0.35
+model_size = 'tiny'
+
+# Attempt to detect objects
+try:
+    detected_objects = Object_Detector_Tool.execute(image_path, labels=labels_to_detect, save_object=False, saved_image_path=" detections ").get("object_number")
+except Exception as e:
+    print(f"Error detecting objects: {e}")
+    final_result = []
+    finally:
+        if isinstance(detected_objects, dict):
+            detected_objects = detected_objects.get("object_number")
+        if detected_objects:
+            final_result = []
+            for label, object_count in detected_objects.items():
+                final_result.append({"label": label, "count": object_count})
+        else:
+            final_result = []
+
+# Display final result
+if final_result:
+    for result in final_result:
+        print(result)
+else:
+    print("No objects found.")
+
+
+============================== END ==============================
+
+------------- 20-23-55-21-972196 Execution reward: 0.0 -------------
+[Reward computation time: 3.0489 seconds]
+QAid: 3769_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/3769_0.png")
+
+print(f"Number of beds: {final_result[0]}")
+
+
+============================== END ==============================
+
+------------- 20-23-55-21-972196 Execution reward: 0.0 -------------
+[Reward computation time: 2.5186 seconds]
+QAid: 3769_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Set the image file
+image_path = '/path/to/image.png'
+
+# Set the language codes and difficulty level
+languages = ['en', 'DE']
+detail = 1
+
+# Create the object detector tool
+object_detector = Object_Detector_Tool(
+    object_labels=['bed'], 
+    mode='bed', 
+    labels=languages, 
+    detail=detail
+)
+
+# Function to extract detected objects
+def extract_filtered_objects():
+    # Execute the object detector tool
+    results = object_detector.execute(image=image_path)
+
+    # Extract the bed objects
+    bed_objects = []
+    for label, object_info in results['detected_objects']:
+        if label['object_name'] == 'bed':
+            bed_objects.append(object_info)
+
+    return results, bed_objects
+
+# Execute the object detector tool
+result, bed_objects = extract_filtered_objects()
+
+# Determine the number of beds
+bed_count = len(bed_objects)
+
+# Convert to a string
+final_result = f"1 bed visible in the scene."
+
+if bed_count == 0:
+    final_result = f"0 beds visible in the scene."
+elif bed_count == 1:
+    final_result = f"{1} bed visible in the scene."
+
+if bed_objects:
+    final_result += f" There are {len(bed_objects)} beds detected in the image."
+else:
+    final_result += " There are no beds detected in the image."
+
+final_result
+
+
+============================== END ==============================
+

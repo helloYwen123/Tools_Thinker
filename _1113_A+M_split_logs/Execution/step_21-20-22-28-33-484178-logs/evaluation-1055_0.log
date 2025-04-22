@@ -1,0 +1,176 @@
+------------- 20-22-28-33-484178 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 1055_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-22-28-33-484178 Execution reward: 0.0 -------------
+[Reward computation time: 2.3858 seconds]
+QAid: 1055_0
+Code: 
+
+import Object_Detector_Tool
+from_text_detector_Tool import *
+
+if 'baseball' in detected_objects:
+    baseball_objects = detected_objects['baseball']
+    baseball_object_count = len(baseball_objects)
+
+if 'basket' in detected_objects:
+    basket_objects = detected_objects['basket']
+    basket_object_count = len(basket_objects)
+
+final_result = f"2 fridges ({basket_object_count}) visible in the scene."
+
+# Call the tool
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=['baseball', 'basket'], save_object=True, saved_image_path="detected_objects")
+
+# Call the tool
+result = Text_Detector_Tool.execute(image=image_path, languages=['en', 'de'], detail=1)
+
+for detection in result:
+    if 'baseball' in detection['box']['text'].lower():
+        baseball_objects.extend([detection])
+    if 'basket' in detection['box']['text'].lower():
+        basket_objects.extend([detection])
+
+if baseball_objects or basket_objects:
+    final_result += f"\n2 fridges ({basket_object_count}) visible in the scene."
+else:
+    final_result += f"0 fridges."
+
+print("Final result:", final_result)
+
+
+============================== END ==============================
+
+------------- 20-22-28-33-484178 Execution reward: 0.0 -------------
+[Reward computation time: 2.7893 seconds]
+QAid: 1055_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+import_name: "Object_Detector_Tool"
+
+final_result = Object_Detector_Tool.execute(image="path/to/image.png", labels=["refrigerator", "countertop"], save_object=True)
+
+print("Number of fridges detected:", final_result[0]["Object"][1]["number_of_objects_in_image"])
+
+
+============================== END ==============================
+
+------------- 20-22-28-33-484178 Execution reward: 0.0 -------------
+[Reward computation time: 3.0411 seconds]
+QAid: 1055_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="1055_0.png", labels=["fridge"], save_object=True, saved_image_path="detected_objects")
+
+print("Fridges detected:", final_result)
+
+
+============================== END ==============================
+
+------------- 20-22-28-33-484178 Execution reward: 0.0 -------------
+[Reward computation time: 2.3518 seconds]
+QAid: 1055_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def describe_fridge_in_kitchen(image, labels, confidence_threshold=0.35, model_size="tiny", save_object=True, saved_image_path="detected_objects"):
+    def detect_objects(image_path, language="en", detail=0):
+        result = []
+        languages_options = {"English", "German"}
+        if language not in languages_options:
+            languages_options.add(language)
+        if model_size not in ["tiny", "base"]:
+            model_size = "tiny"
+        text_detector = Object_Detector_Tool()
+        detector_results = text_detector.execute(image_path, languages=language, detail=detail)
+        for detected_objects in detector_results:
+            for obj in detected_objects:
+                label = labels
+                if label:
+                    label.append(obj["label"])
+                    score = obj["score"]
+                    if obj["box"]:
+                        obj["box"].append(obj["x0"] if obj["x0"] < obj["x1"] else "[{:.1f}, {:.1f}]".format(obj["x0"], obj["x1"]))
+                        obj["score"] = round(score, 1)
+                        obj["score"].append(score)
+                    else:
+                        obj.pop("x0", None)
+                        obj.pop("x1", None)
+                else:
+                    if label:
+                        label.append(list(range(len(label))))
+                        score = list(range(len(score)))
+                        obj = {"label": label, "score": score, "box": obj["box"]}
+                        obj["box"] = list(reversed(list(reversed(obj["box"]))))
+                if save_object:
+                    detector_results.append(obj)
+        return detector_results
+
+    detected_objects = detect_objects(image, labels)
+    object_number = {"baseball": 0, "basket": 0}
+    for label in detected_objects.keys():
+        if isinstance(detected_objects[label], list):
+            for detection in detected_objects[label]:
+                object_number[label] += 1
+    return detected_objects, object_number
+
+
+============================== END ==============================
+
+------------- 20-22-28-33-484178 Execution reward: 0.0 -------------
+[Reward computation time: 2.0770 seconds]
+QAid: 1055_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Define the path to the image file
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1055_0.png"
+
+# Create a list to store detected objects
+detected_objects = []
+
+# Set the threshold value for detection confidence
+threshold = 0.35
+
+# Set the label for which we want to detect objects
+labels_to_detect = ["baseball", "basket"]
+
+# Set the default location for saving the detected objects
+save_save_image_path = "/detected_objects"
+
+# Execute the tool
+result = Object_Detector_Tool.execute(image=image_path, labels=labels_to_detect, threshold=threshold, save_object=True, saved_image_path=save_save_image_path)
+
+# The results are stored in a tuple. The first element is a dictionary mapping each detected label to a list of detection results (each with box, score, and optionally a saved image path). 
+detected_objects += result[0]
+
+# The second element of the tuple is a dictionary mapping each label to the number of detected objects in the image.
+object_number = {
+  *labels_to_detect: result[0][0][1].count()
+}
+
+# Generate the final result for text detection
+result_text_detection = Text_Detector_Tool.execute(image=image_path, languages=['en', 'de'])
+if result_text_detection:
+  detected_objects.append(result_text_detection)
+  object_number.update({"Text": len(result_text_detection[0])})
+else:
+  detected_objects.append({"empty": len(result_text_detection[0])})
+
+final_result = {
+  "detected_objects": detected_objects,
+  "object_number": object_number
+}
+
+
+============================== END ==============================
+

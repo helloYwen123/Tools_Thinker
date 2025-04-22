@@ -1,0 +1,175 @@
+
+[QAid]4929_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tool_module_name.object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+    image='/nfs/data8/liao/wxie/SAT/SAT_images_train/4929_0.png',
+    labels=['televiwer'],
+    threshold=0.35,
+    model_size='base',
+    save_object=False,
+    saved_image_path='detected_objects'
+)
+
+print(f"Detected {len(final_result['detected_objects'])} television(s) in the image.")
+del Object_Detector_Tool
+
+
+============================== END ==============================
+
+
+[QAid]4929_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tool_module import Object_Detector_Tool, Text_Detector_Tool
+
+# Create an instance of the Object_Detector_Tool class
+detector = Object_Detector_Tool()
+
+# Define the path to the image file
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/4929_0.png"
+
+# Set the language codes and detailed output level
+languages = ["eng", "de"]
+detail = 1
+
+# Execute the detection
+result = detector.execute(image=image_path, languages=languages, detail=detail)
+
+# Extract detected text blocks
+detected_text_blocks = result["detected_objects"]
+not_found = result["object_number"]
+
+# Process the detected text blocks according to the required text
+processed_blocks = []
+
+for block in detected_text_blocks:
+    # Extract the coordinates, recognize text, and calculate the confidence score
+    x0, y0, x1, y1 = block[0]
+    recognized_text = block[1]
+    score = block[3]
+
+    # Print the recognized text with confidence score
+    print(f"Recognized text: {recognized_text} ({score:.2f})")
+    processed_blocks.append({"x0": x0, "y0": y0, "x1": x1, "y1": y1, "recognized_text": recognized_text, "score": score})
+
+# Check the count of missed text
+if not_found:
+    print(f"Detected {not_found} blocks, but no unrecognized text was found.")
+else:
+    print(f"Detected {sum(processed_blocks)} blocks.")
+
+# Close the detector objects
+detector.close()
+text_detector = Text_Detector_Tool()
+
+============================== END ==============================
+
+
+[QAid]4929_0
+
+[Code does not include Tools Usage]
+code: 
+import object_detector_tool as tool
+import text_detector_tool as text_tool
+
+result = tool.object_detection(image='path/to/scene.png')
+print(result)
+
+for item in result[0]:
+    print(item)
+
+detected_objects = {}
+for image in result[1]:    
+    label = image[0]['labels'][0]['baseball']['box'][0]  
+    if label in detected_objects:
+        detected_objects[label].append(item["box"])
+    else:
+        detected_objects[label] = [item["box"]]
+
+for label, boxes in detected_objects.items():
+    object_number = len(boxes)
+    print(({"text": "Number:", "value": object_number}, detected_objects[label]))
+
+============================== END ==============================
+
+
+[QAid]4929_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 1)
+
+Completion Content: 
+<command><python_module>Object_Detector_Tool</python_module>  # Import tool classes
+<python_code>
+import numpy as np
+
+def num_tvs(image_path):
+    import_name: "Text_Detector_Tool"  # Import text detection tool
+
+    # Read image and process detections by languages
+    languages = ['en', 'de']
+    result = text_detector(image_path, languages=languages)
+
+    # Count the number of TVs in the image using the text detection tool
+    num_tvs = np.sum(result[0])
+
+    return num_tvs
+</python_code>
+
+# Example usage
+num_tvs = num_tvs(image_path="path/to/image.png")
+print(f"Number of TVs: {num_tvs}")
+</command>
+============================== END ==============================
+
+
+[QAid]4929_0
+
+[Code Includes Tools Usage]
+code: 
+from Object_Detector_Tool import Object_Detector_Tool, detected_objects, object_number
+from Text_Detector_Tool import Text_Detector_Tool, result
+
+# Set the input image and paths
+input_image = 'nfs/data8/liao/wxie/SAT/SAT_images_train/4929_0.png'
+labels = ['baseball', 'basket']
+threshold = 0.35
+
+# Detect the baseball and basket objects
+result = Object_Detector_Tool.execute(image=input_image, labels=labels, threshold=threshold, save_object=True, saved_image_path='detected_objects')
+
+# Get the number of baskets detected
+num_objects = detected_objects.result['basket']
+
+if num_objects > 0:
+    # For the detected basket objects, get their bounding box coordinates
+    boxes = result.detection_results[5][1]['bbox']
+
+    # Print the detected objects
+    print(result.result)
+
+    print(f"Detected {num_objects} baskets in the image.")
+else:
+    print('No baskets detected in the image.')
+
+============================== END ==============================
+
+
+[QAid]4929_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 1)
+
+Completion Content: 
+<command>import tool_module: 'object_detector', object_class: 'Object_Detector_Tool'.\n\nfinal_result: 'detected_objects : {\n\'baseball\': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'image_baseball_1.png'}],\n\'basket\': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'image_basket_1.png'}],\n\'{}': [{'box': (..., 2), 'score': 0.25, 'saved_image_path': 'image_extra_2.png'}],...\n', object_number : {'baseball': 1, 'basket': 2}\n'\nfinal_output: '{}' if final_result is not empty else 'No detected objects.\nNo saved images.'</command>
+============================== END ==============================
+

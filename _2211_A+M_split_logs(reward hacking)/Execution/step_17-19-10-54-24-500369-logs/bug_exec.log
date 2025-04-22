@@ -1,0 +1,140 @@
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+object_number = {'baseball': 1, 'basket': 2}
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+# Example: Detecting 'baseball' and 'basket' in the image
+# result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/6083_0.png', labels=['chair'], save_object=True, saved_image_path='detected_objects')
+
+if final_result[0]:
+  detected_objects = final_result[0].get('detected_objects')
+  object_number = final_result[0].get('object_number')
+
+  print("Objects detected:")
+  for label in detected_objects:
+      print(f"('{label}', {detected_objects[label][0]}, {detected_objects[label][1]}, {detected_objects[label][2]}, {detected_objects[label][3]})")
+
+  print(f"Total number of objects detected: {object_number}")
+else:
+  print("Text detection failed.")
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+import os
+import numpy as np
+
+def number_of_windows(image_path):
+    """Detect and count the number of windows in an image."""
+    window_finder = windows.CWDFinder(image_path)
+    window_finder.detect()
+    
+    width, height = window_finder.get_window_sizes()
+    window_nums = np.arange(1, window_finder.num_windows() + 1)
+    
+    return {'windows' : width, 'numbers': window_nums.sum()}
+
+def detect_windows(image_path, languages=['en', 'de']):
+    """Detect and return text blocks in an image."""
+    texts = text_denoise(text_search(image_path, languages)).values()
+    
+    if texts:
+        return texts
+    else:
+        print('Could not detect text in the image.')
+        return {}
+
+def find_windows(image_path, languages=['en', 'de']):
+    """Detect and count the windows with text blocks in an image."""
+    texts = {}
+    for language in languages:
+        texts[language] = detect_windows(image_path, languages=[language])
+    
+    return texts
+
+def get_windows(image_path, languages=['en', 'de']):
+    """Get windows containing text blocks in an image."""
+    results = {}
+    for language in languages:
+        texts = detect_windows(image_path, languages=[language])
+        for language in languages:
+            results.update(texts[language])
+    
+    return results
+
+def generate_objects(image_path, labels=['baseball', 'basket'], languages=['en', 'de']):
+    """Detect and count the windows with text blocks and numbers."""
+    windows = find_windows(image_path, languages=[label for label in languages])
+    
+    if windows:
+        results = {}
+        for label in labels:
+            if label in windows:
+                results[label] = number_of_windows(label)
+            else:
+                results[label] = 0
+    
+        return results
+    else:
+        print('Could not detect windows with text blocks in the image or the specified languages.')
+        return None
+
+if __name__ == "__main__":
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6083_0.png"
+    languages = ["en", "de"]
+    
+    result = generate_objects(image_path, languages)
+    if result is not None:
+        print(result)
+    else:
+        print("Failed to generate object information.")
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+
+============================== END ==============================
+

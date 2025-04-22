@@ -1,0 +1,46 @@
+
+[Exctuion Failed]
+
+name 'counts' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Initialize the Object_Detector_Tool
+tool = Object_Detector_Tool()
+
+# Set the image path and the labels ('baseball', 'basket')
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/12239_0.png'
+object_labels = ['baseball', 'basket']
+object_detection_tool = tool
+result = object_detection_tool.execute(image=image_path, labels=object_labels)
+
+final_result = None
+if result:
+    # Parse the returned results
+    detected_boxes, score_list = result
+
+    # Filter out non-flying ground (i.e., objects with score < 0.35)
+    detected_boxes = [bbox for bbox in detected_boxes if bbox[2] > 0.35]
+
+    # Extract the detected objects and their counts
+    detected_objects = result[1]
+    counts = {'baseball': 0, 'basket': 0}
+    for label, detection in detected_objects.items():
+        if label in detected_objects:
+            counts[label] = 1 + counts.get(label, 0)
+        else:
+            counts['baseball'] += 1
+            counts['basket'] += 1
+
+    # Calculate the total number of detected objects
+    total_objects = sum(counts.values())
+
+final_result = {
+    "objects": counts,
+    "total_objects": total_objects
+}
+
+
+============================== END ==============================
+

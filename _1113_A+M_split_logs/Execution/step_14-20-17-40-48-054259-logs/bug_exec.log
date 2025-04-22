@@ -1,0 +1,89 @@
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+from Object_Detector_Tool import Object_Detector_Tool, text_detector
+import_name: "Object_Detector_Tool"
+generate_cubed_image = False
+
+if generate_cubed_image:
+    tool_kwargs = {
+        "input_types": {
+            "image": "/nfs/data8/liao/wxie/SAT/SAT_images_train/5052_0.png",
+            "labels": ["baseball", "basket"],
+            "model_size": "tiny",
+            "save_object": True,
+            "saved_image_path": "detected_objects/"
+        }
+    }
+else:
+    tool_kwargs = {
+        "input_types": {
+            "image": "/nfs/data8/liao/wxie/SAT/SAT_images_train/5052_0.png",
+            "languages": ["en", "de"],
+            "detail": 1
+        }
+    }
+
+tool = Object_Detector_Tool(tool_kwargs)
+
+for result in tool.execute_return_dict:
+    if "baseball" in result:
+        detected_objects = result["object_number"]
+        break
+
+for label, detected_objects in detected_objects.items():
+    for detection in detected_objects[label]["detection_result"]:
+        predicted_text = "Detected text: " + detection["text"] + " with a confidence score of " + str(detection["score"])
+        print(predicted_text)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+```python
+# Importing necessary tool classes
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+def find_doors_in_office(office_path, labels):
+    """
+    This function uses either the Object_Detector_Tool or Text_Detector_Tool tool to find doors in an office image.
+    It returns a list of door coordinates and a dictionary containing the number of detected doors.
+    The door coordinates are represented as [(x1, y1), (x2, y2)] and the door count is provided as a dictionary where keys are door categories.
+    """
+    detected_objects, object_count = Object_Detector_Tool.execute(image=office_path, labels=labels, save_object=True, saved_image_path='detected_objects')
+    
+    door_coordinates = []
+    door_count = {'baseball': 0, 'basket': 0}
+    for door_labels in detected_objects['baseball']:
+        door_count['baseball'] += 1
+        x1, y1, x2, y2 = door_labels['bbox']
+        door_coordinates.append([(x1, y1), (x2, y2)])
+
+    for door_labels in detected_objects['basket']:
+        door_count['basket'] += 1
+        x1, y1, x2, y2 = door_labels['bbox']
+        door_coordinates.append([(x1, y1), (x2, y2)])
+
+    door_count = {**object_count, **door_count}
+    return door_coordinates, door_count
+
+# Using the tool classes
+door_coordinates, door_count = find_doors_in_office('path_to_your_office_image.png', labels=['baseball', 'basket'])
+final_result = {
+    'door_coordinates': door_coordinates,
+    'door_count': door_count
+}
+print(final_result)
+```
+
+
+============================== END ==============================
+

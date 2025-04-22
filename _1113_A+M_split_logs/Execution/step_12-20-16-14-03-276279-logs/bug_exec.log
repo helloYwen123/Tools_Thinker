@@ -1,0 +1,136 @@
+
+[Exctuion Failed]
+
+No module named 'tools'
+code: 
+from tools.object_detector import Object_Detector_Tool, detected_objects, object_number
+import_name: "None"
+
+final_result = {"num_tablets": 1, "num_items": 0}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'os' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Read image path from the environment variable
+input_image = os.getenv('PATH_TO_IMAGE')
+
+# Set language codes for OCR
+languages = ['en', 'zh']
+
+# Set the level of detail for OCR
+detail = 1
+
+result = Object_Detector_Tool.execute(image=input_image, languages=languages, detail=detail)
+
+# Extract detected object dictionary from the result
+detect_objects = result["detected_objects"]
+
+# Determine the number of detected objects
+object_number = dict_to_number(detect_objects)
+
+final_result = {
+    "count": object_number.get('baseball', 0),
+    "label_distribution": {key: count for key, count in result["labels"].items()}
+}
+
+def dict_to_number(results):
+    result_dict = {}
+    for value in results.values():
+        if value:
+            result_dict[value["saved_image_path"]] = value["count"]
+    return result_dict
+
+result = dict_to_number(detect_objects)
+
+final_result["count"] = result["total_objects"]
+final_result["label_distribution"] = result["label_count"]
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+cannot import name 'Text_Detector_Tool' from 'object_detector' (/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/object_detector/__init__.py)
+code: 
+
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+final_result = []
+object_d_ = Object_Detector_Tool
+object_d_.image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8981_0.png"
+object_d_.labels = ["baseball", "basket"]
+object_d_.save_object = True
+object_d_.saved_image_path = "detected_objects"
+object_d_.execute()
+detected_objects = object_d_.execute()
+detected_objects = detected_objects[0]
+
+for label, detection in detected_objects.items():
+    if "baseball" in label:
+        for detection in detection:
+            if "score" in detection and detection["score"] > 0.95:
+                final_result.append((["Baseball"], label, detection["score"]))
+            else:
+                break
+
+for label, detection in detected_objects.items():
+    if "basket" in label:
+        for detection in detection:
+            if "score" in detection and detection["score"] > 0.95:
+                final_result.append((["Basketball"], label, detection["score"]))
+            else:
+                break
+
+if final_result:
+    print(f"Detected '{final_result[0][0]}': {final_result[0][1]} with {final_result[0][2]} confidence.")
+    final_result.remove(final_result[0])
+else:
+    print("No detected baseball or basketball.")
+
+result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'])
+result = result[0]
+print(result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+import Text_Detector_Tool from_module
+
+dining_tables = []
+
+def find_dining_tables(image_path):
+    language = ["en"]
+    detail = 0.5
+    result = Text_Detector_Tool.execute(image=image_path,
+                                       languages=language,
+                                       detail=detail)
+
+    if result:
+        for block in result:
+            if block["recognized_text"] in ["DiningTables"]:
+                dining_tables.append((block["box"], block["recognized_text"], block["confidence_score"]))
+
+# Given an image path, find and count "DiningTables"
+result = find_dining_tables("/nfs/data8/liao/wxie/SAT/SAT_images_train/0040_0.png")
+
+final_result = "Number of DiningTables: " + str(len(result))
+print(final_result)
+
+
+============================== END ==============================
+

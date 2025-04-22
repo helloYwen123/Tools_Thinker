@@ -1,0 +1,116 @@
+
+[Exctuion Failed]
+
+No module named 'tools'
+code: 
+
+from tools import object_detector_tool, text_detector_tool
+
+def count_objects_in_image(image_path, labels, save_object=True, saved_image_path="detected_objects"):
+    """
+    Count and locate objects in an image using object_detector_tool.
+
+    :param image_path: str - Path to the image file.
+    :param labels: list - A list of object labels to detect.
+    :param save_object: bool - Whether to save the detected objects.
+    :param saved_image_path: str - The path to save the detected object images.
+    """
+    object_detector_tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+    # Load the detected images
+    result = object_detector_tool.execute(image=image_path, language="English", saved_image_path=saved_image_path)
+
+    detected_objects = []
+    objects_count = {}
+
+    for block in result:
+        label = block[0][-1].split(".")[0]  # Extract the object label from the bounding box coordinates
+        if label not in objects_count:
+            objects_count[label] = 0
+
+        for item in block[3]:
+            if item["box"][0] >= 0 and item["box"][2] >= 0 and item["box"][1] >= 0:
+                objects_count[label] += 1
+                detected_objects.append({"label": label, "bbox": item["box"]})
+
+    return objects_count, detected_objects
+
+# Example usage
+image_path = "path/to/image.jpg"
+
+# Language to use for text detection (e.g., English, German)
+language = "English"
+
+finally_result = text_detector_tool.execute(image=image_path, languages=["en", "de"])  # Example with languages=['en', 'de']
+
+# Print the example result
+print(f"Detected text block coordinates, text, and confidence: {finally_result}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Object_Detector_Tool' is not defined
+code: 
+import_object_detector_tool: object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=['baseball', 'basket'], save_object=True, saved_image_path="detected_objects")
+final_result = {}
+for label, detected_objects in detected_objects.items():
+  detected_objects = [obj for obj in detected_objects if obj['score'] > 0.35]
+  final_result[label] = detected_objects
+
+detected_objects : {
+  'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],
+  'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]
+}
+
+object_number : {'baseball': 1, 'basket': 2}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 32)
+code: 
+
+from object_detector_tool import (
+    object_detector_tool as object_detector,
+    saved_image_path
+)
+
+# Define input parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/551_0.png"
+label_list = ['baseball', 'basket']
+save_object = True
+threshold = 0.35
+model_size = 'tiny'
+save_image_path = "detected_objects"
+
+# Execute object detection
+result = object_detector(image=image_path, labels=label_list, threshold=threshold, save_object=save_object, saved_image_path=save_image_path)
+
+if 'detected_objects' in result:
+    detected_objects = result['detected_objects']
+    object_number = result['object_number']
+    print(f"Number of detected {label_list}: {object_number}")
+    for label, result in detected_objects.items():
+        detected_box = result['box']
+        detected_score = result['score']
+        detected_saved_image_path = result['saved_image_path']
+        print(f"Label: {label}")
+        print(f"Detected box: ({detected_box['x1'], detected_box['y1']}, {detected_box['x2'], detected_box['y2']}, {detected_box['x3'], detected_box['y3']})")
+        print(f"Detected score: {detected_score}")
+else:
+    print("Text detection failed.")
+    print("Please check the input image and language specifications.")
+finally:
+    saved_image_path_result = result['detected_objects'][0]['saved_image_path']
+    print(f"Saved images: {saved_image_path_result}")
+
+
+============================== END ==============================
+

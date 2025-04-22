@@ -1,0 +1,35 @@
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+import_name: "Object_Detector_Tool"
+import_path: "Object_Detector_Tool"
+
+command_result = Object_Detector_Tool().execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+num_labels, detected_objects = command_result[0], command_result[1]
+
+if detected_objects:
+    text_result = Text_Detector_Tool().execute(image="path/to/image", languages=["en", "de"]).get("result", [])
+    text_blocks = [[[d[1][0], d[1][1], d[1][2], d[1][3]], d[1][1]] for d in text_result]
+
+    text_blocks.append([[[[-1, -1]], "Detected text", -1]])
+
+    text_blocks[0].append((f"{num_labels}", "baseball", detected_objects))
+    text_blocks[0].append((f"{num_labels}", "basket", detected_objects))
+
+    final_result = {
+        "number": num_labels,
+        # Any other relevant conversion here based on the final_result
+    }
+
+    print(final_result)
+else:
+    final_result = {}
+    print("No detected text found.")
+
+
+============================== END ==============================
+

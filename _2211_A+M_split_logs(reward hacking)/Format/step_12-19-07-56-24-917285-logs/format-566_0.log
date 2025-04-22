@@ -1,0 +1,197 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+saved_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/566_0.png"
+label1 = "baseball"
+label2 = "basket"
+confidence_threshold = 0.35
+model_size = "tiny"
+
+# Detect objects
+detected_objects, object_number = Object_Detector_Tool.execute(image=saved_image_path, labels=[label1, label2], save_object=True)
+object_number[label1], object_number[label2]
+</command>
+Reward: 0.5
+
+--- Completion 2 ---
+<command>from object_detector import Object_Detector_Tool, text_detector
+
+
+def count_objects(image_path, labels, threshold, model_size="tiny", save_object=False, saved_image_path="detected_objects"):
+    try:
+        detected_objects = Object_Detector_Tool.execute(image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+        # Extracting number of objects for each label
+        object_number = {label: detected_objects[label].count() for label in detected_objects}
+
+        return detected_objects, object_number
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return [], {}
+
+</command>
+Reward: 0.5
+
+--- Completion 3 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+def count_garbage_blocks(image_path, show=False, save_to='./detected_objects'):
+    tool = Object_Detector_Tool(
+        image=image_path,
+        labels=['garbage'],
+        threshold=0.35,
+        save_object=True,
+        saved_image_path='detected_objects'
+    )
+    if not show:
+        saved_objects_path = tool.execute()
+    else:
+        saved_objects_path = ''
+    
+    return saved_objects_path
+
+def get_number_of_garbage_objects(image_path, languages=['en', 'de']):
+    tool = Text_Detector_Tool(
+        languages=languages,
+        detail=1
+    )
+
+    languages = [0] + list(range(2, 255))  # Adding an empty label for the garbage
+    detected_objects = tool.execute(image=image_path, languages=languages)
+
+    return len(detected_objects), languages
+
+path_to_image = '/nfs/data8/liao/wxie/SAT/SAT_images_train/566_0.png'
+show_objects, languages = get_number_of_garbage_objects(path_to_image, languages=['en', 'de'])
+
+final_result = {
+    "total_garbage_objects": len(detected_objects),
+    "number_of_text_languages": languages
+}
+
+final_result["detected_objects_with_language"] = list(zip(languages, detected_objects))
+final_result["number_of_garbage_objects"] = list(final_result["detected_objects_with_language"])
+final_result
+
+count_garbage_blocks(path_to_image, show=True, save_to='./detected_objects')
+'''
+Reward: 0.0
+
+--- Completion 4 ---
+<command>
+from tool.object_detector import Object_Detector_Tool
+
+# Load the image and detect objects
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/566_0.png"
+labels = ["baseball", "basket"]
+save_object = True
+saved_image_path = "/nfs/data8/liao/wxie/SAM/SAT_images_train/566_0.png"
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+print(f"Detected Bags: {len(detected_objects['baseball'])}")
+print(f"Detected Bags: {len(detected_objects['basket'])}")
+</command>
+Reward: 0.5
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Initialize object detector
+object_detector = Object_Detector_Tool()
+
+# Image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/566_0.png'
+
+# Check if Text_Detector_Tool is available
+if 'text_detector' in tools:
+    print("Text Detection is not available. Returning text-based answer.")
+else:
+    print("Text Detection is not available.")
+else:
+    print("Importing required tools from: object_detector")
+
+    # Input list of languages
+    languages = ['en', 'de']
+
+    # Set the level of detail (0 for simpler output, 1 for detailed output)
+    detail = 1
+
+    # Detect the objects in the image
+    result = object_detector.execute(image=image_path, languages=languages, detail=detail)
+
+    if result:
+        detected_objects = {}
+
+        for label in result['detected_objects']:
+            for detection in result['detected_objects'][label]:
+                # Detect the bounding box, label, and confidence score of the object
+                x1, y1, x2, y2 = detection['box'][0]
+                label_ = detection['text'][0]
+                confidence = detection['score']
+
+                # Add the bounding box and confidence score to detected_objects
+                if label not in detected_objects:
+                    detected_objects[label] = []
+                detected_objects[label].append({
+                    'box': (x1, y1, x2, y2),
+                    'score': confidence
+                })
+
+                # Check if the object should be saved
+                if 'save_object' in result['detected_objects'][label]:
+                    detected_items = {'box': detection['box'],
+                                     'score': confidence,
+                                     'saved_image_path': result['detected_objects'][label]['saved_image_path']}
+                    object_detector.save_objects(detected_items, f'detected_objects')
+
+        print(f"Number of detected objects: {len(detected_objects)}")
+
+    else:
+        print("Not enough attempts to reach the requested image")
+</command>
+Reward: 0.5
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Given image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/566_0.png'
+
+# List of interests (e.g., 'baseball', 'basket')
+interests = ['baseball', 'basket']
+
+# Optional: Set a confidence threshold
+conf_thresh = 0.35
+
+# Optional: Set a model size
+model_size = 'tiny'
+
+# Optional: Set the save_path
+save_object = True
+
+# Convert image to PIL or another format suitable for detecting objects
+# image = ...  # Load image here
+
+# Detect interests in the image and save individual detecting cases
+detected_objects, object_count = Object_Detector_Tool.execute(
+    image=image_path,
+    labels=interests,
+    save_object=save_object,
+    saved_image_path='detected_objects'
+)
+
+# Format and print the detected objects information
+result = {
+    'detected_objects': detected_objects,
+    'object_count': object_count,
+    'message': f'Detected objects in {image_path}:'
+}
+print(result)
+</command>
+Reward: 0.5
+

@@ -1,0 +1,50 @@
+
+============================== New Completed Execution ==============================
+[EXEC CODE]
+
+try:
+    from_module: "Object_Detector_Tool"
+    import_name: "Object_Detector_Tool"
+
+    # Define the object types
+    object_types = ["chair", "table", "bag"]
+
+    # Set the file path and labels for detection
+    # Replace 'path_to_image' with the actual path to the image
+    path_to_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/7862_0.png"
+
+    # Call the tool to detect chairs, tables, and trash cans
+    results = Object_Detector_Tool.execute(image=path_to_image, labels=['chair', 'table', 'bag'], save_object=False)
+
+    # The result includes a dictionary of detected chairs, tables, and trash cans
+    detected_objects = results[0]
+    object_names = []
+
+    for label, detection_results in detected_objects.items():
+        for result in detection_results:
+            if label in object_types:
+                object_name = label
+                score = result['score']
+                bounding_box = result['box']
+
+                # Add the detected object information to the list
+                object_names.append({'object_name': object_name, 'score': score, 'bounding_box': bounding_box})
+
+    final_result = {
+        "chair_count": len([obj['object_name'] for obj in object_names if obj['object_name'] in ['chair']]),
+        "table_count": len([obj['object_name'] for obj in object_names if obj['object_name'] in ['table']]),
+        "trash_can_count": len([obj['object_name'] for obj in object_names if obj['object_name'] in ['bag']])
+    }
+except Exception as e:
+    final_result = {"error": f"An error occurred while executing the Python tool: {e}"}
+finally:
+    print(f"Final result: {final_result}")
+
+[THE PRINT OUTPUT]
+Final result: {'error': "An error occurred while executing the Python tool: name 'Object_Detector_Tool' is not defined"}
+
+[GENERATE VALID FINAL_RESULT]
+{'error': "An error occurred while executing the Python tool: name 'Object_Detector_Tool' is not defined"}
+
+============================== END ==============================
+

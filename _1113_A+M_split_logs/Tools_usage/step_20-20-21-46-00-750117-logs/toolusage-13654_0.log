@@ -1,0 +1,137 @@
+
+[QAid]13654_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+The image does not contain any text. Therefore, there are no text blocks detected in the image.
+
+The number of chairs in the scene is:
+
+7
+============================== END ==============================
+
+
+[QAid]13654_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Step 1: Create an Object_Detector_Tool object with the necessary parameters
+detector = Object_Detector_Tool(image="path/to/image.png")
+
+# Step 2: Detect the objects in the image
+res = detector.execute()
+
+final_result = res[0][1]
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]13654_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/scene.png', labels=['Table', 'Chair'], save_object=True, saved_image_path='detected_objects')
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]13654_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_chairs():
+    final_result = []
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13654_0.png"
+    labels = ["chair"]
+    threshold = 0.1
+    model_size = "base"
+    save_object = True
+
+    detected_objects = Object_Detector_Tool.execute(image_path, labels=labels, save_object=save_object, model_size=model_size,
+                                      threshold=threshold)
+    chairs = set([d['bbox'] for d in detected_objects['chair']])
+
+    for count, name in zip(detected_objects['object_number']['chair'].values(), chairs):
+        if count > 0:
+            final_result.append({
+                "label": "{id} chair", 
+                "confidence": "{:.2f}".format(count * threshold), 
+                "image_path": detected_objects['image_id']
+            })
+
+    return final_result
+
+count_chairs()
+
+============================== END ==============================
+
+
+[QAid]13654_0
+
+[Code Includes Tools Usage]
+code: 
+
+def detect_objects_and_count(image_path="path/to/image.png", language="en", threshold=0.35, save_object=True, saved_image_path="detected_objects"):
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=["baseball", "basket"], save_object=save_object, saved_image_path=saved_image_path, threshold=threshold)
+    
+    if not detected_objects:
+        return {'count': 0, 'labels': []}
+    
+    labels = {label['box'][1]: int(label['box'][3]) for label in detected_objects['baseball'] + detected_objects['basket']}
+    count = {label['box'][1]: 0 for label in detected_objects['baseball'] + detected_objects['basket']}
+    
+    for label in detected_objects['basket']:
+        count[label['box'][1]] += 1
+    
+    for label in detected_objects['baseball']:
+        count[label['box'][1]] += 1
+        
+    if save_object:
+        for label in detected_objects['baseball'] + detected_objects['basket']:
+            obj = {
+                'box': [np.round(b[0], 2), np.round(b[1], 2), np.round(b[3], 2), np.round(b[2], 2)],
+                'score': np.round(label['score'], 3),
+                'saved_image_path': saved_image_path
+            }
+            obj['bbox'] = np.round(obj['bbox'], 2)
+
+    return {'detected_objects': {**labels, **count}, 'object_number': object_number, 'count': count}
+
+if __name__ == '__main__':
+    final_result = detect_objects_and_count()
+    print('Detected Objects:')
+    print(json.dumps(final_result['detected_objects'], indent=4))
+    print('\nNumber of Objects:')
+    print(json.dumps(final_result['object_number'], indent=4))
+    print('\nCount of Objects:')
+    print(json.dumps(final_result['count'], indent=4))
+
+============================== END ==============================
+
+
+[QAid]13654_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['chair'], save_object=True)
+print(final_result)
+
+============================== END ==============================
+

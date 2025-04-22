@@ -1,0 +1,131 @@
+
+[Exctuion Failed]
+
+name 'Text_Detector_Tool' is not defined
+code: 
+
+if True:  # Check if the image contains text
+    result = Text_Detector_Tool.execute(image='image_to_detect', languages=['en', 'de'])
+else:
+    result = []
+
+if result and len(result) > 0:
+    # Get the highest confidence score
+    highest_confidence = max(result, key=lambda x: x[2])
+
+    # Get the maximum confidence and the corresponding text
+    if 'en' in highest_confidence[1].get('langs', []):
+        language = 'English'
+        high_confidence = highest_confidence[0][1]
+        detected_text = highest_confidence[1][1]
+        confidence_score = highest_confidence[2]
+        
+        # Generate a string with the text in the detected language
+        detected_text_str = "Detected text in " + language + ":\n\n" + detected_text
+  
+        # Save the detected text with the confidence score
+        saved_image_path = "/home/username/.cache/object_detector/save_object/output_text/text_highest" + highest_confidence[0][-4:-1].replace(".", "_") + ".png"
+        Image.fromarray(high_confidence[0]).save(saved_image_path)
+        print("Text detected and saved:", saved_image_path)
+else:
+    print("No text detected.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tool_object_detector_tool'
+code: 
+
+from tool_object_detector_tool import Object_Detector_Tool
+
+label1 = "baseball"
+label2 = "basket"
+
+detected_objects = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/13912_0.png", labels=[label1, label2], save_object=True, saved_image_path="detected_objects")
+
+for detected_objects in detected_objects:
+    print(f'Number of detected {label1}: {detected_objects["baseball"]} ', 
+          f'Number of detected {label2}: {detected_objects["basket"]}' )
+
+result = Text_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/13912_0.png', languages=['en', 'de'])
+
+for detected_objects in result:
+    print('Detected text:', detected_objects['Detected text'])
+    print('Confidence score:', detected_objects['score'])
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = []
+
+# Check for the existence of Paintings in the scene
+for path in ['/nfs/data8/liao/wxie/SAT/SAT_images_train/13912_0.png']:
+    result = Object_Detector_Tool.execute(image=path, labels=['Painting'])
+    if isinstance(result, dict):
+        painting_label = result['object_labels'][0]['name']
+        painting_number = len(result['object_labels'])
+        final_result.append({'Painting': {'painting': painting_label, 'paintings': painting_number, 'confidence': result['confidence']}, 'confidence': result['confidence']})
+
+print(f"Number of Paintings: {len(final_result)}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() got an unexpected keyword argument 'thresholds'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Function to run the object detection tool
+def detect_objects(image_path, labels, thresholds, model_size):
+    return Object_Detector_Tool.execute(image=image_path,
+                                       labels=labels,
+                                       thresholds=thresholds,
+                                       model_size=model_size)
+
+# Function to count the number of detected objects
+def detect_object_count(image_path, languages):
+    return Object_Detector_Tool.execute(image=image_path,
+                                       languages=languages)
+
+# Given image path, labels for baseball and basketball, and confidence threshold
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13912_0.png"
+labels = ["baseball", "basket"]
+thresholds = 0.35
+model_size = "tiny"
+desired_languages = ["en", "de"]
+
+# Detect baseball and basketball
+detected_baseball = detect_objects(image_path, labels, thresholds, model_size)
+detected_basketball = detect_objects(image_path, labels, thresholds, model_size)
+
+# Count detected baseball and basketball
+baseball_count = detect_object_count(image_path, desired_languages)
+basketball_count = detect_object_count(image_path, desired_languages)
+
+# Final result
+final_result = {
+    "baseball_count": baseball_count,
+    "basketball_count": basketball_count
+}
+
+# Print the results
+print(final_result)
+
+
+============================== END ==============================
+

@@ -1,0 +1,215 @@
+--- Completion 1 ---
+<command>
+import object_detector_tool
+
+def count_beds(image_path, beds):
+    detections = []
+    for bed in beds:
+        bed_label = bed.split("-")[0]
+        for detection in bounding_box_to_detection(detected_objects).values():
+            if detection[1][bed_label] != -1:
+                bed_x1 = min(detection[0][bed_label][0], detection[2][bed_label][0])
+                bed_y1 = min(detection[0][bed_label][1], detection[2][bed_label][1])
+                bed_x2 = max(detection[0][bed_label][0], detection[2][bed_label][0])
+                bed_y2 = max(detection[0][bed_label][1], detection[2][bed_label][1])
+                detections.append(dict(box=detection[0], score=detection[1][bed_label], saved_image_path=None))
+    return len(detections)
+
+def bounding_box_to_detection(objs):
+    detected_objects = {};
+    for obj in obj["baseball"]:
+        obj_label = "baseball";
+        score = obj["score"]
+        obj["box"] = [obj["bbox"][1], obj["bbox"][0], obj["bbox"][2], obj["bbox"][1]];
+        detected_objects[object_label] = obj
+    obj_basket = [];
+    for obj in obj["basket"]:
+        obj_label = "basket";
+        score = obj["score"];
+        obj["box"] = [obj["bbox"][1], obj["bbox"][0], obj["bbox"][2], obj["bbox"][1]];
+        obj_basket.append(obj);
+    if "basket_1.txt" in detections and "basket_1" in detected_objects or "basket_2.txt" in detections and "basket_2" in detected_objects:
+        print("Detected basketballs:")
+        for i, obj in enumerate(obj_basket):
+            print(f"{i+1}.\t{obj[0]} -> {obj[2]} -> {obj[3]} -> {obj[4]}")
+        print(f"Total detected basketballs: {len(obj_basket)}")
+        
+    if "basket_3.txt" in detections and "basket_3" in detected_objects:
+        print("Detected basketballs:")
+        for i, obj in enumerate(obj_basket):
+            print(f"{i+1}.\t{obj[0]} -> {obj[2]} -> {obj[3]}
+Reward: 0.0
+
+--- Completion 2 ---
+<command>
+```python
+import object_detector
+
+def count_beds(image_path, labels, thresh, save_object=False, saved_image_path=None):
+    detector = object_detector.Object_Detector_Tool()
+    results = detector.execute(image_path, labels=labels, threshold=thresh, save_object=save_object, saved_image_path= saved_image_path)
+
+    bed_count = {}
+    for obj_label, detected_objs in results['detected_objects']:
+        for obj_data in detected_objs:
+            if obj_label == 'bed':
+                bed_count[obj_label] = 1
+
+    return bed_count
+
+bed_count = count_beds("/nfs/data8/liao/wxie/SAT/SAT_images_train/10049_0.png", "bed", 0.35, True, "detected_objects")
+print("The number of observed beds is:", bed_count)
+```
+</command>
+Reward: 0.5
+
+--- Completion 3 ---
+```python
+from object_detector import Object_Detector_Tool
+
+class Text_Detector_Tool:
+    def __init__(self, tool_module_name: str = "object_detector", tool_class_name: str = "Text_Detector_Tool", tool_description: str = "A tool that detects text in an image using EasyOCR":
+        self.tool_module_name = tool_module_name
+        self.tool_class_name = tool_class_name
+        self.tool_description = tool_description
+        self.model_version = tool_module_name + "_" + tool_class_name 
+
+    def execute(self, data: dict, model_size: str = "tiny"):        
+        result_dir = data.get("saved_image_path", "detected_objects")
+        results = self._handle_data(data, model_size)
+        
+        return {
+            "object_number": {
+                label: len(results)
+            } 
+        }
+        
+    def _handle_data(self, data: dict, model_size: str):
+        language_codes = ["en", "ja"]
+        languages = data["languages"]
+
+        language_support = self._check_language_support(languages, language_codes)
+        result_dir = data["saved_image_path"]
+
+        if not language_support:
+            raise Exception("The languages for text detection do not support the languages in the environment.")
+
+        image_path = data["image"]
+        image_content = self._read_image_to_bytes(image_path)
+
+        text_result = self._find_text(image_content, self.tool_module_name, self.tool_class_name)
+
+        if not text_result:
+            return []
+
+        if language_codes:
+            output_language = self._check_language_choice(language_codes, languages, result_dir)
+
+            return text_result[self._get_language_code(output_language)]
+
+        return text_result[self._get_language_code(languages[0])]
+    
+    def _read_image_to_bytes(self, path):
+        with open(path, 'rb') as f:
+            return f.read()
+
+    @staticmethod
+    def _check_language_support(languages, language_codes):
+        for language in languages:
+            language_support = False
+            for language_code in language_codes:
+                if language_code.lower() == language.lower().lower():
+                    language_support = True
+                    break
+                if language_code not in language_codes:
+                    return False
+            if not language_support:
+                return False
+        return True
+    
+    @staticmethod
+    def _check_language_choice(languages, languages, result_dir):
+        output_language = 'en'
+        for language in languages:
+            if self._check_language_support(languages
+Reward: 0.0
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="path/to/image.png", labels=["bed"], save_object=True, saved_image_path="../detected_objects")
+print(final_result)
+</command>
+Reward: 0.5
+
+--- Completion 5 ---
+To determine how many beds are visible in the scene, we can use the `Text_Detector_Tool` tool with the English language code. This tool will help us detect text blocks in the image, which may be labels for beds. Here's the Python program that uses the provided tool and labels:
+
+```python
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+# Generate a dictionary with all possible floor labels to detect
+label_pairs = {
+    'beds': [1, 2, 3, 4, 5  # 1 = bed, 2 = furniture, 3 = sofa, 4 = cupboard, 5 = dresser
+             ],
+    'basements': [0],
+    'tables': [6]
+}
+
+model_size = 'tiny'
+save_image_path = 'detected_objects'
+
+# Call the object detection tool for beds
+label_list = Object_Detector_Tool.execute(image='path/to/image.png', labels=label_pairs['beds'], saved_image_path=save_image_path, model_size=model_size, save_object=True)
+
+# Call the text detector to count beds
+for label in label_pairs['beds']:
+    count = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en'], detail=1)
+
+# Print the result
+final_result = {
+    'label_count': count,
+    'bed_label_count': 0
+}
+for d in count:
+    final_result['bed_label_count'] += label_list[d]['label']
+
+print(final_result)
+```
+Reward: 0.0
+
+--- Completion 6 ---
+```python
+from object_detector import Object_Detector_Tool
+
+# Initialize the object detector tool
+tool = Object_Detector_Tool()  # Initialize object_detector_tool
+
+# Load the training image
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/10049_0.png'
+tool.init_model('image', image_path, 'mini', 'tiny')
+
+# Define a list of labels to detect
+labels = ['baseball', 'basket']
+label_count = 0
+
+# Execute the detection tool
+detected_objects = tool.execute(labels=labels, save_object=True, saved_image_path='/tmp/')
+
+for detected_object in detected_objects['detected_objects']:
+    if detected_object['score'] >= 0.35:  # Change confidence_threshold as required
+        print(f'Object {label_count}:'
+              f' Box coordinates: ({detected_object["bbox"][0]}, {detected_object["bbox"][1]}, {detected_object["bbox"][2]}, {detected_object["bbox"][-1]})')
+        label_count += 1
+
+        # Uncomment the next line to save the detected objects
+        # for saved_object in detected_object['saved_image_path']:
+            # print(f'Saved image path: {saved_object}')
+
+print(f'Object Count: {label_count}')
+```
+The final answer is: <command>Object Count: 4</command>.
+Reward: 0.0
+

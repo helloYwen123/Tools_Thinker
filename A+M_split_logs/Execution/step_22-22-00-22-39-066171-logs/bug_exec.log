@@ -1,0 +1,207 @@
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+input_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png"
+labels = ['baseball', 'basket']
+save_object = True
+
+final_result = Object_Detector_Tool.execute(input_image, labels=labels, save_object=save_object, saved_image_path="detected_objects")
+print("Detected objects:", final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Set up the Object_Detector_Tool
+object_detector_tool = Object_Detector_Tool()
+
+try:
+    # Execute the tool and get the results
+    detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+    # Extract the text detected in all images
+    text_detected = object_detector_tool.execute(image="path/to/image", languages=["en", "de", "ja"], detail=2)
+
+finally:
+    # Convert the results into a human-readable summary
+    final_result = "Detected objects: {:2,} different objects; Total count per object: {:.2f}\n".format(len(detected_objects), object_number["baseball"])
+
+    # Output the final result
+    print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+'{' was never closed (<string>, line 29)
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+# Input image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png"
+
+# Paths for output detection results
+detected_objects = {}
+labels_count = {}
+
+# Execute object detection
+tool = Object_Detector_Tool()
+detection_result = tool.execute(image_path, ["baseball", "basket"], save_object=True)
+
+# Print the detected object's bounding box for easy identification
+for label in detection_result:
+    boxes = label["box"]
+    # Output text recognition based on languages detected
+    languages = ["en", "de"]
+    language = "en"
+    text_analysis_result = tool.execute(
+        image_path, languages=languages, detail=0
+    )
+    text_blocks = []
+    for lang in text_analysis_result:
+        text_blocks.extend(lang["boxes"])
+    labels_count[label["label"]] = len(text_blocks)
+
+detected_objects = {label: [
+    {"bbox": box, "score": detections["score"], "saved_image_path": detections["saved_image_path"]}
+    for label, detections in detected_objects.items()]
+for label, detection in labels_count.items():
+    detected_objects[label] = [
+        {"bbox": box, "score": detection["score"]}
+        for detection in detection
+    ]
+
+# Display the results in a structured format
+final_result = (
+    f"Number of Detected Items: {detected_objects.keys()}"
+    + "\n"
+    + f"Detected Objects:\n\n"
+    + "-------------------------------------------------\n"
+    + " ".join(
+        f"{detected_objects[label]} (Score: {detection['score']})"
+        for label, detection in detected_objects.items()
+    )
+    + "\n"
+    + "-------------------------------------------------\n"
+)
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+def count_objects_in_image(image_path, labels, threshold=0.35, model_size='tiny', save_object=False):
+    object_detector_tool = Object_Detector_Tool()
+    
+    if save_object:
+        object_detector_tool.save_image = True
+    
+    objects_results, object_number = object_detector_tool.execute(image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object)
+    
+    final_result = {}
+    for object_label, detection_results in objects_results.items():
+        if detection_results:
+            object_number[object_label] = len(detection_results)
+        else:
+            object_number[object_label] = 0
+            
+            if save_object:
+                image_path, box, score = detection_results[0]
+                if image_path:
+                    box = (box[0], box[1], box[0] + box[2], box[1] + box[3])
+                    object_detector_tool.save_image = True
+                    object_detector_tool.save_object_image(f"{image_path}", box, f"{object_label}_image")
+                    
+    final_result['object_number'] = object_number
+    
+    return final_result
+
+# Your question for object counting
+count_result = count_objects_in_image(
+    image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png",
+    labels=["baseball", "basket"],
+    threshold=0.35,
+    model_size='tiny'
+)
+
+print(f"Object count: {count_result['object_number']}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Initialize the object detector tool
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the tool with the question image and labels
+with open("/nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png", "rb") as image:
+    detected_objects, object_number = object_detector_tool.execute(image=image, labels=['DiningTable'], save_object=False, saved_image_path="detected_objects")
+
+total_objects = {}
+for label, detections in detected_objects.items():
+    if label == "DiningTable":
+        total_objects["DiningTable"] = len(detections)
+
+final_result = {
+    "number_of_objects": total_objects,
+    "detection_result": detected_objects
+}
+print("The total number of DiningTables observed in the scene is =", final_result["number_of_objects"]["DiningTable"])
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()
+
+detected_objects, object_number = object_detector_tool.execute(image='path/to_image', labels=['office', 'desk', 'chair'], save_object=True, saved_image_path='detected_objects')
+
+if len(detected_objects) == 0:
+    final_result = '0 DiningTables'
+else:
+    final_result = f'{len(detected_objects)} DiningTables'
+
+object_number = {'office': 1, 'desks': 0, 'chair': 1}
+
+(final_result, object_number)
+
+
+============================== END ==============================
+

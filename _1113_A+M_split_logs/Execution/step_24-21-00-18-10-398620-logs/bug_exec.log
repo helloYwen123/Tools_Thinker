@@ -1,0 +1,131 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/1272_0.png'
+
+# Model size
+model_size = 'base'
+
+# Labels to detect
+labels = ['baseball', 'basket']
+
+# Confidence threshold
+threshold = 0.35
+
+# Output save path
+output_save_path = 'detected_objects'
+
+# Run the tool
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=True, saved_image_path=output_save_path)
+
+# Extract object detections
+object_detections = result[1]
+
+object_number = result[0]
+
+final_result = f"The scene contains {object_number} {labels}."
+
+is_output_format_helpless = isinstance(object_detections[0][2], int) and all(not isinstance(entry[2], dict) for entry in object_detections[1:])
+
+if is_output_format_helpless:
+    print("The output list was not in the expected format.")
+else:
+    print(f"The detected objects are: {'  '.join([d[1] for d in object_detections[0]])}")
+
+if labels and 'baseball' in labels:
+    try:
+        # Extract the image paths for each detected object
+        image_path_baseball = [d['saved_image_path'] for d in object_detections[0] if d['label'] == 'baseball']
+        image_path_basket = [d['saved_image_path'] for d in object_detections[0] if d['label'] == 'basket']
+
+        print("\nDetected baseball and basketball images")
+
+        # Display each image with its detected bounding box and score
+        for i, image in enumerate(image_path_baseball):
+            plt.figure()
+            plt.imshow(im.read())
+            cv2.rectangle(im, tuple(image[0]), tuple(image[1]), (0, 0, 255), 2)
+            plt.title(f'Baseball Image {i+1} Label: {image[i][1]}')
+            plt.xlabel(image[i][1])
+            plt.show()
+
+    except KeyError:
+        print("No detected baseball pixel detected.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# execute the tool
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket', 'table'], save_object=True, saved_image_path='detected_objects')
+
+# extract relevant information
+total_objects = len(detected_objects)
+table_objects = [obj for obj in detected_objects if obj['label'] == 'table']
+
+final_result = {'total_objects': total_objects, 'table_objects': table_objects}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tool_object_detector'
+code: 
+
+from tool_object_detector import Object_Detector_Tool
+import_object_labels = ['baseball', 'basket']
+threshold = 0.35  # confidence threshold
+model_size = 'tiny'  # size of model
+save_object = False  # save detected objects to images
+saved_image_path = 'detected_objects'  # path to save detected objects
+
+detected_objects, object_number = Object_Detector_Tool.execute(image='path_to_image', labels=import_object_labels, save_object=save_object, saved_image_path=saved_image_path, model_size=model_size, threshold=threshold)
+
+if saved_object:
+  saved_image_path = generated_suggested_save_image_path(saved_image_path.split('.')[0], object_number)  # generate saved image path
+  detected_objects.save(''.join(os.path.splitext(save_image_path).split('.')[0]))
+final_result = {
+  'detected_objects': detected_objects,  # dict with detected objects
+  'object_number': object_number,  # dict with object label count
+}
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Image' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+objects = [{"box": [34, 50, 200, 220], "score": 0.92, "saved_image_path": 'detected_objects/image_baseball_1.png'}, {'box': [220, 100, 400, 350], 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]
+
+objects += [{"box": [90, 210, 160, 280], "score": 0.75, "saved_image_path": 'detected_objects/image_baseball_new_1.png'}]
+
+for obj in objects:
+    img = Image.open(os.getcwd() + "/detected_objects/" + obj["saved_image_path"])
+    img = img.convert("1")
+    img.save(os.getcwd() + "/out/" + obj["saved_image_path"], "PNG")
+
+final_result = [{"box": [0, 0, 350, 150], "score": 1, "labels": ["baseball"]}, {"box": [220, 150, 420, 240], "score": 2, "labels": ["basket"]}, {"box": [90, 230, 160, 330], "score": 3, "labels": ["baseball new"]}]
+
+
+============================== END ==============================
+

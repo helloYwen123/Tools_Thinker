@@ -1,0 +1,118 @@
+
+[Exctuion Failed]
+
+name 'Text_Detector_Tool' is not defined
+code: 
+final_result = 1
+result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'])
+for detected_result in result:
+    if detected_result['confidence'] >= 0.35:
+        for detected_text in detected_result['text']:
+            text_found = detected_result['text'][0]
+            if text_found in ["baseball", "basket"]:
+                print(f"You found {text_found}: [{detected_result['box'][0]}, {detected_result['box'][1]}, {detected_result['box'][2]}, {detected_result['box'][3]}] with confidence {detected_result['confidence']}")
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=["baseball", "basket"], save_object=True, saved_image_path='detected_objects')
+
+if final_result[0]:
+    print(final_result[1])
+
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+1
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Call the function with a sample image and labels
+result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+# Extract the list of detected objects in the image
+object_labels = result['detected_objects'][0][1]['label']
+
+# Count the number of detected objects
+object_count = len(result['detected_objects'])
+
+final_result = "There are " + str(object_count) + " objects detected in the image."
+
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+cannot access local variable 'total_count' where it is not associated with a value
+code: 
+
+from text_detector import Text_Detector_Tool
+
+def count_tv_stands():
+    # Set the image path
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/12503_0.png"
+
+    # Set the languages for OCR
+    languages = ['en']
+    languages.append('de')
+
+    # Set the confidence level
+    detail = 1
+
+    try:
+        # Execute the OCR tool
+        result = Text_Detector_Tool.execute(image=image_path, languages=languages, detail=detail)
+
+        # Check if the text detection was successful
+        if len(result) > 0:
+            # Iterate through the detected text blocks
+            for block in result:
+                # If the block is not empty (i.e., it contains detected text)
+                if len(block[0]) > 0:
+                    # Extract the detected text and its confidence score
+                    detected_text = block[4]
+                    confidence_score = block[5] if block[5] is not None else 1.0 - block[4]
+
+                    # Count the number of detected text blocks up to this point
+                    total_count = 2 if block[0][0][0] <= block[0][1] else 1
+
+                    # Print the detected text and its confidence score
+                    print(f'Detected text: {detected_text}, Confidence Score: {confidence_score:.4f}')
+                    print(f'Total detected text blocks up to now: {total_count}')
+                else:
+                    # Print the original detected text blocks
+                    for block in result:
+                        print(block[0])
+
+            # Print the total count of detected text blocks
+            print(f'Total detected text blocks: {len(result)}')
+
+        else:
+            # Print a message indicating text detection failure
+            print(f'Text detection failed for image path: {image_path}')
+    except Exception as e:
+        # Print an error message
+        print(f'An error occurred during text detection: {e}')
+
+    return total_count
+
+total_count = count_tv_stands()
+print(f'There are {total_count} items with multiple types of TV stands in the scene.')
+
+
+============================== END ==============================
+

@@ -1,0 +1,137 @@
+
+[QAid]7693_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+# Demonstrate usage with specified path
+saved_image_path = 'detected_objects'
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path=saved_image_path)
+
+# Print detected objects
+for detected_object in detected_objects['baseball']:
+    print(f"Detected text: {detected_object['score']} confidence score is {detected_object['score']}.")
+
+============================== END ==============================
+
+
+[QAid]7693_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Demonstration code using the object_detector tool to analyze image features within the question.
+
+# Define the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/7693_0.png"
+
+# The detected object and count
+result = Object_Detector_Tool.execute(image=image_path, labels=['Cabinet'], save_object=False, saved_image_path="detected_objects")
+
+detected_objects = [{"label": "Cabinet", "bbox": [y[0], x[0], y[1] - x[0], y[2] - x[0]],
+                     "confidence": 1.0, "bbox_score": 0.8}]
+
+object_counts = {"Cabinet": detected_objects[0][0].count}  
+
+print(f"Total cabinets detected: {object_counts['Cabinet']['bbox']}")
+
+============================== END ==============================
+
+
+[QAid]7693_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+print("Detected objects:")
+for object in detected_objects:
+    print(object)
+
+============================== END ==============================
+
+
+[QAid]7693_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_drawers(image):
+    drawer_detector_tool = Object_Detector_Tool(image=image, labels=['drawer'], save_object=True)
+    drawer_output = drawer_detector_tool.execute()
+    drawer_number = len(drawer_output["baseball"]) + len(drawer_output["basket"])
+    return drawer_number
+
+# Example usage:
+# image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/7693_0.png"
+# drawer_count = count_drawers(image_path)
+# print(f"The image has {drawer_count} dressers.")
+
+============================== END ==============================
+
+
+[QAid]7693_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+    image="/nfs/data8/liao/wxie/SAT/SAT_images_train/7693_0.png", 
+    labels=["bedside table"], 
+    save_object=True, 
+    saved_image_path="detected_objects"
+)
+
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]7693_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+
+# Attempt to detect 'baseball' and 'basket'
+try:
+    detected_objects = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True)
+except Exception as e:
+    detected_objects = []
+
+final_result['detected_objects'] = detected_objects
+
+# Total count for detected objects
+total_objects = len(detected_objects)
+
+# Check the result
+if isinstance(detected_objects, tuple) and total_objects >= 1:
+    for label, entries in detected_objects.items():
+        detected_objects = sorted(entries, key=lambda item: item['score'], reverse=True)
+        if detected_objects:
+            detected_objects = detected_objects[0]
+        else:
+            print(f"No detected text for label '{label}' after retries.")
+        final_result[f'object_number_{label}'] = total_objects  # Update the number of objects detected for each label
+        if detected_objects:
+            final_result['detected_objects'] = [{**detected_objects[0], 'object_number': label}]
+
+final_result['total_objects'] = total_objects
+
+print(final_result)
+
+============================== END ==============================
+

@@ -1,0 +1,150 @@
+
+[Exctuion Failed]
+
+No module named 'tools_module'
+code: 
+
+import tools_module
+
+def count_beds(image_path):
+    try:
+        image = tools_module.read_image(image_path)
+        labeled_objects = tools_module.text_detector(image)
+        
+        bed_count = 0
+        
+        for obj_dict in labeled_objects:
+            if 'baseball' in obj_dict[0] or 'basket' in obj_dict[0]:
+                bed_count += 1
+                
+        return bed_count
+
+    except Exception as e:
+        return 0
+
+final_result = count_beds("/nfs/data8/liao/wxie/SAT/SAT_images_train/1461_0.png")
+print("Number of Beds:", final_result)
+
+final_result = count_beds("/path/to/another_image.png")
+print("Number of Beds:", final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'text_detector_tool'
+code: 
+
+from text_detector_tool import Text_Detector_Tool
+
+# Set up the text detector module
+obj = Text_Detector_Tool()
+
+# Assume the image file path is '/nfs/data8/liao/wxie/SAT/SAT_images_train/1461_0.png'
+img_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/1461_0.png'
+
+# Detect text in the image
+result = obj.execute(image=img_path, languages=[f'zh_SimplifiedChinese', 'de'])
+
+# Extract the detected text blocks
+text_blocks = [[bbox, language, confidence] for _, _, _, text_block in result]
+
+# Print or manipulate the results
+print("Detected texts:", text_blocks)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'python' is not defined
+code: 
+python
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+def count_beds(image_path):
+    print("Detecting beds...")
+    detector = Object_Detector_Tool(tool_version='1.0.0', input_types={'image': image_path, 'labels': ['baseball', 'basket', 'bed'], 'save_object': True, 'threshold': 0.35})
+    detected_objects = detector.execute()
+
+    print(f"Total detected beds: {len(detected_objects)}")
+
+    print("Counting beds...")
+    bed_count = 0
+    for obj in detected_objects:
+        obj_name = obj['object_name']
+        if obj_name == 'baseball':
+            bed_count += 1
+        elif obj_name == 'basket':
+            bed_count += 2
+
+    print(f"Total beds: {bed_count}")
+
+if __name__ == '__main__':
+    print("Please provide the path to the image file to count beds.")
+    image_path = input("File: ")
+    if image_path:
+        count_beds(image_path)
+    else:
+        print("No file provided to count beds.")
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+{
+  "Object_Detector_Tool": {
+    "tool_module_name": "object_detector",
+    "tool_class_name": "Object_Detector_Tool",
+    "tool_description": "A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.",
+    "tool_version": "1.0.0",
+    "input_types": {
+      "image": "str",
+      "labels": "list",
+      "threshold": "float",
+      "model_size": "str",
+      "save_object": "bool",
+      "saved_image_path": "str"
+    },
+    "output_types": "\"tuple\"",
+    "user_metadata": {
+      "potential_usage": "The tool can be used for counting and locating interest-objects in images by utilizing the bounding boxes.",
+      "warning": "The tool takes a path to the image file as input."
+    }
+  },
+  "Text_Detector_Tool": {
+    "tool_module_name": "text_detector",
+    "tool_class_name": "Text_Detector_Tool",
+    "tool_description": "A tool that detects text in an image using EasyOCR.",
+    "tool_version": "1.0.0",
+    "input_types": {
+      "image": "str",
+      "languages": "list",
+      "detail": "int"
+    },
+    "output_types": "\"list\"",
+    "user_metadata": {
+      "frequently_used_language": {
+        "ch_sim": "Simplified Chinese",
+        "de": "German",
+        "en": "English",
+        "ja": "Japanese"
+      },
+      "critical_note": "Only return detected text blocks whose confidence score is above the specified threshold. Additional text beyond the correct result may remain."
+    }
+  }
+}
+
+
+============================== END ==============================
+

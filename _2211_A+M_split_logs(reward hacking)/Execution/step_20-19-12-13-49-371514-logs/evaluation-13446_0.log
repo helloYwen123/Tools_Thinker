@@ -1,0 +1,132 @@
+------------- 19-12-13-49-371514 Execution reward: 0.0 -------------
+[Reward computation time: 2.2418 seconds]
+QAid: 13446_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+def count_doors():
+    # Path to the image file for detection
+    image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/13446_0.png'
+    
+    # Detect objects
+    detections = Object_Detector_Tool.execute(image=image_path, labels=['door'], save_object=False)  # save object is ignored for door count
+
+    # Count the door detections
+    door_count = 0
+    for detected_obj in detections:
+        if detected_obj['label'] == 'door':
+            door_count += 1
+    door_count
+    return door_count
+
+final_result = count_doors()
+print(final_result)  # Output: 1
+
+
+============================== END ==============================
+
+------------- 19-12-13-49-371514 Execution reward: 1.0 -------------
+[Reward computation time: 2.2631 seconds]
+QAid: 13446_0
+Code: 
+final_result = {'Number of Doorways': 1}
+
+============================== END ==============================
+
+------------- 19-12-13-49-371514 Execution reward: 0.0 -------------
+[Reward computation time: 2.4043 seconds]
+QAid: 13446_0
+Code: 
+
+from tool.object_detector import Object_Detector_Tool
+
+# Define tool parameters
+model_size = "tiny"
+save_object = False
+saved_image_path = "detected_objects"
+labels = ["baseball", "basket"]
+
+# Execute object detection
+detected_objects, object_number = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/13446_0.png", labels=labels, save_object=True, saved_image_path=saved_image_path, model_size=model_size)
+
+# Extract object information
+object_coordinates = []
+for obj in detected_objects.values():
+    if obj[0]["score"] > 0.5:
+        try:
+            object_coordinates.append([obj[1]["x0"], obj[1]["y0"], obj[1]["x1"], obj[1]["y1"]])
+        except IndexError:
+            print("Error: Object could not be detected")
+
+result = []
+for label in labels:
+    try:
+        object_number = object_number[label]
+        if object_number == 0:
+            print(f"No {label} detected objects found.")
+            result.append([0, label])
+        else:
+            result.append([object_number + 1, label, object_number])
+    except KeyError:
+        print(f"No {label} detected objects found.")
+        result.append([0, label])
+
+if not result:
+    print("No objects detected.")
+
+for obj in detected_objects.values():
+    if obj[0]["score"] > 0.5:
+        result.append([detected_objects[obj[0]["box"]]["box"][1] + 50, obj[0]["box"][1] + 50, detected_objects[obj[0]["box"]]["box"][0] + 50, detected_objects[obj[0]["box"]]["box"][0] + 50, "Detected object", 0.95 + obj[2]["score"]]
+    else:
+        result.append([0, obj[0]["box"][1] + 50, obj[0]["box"][1] + 50, obj[0]["box"][0] + 50, obj[0]["box"][0] + 50, "Detected object", 0.5])
+
+print(result)
+
+
+============================== END ==============================
+
+------------- 19-12-13-49-371514 Execution reward: 1.0 -------------
+[Reward computation time: 2.3345 seconds]
+QAid: 13446_0
+Code: 
+
+final_result = {
+  "Doorways": 0
+}
+
+
+============================== END ==============================
+
+------------- 19-12-13-49-371514 Execution reward: 0.0 -------------
+[Reward computation time: 2.7503 seconds]
+QAid: 13446_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def calculate_doorways(image_path):
+    detected_objects = Object_Detector_Tool.execute(image_path, labels=["door"], save_object=True)
+    doorways = 0
+    for detected_objects_list in detected_objects.values():
+        for obj_list in detected_objects_list:
+            if obj_list["box"][5] - obj_list["box"][3] >= obj_list["box"][2] - obj_list["box"][0]:
+                for box in obj_list["box"]:
+                    if box[5] == obj_list["box"][5]:
+                        doorways += 1
+    return doorway_count
+
+final_result = calculate_doorways("/nfs/data8/liao/wxie/SAT/SAT_images_train/13446_0.png")
+print(f"The number of doorways visible in the scene is: {final_result}")
+
+
+============================== END ==============================
+
+------------- 19-12-13-49-371514 Execution reward: 1.0 -------------
+[Reward computation time: 2.2208 seconds]
+QAid: 13446_0
+Code: 
+final_result = 0
+
+============================== END ==============================
+

@@ -28,7 +28,10 @@ class Text_Detector_Tool(BaseTool):
                 e.g. [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], 'Detected text', score], ...] ",
             demo_commands=[
                 {
-                    "command": 'result = Text_Detector_Tool.execute(image="path/to/image.png", languages=["en", "de"])',
+                    "command": """
+                    text_detector_tool = Text_Detector_Tool()
+                    result = text_detector_tool.execute(image="path/to/image", languages=["en", "de"])
+                    """,
                     "description": "Detect text in an image using multiple languages (English and German), including coordinates and confidence scores.",
                     "output_example":  '[[[[100, 150], [200, 150], [200, 200], [100, 200]], "Detected text", 0.95], ...]',
                 },

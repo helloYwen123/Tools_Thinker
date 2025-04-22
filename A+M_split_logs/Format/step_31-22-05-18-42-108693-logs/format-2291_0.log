@@ -1,0 +1,90 @@
+--- Completion 1 ---
+<command>
+import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+    image='path/to/image',
+    labels=['baseball', 'basket'],
+    save_object=True,
+    saved_image_path='detected_objects'
+)
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image='path/to_image.png', labels=['baseball', 'basket'], save_object=False, saved_image_path='detected_objects')
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Function to count and return the number of detected objects
+def count_obj_detection(image_path, labels, model, save_object):
+    object_detector = Object_Detector_Tool()
+    detected_objects, object_number = object_detector.execute(image=image_path, labels=labels, save_object=save_object, model=model)
+    return detected_objects, object_number
+
+# Function to detect text in an image and provide the number of detected lines (max. 1000 lines per image)
+def text_detection(image_path, languages=['en', 'de'], detail=0):
+    text_detector = Text_Detector_Tool()
+    result = text_detector.execute(image=image_path, languages=languages, detail=detail)
+    total_lines = len(result) if result else 0
+    return result, total_lines
+
+# Usage example
+detected_objects, object_number = count_obj_detection("/nfs/data8/liao/wxie/SAT/SAT_images_train/2291_0.png", ["baseball", "basket"], "tiny", True)
+print(f"Number of detected objects: {object_number}")
+print(json.dumps(detected_objects, sort_keys=True))
+</command>
+Reward: 0.5
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+# Extracting detected objects
+detected_objects = final_result[0]
+object_numbers = final_result[1]
+
+detected_objects
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<a>
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image = '/nfs/data8/liao/wxie/SAT/SAT_images_train/2291_0.png', labels = ['Doorway'], save_object=True, saved_image_path='detected_objects')
+print(final_result)
+</a>&lt;/command&gt;
+The detection results are as follows:
+The image contains two Doordways.
+Reward: 0.0
+
+--- Completion 6 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute("path/to/image", ["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+if "detected_objects" in final_result:
+    detected_objects = final_result["detected_objects"]
+    object_number = final_result["object_number"]
+    result = ["Detected objects:", f"{'  ' * max(len([obj['box'] for obj in detected_objects]), 30)}"]
+    for obj in detected_objects:
+        result.append(f"{'  ' * 6}Box: ({obj['box'][0]} {obj['box'][1]}, {obj['box'][2]} {obj['box'][3]}, {obj['box'][4]} {obj['box'][5]}, {obj['score']}).")
+    result.append("Object number: " + ', '.join([f'{obj["box"]}[0]} {obj["box"]}[1],' if obj["box"] else None for obj in detected_objects])
+    print("\n".join(result))
+else:
+    print("Text detection failed.")
+</command>
+Reward: 1.0
+

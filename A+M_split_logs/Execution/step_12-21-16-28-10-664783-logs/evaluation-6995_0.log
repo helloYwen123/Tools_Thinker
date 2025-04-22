@@ -1,0 +1,135 @@
+------------- 21-16-28-10-664783 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6995_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-16-28-10-664783 Execution reward: 0.0 -------------
+[Reward computation time: 2.5472 seconds]
+QAid: 6995_0
+Code: 
+
+from object_detector_tool import object_detector_tool
+from text_detector_tool import text_detector_tool
+
+def detect_objects_and_texts(image_path):
+    detected_results = object_detector_tool.execute(image=image_path, labels=['baseball', 'basket'], save_object=True, saved_image_path="detected_objects")
+    
+    for label in detected_results:
+        for detection in detected_results[label]:
+            print(f"{label} :")
+            print(f"    Bounding box: ({detection['box'][0]}, {detection['box'][1]}, {detection['box'][2]}, {detection['box'][3]})")
+            print(f"    Score: {detection['score']}")
+
+        print(f"-----------------------------------")
+    
+    if "baseball" in detected_results and "basket" in detected_results:
+        # If both baseball and basket are detected, continue with text detection
+        print("Detected baseball and basket texts:")
+        result = text_detector_tool.execute(image=image_path, languages=['en', 'ja'])
+
+    print("\n-----------------------------------")
+
+# Provided image path for demonstration
+image_path = "/path/to/image.png"
+detect_objects_and_texts(image_path)
+
+
+============================== END ==============================
+
+------------- 21-16-28-10-664783 Execution reward: 0.0 -------------
+[Reward computation time: 1.7564 seconds]
+QAid: 6995_0
+Code: 
+
+from . import object_detector_tool, text_detector_tool
+
+class ImageAnalysisTool:
+    def analyze_image(self, label_list, threshold, model_size, save_object):
+        labels = label_list
+        labels, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size)
+        text_blocks = text_detector_tool.execute(image=image_path, languages=languages, detail=detail)
+
+        # Convert the text blocks to a list of (bbox, text, confidence score)
+        text_info = []
+        for block in text_blocks["result"]:
+            box = block["boxes"] * [x + (y - 50) for (x, y) in zip(block["bbox"], block["bbox"])]
+            text = block["text"]
+            confidence = block["score"]
+            text_info.append((box, text, confidence))
+        text_info = text_info if text_info else []
+
+        # Calculate the total number of objects if save_object is True
+        if save_object:
+            object_count = {label: len(text_info) for label, text_count in object_number.items() for text_info in text_info if label in text_count}
+
+            for label, count in object_count.items():
+                with open(f"detected_objects/{label}.txt", "w") as f:
+                    for i, info in enumerate(text_info, start=1):
+                        f.write(f"{info[0]}: {info[1]}, {i}\n")
+
+        return labels, object_number, text_info
+```
+
+
+
+============================== END ==============================
+
+------------- 21-16-28-10-664783 Execution reward: 0.0 -------------
+[Reward computation time: 1.7909 seconds]
+QAid: 6995_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Define the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6995_0.png"
+
+# Initialize the Object_Detector_Tool
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the tool to detect objects
+detected_objects, object_number = object_detector_tool.execute(image=image_path)
+
+final_result = {
+  "total_objects": len(detected_objects),
+  "detected_objects": [
+    {
+      **detected_objects[0],
+      "label": "baseball",
+      "count": detected_objects[0]["count"]
+    },
+    {
+      **detected_objects[1],
+      "label": "basket",
+      "count": detected_objects[1]["count"]
+    }
+  ],
+  "labels_count": {"baseball": detected_objects[0]["count"], "basket": detected_objects[1]["count"]}
+}
+
+
+============================== END ==============================
+
+------------- 21-16-28-10-664783 Execution reward: 0.0 -------------
+[Reward computation time: 2.3019 seconds]
+QAid: 6995_0
+Code: 
+final_result = []
+with Image.open('/nfs/data8/liao/wxie/SAT/SAT_images_train/6995_0.png') as image:
+    result = text_detector_tool.execute(image=image, languages=['en', 'de'], detail=1)
+    for text_block in result:
+        final_result.append(text_block)
+
+
+============================== END ==============================
+
+------------- 21-16-28-10-664783 Execution reward: 0.0 -------------
+[Reward computation time: 1.9786 seconds]
+QAid: 6995_0
+Code: 
+final_result
+
+============================== END ==============================
+

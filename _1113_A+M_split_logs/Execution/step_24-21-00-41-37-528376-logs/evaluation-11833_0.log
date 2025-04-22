@@ -1,0 +1,221 @@
+------------- 21-00-41-37-528376 Execution reward: 0.0 -------------
+[Reward computation time: 2.3115 seconds]
+QAid: 11833_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Parameters
+image = 'path/to/image.png'
+labels = ['painting']
+threshold = 0.35
+model_size = 'tiny'
+save_object = True
+saved_image_path = 'detected_objects'
+
+detected_objects = Object_Detector_Tool.execute(image=image, labels=labels, save_object=True, saved_image_path=saved_image_path, threshold=threshold, model_size=model_size)
+
+# Retrieving object numbers
+object_number = {obj.label: len(detected_objects[key]) for key, obj in detected_objects.items()}
+
+final_result = {'paintings': len(detected_objects['painting']) if 'painting' in detected_objects else 0, 'total_object_number': object_number}
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-528376 Execution reward: 0.0 -------------
+[Reward computation time: 2.1495 seconds]
+QAid: 11833_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_paintings(image_path):
+    count = 0
+    objects = Object_Detector_Tool.execute(image=image_path, labels=["painting"], save_object=True, saved_image_path='paintings')
+    for label in objects.keys():
+        for det in objects[label]:
+            count += 1
+            if det["saved_image_path"] not in paintings:
+                with open(det["saved_image_path"], 'rb') as f: 
+                    image = Image.open(f)
+                pil_images.append(image)
+    return count
+
+paintings = []
+detected_objects = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/11833_0.png', labels=['painting', 'basket', 'baseball'], save_object=True, saved_image_path='detected_objects')
+
+for label in detected_objects.keys():
+    for det in detected_objects[label]:
+        det["saved_image_path"] = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11833_0.png"
+        paintings.append(det["saved_image_path"])
+detected_objects = Object_Detector_Tool.execute(image=paintings, languages=['en', 'de'], detail=1)
+for det in detected_objects:
+    print(det)
+    if det[0] == "basket":
+        for i in range(4):
+            det[i] = "baseball"
+            print(det)
+
+result = Object_Detector_Tool.execute(image=paintings, languages=['en', 'de'], detail=1)
+for det in result:
+    print(det)
+    if det[0] == "basket":
+        for i in range(4):
+            det[i] = "baseball"
+            print(det)
+    count = count_paintings('/nfs/data8/liao/wxie/SAT/SAT_images_train/11833_0.png')
+    final_result = count_paintings('/nfs/data8/liao/wxie/SAT/SAT_images_train/11833_0.png')
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-528376 Execution reward: 0.0 -------------
+[Reward computation time: 2.6954 seconds]
+QAid: 11833_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def detect_paintings(image_path):
+    # Detect the painting and count
+    painting_result = Object_Detector_Tool.execute(image=image_path, save_object=True)
+    
+    # Define languages or regions of interest for more focused detection
+    language_eng = "en"
+    language_de = "de"
+    regions_of_interest = ["baseball", "basket"]
+    
+    # Execute English- and German-based detection
+    painting_result_en = Text_Detector_Tool.execute(
+        image=image_path, 
+        languages=[language_eng], 
+        detail=0
+    )
+    painting_result = []
+    
+    for block in painting_result_en:
+        if block[2] not in regions_of_interest:
+            painting_result.append(block)
+    
+    # Calculate object number and object counts for various language cases
+    object_number = {}
+    object_number_en = {label: detect_count(painting_result_en) for label in regions_of_interest}
+    object_number_de = {label: detect_count(painting_result_en) for label in regions_of_interest}
+    
+    return {
+        "objects": [
+            {
+                "object_type": label,
+                "object_count": object_number_en[label] if language_eng in painting_result else object_number_de[label]
+            }
+            for label in regions_of_interest
+        ],
+        "total_object_count": {label: count if language_eng in painting_result else 0 for label in regions_of_interest}
+    }
+
+def count_paintings(painting_result, languages):
+    object_counts = {}
+    for painting in painting_result:
+        if languages:
+            language = languages[0] if languages else "en"
+            for label in languages:
+                object_counts[label] += len([bbox for bbox in painting if bbox[2] == label])
+        else:
+            object_counts["all"] += len([bbox for bbox in painting if bbox[2] == "all"])
+    
+    return {label: count if language_lang in object_counts else 0 for label, count in object_counts.items()}
+
+object_counts = count_paintings(painting_result, languages=[]) # Default languages
+total_objects = {label: detect_count(painting_result) for label, detect_count in object_counts.items()} # Calculate total count
+
+final_result = {
+"total_objects": total_objects
+}
+
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-528376 Execution reward: 0.0 -------------
+[Reward computation time: 2.7297 seconds]
+QAid: 11833_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/5919_0.png"
+labels = ["baseball", "basket"]
+
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=True)
+detected_objects = result[1]
+
+final_result = {}
+count_of_baseball = len(detected_objects.get("baseball", []))
+count_of_basket = len(detected_objects.get("basket", []))
+
+final_result.update({"baseball": count_of_baseball, "basket": count_of_basket})
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-528376 Execution reward: 0.0 -------------
+[Reward computation time: 1.6953 seconds]
+QAid: 11833_0
+Code: 
+
+from tools.object_detector import Object_Detector_Tool
+
+# Set the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11833_0.png"
+
+# Set the threshold for detection
+threshold = 0.35
+
+# Set the language to English
+languages = "en"
+
+# Execute the object detection
+result = Object_Detector_Tool.execute(image=image_path, languages=languages, threshold=threshold)
+
+if 'label_count' in result:
+    final_result = f"{result['label_count']} paintings are visible in the scene."
+else:
+    final_result = "No Paintings are visible in the scene."
+    
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-00-41-37-528376 Execution reward: 0.0 -------------
+[Reward computation time: 2.5335 seconds]
+QAid: 11833_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+final_result = False
+
+# Read image file and process.
+with open('/nfs/data8/liao/wxie/SAT/SAT_images_train/11833_0.png', 'r') as img_file:
+    img_data = img_file.read()
+
+result = Object_Detector_Tool.execute(image=img_data, labels=['bread'])
+print(result)
+
+if result:
+    print("Detected bread.")
+    num_bread = 1
+else:
+    print("No bread detected.")
+
+if num_bread >= 1:
+    print(f"\nTotal bread detected: {num_bread}\n")
+else:
+    print("\nNo bread detected.\n")
+
+
+============================== END ==============================
+

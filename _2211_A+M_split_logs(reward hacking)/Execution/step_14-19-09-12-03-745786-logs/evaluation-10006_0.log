@@ -1,0 +1,182 @@
+------------- 19-09-12-03-745786 Execution reward: 0.0 -------------
+[Reward computation time: 2.7119 seconds]
+QAid: 10006_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def calculate_objects(image_path: str, labels: List[str], save_object: bool, saved_image_path: Optional[str] = None) -> Optional[dict]:
+    detected_objects, object_count = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+    if not detected_objects:
+        return None
+    
+    object_info = {label: [] for label in detected_objects.keys()}
+    
+    for detected_label, details in detected_objects.items():
+        for detection in details:
+            if save_object:
+                det_confidence = detection.get('score')
+                saved_path = f'detected_objects/{det_label}_{det_confidence}_{saved_image_path}.jpg'
+                saved_image = Image.open(saved_path).convert('RGBA')
+                cropped_image = Image.new('RGB', (detection['box'][2] - detection['box'][0] + 1, detection['box'][3] - detection['box'][1] + 1), (0, 0, 0, 0))
+                cropped_image.paste(saved_image, detection['box'])
+                cropped_image.save(saved_path)
+            object_info[det_label].append({'box': detection['box'], 'score': det_confidence, 'saved_image_path': saved_image_path})
+    
+    if object_count == 0:
+        detected_objects = None
+    
+    return (object_info, object_count)
+
+
+============================== END ==============================
+
+------------- 19-09-12-03-745786 Execution reward: 0.0 -------------
+[Reward computation time: 1.5037 seconds]
+QAid: 10006_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Call the function with the provided image path, language code, and detail level
+detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/input_image.png", languages=["en", "de"], detail=0)
+print(f"Number of objects detected: {len(detected_objects)}")
+for i, obj in enumerate(detected_objects, start=1):
+    print(f"Object {i}: {obj}")
+
+final_result = {
+    "detected_objects": detected_objects,
+    "object_number": object_number
+}[1:]
+if final_result["detected_objects"] == []:
+    print("\nNo text found.\n")
+```
+
+
+============================== END ==============================
+
+------------- 19-09-12-03-745786 Execution reward: 0.0 -------------
+[Reward computation time: 1.7859 seconds]
+QAid: 10006_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+class RoomObjectDetector:
+    def countObjects(self, object_list):
+        """
+        Counts and returns the number of detected objects in the given list.
+        :param object_list: List of detected objects (strings or tuples).
+        :return: int - The total number of objects detected in the image.
+        """
+        object_count = {}
+        for obj_data in object_list:
+            obj_type, box, score = obj_data
+            if obj_type in object_count:
+                object_count[obj_type] += 1
+            else:
+                object_count[obj_type] = 1
+        return len(object_count)
+
+    def detectTVStands(self, image_path, labels, save_object=True):
+        """
+        Detect TV Stands in an image using the provided labels and save data.
+        :param image_path: str - The path to the image file.
+        :param labels: list of strings - The labels to detect in the image.
+        :param save_object: bool - Whether to save the detected objects as images.
+        """
+        objects = self.detect_object(image_path, labels, save_object)
+        if objects:
+            top_left, bottom_right, total_objects_count = objects[0]
+            first_obj, last_obj = objects[1], objects[2]
+            return (total_objects_count, objects, first_obj, last_obj)
+
+    def detect_object(self, image_path, languages, detail=0):
+        """
+        Detects objects in the image.
+        :param image_path: str - The path to the image file.
+        :param languages: List of language codes to be used for OCR.
+        :param detail: int - The level of detail of OCR output (0 or 1).
+        """
+        return self.text_detector.execute(image=image_path, languages=languages, detail=detail)
+
+
+============================== END ==============================
+
+------------- 19-09-12-03-745786 Execution reward: 0.0 -------------
+[Reward computation time: 1.5422 seconds]
+QAid: 10006_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_tv_stands(image_path):
+    tool = Object_Detector_Tool()
+    tool.image = image_path
+    labels = ["tv_stand", "dining_courty", "bed", "chair"]
+    tool.labels = labels
+    threshold = 0.35
+    model_size = "tiny"
+    
+    if tool.execute(save_object=True, saved_image_path="tv_stands")["detected_objects"]:
+        total_tv_stands = len(tool.execute(save_object=True, saved_image_path="tv_stands"))["object_number"]["tv_stand"]
+        total_dining_courty = len(tool.execute(save_object=True, saved_image_path="dining_courty"))["object_number"]["dining_courty"]
+        total_bed = len(tool.execute(save_object=True, saved_image_path="bed"))["object_number"]["bed"]
+        total_chair = len(tool.execute(save_object=True, saved_image_path="chair"))["object_number"]["chair"]
+        return {"tv_stands": total_tv_stands, "dining_courty": total_dining_courty, "bed": total_bed, "chair": total_chair}
+    else:
+        return {"tv_stands": 0, "dining_courty": 0, "bed": 0, "chair": 0}
+
+
+============================== END ==============================
+
+------------- 19-09-12-03-745786 Execution reward: 0.0 -------------
+[Reward computation time: 1.5157 seconds]
+QAid: 10006_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/10006_0.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+detected_objects = final_result[0]
+object_counts = final_result[1]
+
+if detected_objects:
+    for label, det_objects in detected_objects.items():
+        for obj in det_objects:
+            box = obj['box']
+            box[0] -= 20
+            box[2] += 20
+            box[1] += 20
+            box[3] += 20
+            print(f"{label} : [{obj['box']}, {obj['score']}, {len(detected_objects[label])}]")
+else:
+    print("Error: Text detection failed after retries.")
+
+if object_counts:
+    print("Objects detected:")
+    for label, count in object_counts.items():
+        print(f"{label}: {count}")
+else:
+    print("No objects detected.")
+
+
+============================== END ==============================
+
+------------- 19-09-12-03-745786 Execution reward: 0.0 -------------
+[Reward computation time: 1.2201 seconds]
+QAid: 10006_0
+Code: 
+final_result = []
+# Using the Object_Detector_Tool tool to count the number of TVStands
+result = Object_Detector_Tool.execute(image='path/to_image.png', labels=['tv_stand'], save_object=True)
+# Count the number of TVStands detected in the image
+number_of_tv_stands = result['object_number']['tv_stand']
+if number_of_tv_stands == 1:
+    final_result.append({ 'label': 'tv_stand', 'confidence': number_of_tv_stands })
+else:
+    final_result.append({'label': 'not found', 'confidence': 0})
+
+============================== END ==============================
+

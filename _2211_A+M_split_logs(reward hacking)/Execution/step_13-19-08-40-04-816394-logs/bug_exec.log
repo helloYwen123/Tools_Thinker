@@ -1,0 +1,136 @@
+
+[Exctuion Failed]
+
+'dict' object has no attribute 'execute'
+code: 
+
+from_tool_object_detector = {
+  "tool_name": "object_detector",
+  "tool_class": "Object_Detector_Tool",
+  "tool_desc": "A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.",
+  "tool_version": "1.0.0",
+  "input_types": {
+    "image": "str",
+    "labels": "list",
+    "threshold": "float",
+    "model_size": "str",
+    "save_objects": "bool",
+    "saved_image_path": "str",
+    "usermetadata": {"threshold": 0.35, "model_size": "tiny", "save_objects": True, "saved_image_path": "detected_objects"}
+  },
+  "user_metadata": {
+    "potential_uses": [
+      {"label": "Bed", "type": "Detection"}, 
+      {"label": "Pillow", "type": "Detection"}, 
+      {"label": "Clothes", "type": "Detection"} 
+    ]
+  }
+}
+
+image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6252_0.png"
+labels = ["Bed", "Pillow", "Clothes"]
+threshold = 0.35
+model_size = "tiny"
+save_objects = True
+saved_image_path = "detected_objects"
+
+# Execute object detection commands
+result = from_tool_object_detector.execute(image=image, labels=labels, threshold=threshold, model_size=model_size, save_objects=save_objects, saved_image_path=saved_image_path)
+
+print(result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unmatched ']' (<string>, line 19)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+object_labels = ['baseball', 'basket']
+threshold = 0.35
+
+final_result['object_number'] = {obj_label: 0 for obj_label in object_labels}
+
+for obj_label in object_labels:
+    detected_objects = Object_Detector_Tool.execute(image='image_name.png', labels=[obj_label], save_object=True, saved_image_path='detected_objects')
+    
+    if len(detected_objects[0]['box']) > 0:
+        detected_objects_string = ', '.join(detected_objects[0]['box'])
+        final_result['object_number'][obj_label] = len(detected_objects)
+
+converted_labels = [f'{obj_label}: {len(detected_objects)}' for obj_label, detected_objects in final_result['object_number'].items()]
+converted_labels = 'Detected objects: ' + ', '.join(converted_labels)
+detected_objects_output = '\nfinal_result[' + 'detected_objects Output - Text Detection'] + '\n'
+
+if converted_labels:
+    print(detected_objects_output + converted_labels)
+
+output = {
+    'final_result': final_result,
+    'detected_objects_output': detected_objects_output
+}
+
+final_result.update(output)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+import_name: 'Object_Detector_Tool'
+
+def count_beds_in_room():
+    image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/6252_0.png'
+    labels = ['bed', 'drawer']
+    save_object = True
+    saved_image_path = 'detected_objects'
+
+    objects = Object_Detector_Tool.execute(image_path, labels=labels, threshold=0.7, save_object=save_object, saved_image_path=saved_image_path)
+
+    if objects and objects[0][1]:  # Check if any detected objects were found
+        bed_count = len([object.name for object in objects[-1].values() if object.label == 'bed'])
+        return f"1 bed visible in the room."
+    else:
+        return f"0 beds visible in the room."
+
+# Example usage
+beds_in_room = count_beds_in_room()
+print(beds_in_room)  # Output: 1 bed visible in the room.
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tool_object_detector_tool'
+code: 
+
+from tool_object_detector_tool import Object_Detector_Tool
+
+final_result = {"Beds": 1, "Other": 0}
+
+# Check if objects were detected
+if "detected_objects" in response_dict:
+    detected_objects = response_dict["detected_objects"]
+    for label, detection in detected_objects.items():
+        if label == "Beds":
+            if detection:
+                final_result["Beds"] += 1
+
+print("Beds:", final_result["Beds"])
+print("Other:", final_result["Other"])
+
+
+============================== END ==============================
+

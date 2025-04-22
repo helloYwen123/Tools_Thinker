@@ -1,0 +1,80 @@
+--- Completion 1 ---
+final_result = 1
+Reward: 0.0
+
+--- Completion 2 ---
+final_result = """
+detected_objects : {
+  'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],
+  'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]
+}
+object_number : {'baseball': 1, 'basket': 2}
+text_detected = {
+  'baseball': [['Detected text', 0.92]],
+  'basket': [['Detected text', 0.85]]
+}
+generated_output = {
+  "detected_objects": detected_objects,
+  "text_detected": text_detected
+}
+final_result = [{"detected_objects": [{"label": "baseball", "num_objects": 1, "bbox": [34, 50, 200, 220], "score": 0.92, "image_path": "detected_objects/image_baseball_1.png"}], "text_detected": [{"label": "baseball", "bbox": [0, 0, 14, 10], "score": 0.92}]} if text_detected and 'basket' in text_detected["baseball"] else {"detected_objects": [{"label": "basket", "num_objects": 2, "bbox": [220, 100, 400, 350], "score": 0.85, "image_path": "detected_objects/image_basket_1.png"}]}
+
+{
+  "detected_objects": [{"bbox": [34, 50, 200, 220], "score": 0.92, "label": "baseball", "image_path": "detected_objects/image_baseball_1.png"}],
+  "text_detected": [{"bbox": [20, 20, 62, 42], "label": "baseball", "score": 0.92}]
+}
+final_result is not None if final_result != {} else {"detected_objects": [], "text_detected": []}
+if "text_detected" in final_result:
+  final
+Reward: 0.0
+
+--- Completion 3 ---
+final_result: 0
+Reward: 0.0
+
+--- Completion 4 ---
+final_result = "Question: How many Books are visible in the scene? Answer: 3"
+Reward: 0.0
+
+--- Completion 5 ---
+final_result: 0
+Reward: 0.0
+
+--- Completion 6 ---
+from object_detector_tool import Object_Detector_Tool
+from text_detector_tool import Text_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/5619_0.png", labels=["books"])
+books_count = final_result[0].get('baseball', None)
+books_count and int(final_result[0]['baseball']) or 0
+
+ final_result = Text_Detector_Tool().execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/5619_0.png", languages=['en', 'de'])
+books_count, text_blocks = final_result
+
+def calculate_text_blocks(image_path, languages=['en', 'de']):
+    detected_blocks = []
+    for language in languages:
+        result = text_detector_tool.execute(image=image_path, languages=[language])
+        for block_info in result:
+            if block_info[1] == language:
+                detected_blocks.append({'bbox': block_info[0], 'recognized_text': block_info[2], 'confidence_score': block_info[3]})
+    return detected_blocks
+
+result_text_blocks = []
+if books_count is not None:
+    for book in final_result['baseball']:
+        block_info = calculate_text_blocks("/nfs/data8/liao/wxie/SAT/SAT_images_train/5619_0.png")
+        if len(block_info) > 0:
+            result_text_blocks.append(block_info)
+
+if result_text_blocks:
+    for i, result_text_block in enumerate(result_text_blocks):
+        if result_text_block[1] == "books":
+            text_blocks.append({'bbox': result_text_block[0], 'text': result_text_block[1], 'confidence_score': result_text_block[3]})
+else:
+    text_blocks = []
+
+if not text_blocks:
+    final_result.get('basket', None) and int(final_result['basket']) or 0
+Reward: 0.0
+

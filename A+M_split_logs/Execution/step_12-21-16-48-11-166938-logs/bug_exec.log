@@ -1,0 +1,83 @@
+
+[Exctuion Failed]
+
+No module named 'tool_detection'
+code: 
+
+from tool_detection import Object_Detector_Tool, Text_Detector_Tool
+
+# Sample image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png'
+
+# Load image
+image = Image.open(image_path)
+
+# Detect objects
+objects = Object_Detector_Tool.execute(image, labels=['baseball', 'basket'], threshold=0.35)
+object_number = {'baseball': 1, 'basket': 2}
+
+# Create detected objects dictionary
+detected_objects = []
+for object in objects:
+  detected_objects.append({
+    'label': object['label'],
+    'bbox': object['bbox'],
+    'score': object['score'],
+    'saved_image_path': f'detected_objects/{object["label"]}.png'
+  })
+
+# Create object_count dictionary
+object_count = {k: len(objects) for k, objects in object_number.items()}
+
+# Combine detected objects and object_count
+result = [[detected_objects, object_count], [detected_objects, object_count]]
+
+# Convert to JSON
+json_result = {
+    'detected_objects': result[0],
+    'object_number': result[1]
+}
+
+final_result = json.dumps(json_result, indent=2)
+
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unexpected indent (<string>, line 2)
+code: 
+
+    object_detector_tool = Object_Detector_Tool()
+    detected_objects, object_number = object_detector_tool.execute(image='path/to/image', labels=['baseball', 'basket'], save_object=False, saved_image_path='detected_objects/')
+    final_result = f"Detected {len(detected_objects)} objects in the image with bounding box, score, and saved image paths."
+    final_result += f"\nNumber of detected baseballs: {len(detected_objects)}"
+    final_result += f"\nNumber of detected basketballs: {len(detected_objects)}"
+    return final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/5545_0.png", labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+if detected_objects:
+    detected_objects_dict = {label: detection for label, detection in detected_objects[0].items()}
+    object_number_dict = {label: len(detected_objects[0]) for label, found in object_number.items()}
+    final_result = {"detected_objects": detected_objects_dict, "object_number": object_number_dict}
+    print(final_result)
+else:
+    print("Failed to detect balls and baskets.")
+
+
+============================== END ==============================
+

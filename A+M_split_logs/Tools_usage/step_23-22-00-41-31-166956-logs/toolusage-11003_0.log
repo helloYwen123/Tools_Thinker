@@ -1,0 +1,159 @@
+
+[QAid]11003_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_DECTector_Tool
+
+# Parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11003_0.png"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path_prefix = "detected_objects"
+
+# Detect objects
+result = Object_DECTector_Tool().execute(image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path_prefix)
+
+# Check for successful detection
+if "object_number" in result:
+    object_number = result["object_number"]
+else:
+    print("Failed to detect objects.")
+    final_result = "No detected objects."
+
+# Check for successful detection and output results
+if "detected_objects" in result:
+    detected_objects = result["detected_objects"]
+    if objects:
+        text_output = ""
+        for text_entry in detected_objects["baseball"]:
+            text_output += str(text_entry["box"]) + " , \"" + text_entry["text"] + "\" , " + str(text_entry["score"]) + "\n" if text_entry["score"] > 0.60 else ""
+        text_output += " No more detected text."
+        final_result += "Detected objects:\n" + text_output + "\n"
+else:
+    print("No detected objects.")
+    final_result = "No detected objects."
+
+# Check for successful detection and output results
+if "basket" in result and result["basket"]:
+    basket_entry = result["basket"]
+    final_result += "Basket found at coordinates (\u2190, \u2192), bounding box (\u2192, \u2194), and confidence score of " + str(basket_entry["scores"][0]) + "\n"
+
+# Summary
+print(f"Final result: {final_result}")
+
+============================== END ==============================
+
+
+[QAid]11003_0
+
+[Code Includes Tools Usage]
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+def detect_objects(image, labels, save_object, saved_image_path):
+    object_detector = Object_Detector_Tool()
+    detected_objects, object_number = object_detector.execute(image=image, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+    return detected_objects, object_number
+
+# Example: Detecting baseball and basket in an image
+final_result = detect_objects('/nfs/data8/liao/wxie/SAT/SAT_images_train/11003_0.png', ['baseball', 'basket'], False, 'detected_objects')
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]11003_0
+
+[Code does not include Tools Usage]
+code: 
+
+def detect_objects(tool_module, image_file, labels=None, threshold=None, model_size='tiny', save_object=False, saved_image_path=None):
+    tool = getattr(tool_module, tool_module + '_' + tool_class_name)
+    results = tool(image=image_file, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+    detected_objects = {}
+    object_number = {}
+
+    for class_name, detection_results in results.items():
+        if class_name in labels:
+            detected_objects[class_name] = []
+            object_number[class_name] = len(detection_results)
+        else:
+            detected_objects[class_name] = [{'box': (0, 0, 0, 0), 'score': 0.0, 'saved_image_path': ''}]
+            object_number[class_name] = 0
+
+    return detected_objects, object_number
+
+final_result = detect_objects(Object_Detector_Tool, "/nfs/data8/liao/wxie/SAT/SAT_images_train/11003_0.png", ("baseball", "basket"))
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]11003_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+# path/to/image
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11003_0.png"
+# labels includes baseball and basket
+labels = ["baseball", "basket"] 
+
+# demo: detect and save objects
+result = Object_Detector_Tool().execute(image=image_path, labels=labels, save_object=True).values()
+
+# Convert to JSON string
+json_result = {"detected_objects": result, "object_number": result["baseball"], "object_number": result["basket"]}
+
+============================== END ==============================
+
+
+[QAid]11003_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tools_object_detector import Object_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()
+
+detected_objects, object_number = object_detector_tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/11003_0.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+============================== END ==============================
+
+
+[QAid]11003_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+output = Object_Detector_Tool().execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/11003_0.png", labels=["basketball", "baseball"], threshold=0.35, save_object=True, saved_image_path="detected_objects")
+final_result = {}
+label_results, num_labels = output['detected_objects']
+
+for label in label_results:
+    if label['saved_image_path']:
+        detections = label_results[label]['box']
+        score = label['score']
+        file_path = label_results[label]['saved_image_path']
+
+        if file_path and file_path != 'detected_objects/':
+            file_path = file_path.split('/detected_objects/')[1]
+            final_result[label] = file_path
+
+result = {"label_results": final_result, "image_number": num_labels}
+final_result = result
+print(final_result)
+
+============================== END ==============================
+

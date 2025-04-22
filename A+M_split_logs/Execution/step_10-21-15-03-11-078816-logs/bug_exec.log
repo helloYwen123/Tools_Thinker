@@ -1,0 +1,88 @@
+
+[Exctuion Failed]
+
+name 'no_results' is not defined
+code: 
+no_results,0
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+not enough values to unpack (expected 2, got 0)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Configuration
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/14419_0.png"
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Run the tool
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+# Analysis
+final_result = {
+    "detected_objects": {
+        "baseball": [detected_objects['baseball'][0]],
+        "basket": [detected_objects['basket'][0]],
+    },
+    "object_number": object_number
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unexpected character after line continuation character (<string>, line 18)
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+def visualize_object_detection(image_path, labels=None, threshold=0.35, model_size="tiny"):
+    detected_objects = object_detector_tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path="detected_objects", threshold=threshold, model_size=model_size)
+
+    # Calculate total count
+    object_number = {"baseball": 0, "basket": 0}
+    for label in detected_objects:
+        object_number[label["bbox"][0]] += 1
+
+    # Generate final result
+    final_result = ""
+    for label in detected_objects:
+        final_result += f"Detected {label['bbox'][0]} \n"
+        final_result += f"{label['bbox'][0]} ({label['bbox'][1]};{label['bbox'][1]}) is {label['bbox'][3]}\n"
+        final_result += f"{label['bbox'][2]} ({label['bbox'][2]};{label['bbox'][2]}) is {label['bbox'][4]}\n"
+        final_result += f"confidence score: {label['coref_score']}"\n\n"
+        object_number[label["bbox"][0]] += 1
+
+    return [detected_objects, object_number]
+
+# Load image from given path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/14419_0.png"
+
+# Create object_detector_Tool instance
+object_detector_tool = Object_Detector_Tool()
+
+# Execute object detection function
+detected_objects, object_number = visualize_object_detection(image_path, labels=["baseball", "basket"], threshold=0.35)
+
+# Define print output format for visualization
+output_format = "{detected_objects} \n total_objects: {object_number}"
+
+# Create final result string
+final_result_string = output_format.format(detected_objects=detected_objects, object_number=object_number)
+
+print(final_result_string)
+
+
+============================== END ==============================
+

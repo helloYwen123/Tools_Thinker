@@ -1,0 +1,119 @@
+
+[QAid]11643_0
+
+[Code Includes Tools Usage]
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+import_name = "Object_Detector_Tool"
+final_result = Object_Detector_Tool.execute(image='path/to/image', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]11643_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def detect_objects(image_path, labels, threshold=0.35, model_size="tiny", save_object=False, saved_image_path="detected_objects"):
+    object_num = {}
+    for label in labels:
+        results = []
+        detection_engine = Object_Detector_Tool()
+        detected_objects = detection_engine.execute(image_path, labels, save_object, saved_image_path)
+        for obj, res in detected_objects.items():
+            res["box"] = (res["bbox"][0], res["bbox"][1], res["bbox"][2], res["bbox"][3])
+            res["confidence"] = res["score"] if save_object else 0.0
+            if not save_object:
+                object_num[label] = object_num.get(label, 0) + 1
+                results.append(res)
+        if not save_object:
+            results = [x for x in results if x["confidence"] >= threshold]
+        # Convert results to JSON
+        results_json = [{"bbox": x["bbox"], "score": x["score"]} for x in results]
+        object_num[label] = object_num.get(label, 0) + 1
+        y = {"detected_objects": results_json, "label_num": object_num}
+        final_result = (y, object_num)
+
+    return final_result
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11643_0.png"
+labels = ["baseball", "basket"]
+
+result = detect_objects(image_path, labels)
+print("\nDetected Objects\n", result[0])
+print("Number of Labels\n", result[1])
+
+============================== END ==============================
+
+
+[QAid]11643_0
+
+[Code Includes Tools Usage]
+code: 
+
+from text_detector import Text_Detector_Tool
+
+# Function to count and locate all text in a given image
+def count_and_locate_text(image_path):
+    text_detector = Text_Detector_Tool()
+    result = text_detector.execute(image_path, languages=['en', 'de'], detail=0)
+    text_blocks = result['text_blocks']
+    return text_blocks
+
+# Given image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11643_0.png"
+
+# Counting and Locating all Text in the Given Image
+count_and_locate_text(image_path)
+
+============================== END ==============================
+
+
+[QAid]11643_0
+
+[Code Includes Tools Usage]
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="path/to/image", labels=["basket", "baseball"], save_object=True)
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]11643_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+detected_objects, object_number = Object_Detector_Tool.execute(image='path/to/image', labels=['a ball'], save_object=True, saved_image_path='detected_objects')
+
+# 1. Count the number of detected objects
+object_number = {'baseball': detected_objects['baseball'].count(), 'basket': detected_objects['basket'].count()}
+
+final_result = f"Total number of objects detected: {object_number['a ball']}"
+
+
+============================== END ==============================
+
+
+[QAid]11643_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="path/to_image.jpg", labels=["baseball", "basket"], save_object=False, saved_image_path="detected_objects")
+print(final_result)
+
+============================== END ==============================
+

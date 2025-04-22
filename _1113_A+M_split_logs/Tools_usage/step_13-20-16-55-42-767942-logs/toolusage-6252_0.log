@@ -1,0 +1,163 @@
+
+[QAid]6252_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_beds():
+    return 0 if no_objects("beds") else 1
+
+no_objects = Object_Detector_Tool.execute(image="beds.png", labels=["bed", "nothing"], save_object=True, saved_image_path="nothing")
+if not no_objects:
+    return count_beds()
+else:
+    return count_beds()
+
+============================== END ==============================
+
+
+[QAid]6252_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+<command>
+def detect_objects(image_path, labels, save_object=True, saved_image_path="detected_objects"):
+    detected_objects = {}
+    object_number = {}
+    labels_detected = [l[1:] for l in labels]
+    counts = {}
+    
+    model_size = "tiny"
+    if model_size not in ["tiny", "base", "large"]:
+        print("Invalid model size. Valid options are 'tiny', 'base', and 'large'. Exiting...")
+        model_size = "small"
+        print("Updating model name...")
+    
+    labels_detected_file = saved_image_path + ".jpg"
+    image_path += ".png"
+    output_path = saved_image_path + "_" + saved_image_path
+    
+    try:
+        image = imageio.imread(image_path)
+        if model_size == "small":
+            model = Text_Detector_Tool.model_sizes["small"]['default']
+                
+            if model not in Text_Detector_Tool.models:
+                print("No models found for label size ", model_size)
+                return []
+                
+            models = []
+            for models_dir in Text_Detector_Tool.model_folder:
+                models += [os.path.join(models_dir, 'tuning', models_path) for models_path in Text_Detector_Tool.model_folder]
+            print(f"Adding models: {models}")
+            for models_path in models:
+                
+                for base in ["tiny", "small", "base", "large", "XLarge", "S", "B"]:
+                    try:
+                        models.append(os.path.join(models_path, "dino", base + "-" + base + "-small"))
+                        print(f"Adding model: {models_path} - {base} - small")
+                    except:
+                        print("Model does not exist.")
+                    if model not in models:
+                        break
+            for models_path in models:
+                model.detect_objects_to_image(image, labels_detected_file, model, save_object=save_object, detail=1)
+                
+            model = Text_Detector_Tool.model_folder[models_path]["dino"][model]["dino_small"]
+            print(f"Detected objects with model: {models_path}")
+        else:
+            models = Text_Detector_Tool.model_folder[model]["dino"]["dino"]["dino_base"]
+            print(f"Detected objects with model: {model})")
+    
+        
+        results = []
+        
+        for result in model.detect_objects_to_image(image, labels_detected_file, languages=labels_detected):
+            box, score, label = result["bbox"], result
+============================== END ==============================
+
+
+[QAid]6252_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+```python
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+# Assuming the JSON path to the scene image file is /nfs/data8/liao/wxie/SAT/SAT_images_train/6252_0.png
+scene_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6252_0.png"
+
+image_data = {"path": scene_image_path}
+
+object_labels = ["bed", "shelf", "painting"]
+threshold = 0.35
+save_object = False
+saved_image_path = "detected_objects"
+
+# Detect objects
+object_results = Object_Detector_Tool.execute(image=image_data, labels=object_labels, save_object=True, saved_image_path=saved_image_path, threshold=threshold, model_size="tiny")
+
+# Detect text
+text_results = Text_Detector_Tool.execute(image=image_data, languages=["en"])
+
+# Combine and display the results
+final_result = [["1", "0", 1], *[{"label": result[1], "confidence_score": result[2]} for result in object_results], *[{"label": result[1], "found": 1 if result[1] not in text_results[False] else 0} for result in object_results], *[{"labels": result[1], "found": len(text_results[True])} for result in object_results], [["", "English"]]]
+
+print("Final result: \n", final_result)
+```
+============================== END ==============================
+
+
+[QAid]6252_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 1)
+
+Completion Content: 
+<command>not enough information provided</command>
+============================== END ==============================
+
+
+[QAid]6252_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+result = Object_Detector_Tool.execute(image='6252_0.png', save_object=True, saved_image_path='detected_objects')
+final_result = f"1" if 1 in [item[0].get('box') for item in result] else "0"
+final_result
+
+============================== END ==============================
+
+
+[QAid]6252_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {"Beds": 1}
+
+# Example: executing the tool with confidence threshold
+generated_beds = Object_Detector_Tool.execute(image=path_to_image_path, labels=["Bed"], save_object=True, saved_image_path="detected_objects")
+
+if isinstance(generated_beds, bool):
+    final_result["Beds"] = 0
+elif isinstance(generated_beds, dict):  
+    final_result["Beds"] = len(generated_beds)
+
+
+============================== END ==============================
+

@@ -46,7 +46,10 @@ class Segmentation_Tool(BaseTool):
             },
             demo_commands = [
                 {
-                    "command": "masks = segmentation_tool.execute(segmentation_mode='boxes', input_prompts=[{'image_path': 'path/to/image1.jpg', 'input_box': [[100,150,400,500]]}, {'image_path': 'path/to/image2.jpg', 'input_box': [[50,80,300,350]]}], model_size='small')",
+                    "command": """
+                    segmentation_tool = Segmentation_Tool()
+                    masks = segmentation_tool.execute(segmentation_mode='boxes', input_prompts=[{'image_path': 'path/to/image1', 'input_box': [[100,150,400,500]]}, {'image_path': 'path/to/image2', 'input_box': [[50,80,300,350]]}], model_size='small')
+                    """,
                     "description": "Batch segmentation for multiple images using box-based input. Each image returns its segmentation mask as a numpy array.",
                     "output_examples": (
                         "masks = [mask_image1, mask_image2]\n"

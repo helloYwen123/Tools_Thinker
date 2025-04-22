@@ -1,0 +1,186 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Sample input path to image file
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/7383_0.png"
+
+# Sample labels to detect
+labels = ['baseball', 'basket']
+
+# Confidence threshold
+threshold = 0.35
+
+# Model size ('tiny' or 'base')
+model_size = 'tiny'
+
+# Save detected objects directory
+detected_objects = 'detected_objects'
+
+# Sample output dictionary
+output_dict = {
+  'baseball': [],
+  'basket': []
+}
+
+# Execute detection
+result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path=detected_objects, model_size=model_size, threshold=threshold)
+
+# Check if any labels were detected
+if result['baseball'][0]['box'] is None or result['basket'][0]['box'] is None:
+  output_dict['baseball'] = []
+  output_dict['basket'] = []
+
+# Loop over each detected object
+for label in result['baseball']:
+  object_num = len(input_dict['baseball'].append(label['score']))[0]
+  output_dict['baseball'][-1]['score'] = result['baseball'][0]['score']
+
+for label in result['basket']:
+  object_num = len(output_dict['basket'])[-1]['score'] = result['basket'][0]['score']
+
+# Example usage
+# (output_dict)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+input_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/7383_0.png'
+
+# Execute object detector
+result = Object_Detector_Tool.execute(image=input_path, labels=['monitor'], save_object=True)
+
+# Check if the object has been detected
+if 'monitor' in result[:1]:
+  final_result = {'DiningTables': results['monitor']}
+else:
+  final_result = {'DiningTables': []}
+
+# Execute text detector for the 'monitor' object
+text_results = Text_Detector_Tool.execute(image=input_path, languages=['en'], detail=2)
+
+for block in text_results:
+  if 'monitor' in block:
+    monitor_blocks = [{'bbox': [box[0], box[1], box[2] - box[0], box[3] - box[1]], 
+                      'text': block['text'], 
+                      'score': block['score']}
+                      for i, box in enumerate(block['bbox'])]
+    final_result['DiningTables'].append({'bbox': [monitor_blocks[0]["bbox"][0]], 
+                                          'text': monitor_blocks[0]["text"], 
+                                          'score': monitor_blocks[0]["score"]})
+
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_coffee_tables(image_path):
+    # Assuming the object detector tool is installed and configured properly with the path to the saved detected images.
+    result = Object_Detector_Tool.execute(image=image_path, labels=['DiningTable'], save_object=True, saved_image_path="detected_objects")
+    coffee_tables = result["detected_objects"]
+
+    return len(coffee_tables)
+
+final_result = count_coffee_tables('/nfs/data8/liao/wxie/SAT/SAT_images_train/7383_0.png')
+print("Number of dining tables in the image:", int(final_result["object_number"]["DiningTable"]))
+print("Number of dining tables detected in the image:", int(final_result["detected_objects"][3]["object_number"]["DiningTable"]))
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tools_object_detector'
+code: 
+
+from tools_object_detector import Object_Detector_Tool
+
+final_result = []
+command = """
+detected_objects, object_number = Object_Detector_Tool.execute(image=path_to_image, labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+"""
+
+exec(command)  # Run the command and get the output
+
+if detected_objects:
+    object_labels = [det['label'] for det in detected_objects]
+    object_numbers = [det['object_number'] for det in detected_objects]
+    for label, number in zip(object_labels, object_numbers):
+        result = {
+            'label': label,
+            'number': number,
+            'description': 'Number of {} detected in the image: {}'.format(label, number)
+        }
+
+        if save_object:
+            # Save the object detection result
+            result_path = os.path.join('detected_objects', f'{label}_detected_objects_{number}.png')
+            os.makedirs(os.path.dirname(result_path), exist_ok=True)
+            result['image_path'] = result_path
+            img = Image.open(result_path)
+            img.save(result_path)
+        final_result.append(result)
+else:
+    final_result = []
+
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+f-string: closing parenthesis '}' does not match opening parenthesis '(' (<string>, line 22)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Load image and specify required parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/7383_0.png"
+labels = ["baseball", "basket"]
+save_object = True
+saved_image_path = "detected_objects"
+
+try:
+    # Detect objects
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+
+    # Print object number
+    final_result = {"object_number": object_number, "result": detected_objects}
+
+    if detected_objects:
+        final_result["result"] = final_result["result"][0]
+
+    print("Detected objects in the image:")
+    for label, box_points in detected_objects.items():
+        print(f"{label}: [{', '.join(map(lambda p: f'[{p[0]} {p[1]}]}', box_points)}]")
+
+    print("Object number:", object_number)
+except Exception as e:
+    print("Error:", e)
+
+
+============================== END ==============================
+

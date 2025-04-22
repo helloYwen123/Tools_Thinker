@@ -1,0 +1,255 @@
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool, save_object
+
+def detect_objects(image_path, labels=None, threshold=0.35, model_size="tiny", save_object=True, saved_image_path=None):
+    if saved_image_path is None:
+        saved_image_path = f"{image_path.split('/')[-2]}_{image_path.split('/')[-1]}"
+    
+    detected_objects = []
+    label_count = {}
+
+    object_detector_tool = Object_Detector_Tool()
+    labeled_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=save_object)
+
+    # Detecting 3D objects
+    for label in object_number.keys():
+        if len(label_number[label]['bbox']) < 3:
+            continue  # Skipping if object with less than 3 bounding boxes
+
+        for bbox in label_number[label]['bbox']:
+            objects_amount = detected_objects.copy()
+            objects_amount[label.name] = object_number.get(label.name, 0)
+            
+            object_name_list = []
+            for pos in objects_amount:
+                bbox0, score0, box0 = detected_objects[pos]
+                if box0[3] - box0[1] < threshold:
+                    continue  # Skipping if object is too small
+
+                bbox1 = pos[0] + bbox[0], pos[1] - bbox[1], pos[2] + bbox[2], pos[3] - bbox[2]
+                if bbox1[3] >= bbox0[3] - bbox0[1] and bbox1[0] >= bbox0[0]:  # If bounding boxes overlap
+                    object_name_list.append(pos.name)
+                    detected_objects[pos] = bbox1
+                    objects_amount[pos.name] += 1
+                    break
+
+            if object_name_list:
+                labeled_objects.append(
+                    (bbox0, score0, object_number[label.name], saved_image_path if save_object else None)
+                )
+    
+            label_count[label.name] = objects_amount.get(label.name, 0) + sum(x for b in objects_amount for (bbox, score) in detected_objects[b])
+
+    final_result = {
+        "detected_objects": [
+            {
+                "bbox": bbox,
+                "text": text,
+                "score": score
+            }
+            for bbox, text, score in detected_objects
+        ],
+        "label_count": label_count
+    }
+
+    return final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+import object_detector_tool
+import text_detector_tool
+
+def count_pillows(image_path):
+    # Detect pillows using the Object_Detector_Tool
+    detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=["pillows"], save_object=True)
+
+    # Count pillows
+    pillow_count = object_number["pillows"]
+
+    return pillow_count, detected_objects
+
+def detect_pillow(image_path):
+    # Retrieve detection results using the Text_Detector_Tool
+    result = text_detector_tool.execute(image=image_path, languages=["en", "de"])
+
+    # Return detection results
+    return result
+
+# Sample usage for image 'path/to/image'
+pil_lots, pillow_results = count_pillows('/nfs/data8/liao/wxie/SAT/SAT_images_train/5679_0.png')
+pill_lots, pillow_results
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+from text_detector_tool import Text_Detector_Tool
+
+# Initialize tools
+object_detector_tool = Object_Detector_Tool()
+text_detector_tool = Text_Detector_Tool()
+
+# Define paths
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/5679_0.png"
+labels = ['baseball', 'basket']
+
+# Configure detection parameters
+model_size = 'tiny'
+save_object = True
+saved_image_path_prefix = "detected_objects"
+object_detection_confidence = 0.35
+text_detection_language = 'en'
+
+# Execute detection
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=True, model_size=model_size, saved_image_path=saved_image_path_prefix)
+translated_labels = {label: [detected_object['box'], detected_object['score'], saved_image_path_prefix + '/' + label] for label, detected_object in detected_objects.items()}
+translated_object_number = len(detected_objects.keys())
+
+# Execute text detection
+translated_text_blocks = text_detector_tool.execute(image=image_path, languages=labels, detail=1)
+translated_language = labels[0]
+if translated_text_blocks:
+    text_bboxes = [[detected_object['box'][0], detected_object['box'][1], detected_object['box'][2], detected_object['box'][3]] for detected_object in translated_text_blocks]
+    translated_blocks = []
+    for language, text_blocks in zip(labels, text_bboxes):
+        blocks = [[label for label in translated_text_blocks if label[1].endswith(f'_{language}')], [image_path] + list(label + ['_'] + language for label in text_blocks), language]
+        translated_blocks.extend(blocks)
+    translated_blocks = [{'text': block[0], 'bboxes': block[1]} for block in translated_blocks]
+else:
+    translated_blocks = []
+
+final_result = {
+    "detected_objects": translated_labels,
+    "translated_object_number": object_number,
+    "translated_language": labels[0],
+    "text_blocks": translated_blocks
+}
+
+print(f"Detected objects:\n{translated_labels}\n\nTotal objects detected: {translated_object_number}\n\nText blocks detected:\n{translated_blocks}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'objects_detector_tool'
+code: 
+
+from objects_detector_tool import Object_Detector_Tool
+from text_detector_tool import Text_Detector_Tool
+
+def count_pillows(image_path):
+    try:
+        object_detector_tool = Object_Detector_Tool()
+        total_pills = 0
+        detected_objects = object_detector_tool.execute(image=image_path, save_object=False)
+        
+        for label, detections in detected_objects.items():
+            pillow_count = len(detections)
+            if label == "pillow":
+                total_pills += pillow_count
+            elif label == "pillows":
+                if pillow_count > 0:
+                    total_pills += pillow_count
+            
+        return total_pills
+    except Exception as e:
+        return 0
+
+def detect_text(image_path, languages=['en', 'de']):
+    try:
+        text_detector_tool = Text_Detector_Tool()
+        detected_text = text_detector_tool.execute(image=image_path, languages=languages, detail=0)
+        detected_text = [{'bbox': bbox, 'text': txt, 'score': score} for bbox, txt, score in detected_text]
+        return detected_text
+    except Exception as e:
+        return []
+
+def find_image(pillow_path=0):
+    try:
+        pillow_images = []
+        object_detector_tool = Object_Detector_Tool(image=pillow_path, model_size='base')
+        if object_detector_tool.results != []:
+            results = object_detector_tool.results
+        else:
+            results = object_detector_tool.results
+        for result in results:
+            detected_image_path = object_detector_tool.save_object(result)
+            pillow_images.append(detected_image_path)
+        return pillow_images
+    except Exception as e:
+        return []
+
+def calculate_pillow_count(image_path, languages=['en', 'de']):
+    pillow_count = 0
+    result = detect_text(image_path, languages=languages)
+    if len(result) > 0:
+        detection_text = ''.join(result[0]['text'].split('\n'))
+        pillow_count = detection_text.count('pillow')
+        pillow_count += detection_text.count('pillows')
+    
+    print(f"pillof found a pill number: {pillow_count}")
+    return pillow_count
+
+final_result = {
+    "image" : pillow_count,
+    "image_path": image_path
+}
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Object_Detector_Tool' is not defined
+code: 
+
+from_object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image= saved_image_path)
+
+final_result = {}
+for label in detected_objects:
+    final_result[label['label']] = {
+        'boxes': [box for box in label['boxes']],
+        'scores': [score for score, box in detected_objects[label['label']['label']]['boxes']],
+        'confidence': score,
+    }
+    final_result[label['label']]['count'] = len(detected_objects[label['label']])
+
+if save_object:
+    for obj in detected_objects:
+        with open(os.path.join('/detected_objects', obj['label'] + '_objects'), 'w') as f:
+            for i, box in enumerate(obj['boxes']):
+                box_str = '%.2f, %.2f, %d, %.2f' % (box[0], box[1], box[2] - box[0], box[3] - box[1])
+                f.write(box_str + ', ' + ', '.join([f'object {label["label"]} with score: {score}' for label, score in enumerate(obj['scores'])]) + '\n')
+
+object_number = {}
+for key, value in object_number.items():
+    object_number[key] = len(value)
+
+final_result.update(object_number)
+
+
+============================== END ==============================
+

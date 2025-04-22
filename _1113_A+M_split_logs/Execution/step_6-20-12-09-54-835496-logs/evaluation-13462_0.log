@@ -1,0 +1,95 @@
+------------- 20-12-09-54-835496 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 13462_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-12-09-54-835496 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 13462_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-12-09-54-835496 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 13462_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-12-09-54-835496 Execution reward: 0.0 -------------
+[Reward computation time: 2.0047 seconds]
+QAid: 13462_0
+Code: 
+output_output_json
+
+============================== END ==============================
+
+------------- 20-12-09-54-835496 Execution reward: 0.0 -------------
+[Reward computation time: 1.9604 seconds]
+QAid: 13462_0
+Code: 
+
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+# Image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/13462_0.png'
+
+# Language codes for the OCR model (optional)
+languages = ['en', 'de']
+
+# Detail level (default: 0; simpler output; 1 for detailed output)
+level = 1
+
+try:
+    # Detect objects
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, save_object=True)
+    
+    # Detect text in the image
+    result = Text_Detector_Tool.execute(image=image_path, languages=languages, level=level)
+    text_blocks = result
+
+    # Extract the text blocks
+    final_result = []
+    for text_block in text_blocks:
+        if text_block:
+            final_result.append({
+                'detected_text': text_block[1],
+                'confidence': text_block[0]
+            })
+
+    # Optionally, save detected objects in a specified directory
+    saved_image_path = 'detected_objects'  # Replace with the desired directory path
+    
+    if saved_image_path:
+        # Save detected objects in the specified directory
+        for obj_item in detected_objects.values():
+            for detection_item in obj_item:
+                detection_category = detection_item['category']
+                if detection_category == 'baseball' or detection_category == 'basket':
+                    detection_item['saved_image_path'] = saved_image_path
+                    result_dangerous_path = object_path + '{}/{}{}_{}.png'.format(detection_category, str(detection_item['score']), int(detection_item['box'][1]), int(detection_item['box'][3]))
+                    if os.path.exists(result_dangerous_path):
+                        os.remove(result_dangerous_path)
+                    # Save detection and warning images
+                    safe_path = result_dangerous_path + '_safe'.format(int(detection_item['box'][1]), int(detection_item['box'][3]))
+                    shutil.copy2(result_dangerous_path, safe_path)
+                    print(f"Saved detection and warning images as {safe_path}")
+else:
+    final_result = []
+    
+print("Result:", final_result)
+
+
+
+============================== END ==============================
+
+------------- 20-12-09-54-835496 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 13462_0
+Code: [EMPTY]
+
+============================== END ==============================
+

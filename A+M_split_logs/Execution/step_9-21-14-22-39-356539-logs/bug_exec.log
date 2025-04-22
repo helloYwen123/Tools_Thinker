@@ -1,0 +1,101 @@
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+# Set the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/961_0.png"
+
+# Set the labels to detect (e.g., 'baseball' and 'basket')
+labels = ['baseball', 'basket']
+
+# Set the confidence threshold (e.g., 0.35)
+threshold = 0.35
+
+# Set the model size (e.g., 'tiny' for tiny model or 'base' for base model)
+model_size = 'tiny'
+
+# Set to save or not save detected objects as images
+save_object = True
+
+# Execute detection
+detect_results = Object_Detector_Tool.execute(image=image_path,
+                                               labels=labels,
+                                               threshold=threshold,
+                                               model_size=model_size,
+                                               save_object=save_object)
+
+# Print the detected and saved objects
+if save_object:
+    for obj in detect_results:
+        print(f"Label: {obj[0]}, Objects found: {obj[1][0]}, Confident Score: {obj[1][1]}")
+    print(f"Number of detected objects: {len(detect_results)}")
+
+    # Check if text was detected
+    if 'camera' in detect_results:  # Check for 'camera' string in the detected objects
+        detected_text_blocks = text_detector_tool.execute(image=image_path, languages=['en', 'de'])
+        for text_block in detected_text_blocks:
+            print(f"Detected Text: {text_block[0]}, Coordinates: {text_block[1]}, Confident Score: {text_block[2][1]}")
+
+# Generate a markdown table or json format with detected objects and their count
+objects, texts = {}, []
+
+for label, objects in detect_results:
+    objects[label] = len(objects)
+
+for label, count in objects.items():
+    if count > 0:
+        texts[label] = count
+
+final_result = "| Object | Number | "
+final_result += '|---|---|'
+for i, value in enumerate(texts.values()):
+    final_result += f"|{i}|{value}|"
+final_result += '|----|----|'
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+def detect_objects(image_path, labels=['baseball', 'basket'], threshold=0.35, model_size='tiny', save_object=True, saved_image_path='detected_objects'):
+    object_detector_tool = Object_Detector_Tool()
+    detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size)
+
+    if detected_objects:
+        result_list = []
+        for label, detection_results in detected_objects.items():
+            bounding_box = [detection_results[0]['box'][0], detection_results[0]['box'][1], detection_results[0]['box'][2], detection_results[0]['box'][3]]
+            score = detection_results[0]['score']
+            detected_object = (label, bounding_box, score)
+            result_list.append(detected_object)
+
+        return result_list
+
+    else:
+        object_number = {}
+        for label, total_objects in object_number.items():
+            if not labels:
+                labels = [label]
+            existing_objects = object_number[label]
+            existing_object_count = existing_objects + [total_objects]
+            object_number[label] = existing_object_count
+
+        return object_number
+
+final_result = detect_objects('path/to/image')
+print(final_result)
+
+
+============================== END ==============================
+

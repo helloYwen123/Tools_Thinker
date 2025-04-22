@@ -1,0 +1,38 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+final_result = {
+    "televisions": 0,
+    "television_found": False
+}
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/7708_0.png"
+
+# Detect TVs
+detected_objects = Object_Detector_Tool.execute(image=image_path, labels=["tv"])
+
+# Check if TVs were detected and count them
+if detected_objects:
+    device_list = sorted([(det['saved_image_path'].split("/")[1], det['score']) for det in detected_objects]) 
+    total_television = len(device_list)
+    final_result = {**final_result, **{"televisions": total_television}}
+
+# If TVs were found, check if the "tv" labels are available
+if total_television > 0 and "tv" in detected_objects:
+    final_result["televisions_found"] = True
+
+if final_result["televisions_found"]:
+    final_result["televisions"] = total_television
+else:
+    final_result["televisions"] = 0
+
+print(final_result)
+
+
+============================== END ==============================
+

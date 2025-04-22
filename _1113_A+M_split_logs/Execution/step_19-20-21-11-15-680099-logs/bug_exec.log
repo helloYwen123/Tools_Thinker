@@ -1,0 +1,176 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 1)
+code: 
+from_object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+final_result = []
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/4555_0.png'
+label = ['baseball', 'basket']
+
+object_detector = Object_Detector_Tool(image_path, labels=label)
+object_results = object_detector.execute()
+
+if object_results[0][1] == 0.35:
+    for det in object_results:
+        det[1]['score'] = 0.99
+        final_result.append(det)
+
+if final_result:
+    language_codes = ['en', 'de']
+    result_language = []
+    for language in language_codes:
+        result_language.extend(object_detector.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/4555_0.png', languages=[language]))
+    
+    for result in result_language:
+        if result[1]['score'] > 0.2 and result[3].upper() == result[0].upper():
+            result[2] = result[1].upper()
+
+    # Check if the text is in the correct language
+    for det in final_result:
+        if det[0] == 'baseball' and det[1].upper() != 'DETIVED':
+            break
+    final_result = [final_result[x:y+1[0]+1] for x,y in [[i, i+len(object_results[0][0])+1] for i in (0, 1)]]
+
+    text_result = Text_Detector_Tool(image=''.join(final_result), languages=[label[0]])
+    detected_text_blocks = text_result[0]
+    print(f"Detected Text: {detected_text_blocks}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+detected_objects, object_number = Object_Detector_Tool.execute(
+  image="/path/to/image.png",
+  labels=['baseball', 'basket'],
+  save_object=True,
+  saved_image_path="/detected_objects"
+)
+
+final_result = {
+  "number_of_ArmChairs": len(detected_objects['baseball']) + len(detected_objects['basket'])
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Text_Detector_Tool' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def get_armchairs(image, labels=[]):
+    object_detector = Object_Detector_Tool()
+    results = object_detector.execute(image=image, labels=labels)
+    armchairs = []
+    for label, dets in results:
+        if label == "Armchair":
+            for det in dets:
+                detection_entry = {
+                    'bbox': det['bbox'],
+                    'score': det['score'] * 100
+                }
+                armchair = {
+                    "object_name": label,
+                    "bbox": det['bbox'],
+                    "score": det['score']
+                }
+                armchairs.append(armchair)
+    return armchairs
+
+def count_objects(image, languages=["en", "de"]):
+    result = Text_Detector_Tool.execute(image=image, languages=languages, detail=1)
+    objects = []
+    for block in result:
+        text = block['text'].replace("\n", " ").replace("\xa0", "").replace("\'s", " ").replace("\"", "").strip()
+        bounding_box = block['bbox'][0]
+        objects.append({'bbox': bounding_box, 'text': text, 'score': block['score']})
+    return objects
+
+def answer_question():
+    question = "How many ArmChairs are visible in the scene?"
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/4555_0.png"
+    armchairs = get_armchairs(image_path)
+    objects = count_objects(image_path)
+    
+    # Check if armchairs are visible
+    if len(armchairs) > 0:
+        object_number = {"baseball": len(objects), "basket": len(objects)}
+    else:
+        object_number = {"baseball": 0, "basket": 0}
+
+    # Create a dictionary to store the answer
+    answer_dict = {"question": question, "answer": [f"Number of{label}: {object_number[label]}" for label in object_number], "image_path": image_path, "objects": objects}
+    return answer_dict
+
+final_result = answer_question()
+print(f"Answer: {final_result}")
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+def num_arm_chairs(image_path):
+    try:
+        # Load the image and detect objects
+        objects = Object_Detector_Tool.execute(image=image_path, save_object=True, saved_image_path="obj_objects")
+
+        # Count the number of armchairs
+        arm_chairs = {"armchair" : 0}
+        for label in objects['baseball']:
+            if label["score"] > 0.4:
+                x1, y1, x2, y2 = label["bbox"]
+                x0, y0 = x1, y1
+                x3, y3 = x2, y2
+                arm_chairs[label["name"]] += 1
+
+        return len(arm_chairs["armchair"])
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return 0
+
+def detect_objects_in_image(image, language="en"):
+    try:
+        # Load the image and detect text
+        text_results = Text_Detector_Tool.execute(image=image, languages=[language])
+        return text_results
+    except Exception as e:
+        return []
+
+def main():
+    image_path = "4555_0.png"
+    num_arm_chairs(image_path)
+
+    objects = Object_Detector_Tool.execute(image_path, save_object=True, saved_image_path="obj_objects")
+
+    # Detect and count chairs
+    chair_number = num_arm_chairs("armchair")
+
+    print(f"Number of armchairs detected: {chair_number}")
+
+if __name__ == "__main__":
+    main()
+
+
+============================== END ==============================
+

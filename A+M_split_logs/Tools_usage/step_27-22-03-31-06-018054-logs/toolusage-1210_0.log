@@ -1,0 +1,215 @@
+
+[QAid]1210_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Import the text_detector Tool
+from text_detector import Text_Detector_Tool
+
+final_result = {}
+# Get the bed
+bed = next(iter([item for item in Object_Detector_Tool.object_detector_tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/1210_0.png", labels=["bed"], save_object=True) if item["label"] == "bed"]))
+final_result["bed"] = {
+  "box": (0, 0, bed["bbox"][1] - 1, bed["bbox"][2] - 1),
+  "score": bed["score"],
+  "number": 1,
+}
+
+# Get the room
+room = next(iter([item for item in Object_Detector_Tool.object_detector_tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/1210_0.png", labels=["room"], save_object=True) if item["label"] == "room"]))
+final_result["room"] = {
+  "box": (bed["bbox"][1] - 1, room["bbox"][1] - 1, bed["bbox"][1] + 1, bed["bbox"][2] + 1),
+  "score": room["score"],
+  "number": 2,
+}
+
+# Get the bed
+bed = next(iter([item for item in Object_Detector_Tool.object_detector_tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/1210_0.png", labels=["bed"], save_object=True) if item["label"] == "bed"]))
+final_result["bed"] = {
+  "box": (bed["bbox"][1] - 1, bed["bbox"][1] - 1, bed["bbox"][1] + 1, bed["bbox"][2] + 1),
+  "score": bed["score"],
+  "number": 1,
+}
+
+============================== END ==============================
+
+
+[QAid]1210_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool()
+boxes, labels, _ = final_result.execute(image='path/to/image', labels=['bat', 'basket', 'baseball'], save_object=False, saved_image_path='detected_objects')
+detected_objects = final_result.output_types["detected_objects"]
+object_number = final_result.output_types["object_number"]
+
+if 'baseball' in labels:
+  baseball_boxes = [detected_objects['baseball'][0].get('box') for baseball in detected_objects['baseball'] if 'saved_image_path' in detected_objects['baseball'][0]]
+  baseball_confidences = [detected_objects['baseball'][0].get('score') for baseball in detected_objects['baseball'] if 'saved_image_path' in detected_objects['baseball'][0]]
+else:
+  baseball_boxes, baseball_confidences = [], []
+
+if 'basket' in labels:
+  basketball_boxes = [detected_objects['basket'][0].get('box') for basketball in detected_objects['basket'] if 'saved_image_path' in detected_objects['basket'][0]]
+  basketball_confidences = [detected_objects['basket'][0].get('score') for basketball in detected_objects['basket'] if 'saved_image_path' in detected_objects['basket'][0]]
+
+final_result = {
+  'detected_objects': {
+    'bat': [
+      detected_objects['bat'][0].get('box'),
+      detected_objects['bat'][0].get('score')
+    ],
+    'basket': [
+      baseball_boxes,
+      baseball_confidences
+    ],
+    'baseball': [
+      baseball_boxes,
+      baseball_confidences
+    ]
+  },
+  'object_number': {
+    'bat': 1,
+    'basket': 2,
+    'baseball': 1
+  }
+}
+
+============================== END ==============================
+
+
+[QAid]1210_0
+
+[Code Extraction Failed or Parse Failed]
+
+unexpected indent (<unknown>, line 2)
+
+Completion Content: 
+<command>
+    from tool_class_name import *
+    
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1210_0.png"
+    target_language = ['en', 'de']  # Replace with the languages you want to detect text in
+    language_level = 1  # Level of detail for text detection
+    
+    text_results = text_detector_tool.execute(image=image_path, languages=target_language, detail=language_level)
+    
+    if len(text_results) > 0:
+        detected_objects = []
+        total_objects = {}
+        
+        for result in text_results:
+            label, coordinates, text, score = result
+                
+            if label == "baseball":
+                detected_objects.append({'box': coordinates, 'score': score, 'text': text})
+            elif label == "basket":
+                detected_objects.append({'box': coordinates, 'score': score, 'text': text})
+                
+            total_objects[label] = total_objects.get(label, 0) + 1
+        
+        detected_objects = detected_objects or [{'box': (x0, y0), 'score': 0, 'text': 'No detected text'}]
+        
+        total_objects = {l: len(detected_objects) for l in total_objects}
+        
+        return {"detected_objects": detected_objects, "object_number": total_objects}
+    else:
+        return {"detected_objects": [], "object_number": {}}
+    
+object_detector_tool = Object_Detector_Tool()
+final_result = object_detector_tool.execute(image=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+</command>
+============================== END ==============================
+
+
+[QAid]1210_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tool_object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+  image="/nfs/data8/liao/wxie/SAT/SAT_images_train/1210_0.png",
+  labels=["bed"],
+  save_object=False,
+  saved_image_path="detected_objects"
+)
+
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]1210_0
+
+[Code Extraction Failed or Parse Failed]
+
+'(' was never closed (<unknown>, line 21)
+
+Completion Content: 
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+def number_of_beds(image_path="1210_0.png", save_objects=True):
+
+    # Load image and convert to grayscale
+    img = Image.open(image_path).convert("L")
+
+    # Get bed object bounding boxes
+    bed_detection_results = bed_detector.execute(image_content=img, labels="bed", threshold=0.35)
+    beds_count = len(bed_detection_results["bed"]) if len(bed_detection_results["bed"]) >= 1 else 0
+
+    # Convert bounding box data to dictionary
+    beds_detection_data = {
+        "baseball": bed_detection_results["baseball"],
+        "basket": bed_detection_results["basket"]
+    }
+
+    # Save detected objects if required
+    if save_objects:
+        beds_detection_data.update({"beds_saved": [img.crop((bbox[0], bbox[1]), (bbox[2], bbox[3])).save("detected_objects/image_" + str(i) + ".png") for i, bbox in enumerate(beds_detection_data["baseball"]) if i >= 0]}
+        beds_detection_data.update({"basket_saved": [img.crop((bbox[0], bbox[1]), (bbox[2], bbox[3])).save("detected_objects/image_" + str(i) + ".png") for i, bbox in enumerate(beds_detection_data["basket"]) if i >= 0]})
+
+    return beds_detection_data
+
+# Set up the required paths
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1210_0.png"
+beds_detection = number_of_beds(image_path)[0]
+beds_number = number_of_beds(image_path)[1]
+
+final_result = {"beds": beds_number[0] - beds_number[1]}
+```
+</command>
+============================== END ==============================
+
+
+[QAid]1210_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute()
+result = [line[0] for line in final_result]
+
+# Create a dictionary with count of detected objects for each category
+categories = final_result[0]
+category_count = {label: len(category) for label, category in categories.items()}
+
+final_result = [result[0] for result in result]
+object_number = dict(zip(result, final_result))
+
+print(f"Number of detected objects: {len(final_result)}")
+for label in sorted(object_number.keys()):
+    print(f"Occurrences in {label}: {object_number[label]}")
+
+============================== END ==============================
+

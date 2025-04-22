@@ -1,0 +1,84 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/cabinet.png', save_object=True, saved_image_path='detected_objects')
+print(final_result['object_number']['basket'])
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=False, saved_image_path="detected_objects")
+print("Detected objects:", final_result)
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to-image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = []
+object_labels = ['baseball', 'basket']
+
+total_text_count = 0
+
+for label in object_labels:
+    result = Object_Detector_Tool.execute(image='path/to_image.png', labels=[label])
+    
+    if isinstance(result, dict) and 'detected_objects' in result:
+        detected_objects = result['detected_objects']
+        if detected_objects:
+            for obj in detected_objects:
+                if obj['score'] > 0.2:
+                    if obj['saved_image_path'] == '':
+                        obj['saved_image_path'] = f'detected_objects/{label}_{obj["box"][0]}.png'
+                        final_result.append({'box': obj['box'], 'score': obj['score'], 'saved_image_path': obj['saved_image_path']})
+                    else:
+                        final_result.append(obj)
+                else:
+                    break
+                
+            text_results = Text_Detector_Tool.execute(image='path/to_image.png', languages=['en', 'de'])
+            if text_results:
+                text_count = len(text_results)
+                total_text_count += text_count
+                
+print(f"Total detected objects: {len(final_result)}")
+print(f"Total text count: {total_text_count}")
+print("Text detection result:")
+for obj in final_result:
+    print(f"Box: {obj['box']}, Score: {obj['score']}, saved_image_path: {obj['saved_image_path']}")
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+print(final_result)
+</command>
+Reward: 1.0
+

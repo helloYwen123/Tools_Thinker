@@ -1,0 +1,100 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Demo with sample image and label list
+file_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/2694_0.png'
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+
+# Define the saved image path
+saved_image_path = 'detected_objects'
+
+detected_objects, object_number = Object_Detector_Tool.execute(image=file_path, labels=labels, save_object=True, saved_image_path=saved_image_path, threshold=threshold, model_size=model_size)
+
+final_result = "2"
+if detected_objects["baseball"]:
+  final_result = "3"
+if detected_objects["basket"]:
+  final_result = "4"
+
+print(f"Detected objects: {detected_objects}")
+print(f"Total number of detected objects: {object_number}")
+print(f"Final result: {final_result}")
+</command>
+Reward: 0.5
+
+--- Completion 2 ---
+<command>final_result = []
+for item in detected_objects.values():
+    for data in item:
+        if data['score'] >= threshold:
+            final_result.append(data)
+
+if saved_image_path:
+    for label in detected_labels:
+        saved_image = f"{label}_image"
+        result = final_result[0]
+        for data in final_result[1:]:
+            if data["saved_image_path"] == saved_image:
+                final_result.append(data)
+        
+saved_image_path = saved_image if saved_image != 'detected_objects' else 'detected_objects'
+</command>
+Reward: 0.5
+
+--- Completion 3 ---
+<command>
+{
+  "Object_Detector_Tool": {
+    "execute": {
+      "image": "/nfs/data8/liao/wxie/SAT/SAT_images_train/2694_0.png",
+      "labels": ["Chair", "Table"],
+      "threshold": 0.3,
+      "model_size": "tiny",
+      "save_object": False
+    }
+  }
+}
+
+final_result = Object_Detector_Tool.execute()
+print({"椅子": 1, "テーブル": 0})
+</command>
+Reward: 0.5
+
+--- Completion 4 ---
+<command>
+from tool_object_detector import Object_Detector_Tool
+
+def count_chairs_in_image(image_path):
+    tool_options = {
+        'image': image_path,
+        'labels': ['chair'],
+        'model_size': 'tiny'
+    }
+    try:
+        result = Object_Detector_Tool(**tool_options).execute()
+        chair_count = len(result['chair'])
+        return (chair_count,)
+    except Exception as e:
+        return None
+
+# Image path
+image_path = 'path/to/image.png'
+
+# Call the count_chairs_in_image function
+chair_count = count_chairs_in_image(image_path)
+final_result = {'chairs': chair_count, 'total_objects': 100} if chair_count else {'chairs': '', 'total_objects': 0}
+final_result['chairs'], chair_count
+</command>
+Reward: 0.5
+
+--- Completion 5 ---
+<command>``</command>
+Reward: 0.5
+
+--- Completion 6 ---
+<command>final_result = 0</command>
+Reward: 0.5
+

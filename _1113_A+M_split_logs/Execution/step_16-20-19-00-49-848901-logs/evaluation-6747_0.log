@@ -1,0 +1,136 @@
+------------- 20-19-00-49-848901 Execution reward: 0.0 -------------
+[Reward computation time: 2.5745 seconds]
+QAid: 6747_0
+Code: 
+
+```python
+from tools.detect_object import Object_Detector_Tool
+from tools.text_detector import Text_Detector_Tool
+
+def count_doors(image_path, labels, threshold=0.35, model_type='tiny', save_object=False, saved_image_path="detected_objects"):
+    object_detector = Object_Detector_Tool
+    text_detector = Text_Detector_Tool
+    labels = labels or ["door"]
+    if save_object:
+        from_module: str = "tools.object_detector"
+        object_detector_class_name: str = "Object_Detector_Tool"
+    else:
+        from_module: str = "tools.text_detector"
+        object_detector_class_name: str = "Text_Detector_Tool"
+
+    labels_count = {}
+    predicted_box = None
+    for label in labels:
+        if label == "door" and threshold < text_detector.execute(image_path=object_detector.path(image_path), languages=['en', 'de'], detail=1)[0]["box"]:
+            count: int = 1
+            predicted_box = object_detector.execute(image_path=object_detector.path(image_path), languages=['en', 'de'], detail=1)[0].get("box")
+            if count > 0:
+                if count > 0:
+                    labels_count[label] = count
+
+    if predicted_box:
+        text_detector.execute(image_path=object_detector.path(image_path))[
+            0]["box"]
+    else:
+        predicted_box = [100, 100, 300, 300]
+        bbox: tuple = predicted_box
+        box_label: tuple = [100, 100, 200, 200]
+        text_label = "Unpredicted bbox"
+
+    predicted_result_dict = {
+        "bbox": predicted_box,
+        "box_label": box_label,
+        "text_label": text_label
+    }
+    results_dict: dict = {}
+    for label in labels:
+        if label == "door":
+            count_dict: str = results_dict.get(str(label))
+            if count_dict in labels_count:
+                results_dict[f"{label}"] = labels_count.get(str(label))
+            else:
+                results_dict[f"{label}"] = labels_count.get(label)
+
+    if save_object:
+        results_dict = {
+            f"{label}": count_dict
+            for label in labels
+        }
+    return results_dict
+```
+
+
+
+============================== END ==============================
+
+------------- 20-19-00-49-848901 Execution reward: 0.0 -------------
+[Reward computation time: 2.3151 seconds]
+QAid: 6747_0
+Code: 
+
+```python
+from object_detector import Object_Detector_Tool
+import_name: Object_Detector_Tool
+import path_to_image
+
+class ImageProcessor:
+
+    def __init__(self, threshold=0.35, model_size='tiny', save_object=True):
+        """
+
+        :param threshold: float - Confidence threshold for detection (default: 0.35).
+        :param model_size: str - Model size 'tiny' or 'base', default: 'tiny'
+        :param save_object: bool - Save the detected objects as images. (default: False).
+        """
+        self.threshold = threshold
+        self.model_size = model_size
+        self.save_object = save_object
+
+    def execute(self, image, labels=['], save_object=True, saved_image_path='detected_objects'):
+        detected_objects = Object_Detector_Tool.execute(image=image, labels=labels, model_size=self.model_size, save_object=save_object, saved_image_path=saved_image_path)
+        return detected_objects
+
+obj_processor = ImageProcessor()
+image_path = path_to_image
+detected_objects, object_number = obj_processor.execute(image_path)
+final_result = {
+    "Count of Doorways": len(detected_objects["total_count"])}
+
+for label, results in detected_objects.items():
+    for detection in results:
+        final_result[label] = len(detected_objects[label])
+```
+
+The Python program above uses the available tools (Object_Detector_Tool, Text_Detector_Tool), the tools' documentation, and their parameters, to locate all doorways in the image and count how many doorways are visible in the scene. The returned final result is a dictionary containing a 'Count of Doorways' key with a numerical value determined by the object_detector tool, along with the count of doorways found in the scene.
+
+
+============================== END ==============================
+
+------------- 20-19-00-49-848901 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6747_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-19-00-49-848901 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6747_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-19-00-49-848901 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6747_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-19-00-49-848901 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 6747_0
+Code: [EMPTY]
+
+============================== END ==============================
+

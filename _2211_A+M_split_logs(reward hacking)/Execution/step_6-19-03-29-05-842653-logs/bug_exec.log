@@ -1,0 +1,137 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 39)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Parameters for the object detector tool
+label = 'baseball'
+threshold = 0.35
+model_size = 'tiny'
+save_object = False
+saved_image_path = 'detected_objects'
+
+result = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/12239_0.png", labels=[label], threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+if save_object:
+    # Function to save object images
+    def save_object_images(object_name, result, language, detail):
+        root = './detected_objects'
+        path = '/'.join(os.path.dirname(result['detected_objects'][-1]['image_path']).split('/')[:-1])
+        os.makedirs(path, exist_ok=True)
+        for entry in result[0]:
+            img = Image.open(entry['image_path'])
+            try:
+                draw.text((entry['x0'], entry['y0']), entry['text'], font=ImageFont.truetype(font='arial.ttf', size=18))
+                img.save(f"{path}/{language}_{entry['image_name']}{language}({_language} OCR_{language}_{entry['x0']}/entry_x0_{entry['image_name']}_{language}_{entry['x0']}_y0_{entry['image_name']}{language}_{entry['x0']}_{entry['y0']}_{entry['score']}_result_{entry['image_name']}_{language}_{entry['image_name']}_{language}_{entry['x0']}_{entry['y0']}{language}{entry['image_name']}_{language}_{entry['color']}.jpg", "PNG")
+            except Exception as e:
+                pass
+
+    if result['result']:
+        for entry in result.values():
+            if entry['image_name'] == label:
+                save_object_images(label, entry, 'en', detail='\n')
+
+    # Save object_images as required
+try:
+    print(result['detected_objects'])
+except:
+    print('Failed to get object detected results')
+finally:
+    print(f'saved object_images to {saved_image_path}')
+except:
+    print('Failed to execute the object detector tool.')
+finally:
+    Image.close()
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 2)
+code: 
+
+```
+from Module_name import *
+
+# Load image
+image_path = "/path/to/your/image.png"
+img = cv2.imread(image_path)
+
+# Detect text
+text_objects = text_detector(img)
+
+# Store text objects as lists, with additional attributes
+for text_obj in text_objects:
+    obj_dict = {"image": text_obj[0], "description": text_obj[1]}
+    obj_dict.update(text_obj[2])
+    final_result.append(obj_dict)
+
+# Count objects
+overall_object_count = sum([len(text_obj['description']) for text_obj in text_objects])
+
+final_result[0]['total_objects'] = overall_object_count
+
+# Save detected objects
+if final_result[0]['save_object']:
+    save_results(final_result)
+
+# Print number of objects detected
+print("Number of detected objects:", final_result[0]['total_objects'])
+```
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 39)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {}
+
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/12239_0.png'
+
+labels = ['chair']
+
+model_size = 'tiny'
+threshold = 0.35
+save_object = True
+saved_image_path = 'detected_objects'
+
+try:
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size, save_object=save_object)
+    final_result['detected_objects'] = detected_objects
+    final_result['object_number'] = object_number
+
+except Exception as e:
+    final_result['detected_objects'] = []
+    final_result['object_number'] = 0
+
+print("The number of chairs visible in the scene is:", object_number)
+print("The total number of chairs visible with captions is:", object_number)
+
+if 'detected_objects' in final_result:
+    for detected_object in final_result['detected_objects']:
+        detected_object = {**(detected_object), 'object_number': len(detected_object['labels']),
+                           'label_number': len(detected_object['labels'])}
+        final_result['detected_objects'].append(detected_object)
+
+print("Detected chairs:")
+for detected_object in final_result['detected_objects']:
+    print(detected_object)
+
+print("Number of chairs detected:", object_number)
+print("Number of chairs detected with captions:", object_number)
+```
+
+
+============================== END ==============================
+

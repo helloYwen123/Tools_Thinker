@@ -1,0 +1,41 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.__init__() got an unexpected keyword argument 'image'
+code: 
+from object_detector import Object_Detector_Tool
+
+def calculate_number_of_objects(image_path, labels, threshold=0.5, model_size="tiny"):
+    detector = Object_Detector_Tool(image=image_path, labels=labels, threshold=threshold, model_size=model_size)
+    
+    detected_objects = {}
+    object_count = {}
+    
+    if "boxes" in detector.outputs:
+        for key in detector.outputs["boxes"]:
+            bbox = [bbox["bbox"] for bbox in detector.outputs["boxes"][key]]
+            score = detector.outputs["boxes"][key]["score"]
+            if score > 0.5:  # Apply threshold
+                object = labels[key]
+                if object not in detected_objects:
+                    detected_objects[object] = []
+                detected_objects[object].append(bbox)
+                if object in object_count:
+                    object_count[object] += 1
+                else:
+                    object_count[object] = 1
+    
+    final_result = f"Number of objects: {len(detected_objects)}"
+    print(f"Detect Count: {len(detected_objects)}, Total Count({model_size}): {sum(object_count.values())}")
+    
+    return final_result
+
+# Example usage
+result = calculate_number_of_objects('/nfs/data8/liao/wxie/SAT/SAT_images_train/60_0.png', {'baseball', 'basket'}, 0.35, 'tiny')
+print(result)
+
+# Output: 'Number of objects: 1, Total Count(tiny): 5'
+
+
+============================== END ==============================
+

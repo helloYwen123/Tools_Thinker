@@ -1,0 +1,94 @@
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+1
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 1)
+code: 
+```python
+import object_detector_tool
+from text_detector_tool import Text_Detector_Tool
+
+# Define a sample image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/mixed_40_8_12_image/1461_0.png'
+
+# Detect various objects in the image
+detected_objects = object_detector_tool.execute(image=image_path)
+
+# Convert the detected objects JSON to a Python list
+detected_objects_list = detected_objects.get('detected_objects', [])
+
+# Optionally save each detected object as a file
+if detected_objects.get('save_object'):
+    for item in detected_objects_list:
+        file_name = f'object_{item["label"]}.png'  # Replace with desired saved image path
+        file_path = f'detected_objects/{file_name}'
+        object_detector_tool.save_object(item, file_path)
+
+# Retrieve the total count for any detected object
+total_objects = {obj["label"]: sum(int(i) for i in obj["object_number"].split(',')) for obj in detected_objects.get('obj', [])}
+
+final_result = '\t'.join([f"object {label} count: {count}" for label, count in total_objects.items()])
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+closing parenthesis ']' does not match opening parenthesis '(' (<string>, line 14)
+code: 
+
+import tools_module
+
+question = "How many Beds are visible in the scene?"
+tools_module.text_detector_tool.execute(
+    image='path/to/room/image', languages=['en', 'de']
+)
+result = tools_module.text_detector_tool.execute(
+    language_code='en',
+    languages=['en', 'de'],
+    detail=1,
+)
+print(result)
+final_result = '\n'.join(['Detected text:', ' '.join(f"{'detected text':<25} {score:10.2f} ({text_detector_tool.total_detections})\n" for text, score, detected_texts in result])
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'module'
+code: 
+
+from module import Object_Detector_Tool
+
+# Initialize the Object_Detector_Tool with appropriate arguments
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the tool with image path and labels
+result = object_detector_tool.execute(image=image_path, labels=['bed'], languages=['en', 'en'])
+
+# Extract the text found in the image
+text = object_detector_tool.execute(image=image_path, languages=['en', 'de'], detail=0)
+
+# Check the list for beds and count them
+beds_count = len(text) - 1
+beds_num = int(text)  # Convert the list to a count for beds
+
+final_result = f"Bed {beds_num} is visible in the scene."
+
+
+============================== END ==============================
+

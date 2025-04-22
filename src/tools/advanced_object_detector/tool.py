@@ -39,7 +39,10 @@ class Advanced_Object_Detector(BaseTool):
                              "e.g., {'person': 2, 'tree': 1}")
             },
             demo_commands=[{
-                "command": "result, object_counts = tool.execute(image='demo.jpg', labels=['person', 'bicycle'], threshold=0.4, save_object=False)",
+                "command": """
+                tool = Advanced_Object_Detector()
+                result, object_counts = tool.execute(image='path/to/demo', labels=['person', 'bicycle'], threshold=0.4, save_object=False)
+                """,
                 "description": "Detect 'person' and 'bicycle' in the image return dictionary with key `label` :  bounding boxes and confidence score.",
                 "output_example": """
                 results :  {'person': [{'box': (50, 30, 200, 400), 'score': 0.92, 'saved_path': None}],
@@ -135,7 +138,6 @@ class Advanced_Object_Detector(BaseTool):
     
 if __name__ == "__main__":
 
-    
     tool = Advanced_Object_Detector()
     metadata = tool.get_metadata()
     

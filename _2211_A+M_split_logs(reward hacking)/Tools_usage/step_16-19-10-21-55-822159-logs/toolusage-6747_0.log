@@ -1,0 +1,167 @@
+
+[QAid]6747_0
+
+[Code does not include Tools Usage]
+code: 
+final_result = len([output_object['box'] for output_object in detected_objects if 'door' in output_object['label']])
+============================== END ==============================
+
+
+[QAid]6747_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tool_object_detector import Object_Detector_Tool
+
+final_result = {
+    "Count of Doorways": 0
+}
+
+def detect_door_path(image_path):
+    import_image = Image.open(image_path)
+    object_detector = Object_Detector_Tool()
+    object_result = object_detector.execute(image=import_image, labels=["Door"], save_object=True)
+    for object_detection in object_result['detected_objects']:
+        if object_detection['box'][0] < 1 and object_detection['box'][1] < 1 and object_detection['box'][2] > 100 and object_detection['box'][3] > 100:
+            final_result["Count of Doorways"] += 1
+            return True
+    return False
+
+if detect_door_path('path/to/image.png'):
+    final_result['Count of Doorways'] = 1
+else:
+    final_result['Count of Doorways'] = 0
+
+
+final_result
+
+============================== END ==============================
+
+
+[QAid]6747_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Given the image file path and the label to detect
+# Assuming the label for 'window' is 'baseball' and 'basket' is 'basketball'
+label = 'baseball'
+
+# Set the confidence threshold for detection and the model size
+threshold = 0.35
+model_size = 'tiny'
+
+# Execute the object detection
+detected_objects = Object_Detector_Tool.execute(image="path_to_image.png", labels=[label], threshold=threshold, model_size=model_size, save_object=True)
+
+# Get the object number and detected objects list from the detected_results dictionary
+object_number = detected_objects["object_number"]
+detected_objects = detected_objects["detected_objects"]
+
+# Extract text with the language code 'ch_sim' (Simplified Chinese) from the image
+text_output = []
+
+with open("/nfs/data8/liao/wxie/SAT/SAT_images_train/6747_0.png", 'r') as image_file:
+    for i, line in enumerate(image_file.readlines()):
+        text = textDetector_Tool.execute(image="path/to/image.png", languages=["ch_sim"], detail=3)
+        if "baseball" in detected_objects:
+            for box in detected_objects["baseball"]:
+                if box["score"] >= 0.005 and text["words"] is not None:
+                    text_output.append([box["box"], text["words"], 0.85])
+        
+        elif "basket" in detected_objects:
+            for box in detected_objects["basket"]:
+                if box["score"] >= 0.005 and text["words"] is not None:
+                    text_output.append([box["box"], text["words"], 0.85])
+
+detected_objects_count = object_number[label]
+
+# Example output with the count for detected objects
+final_result = {
+  "detected_objects": detected_objects,
+  "object_number": object_number
+}
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]6747_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tool_object_detector_tool import Object_Detector_Tool
+
+def count_doorways():
+    detected_images = Object_Detector_Tool.execute(image='6747_0.png', labels=['door', 'window'])
+
+    door_count = {}
+    window_count = 0
+
+    for label, bounding_boxes in detected_images['object_number'].items():
+        if label == 'door':
+            door_count[label] = len(bounding_boxes)
+
+    return door_count
+
+final_result = count_doorways()
+print("Number of doorways:", final_result)
+
+============================== END ==============================
+
+
+[QAid]6747_0
+
+[Code does not include Tools Usage]
+code: 
+from Object_Detector_Tool import Object_Detector_Tool
+============================== END ==============================
+
+
+[QAid]6747_0
+
+[Code Extraction Failed or Parse Failed]
+
+'(' was never closed (<unknown>, line 28)
+
+Completion Content: 
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+    labels=['door', 'desk', 'book', 'bottle'], 
+    model_size='tiny'
+)
+
+detected_objects = final_result["detected_objects"]
+object_count = final_result["object_number"]
+
+if detected_objects:
+    detected_objects_tuples = []
+    for label, obj_list in detected_objects.items():
+        obj_list = obj_list[0]  # Only keep the first object in each tuple
+        detected_objects_tuples.append({
+            "label": label,
+            "objects": obj_list,
+            "total_objects": len(obj_list),
+            "confidence": detected_objects[label].scores[-1]
+        })
+    sorted_objects = sorted(detected_objects_tuples, key=lambda x: x["confidence"], reverse=True)[:1]
+
+    print("Detected Objects:")
+    for obj in sorted_objects:
+            print(f"  {obj['label']} - {len(obj['objects'])} Objects - Confidence: {obj['confidence']}")
+
+    print("\ndetected_objects : {" 
+    for label in sorted_objects[-1].keys():
+        print(f"\t  {label} : {sorted_objects[-1][label]}")
+    print("}")
+else:
+    print("No detected objects in the image.")
+</command>
+============================== END ==============================
+

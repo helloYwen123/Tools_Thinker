@@ -1,0 +1,59 @@
+
+============================== New Completed Execution ==============================
+[EXEC CODE]
+
+try:
+    from object_detector import Object_Detector_Tool
+    from text_detector import Text_Detector_Tool
+    import os
+
+    detected_objects = []
+    object_number = {}
+
+    # Find the number of Dressers
+    for item in [
+        "drawer", "tv", "furniture", "dresser",
+        *[f"nightstand_{i}" for i in range(5)]
+    ]:
+        try:
+            os.makedirs(f"detected_objects/{item}")
+        except Exception as e:
+            print(f"Error during creation of folder: {item}: {e}")
+
+        obj_ids, object_number[item] = Object_Detector_Tool.execute(image="path_to_scene", labels=[item, "other"], save_object=True, saved_image_path="detected_objects")
+
+        dressers = [obj for obj in obj_ids if obj[1]['label'] == item]
+        print(f"Detected {len(dressers)} {item} dressers")
+
+        if dressers:
+            try:
+                for dresser in dressers:
+                    dresser_box = dresser[0]["box"]
+                    dresser_box.extend((dresser[0]["x1"], dresser[0]["y1"], dresser[0]["x2"] + 10, dresser[0]["y2"] + 10))
+                    print(dresser_box)
+                    detected_objects.append(
+                        [(item, dresser_box, dresser[0]["score"]), dresser[0]["saved_image_path"]]
+                    )
+            except Exception as e:
+                print(f"Error: {e}")
+    
+    for dresser in dressers:
+        print(f"Detected {drawer} dresser: {dresser}")
+        
+except Exception as e:
+    final_result = "Error occurred: " + repr(e)
+    print(final_result)
+else:
+    final_result = "Successfully detected Dressers:"
+    for dresser in detected_objects:
+        final_result += f" {dresser[0]} Dresser: {dresser[1]}\n"
+    final_result += f"Total detected Dressers: {len(detected_objects)}"
+
+[THE PRINT OUTPUT]
+Error occurred: TypeError("Object_Detector_Tool.execute() missing 1 required positional argument: 'self'")
+
+[GENERATE VALID FINAL_RESULT]
+Error occurred: TypeError("Object_Detector_Tool.execute() missing 1 required positional argument: 'self'")
+
+============================== END ==============================
+

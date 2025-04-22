@@ -1,0 +1,79 @@
+
+[Exctuion Failed]
+
+name 'detected_objects' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {
+  "televisions": 0
+}
+
+for i in detected_objects:
+    for j in i['labels']:
+        if j == "television":
+            televisions += 1
+
+print("The number of Televisions visible in the scene: ", televisions)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+question_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/2017_0.png"
+
+detected_objects, total_objects_count = Object_Detector_Tool.execute(image=question_image_path, labels=["baseball"], save_object=True)
+
+output_result = {"detected_objects": detected_objects, "total_objects_count": total_objects_count}
+
+total_objects_count
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+
+def count_tVs(image_path, languages=['en', 'de'], detail=1):
+    object_detector = Object_Detector_Tool()
+    text_detector = Text_Detector_Tool()
+    
+    try:
+        object_list = object_detector.execute(image_path, languages=languages, detail=detail).get('detected_objects')
+        object_num = object_detector.object_number(image_path)
+        
+        language_dict = {"en": 0, "de": 0, "ja": 0}
+        language_dict[languages[0]] += object_list["baseball"]
+        language_dict[languages[1]] += object_list["basket"]
+        
+        return [list(map(lambda x: (x[1], 0), object_list)), language_dict]
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt Exception Encountered")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
+
+result = count_tVs(image_path, languages=['en', 'de'])
+
+if result:
+    final_result = f"Two TVs are visible in the scene."
+else:
+    final_result = "No TV is visible in the scene."
+
+
+============================== END ==============================
+

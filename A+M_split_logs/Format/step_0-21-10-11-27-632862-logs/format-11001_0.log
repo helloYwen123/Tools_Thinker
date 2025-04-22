@@ -1,0 +1,77 @@
+--- Completion 1 ---
+To find the number of DiningTables in the scene, let's first import the necessary libraries and tool objects.
+
+```python
+from object_detector_tool import Object_Detector_Tool
+from text_detector_tool import Text_Detector_Tool
+
+# Assuming 'image' is set to '/nfs/data8/liao/wxie/SAT/SAT_images_train/11001_0.png'
+image = '/nfs/data8/liao/wxie/SAT/SAT_images_train/11001_0.png'
+languages = ['en', 'de']
+tries_count = 5
+
+# Initialize object detector tool
+od_tool = Object_Detector_Tool()
+
+# Initialize text detector tool
+td_tool = Text_Detector_Tool()
+
+dining_tables_found = False
+
+def check_dining_tables(dining_table_image):
+    dining_tables_found = True
+    return dining_tables_found
+
+# Loop to find all DiningTables
+for try_count in range(tries_count):
+    if try_count > 0:
+        print(f"Checking for DiningTables: {try_count + 1}/{tries_count}")
+
+    result = od_tool.execute(image, languages, try_count + 1)
+    for label in result['labels']:
+        label_desc, score = result['labels'][label]
+        dining_table_image = f"/nfs/data8/liao/wxie/SAT/SAT_images_train/11001_0.png-{label}."
+
+        # Check if dining tables are found in the image
+        if 'baseball' in label_desc or 'basket' in label_desc:
+            dining_table_image_detection = find_dining_tables(dining_table_image)
+            dining_tables_found = check_dining_tables(dining_table_image_detection)
+
+            # Check if the found dining tables are valid
+            if dining_tables_found and ('baseball' in dining_table_image_detection or 'basket' in dining_table_image_detection) and dining_table_image_detection:
+                print(f"Found dining table at {dining_table_image}.")
+
+def find_dining_tables(dining_table_image):
+    dining_table_detection = td_tool.execute(image=dining_table_image)
+    dining_tables = []
+    
+    for detected_block in dining_table_detection['result']:
+        if detected_block['box'][2] > detected_block['box'][3] or detected_block['box'][3] > detected_block['box'][1]:
+            dining_tables.append(f"{detect_block['box'][0]}, {detected_block['box
+Reward: 0.0
+
+--- Completion 2 ---
+final_result
+```python
+from Object_Detector_Tool import object_detector_tool
+final_result = object_detector_tool(1, [{'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}], 'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]}, True, 'detected_objects')
+```
+Reward: 0.0
+
+--- Completion 3 ---
+final_result = 2
+Reward: 0.0
+
+--- Completion 4 ---
+generated lines
+final_result = 1
+Reward: 0.0
+
+--- Completion 5 ---
+final_result: [0, 2]
+Reward: 0.0
+
+--- Completion 6 ---
+final_result
+Reward: 0.0
+

@@ -1,0 +1,211 @@
+------------- 20-23-16-52-161805 Execution reward: 0.0 -------------
+[Reward computation time: 2.5052 seconds]
+QAid: 1768_0
+Code: 
+
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+# Set image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png'
+
+# Create object detector
+detector_tools = Object_Detector_Tool()
+detected_objects_details = []
+object_number = {}
+
+# Detect objects
+for output in detector_tools.execute(image_path=image_path, labels=['baseball', 'basket']):
+    detected_objects_details.append(output)
+
+for det_result in detected_objects_details:
+    label, bbox = det_result['box']
+    label = det_result['name']
+    score = det_result.get('score', 0)
+    if label in ['baseball', 'basket']:
+        number = object_number.get(label, 0)
+        object_number[label] = number + 1
+
+# Calculate total number of objects
+total_objects = object_number['baseball'] + object_number['basket']
+
+# Calculate objects count (all languages)
+languages = ['en', 'de']
+result = Text_Detector_Tool.execute(image=image_path, languages=languages)
+text_blocks = result
+
+# Extract text coordinates
+for det_result in text_blocks:
+    label = det_result['name']
+    text, confidence = "".join([v for v, i in enumerate(det_result['text'], 1) if i]), det_result['score']
+    text = text.strip().split("\n")
+    text = [(t, t.split()[0], confidence) for t in text]
+    object_number[label] = len(text)
+
+# Calculate number of objects by languages
+all_language_objects = {'all': 0}
+for languages in languages:
+    object_list = object_number.get(languages, [])
+    if object_list:
+        all_language_objects[languages] = len(object_list)
+    else:
+        all_language_objects[languages] = 0
+
+final_result = {
+    "objects detected by objects_detector": [detected_objects_details, total_objects],
+    "objects detected by text_detector": all_language_objects,
+}
+
+
+============================== END ==============================
+
+------------- 20-23-16-52-161805 Execution reward: 0.0 -------------
+[Reward computation time: 2.6123 seconds]
+QAid: 1768_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+label = ["baseball", "basket"]
+
+saved_image_path = "detected_objects"
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png"
+
+# Detect objects
+result = Object_Detector_Tool.execute(image=image_path, labels=label, save_object=True, saved_image_path=saved_image_path)
+detected_objects = result["object_number"]
+final_result = detected_objects["baseball"] if detected_objects["baseball"] > detected_objects["basket"] else detected_objects["basket"]
+
+print(f"Number of detected baseballs: {detected_objects['baseball']}")
+print(f"Number of detected baskets: {detected_objects['basket']}")
+print(f"Number of detected objects: {len(detected_objects)}")
+print(f"Detection result:\n{detected_objects}")
+
+# Print the total detection count
+total_objects = total_labels = detected_object_labels = object_counts = [len(detected_object_labels)]
+detected_object_labels = [{}]
+
+for detected_object in result["detected_objects"]:
+    detected_object_labels[detected_object["label"]] = detected_object_labels[detected_object["label"]] + [detected_object]
+
+for object_label in detected_object_labels:
+    final_result["baseball"] += detected_object_labels[object_label]["baseball"]
+    final_result["basket"] += detected_object_labels[object_label]["basket"]
+    final_result["total"] += 1
+
+detected_objects = {"baseball": final_result["baseball"], "basket": final_result["basket"]}
+final_result = detected_objects
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 20-23-16-52-161805 Execution reward: 0.0 -------------
+[Reward computation time: 2.1592 seconds]
+QAid: 1768_0
+Code: 
+
+```python
+from object_detector import Object_Detector_Tool
+
+def count_dining_tables(image_path):
+    object_labels = ["chair", "dining table", "table", "chair", "dining table", "drawer", "furniture", "table", "chair"]  # example labels
+    detected_objects = Object_Detector_Tool.execute(image=image_path, labels=object_labels, threshold=0.65)
+
+    dining_tables = []
+    chair_objects = []
+    for label in object_labels:
+        if label == "chair":
+            chair_objects.append(deleted_objects)
+        elif label == "dining table":
+            dining_tables.append(deleted_objects)
+
+    total_chair_objects = len(detected_objects['chair'])  # assume there can be multiple chairs per image
+    total_dining_tables = 0
+
+    for dining_tables in dining_tables:
+        if len(dining_tables) > 0:  # check if there are chairs in the dining table
+            total_dining_tables += 1    # count chairs in the dining table
+
+    return total_dining_tables, total_chair_objects, detected_objects
+
+# Example usage with provided image path
+total_chair_objects, total_dining_tables, detected_objects = count_dining_tables('/nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png')
+final_result = {"total_chair_objects": total_chair_objects, "total_dining_tables": total_dining_tables, 
+                "dining_tables": detected_objects}
+print(final_result)
+```
+
+
+============================== END ==============================
+
+------------- 20-23-16-52-161805 Execution reward: 0.0 -------------
+[Reward computation time: 2.4307 seconds]
+QAid: 1768_0
+Code: 
+
+from tools.object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='scene.jpg', labels=['DiningTable', 'Chair'], save_object=True, saved_image_path='detected_objects')
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 20-23-16-52-161805 Execution reward: 0.0 -------------
+[Reward computation time: 2.5316 seconds]
+QAid: 1768_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_dining_tables(image_path):
+    object_labels = ["Dining Table 1", "Dining Table 2"]
+    object_count = {label: 0 for label in object_labels}
+
+    detected_objects = Object_Detector_Tool.execute(image_path, labels=object_labels, save_object=True)
+    object_count.update(detected_objects['object_number'])
+
+    return object_count
+
+final_result = count_dining_tables("/nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png")
+print(f"Number of Dining Tables: {final_result['Dining Table 1']}, {final_result['Dining Table 2']}")
+
+
+
+============================== END ==============================
+
+------------- 20-23-16-52-161805 Execution reward: 0.0 -------------
+[Reward computation time: 2.2967 seconds]
+QAid: 1768_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+# Specify your question here
+# Example question: How many DiningTables are visible in the scene? The path of image is /nfs/data8/liao/wxie/SAT/SAT_images_train/1768_0.png
+
+def count_dining_tables(image_path):
+    # Execute object detection
+    detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=['table'], save_object=True)
+    
+    # Check if any objects were detected and calculate total number of matching objects
+    if detected_objects:
+        # Total dining tables detected in the image
+        total_dining_tables = len(detected_objects["table"])
+        
+        # Calculate the total number of objects detected in the image
+        total_objects = sum(object_number.values())
+        
+        # Return the number of dining tables present and the total number of objects for the case where dining tables are detected
+        return f"Total dining tables detected: {total_dining_tables}, Total objects detected: {total_objects}\n"
+    else:
+        # Return an empty list if dining tables are not detected
+        return []
+
+final_result = count_dining_tables(image_path)
+print(final_result)
+
+
+============================== END ==============================
+

@@ -1,0 +1,115 @@
+--- Completion 1 ---
+<nobr><code>
+from object_detector import Object_Detector_Tool
+
+result = Object_Detector_Tool().execute(image='path_to_image', labels=['desk', 'window'], save_object=True, saved_image_path='detected_objects')
+
+if result and 'basketball' in result:
+    basketball_info = result['basketball'][0]
+    object_count = basketball_info['total_count']
+    if object_count == 0:
+        print("No basketball observed in the image.")
+    else:
+        print("Basketball detected: {} at image position: {}."
+              .format(obj_count, basketball_info['position']))
+else:
+    print("No basketballs observed in the image.")
+</nobr>
+Reward: 0.0
+
+--- Completion 2 ---
+<command>
+def detect_objects(image_path, labels, save_object=True):
+    object_detector = Object_Detector_Tool()
+    detected_objects, object_number = object_detector.execute(image=image_path, labels=labels, save_object=save_object)
+    return detected_objects
+
+# Import tools
+import_text_detector_tool = Text_Detector_Tool()
+</command>
+
+<command>
+def text_detector(image_path):
+    text_detector = Text_Detector_Tool()
+    result = text_detector.execute(image=image_path, languages=['en', 'de'])
+    detected_text = []
+    for det_result in result:
+        tx = det_result[2]
+        x = int(det_result[3][0])
+        y = int(det_result[3][1])
+        width = int(det_result[4])
+        height = int(det_result[5])
+        detected_text.append([x, y, width, height])
+    return detected_text
+
+# Import tools
+import_path = '/path/to/image'
+detected_objects = detect_objects(image_path=import_path, labels=['baseball', 'basket'], save_object=True)
+detected_text = text_detector(image_path=import_path)
+
+final_result = {
+    "detected_objects" : detected_objects,
+    "object_number" : "detected_objects.count()"
+}
+print(json.dumps(final_result, indent=2))
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/8637_0.png',
+                                               labels=['baseball','basket'],
+                                               save_object=True,
+                                               saved_image_path='detected_objects')
+
+if final_result: 
+  detected_objects = final_result[0]
+  total_balls = len(detected_objects) 
+  final_result[0].pop()
+  if 'baseball' in final_result[0]:
+    final_result[0].pop('baseball')
+    total_balls = len(final_result[0])
+
+  final_result = final_result[0]
+
+  print(f"Detected {'balls':10} in the image.")
+  print(f"Total: {total_balls}")
+  print(final_result)
+else:
+  print("Text detection failed after retry.")
+
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/8637_0.png", labels=['baseball', 'basket'])
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+print(type(final_result))
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>from Object_Detector_Tool import object_detector_tool
+from Text_Detector_Tool import text_detector_tool
+final_result  = object_detector_tool.execute(image='path/to/image', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+result  = text_detector_tool.execute(image='path/to/image', languages=['en', 'de'], detail=1)
+
+detected_objects, object_number = result["detected_objects"], {"basket": len(result["basket"][:]), "baseball": len(result["baseball"][:])}
+</command>
+Reward: 1.0
+

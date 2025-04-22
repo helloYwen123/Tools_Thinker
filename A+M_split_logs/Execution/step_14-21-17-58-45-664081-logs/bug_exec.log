@@ -1,0 +1,94 @@
+
+[Exctuion Failed]
+
+'[' was never closed (<string>, line 27)
+code: 
+
+from object_detector_Tool import Object_Detector_Tool
+
+# Set input data
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10357_0.png"
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Call the object detector tool
+object_info = Object_Detector_Tool().execute(image_path, labels, threshold, model_size, save_object, saved_image_path)
+
+# Define final result
+final_result = []
+for label, detection_results in object_info.items():
+    for result in detection_results:
+        bounding_box = (result["box"])
+        text_blocks = [[(bbox[0], bbox[1], (bbox[2] - bbox[0]), (bbox[3] - bbox[1])) for bbox in bounding_box]]
+        if result['score'] > 0.3:
+            detection = f"{'Detected ball' if label == 'baseball' else 'Detected basket'}"
+            text_blocks.append((f"Detected {text_blocks[-1]}, {label}", detection))
+            if save_object:
+                Image.fromarray(np.array(result["bbox"]), dtype=np.uint8).save(saved_image_path)
+
+final_result = [{"label": label, "boxes": bounding_box, "detected_text": det, "score": result['score']}
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tools'
+code: 
+
+from tools.object_detector import Object_Detector_Tool
+final_result = []
+
+# Load image
+with open("/nfs/data8/liao/wxie/SAT/SAT_images_train/10357_0.png", 'rb') as image_file:
+    image_data = image_file.read()
+tool = Object_Detector_Tool()
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+save_object = True
+saved_image_path = 'detected_objects'
+
+# Detect objects
+objects = tool.execute(image=image_data, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size, saved_image_path=saved_image_path)
+
+if labels:
+    for object_ in objects['detected_objects']:
+        for label in labels:
+            if label in object_['labels']:
+                detected_objects = {
+                    label: object_['labels']
+                }
+                break
+        else:
+            detected_objects = {}
+else:
+    detected_objects = ''
+
+if labels and save_object and 'detected_objects' in dir:
+    detected_objects['detected_objects'] = detected_objects['detected_objects']
+else:
+    detected_objects = {labels[-1]: 1}
+
+# Count detected objects
+total_objects = sum(deprecated_objects['detected_objects'] for deprecated_objects in objects.values())
+
+if labels:
+    final_result.append((detected_objects, total_objects))
+else:
+    final_result.append(detected_objects)
+
+if total_objects > 0:
+    final_result[0].append('object_number', total_objects)
+    final_result[0].append('object_number', Objects)
+else:
+    final_result[0].append('object_number', '0')
+
+
+============================== END ==============================
+

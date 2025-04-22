@@ -42,7 +42,10 @@ class Object_Detector_Tool(BaseTool):
             e.g. {'baseball': 2, 'basket': 1}",
             demo_commands = [
                 {
-                    "command": 'detected_objects, object_number = Object_Detector_Tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")',
+                    "command": """
+                    object_detector_tool = Object_Detector_Tool()
+                    detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+                    """,
                     "description": (
                         "Detects 'baseball' and 'basket' in the image. Returns a tuple: "
                         "(1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path); "

@@ -1,0 +1,152 @@
+------------- 19-12-02-04-679930 Execution reward: 0.0 -------------
+[Reward computation time: 2.5191 seconds]
+QAid: 9152_0
+Code: 
+from Object_Detector_Tool import Object_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+
+final_result = {}
+
+# Detect objects in the image
+detected_objects = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=False, saved_image_path='')
+
+object_labels = []
+object_number = []
+
+for category, entries in detected_objects.items():
+    num_objects = len(entries)
+    for entry in entries:
+        object_labels.append(entry['label'])
+        object_number.append(num_objects)
+
+final_result['detected_objects'] = detected_objects
+final_result['object_number'] = object_number
+
+result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'], detail=1)
+text_blocks = result['result']
+
+for i, text_block in enumerate(text_blocks):
+    detected_text = text_block[-1]  # Only keep the last detected text block
+    confidence_score = text_block[-3]
+
+    final_result['detected_objects'].append({
+        'bbox': text_block[:3],
+        'label': detected_text,
+        'confidence_score': confidence_score
+    })
+
+result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='')
+
+detected_objects
+
+
+============================== END ==============================
+
+------------- 19-12-02-04-679930 Execution reward: 0.0 -------------
+[Reward computation time: 2.2272 seconds]
+QAid: 9152_0
+Code: 
+
+from text_detector import Text_Detector_Tool
+
+# Set the location and mode to search
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/9152_0.png'
+text_mode = 'en,de'
+threshold = 0.35
+detail = 1
+
+# Execute the text detection
+result = Text_Detector_Tool.execute(image=image_path, languages=text_mode, detail=detail)
+
+# Print detected text blocks
+for detected_text in result:
+    if 'Detected text' in detected_text[0]:
+        text = detected_text[0]['Detected text']
+        print(f"A: {text}")
+    else:
+        print("Text detection failed after retries.")
+
+
+============================== END ==============================
+
+------------- 19-12-02-04-679930 Execution reward: 0.0 -------------
+[Reward computation time: 2.6246 seconds]
+QAid: 9152_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/9152_0.png")
+print("Number of detected objects:", final_result["object_number"]["basket"])
+for labeled_objects in final_result["detected_objects"]:
+    print(labeled_objects)
+
+
+============================== END ==============================
+
+------------- 19-12-02-04-679930 Execution reward: 0.0 -------------
+[Reward computation time: 2.6474 seconds]
+QAid: 9152_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/9152_0.png', labels=['shelf'], save_object=True, saved_image_path='shelf')
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 19-12-02-04-679930 Execution reward: 0.0 -------------
+[Reward computation time: 2.8549 seconds]
+QAid: 9152_0
+Code: 
+
+from object_detector import Object_Detector_Tool, Image
+
+final_result = Object_Detector_Tool.execute(image="9152_0.png")
+
+print(f"ShelvingUnits: {final_result['object_number']['baseball']}")
+
+
+============================== END ==============================
+
+------------- 19-12-02-04-679930 Execution reward: 0.0 -------------
+[Reward computation time: 1.9694 seconds]
+QAid: 9152_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path_to_image', labels=['chair', 'couch'], save_object=True, saved_image_path='detected_objects')
+
+print("Detected objects:", final_result)
+
+total_objects = {
+  "chair": 0,
+  "couch": 0,
+  "desk": 0,
+  "table": 0,
+  "shelf": 0,
+  "bookcase": 0,
+}
+
+for _, obj_dict in final_result:
+  if 'chair' in obj_dict['label']:
+    total_objects['chair'] += 1
+  if 'couch' in obj_dict['label']:
+    total_objects['couch'] += 1
+  if 'desk' in obj_dict['label']:
+    total_objects['desk'] += 1
+  if 'table' in obj_dict['label']:
+    total_objects['table'] += 1
+  if 'shelf' in obj_dict['label']:
+    total_objects['shelf'] += 1
+  if 'bookcase' in obj_dict['label']:
+    total_objects['bookcase'] += 1
+
+print("Total number of detected objects: ", total_objects)
+
+
+============================== END ==============================
+

@@ -1,0 +1,143 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['dresser'], save_object=True, saved_image_path='detected_objects')
+print(f"Number of Dressers: {final_result['dresser']['number']}")
+
+print("Detected Dressers:", final_result['dresser'])
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+try:
+    from object_detector import Object_Detector_Tool
+    from text_detector import Text_Detector_Tool
+    import os
+
+    detected_objects = []
+    object_number = {}
+
+    # Find the number of Dressers
+    for item in [
+        "drawer", "tv", "furniture", "dresser",
+        *[f"nightstand_{i}" for i in range(5)]
+    ]:
+        try:
+            os.makedirs(f"detected_objects/{item}")
+        except Exception as e:
+            print(f"Error during creation of folder: {item}: {e}")
+
+        obj_ids, object_number[item] = Object_Detector_Tool.execute(image="path_to_scene", labels=[item, "other"], save_object=True, saved_image_path="detected_objects")
+
+        dressers = [obj for obj in obj_ids if obj[1]['label'] == item]
+        print(f"Detected {len(dressers)} {item} dressers")
+
+        if dressers:
+            try:
+                for dresser in dressers:
+                    dresser_box = dresser[0]["box"]
+                    dresser_box.extend((dresser[0]["x1"], dresser[0]["y1"], dresser[0]["x2"] + 10, dresser[0]["y2"] + 10))
+                    print(dresser_box)
+                    detected_objects.append(
+                        [(item, dresser_box, dresser[0]["score"]), dresser[0]["saved_image_path"]]
+                    )
+            except Exception as e:
+                print(f"Error: {e}")
+    
+    for dresser in dressers:
+        print(f"Detected {drawer} dresser: {dresser}")
+        
+except Exception as e:
+    final_result = "Error occurred: " + repr(e)
+    print(final_result)
+else:
+    final_result = "Successfully detected Dressers:"
+    for dresser in detected_objects:
+        final_result += f" {dresser[0]} Dresser: {dresser[1]}\n"
+    final_result += f"Total detected Dressers: {len(detected_objects)}"
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_scene.png',
+                               labels=['dresser'],
+                               save_object=True, saved_image_path='detected_objects')
+
+print("\nNumber of Dressers: ", final_result[0]['object_number']['dresser'])
+for detected_objects in final_result[0]['detected_objects']:
+  print("\nDetected Dresser: ", detected_objects['box'], 'Score: ', detected_objects['score'])
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Set up the image path
+image_path = '/path/to/image.png'
+
+# Specify object labels to detect
+object_labels = ['baseball', 'basket']
+
+# Set confidence threshold
+confidence_threshold = 0.35
+
+# Set model size
+model_size = 'tiny'
+
+# Set whether to save the detected objects
+save_objects = True
+
+# Run the object detector tool
+detected_objects = Object_Detector_Tool.execute(image=image_path, labels=object_labels, confidence_threshold=confidence_threshold, model_size=model_size, save_objects=save_objects)
+
+# Get the total number of detected objects
+object_number = {obj_label: detected_objects.get(obj_label, {}).get('number') for obj_label in object_labels}
+
+final_result = {
+  'number_of_dressers': 0
+}
+final_result.update(detected_objects)
+
+if detected_objects:
+  for label, objects in detected_objects.items():
+    final_result[label] = {label: {}}  # Initialize new dictionary for each detected label
+    for obj in objects:
+      box = obj.get('box')
+      score = obj.get('score')
+      final_result[label][box] = score
+
+for label, info in final_result.items():
+  final_result[label]['number_of_dressers'] = object_number.get(label, 0)
+else:
+  final_result['number_of_dressers'] = 0
+
+print("Final result:", final_result)
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=[1,2], save_object=False, saved_image_path='detected_objects')
+
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['dresser'], save_object=True, saved_image_path='detected_objects')
+
+print("Dressers detected:", final_result)
+</command>
+Reward: 1.0
+

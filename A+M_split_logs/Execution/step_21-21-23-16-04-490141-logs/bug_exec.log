@@ -1,0 +1,186 @@
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool, object_detector_tool
+
+# Path to the image file
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/12667_0.png"
+
+# Language codes (optional, could be omitted)
+languages = ["en", "de"]  # Example: Languages ('English', 'Deutsch')
+
+# Level of detail (0 or 2, default: 1)
+level_of_detail = 1
+
+# Call the object detection tool
+detected_objects, object_number = object_detector_tool.execute(
+  image=image_path,
+  labels=["baseball", "basket"],
+  languages=languages,
+  detail=level_of_detail
+)
+
+# Generate final result
+final_result = {
+  "detected_objects": {
+    label: [(bbox, score)] for label, boxes in detected_objects.items() if label in ["baseball", "basket"]
+  },
+  "object_number": object_number
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tools'
+code: 
+
+from tools import Object_Detector_Tool, Text_Detector_Tool
+
+saved_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/12667_0.png"
+
+# Detecting baseball and basketball in the image
+detected_objects_baseball = object_detector_tool.execute(image=saved_image_path, labels=['baseball', 'basket'], save_object=True, saved_image_path=saved_image_path)
+
+detected_objects_basketball = object_detector_tool.execute(image=saved_image_path, labels=['basket'], save_object=True, saved_image_path=saved_image_path)
+
+# Counting and printing details of detected objects
+object_number_baseball = len(detected_objects_baseball)
+object_number_basketball = len(detected_objects_basketball)
+
+final_result = {
+  "detected_objects": {
+    *detected_objects_baseball, *detected_objects_basketball
+  },
+  "object_number": {
+    "baseball": object_number_baseball,
+    "basketball": object_number_basketball,
+  }
+}
+
+print("Detected and counted objects: ", final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Object_Detector_Tool' is not defined
+code: 
+
+from_object_detector = Object_Detector_Tool()
+detected_objects, object_number = from_object_detector.execute(image=image_path, labels=["baseball", "basket"], save_object=True, saved_image_path=f"/detected_objects")
+if detected_objects:
+    labeled_objects = [[label, [[x, y], size, score, image_path]] for i, (label, boxes) in enumerate(detected_objects)]
+    text = from_text_detector.execute(image_path, langs=["en", "de"], detail=1)
+    detected_text = [t for (box, text, score) in text if box != []][0]
+    object_number_details = []
+    for obj in detected_objects:
+        name = obj[0]
+        boxes = [t[0] for t in obj[1]]
+        boxes.extend([x + size for x, y in boxes])
+        score_min = min([t[2] for _, t in detected_objects])
+        min_len = min(map(len, boxes))
+        boxes.sort(key=lambda x: iou_to_bbox(box_tup, box_list))
+        boxes.extend(map(lambda a, b: a, range(boxes[0][0], boxes[1][0], min_len), enumerate(boxes[0][1 :]), boxes[-1][1]))
+        object_number_details.append({"name": name, "boxes": boxes, "score": score_min})
+    final_result = {"detected_objects": labeled_objects, "object_number": object_number, "detected_text": detected_text, "object_number_details": object_number_details}
+else:
+    final_result = {"detected_objects": [], "object_number": 0, "detected_text": "", "object_number_details": []}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 13)
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Define the label for the baseball 'baseball'
+baseball_label = 'baseball'
+
+# Define the label for the basketball 'basket'
+
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image='path/to/image', labels=[baseball_label, 'basket'], save_object=True, saved_image_path='detected_objects')
+final_result = {
+    'detected_objects': {
+        ('baseball': detected_objects[baseball_label], object_number[baseball_label]),
+        ('basket': detected_objects['basket'], object_number['basket'])
+    },
+    'object_number': object_number
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import object_detector_tool  # Import the Object_Detector_TOOL class
+
+# Initialize the object_detector_tool object with default parameters
+object_detector_tool = object_detector_tool()
+
+# Define the labels to detect
+labels = ['baseball', 'basket']
+
+# Set the confidence threshold
+confidence_threshold = 0.35
+
+# Set the model size to "tiny"
+model_size = "tiny"
+
+# Set whether to save the detected objects as images
+save_object = True
+saved_image_path = "detected_objects"
+
+# Execute the object detector
+detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=labels, save_object=save_object, saved_image_path=saved_image_path, confidence_threshold=confidence_threshold, model_size=model_size)
+
+detected_objects
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unmatched '}' (<string>, line 16)
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="path/to/image")
+detected_objects = final_result[0]
+object_number = final_result[1]
+
+detected_objects = [dct['saved_image_path'] for dct in detected_objects['baseball']]
+detected_objects.extend([dct['saved_image_path'] for dct in detected_objects['basket']])
+detected_objects = [f"'{dct['saved_image_path']}'\n" for dct in detected_objects]
+
+detected_objects.append(f"{'Total detected objects':^40}")
+object_number = {'baseball': len(detected_objects), 'basket': len(detected_objects) - 1}
+
+detected_objects = '\n'.join(detected_objects)
+object_number_str = f'{"Total detected objects in the image":^20}{object_number["baseball"]}{' and f'\n{object_number["basket"]}'}'
+
+print(f"Detected objects:")
+print(f"{' '.join(detected_objects)}")
+print(f"{'Total detected objects in the image':^20}{object_number_str}")
+
+
+============================== END ==============================
+

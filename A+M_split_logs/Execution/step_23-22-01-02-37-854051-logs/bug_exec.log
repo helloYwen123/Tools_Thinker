@@ -1,0 +1,184 @@
+
+[Exctuion Failed]
+
+No module named 'tool_module_name'
+code: 
+
+from tool_module_name import object_detector_tool, text_detector_tool
+
+# Set the image path, labels, and threshold for detection
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/image_sAT_1.png"
+object_labels = ['baseball', 'basket']
+object_threshold = 0.35  # This is an example threshold, adjust according to your needs
+
+# Set the model size and save options
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/image_sAT_1.png"
+
+# Execution of the object detector
+detected_objects = object_detector_tool(image=image_path,
+                                          labels=object_labels,
+                                          model_size=model_size,
+                                          save_object=False,
+                                          saved_image_path=saved_image_path)
+
+# Execution of the text detector
+result = text_detector_tool(image=image_path, languages=['en', 'de'], detail=0)
+
+# Final result
+final_result = {
+    "detected_objects": {
+        lb: det_result
+        for lb, det_result in detected_objects.items()
+    },
+    "object_number": len(detected_objects)  # Returns the total number of detected objects
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = {}
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1379_0.png"
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+save_object = True
+
+try:
+    detected_objects = Object_Detector_Tool().execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object)
+    object_number = {}
+    for detected_object in detected_objects[0]:
+        object_number[detected_object[1]['label']] = detected_object[1]['count'] + detected_objects[1]
+
+    if save_object:
+        for obj in detected_objects[1]:
+            image_path = f"/nfs/data8/liao/wxie/SAT/SAT_images_train/1379_{obj[1]['label']}_{obj[0]['name']}.png"
+            Object_Detector_Tool().execute(image=image_path, label=obj[1]['label'], threshold=threshold, model_size=model_size, save_object=save_object)
+except Exception as e:
+    final_result["error"] = f"An error occurred: {str(e)}"
+finally:
+    print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+import object_detector_tool
+
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/1379_0.png'
+labels = ['baseball', 'basket']
+object_detector_tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path='detected_objects')
+object_number = object_detector_tool.object_number
+
+final_result = [
+   {'label': 'baseball', 'objects': []}, 
+   {'label': 'basket', 'objects': []}] + list(object_number.values())
+
+print("Final detection results:", final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'tool_object_detection'
+code: 
+
+from tool_object_detection import Object_Detector_Tool
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1379_0.png"
+labels = ['baseball']
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+
+# Execute the object detection tool
+result = Object_Detector_Tool().execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size)
+
+if result:
+    detected_objects = result[1]
+    number_of_objects = result[0].get("object_number", {})
+    
+    print("Detected object: {}".format(result[1]))
+    print("Objects count: {}".format(number_of_objects))
+else:
+    print("Failed to find objects in the image.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+'return' outside function (<string>, line 40)
+code: 
+
+from tools import Object_Detector_Tool, Text_Detector_Tool
+
+# Set the image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1379_0.png"
+
+# Define labels ['baseball', 'basket' etc.]
+labels = ['baseball', 'basket']
+
+# Set the confidence level for detection (default: 0.35)
+confidence = 0.35
+
+# Use the Object_Detector_Tool to detect objects in the image
+detected_objects, object_number = Object_Detector_Tool.execute(image_path, labels=labels, save_object=True, thresholds=[confidence])
+
+# Use the Text_Detector_Tool to detect text in the image (example: 'baseball', 'basket' etc.)
+result = Text_Detector_Tool.execute(image_path, languages=['en', 'de'], detail=0)
+
+detected_texts = []
+
+# Loop through detected objects and text
+for obj in detected_objects:
+    # Check if the label of the first object is 'baseball' in the result
+    if 'baseball' in [t['text'] for t in result if t['label'] == 'baseball']:
+        for desc in obj['description']:
+            if desc['text'] not in detected_texts:
+                detected_texts.append(desc['text'])
+
+# Convert the found texts to a list
+found_texts = detected_texts
+
+# Check if there are found texts
+if len(found_texts) > 0:
+    # Calculate the number of texts found
+    total_texts = len(found_texts)
+
+    # Assigns the answer based on the question and final result.
+else:
+    # Return the text message if no text was found
+    return "No texts found."
+
+final_result = f"1, {len(detected_texts)}, 0, 2" 
+
+# Check if the text was actually processed, if not, return the text message
+result_str = ' '.join(found_texts)
+if not result_str:
+    return result
+
+# Return the final result
+# print(final_result)
+
+
+============================== END ==============================
+

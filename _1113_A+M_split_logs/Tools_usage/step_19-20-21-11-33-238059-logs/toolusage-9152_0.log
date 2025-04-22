@@ -1,0 +1,190 @@
+
+[QAid]9152_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Path to the image file
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/9152_0.png'
+
+# Labels to detect
+labels_to_detect = ['baseball', 'basket']
+
+# Confidence threshold
+confidence_threshold = 0.35
+
+# Use model size 'tiny'
+model_size = 'tiny'
+
+# Save detection results as images
+save_objects = True
+
+# Get detected objects
+object_detection_result = Object_Detector_Tool.execute(image=image_path, labels=labels_to_detect, save_object=save_objects, threshold=confidence_threshold, model_size=model_size)
+
+# Output the results
+final_result = {
+    "labels_with_number": {
+        label: 0
+        for detected_object in object_detection_result[0]
+        if detected_object[0] in labels_to_detect
+    },
+    "labels_with_detection_results": {
+        "baseball": [detected_object[2] for detected_object in object_detection_result[0] if detected_object[0] == 'baseball' and detected_object[2] > 0.35],
+        "basket": [detected_object[2] for detected_object in object_detection_result[0] if detected_object[0] == 'basket' and detected_object[2] > 0.35]
+    }
+}
+
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 16)
+
+Completion Content: 
+<command>
+from object_detector import Object_Detector_Tool
+
+def count_shelving_units(image_path, labels, threshold=0.35, model_size="tiny", save_object=False, saved_image_path="detected_objects"):
+
+    tool = Object_Detector_Tool(image_path, labels=labels , model_size=model_size, threshold=threshold , save_object=save_object, saved_image_path=saved_image_path)
+    detected_objects, object_number = tool.execute()
+    final_result = {"detect_results": detected_objects, "object_number": object_number}
+    return final_result
+
+generated_lines = """
+final_result = count_shelving_units('path_to_image.png', ["shelf"], 0.30)
+print(final_result)
+"""
+
+<command></command>
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector.Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/9152_0.png", labels=["baseball"])
+for i in final_result:
+    if final_result[i]['saved_image_path'] is not None and 'baseball' in i[1]['box']:
+        print(f"Found batting glove at {i[1]['box'][1]}, score: {i[1]['score']}")
+
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+```python
+from object_detector import Object_Detector_Tool
+
+# Load the image
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/9152_0.png"
+detector_tool = Object_Detector_Tool()
+result = detector_tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path="detected_objects")
+
+# Count the number of baseballs and baskets in the image
+object_number = 0  # Initial count, will be updated in the next part
+for label in result[0]:
+    for detection_entry in label:
+        if detection_entry["score"] > 0.35:
+            object_number += 1
+            if "baseball" in detection_entry["score"] or "basket" in detection_entry["score"]:
+                print(f"{result[0][0]:.5} : {result[0][1]:.5}\n")
+
+final_result = object_number
+```
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Extraction Failed or Parse Failed]
+
+unterminated string literal (detected at line 40) (<unknown>, line 40)
+
+Completion Content: 
+<command>
+```py
+import Object_Detector_Tool
+import Text_Detector_Tool
+
+# Sample image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/473.wav.wav"
+
+# Detect text blocks in the image with multiple languages
+result = Text_Detector_Tool.execute(image=image_path, languages=['en', 'de'])
+
+# Check if text was detected
+if result:
+    # Loop through each detected text block
+    for block in result:
+        # Extract bounding box coordinates, recognized text, and confidence score
+        box = block[1][0]
+        text = block[0][1]
+        confidence = block[1][2]
+        
+        # Save detected text as an image if requested
+        if save_object:
+            det_path = f"{saved_image_path}/text_{confidence:.2f}.png"
+            # Assuming 'detected_objects' is the directory where the saved images are saved, set det_path accordingly
+            Image.fromarray(block[0]).save(det_path)
+            
+        print(f"Detected text at: ({box[0]}, {box[1]}, {box[2]}, {box[3]}), **Confidence: {confidence:.2f}**")
+else:
+    print("Text detection failed.")
+```
+
+<command>
+```py
+final_result = Object_Detector_Tool.execute(image=image_path, labels=[["baseball", "basket"], ["baseball", "basket"]], save_object=True)
+detected_objects = final_result["detected_objects"]
+object_number = final_result["object_number"]
+
+print(f"Detected Objects: {detected_objects}")
+print(f"Object Number: {object_number}")
+print(f"Detected Objects - {sorted(detected_objects.items(), key=lambda x: x[1], reverse=True)[0]})
+```
+</command>
+============================== END ==============================
+
+
+[QAid]9152_0
+
+[Code Extraction Failed or Parse Failed]
+
+closing parenthesis '}' does not match opening parenthesis '[' (<unknown>, line 6)
+
+Completion Content: 
+<command>
+from object_detector import Object_Detector_Tool
+
+if len([el for el in (self.image / "image_name_0.png").read_text() if el:]) > 0:
+    text_list = [el.split(' ') for el in [self.image / "detected_objects" + file for file in os.listdir(self.image / "detected_objects")] if el.isdigit() or el.isspace()]
+    detected_objects = [{"box": bounding_box, "text": " ".join(word for word in el), "score": confidence} for bounding_box, word in box2txt(text_list).items() if el}
+    final_result = [{"text": " ".join(word for word in block[2]), "score": block[3]} for block in detected_objects if block[0]["box"]][0]
+else:
+    final_result = {"box": [], "text": "", "score": 0.0}
+
+text_list = [el.split(' ') for el in [self.image / "detected_objects" + file for file in os.listdir(self.image / "detected_objects")] if el.isdigit() or el.isspace()]
+box2txt = ((bounding_box[1], bounding_box[3]) - (bounding_box[0], bounding_box[2]).tolist() for bounding_box, word in box2txt(text_list).items())
+
+self.fitted_image = Box_3D.from_json(json.dumps({"bbox": [box[0][0], box[0][1], box[0][2], box[0][3]], "bbox_type": 1, "bbox_height": self.fitted_image.height, "bbox_width": self.fitted_image.width, "name": "ground truth"}))
+result = Object_Detector_Tool.execute(image=self.image / "image_name_0.png", labels=["baseball", "basket"], save_object=False, saved_image_path="detected_objects")
+final_result
+</command>
+============================== END ==============================
+

@@ -1,0 +1,54 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 34)
+code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = {}
+
+def detect_objects(image_path, label_list, threshold=0.35, model_size='tiny', save_object=False):
+    detected_objects = Object_Detector_Tool.execute(image=image_path, labels=label_list, save_object=save_object, threshold=threshold, model_size=model_size)
+    if save_object:
+        save_objects_path = f"detected_objects"
+        if not os.path.exists(save_objects_path):
+            os.makedirs(save_objects_path)
+
+    for label in detected_objects:
+        if label not in final_result:
+            final_result[label] = []
+        for result in detected_objects[label]:
+            # print(result)
+            # Add text bounding boxes to the detected objects dictionary
+            final_result[label].append({
+                "shape_result": result["box"],
+                "text_result": result["text"],
+                "score": result["score"]
+            })
+    
+    # Save the detected objects
+    if save_object:
+        for label in final_result:
+            save_object_path = f"{save_objects_path}/{label}.json"
+            with open(save_object_path, 'w') as file:
+                json.dump(final_result[label], file)
+        print("Detected objects saved to json file.")
+    else:
+        print("No objects detected in the image.")
+else:
+
+    try:
+        # Try to detect objects
+        for label in label_list:
+            print(f"Detecting {label} in image...")
+            if label == "baseball":
+                detect_objects("/path/to/directory", ["baseball"], threshold=0.35, model_size="tiny", save_object=True)
+            elif label == "basket":
+                detect_objects("/path/to/directory", ["basket"], threshold=0.35, model_size="base", saved_object=True)
+    except Exception as e:
+        print(f"Error: {e}")
+
+
+============================== END ==============================
+

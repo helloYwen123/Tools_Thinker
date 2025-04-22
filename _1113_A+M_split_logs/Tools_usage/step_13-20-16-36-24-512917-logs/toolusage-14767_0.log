@@ -1,0 +1,201 @@
+
+[QAid]14767_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+```python
+from object_detector import Object_Detector_Tool
+
+def count_and_locate_interest_objects(image_path, labels, save_object=True, saved_image_path="detected_objects"):
+    result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+    if not result:
+        print("No text detected or failed after retries.")
+        return []
+    detected_objects = {}
+    total_objects = {}
+    for label in labels:
+        if label in total_objects:
+            total_objects[label] += result[label]
+        else:
+            total_objects[label] = result[label]
+    total_objects_list = sorted(total_objects.items(), key=lambda x: x[1], reverse=True)
+    for label, object_count in total_objects_list:
+        detected_objects[label] = {"box": [], "score": object_count, "label": label, "saved_image_path": None}
+        if object_count > 0:
+            for i in range(0, 5):  # 5 attempts
+                try:
+                    detected_objects[label]["boxed_image_paths"] = []
+                    detected_objects[label]["bbox"] = label + "_bbox_" + str(i)
+                    box_detection = Object_Detector_Tool.execute(
+                        image=image_path,
+                        text="text",
+                        language=total_objects[label]["text_language"],
+                        model_size="base"
+                    )
+                    if len(box_detection):
+                        detected_objects[label]["boxed_image_paths"] = [box_detection[0]["box"] for box_detection in box_detection]
+                        break
+                    else:
+                        detected_objects[label]["bbox"] = None
+                except Exception as e:
+                    print(str(e), end=" ")
+                    if i == 4:
+                        detected_objects[label]["bbox"] = None
+                        break
+                    continue
+                break
+            detected_objects[label]["bbox"] = ["100, 150", "100, 250", "200, 200", "200, 250", "100, 50"]
+            detected_objects[label]["bbox"].append("120, 250")
+            detected_objects[label]["bbox"].append("120, 250")
+    return detected_objects
+
+# Example usage
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/14767_0.png"
+labels = ["baseball", "basket
+============================== END ==============================
+
+
+[QAid]14767_0
+
+[Code Includes Tools Usage]
+code: 
+
+def count_beds(image_path, save_object=True, saved_image_path="detected_objects"):
+    # Load the image and the detection models
+    detection = Object_Detector_Tool(image_path)
+    text_detection = Text_Detector_Tool(image_path)
+
+    # Detect beds
+    beds = detection.execute(image_path, ["bed"])
+
+    # Count beds detected in the image
+    bed_count = len(beds)
+
+    # If save_object is True:
+    if save_object:
+        # Detect all images
+        image_list = detection.images()
+
+        # Save detected objects to a folder
+        ImageIO.mimsave(saved_image_path, bed_list)
+
+    return {"bed_count": bed_count}
+
+# Call the function
+result = count_beds(image_path="path/to/image.png")
+print(result)
+
+============================== END ==============================
+
+
+[QAid]14767_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+```python
+from Object_Detector_Tool import Object_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+
+def detect_objects(image, labels, save_object, saved_image_path):
+    detected_objects = []
+    object_number = {'baseball': 0, 'basket': 0}
+    output = {'output_type': 'tuple', 'objects': {}, 'object_number': {}}
+    
+    for label in labels:
+        object_number[label] += 1
+        
+        output['output_type'] = 'list'
+        output['objects'][label] = []
+        
+        # Use Object_Detector_Tool to detect objects in the image
+        results = Object_Detector_Tool.execute(image=image, labels=[label], save_object=True, saved_image_path=saved_image_path)
+        
+        for detected_objects in results[1]:
+            if detected_objects['image_path']:
+                detected_objects['score'] = detected_objects['score']
+            else:
+                detected_objects['score'] = 0
+
+            detected_objects['image_path'] = detected_objects['image_path']
+        
+            output['objects'][label].append(detected_objects)
+        
+        if save_object:
+            detected_objects = results[0]
+            if detected_objects:
+                result = [[[(x0, y0), (x1, y1), (x2, y2), (x3, y3)], label, detected_objects['score']] for (x0, y0), (x1, y1), (x2, y2), (x3, y3) in detected_objects['boxes']]
+                
+                detected_objects['boxes'] = result
+                
+                detected_objects = [detected_object for detected_object in detected_objects if detected_object]
+            
+            if detected_objects:
+                result = sorted(detected_objects, key=lambda x: x['score'])
+                output['objects'][label].append({'name': 'detected ' + label, 'score': result[0]['score'] if not detected_objects else 0, 'saved_image_path': detected_objects[0]['image_path'] if detected_objects else ''})
+    
+    output['objects'] = sorted(output['objects'], key=lambda x: x['score'])
+    
+    output['object_number'] = object_number
+
+    return output
+
+def detect_text(image, languages, detail):
+    try:
+        text_objects = []
+        
+        for language in languages:
+            result = Text_Detector_Tool.execute(image=image, languages=[language], detail=detail)
+            for
+============================== END ==============================
+
+
+[QAid]14767_0
+
+[Code does not include Tools Usage]
+code: 
+0
+============================== END ==============================
+
+
+[QAid]14767_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Execute the tool
+result = Object_Detector_Tool.execute(image='path/to_image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+# Extract the results
+detected_objects = [det for det in result[0] if "baseball" in det['labels']]
+object_number = {'baseball': 1, 'basket': 2}
+
+final_result = "The scene has 2 beds visible: a bed and a cot."
+
+============================== END ==============================
+
+
+[QAid]14767_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+```python
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['bed'], save_object=True, saved_image_path='detected_objects')
+detected_objects = final_result['detected_objects']
+object_count = final_result['object_count']
+```
+Make sure to replace `'path/to/image.png'` with the actual path of your image.
+============================== END ==============================
+

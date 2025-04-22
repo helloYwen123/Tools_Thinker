@@ -1,0 +1,90 @@
+--- Completion 1 ---
+<command>``</command>
+Reward: 0.5
+
+--- Completion 2 ---
+<command>python
+import numpy as np
+import cv2
+from object_detector import Object_Detector_Tool
+
+# Load image
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1381_0.png"
+
+# Create a detector object
+detector = Object_Detector_Tool()
+
+# Detect objects in the image
+labels = ["baseball", "basket"]
+result, object_numbers = detector.execute(image=image_path, labels=labels, save_object=True)
+
+# Process the detected objects
+detected_objects = {}
+object_confidences = {}
+
+for (bbox, score), label in result:
+    if label in object_numbers:
+        detected_objects[label] = [(bbox[0], bbox[1], bbox[2], bbox[3]), score]
+        object_numbers[label] = object_numbers[label] + 1
+    else:
+        object_numbers[label] = 1
+        detected_objects[label] = [(bbox[0], bbox[1], bbox[2], bbox[3]), score]
+
+detected_objects = {label: objects for label, objects in detected_objects.items() if len(objects) > 0}
+
+object_numbers = {label: len(detected_objects[label]) for label in object_numbers}
+
+detected_objects
+</command>
+Reward: 0.5
+
+--- Completion 3 ---
+<command>from module:object_detector, import_name:Text_Detector_Tool</command>
+Reward: 0.5
+
+--- Completion 4 ---
+<command>
+from text_detector import Text_Detector_Tool
+
+def calculate_num_objects(image_path, languages=['en', 'de']):
+    detected_objects = []
+    detail = 0
+    for language in languages:
+        results = Text_Detector_Tool.execute(image=image_path, languages=[language], detail=detail)
+        if len(results) > 0:
+            detections = results[0][0]
+            object_labels = [det[2] for det in detections]
+            for label in object_labels:
+                detected_objects.append((label, len(detections[label]), 1))
+    return detected_objects
+
+final_result = calculate_num_objects(image_path="1381_0.png")
+
+if len(final_result) > 0:
+    print("There are", final_result[0][1], "objects visible in ", final_result[0][0])
+else:
+    print("No objects detected")
+</command>
+Reward: 0.5
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['chair', 'table'], save_object=False)
+
+if final_result:
+    chair_result = final_result[0]
+    table_result = final_result[1]
+    
+    print(f"Detected chair:", chair_result)
+    print(f"Detected table:", table_result)
+else:
+    print("No text detected in the image.")
+</command>
+Reward: 0.5
+
+--- Completion 6 ---
+<command>from_tool = {"Object_Detector_Tool": {"tool_module_name": "Object_Detector_Tool", "tool_class_name": "Object_Detector_Tool", "tool_description": "A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.", "tool_version": "1.0.0", "input_types": {"image": "str", "labels": "list", "threshold": "float", "model_size": "str", "save_object": "bool", "saved_image_path": "str"}, "output_types": "{\"tuple - A tuple containing two elements: (1) a dictionary mapping each detected label to a list of detection entries, e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}], (2) a dictionary mapping each label to the number of detected objects in the image. e.g. {'baseball': 2, 'basket': 1}\".\n", "output_example": "detected_objects : {\n'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],\n'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]\n}\nobject_number : {'baseball': 1, 'basket': 2}\n"}, "user_metadata": {"potential usage": "The tool can be used for counting and locating interest-objects in images by utilizing the bounding boxes", "helpful_function": "detect_objects() - Detect items in an image based on bounding boxes, scores, and coordinates", "example_code": "detect_objects(image='image path', labels=['baseball', 'basket'], threshold=0.5, model_size='Base')", "command": "import Tool_Detector_Tool from_tool; detected_objects_result = Tool_Detector_Tool.execute(image='image path', languages=['en', 'de'], detail=1); detected_objects = detected_objects_result;", "output_example": "['Detected
+Reward: 0.0
+

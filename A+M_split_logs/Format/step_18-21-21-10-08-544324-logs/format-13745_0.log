@@ -1,0 +1,205 @@
+--- Completion 1 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+final_result = Object_Detector_Tool().execute(image="/path/to/scene/image.png", labels=["DiningTable", "Chair"], save_object=True, saved_image_path="dining_table_chair")
+if final_result[0]["baseball"][0]["score"] > 0.8:
+  dining_table_count = len([obj["box"] for obj in final_result[0]["baseball"] if obj["score"] > 0.8])
+  chair_count = len([obj["box"] for obj in final_result[0]["chair"] if obj["score"] > 0.8])
+else:
+  dining_table_count = 0
+  chair_count = 0
+
+if dining_table_count > 1:
+  print(f"The scene has 2 dining tables.")
+else:
+  print(f"The scene does not have any dining tables.")
+if chair_count > 1:
+  print(f"The scene has 2 chairs.")
+else:
+  print(f"The scene does not have any chairs.")
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+
+class Object_Detector_Tool:
+    def execute(self, image, labels, save_object=True, saved_image_path="detected_objects"):
+        object_data = []
+
+        for obj in labels:
+            objects = self.object_detector_tool(image, labels=[obj], save_object=save_object)
+
+            for obj_dict in objects:
+                i = obj_dict.get('obj_name')
+                box = (
+                    (int(obj_dict.get('bbox', 0)))
+                    + (int(i.get('bbox', (0, 285))))
+                    + (int(i.get('bbox', (0, 0))))
+                    - (int(i.get('bbox', (0, 0))))
+
+                # Calculate object coordinates on the image
+                left = int(obj_dict.get('bbox', (0, 285)))
+                top = int(obj_dict.get('bbox', (0, 0)))
+                right = int(obj_dict.get('bbox', (0, 0)))
+                bottom = int(obj_dict.get('bbox', (0, 285)))
+
+                object_data.append({"box": box, "score": float(i.get('score')), "saved_image_path": saved_image_path})
+
+        return object_data
+
+def text_detector_tool(image, languages, detail=0):
+    result = []
+    i = 1
+
+    language_detection = {
+        'en': English_OCR(image),
+        'de': English_OCR(image),
+        'ja': English_OCR(image),
+        'ch_sim': Chinese_SIM_OCR(image)
+    }
+
+    languages = language_detection[languages]
+
+    if not languages:
+        languages = list(languages.keys())
+
+    for lan in languages:
+        if lan == 'ch_sim' and len(languages[lan]['text']) == 0:
+            languages[lan]['text'] = 'Chinese Simplified (simplified)'
+        elif lan == 'ch_sim' and len(languages[lan]['text']) == 1:
+            languages[lan]['text'] = 'Chinese Simplified'
+
+        try:
+            languages[lan]['text'] = language_detection[lan]['text']
+            result.append(languages[lan]['text'])
+        except Exception as e:
+            print(f"Failed to detect text for {i} language: {e}")
+
+        i += 1
+    return result
+
+def English_OCR(image):
+    import pytesseract
+    pytesseract.pytesseract.tesseract_cmd = './tesseract'
+
+
+Reward: 0.0
+
+--- Completion 3 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+
+total_dining_tables = 0
+
+# Read XML file
+with open('/nfs/data8/liao/wxie/SAT/SAT_images_train/13745_0.png') as f:
+    data = f.read()
+first_table_data = data.split('\n')
+first_table = [first_table_data[i].split() for i in range(len(first_table_data))]
+
+# Detect dining tables
+for item in first_table:
+  if 'Dining' in item[1]:
+    dining_tables = len(item)
+
+    for i in range(len(item)):
+      for j in range(len(item[1])):
+        # Check if the chair in the current row has chairID equal to item[1] and is in the next empty row (i-1)
+        if item[1][j] == item[1]:
+          for k in range(i+1, dining_tables):
+            if item[1][k] and item[0][k] and item[1][k] != item[1][k:][-1]:
+              # Check if the object in the next empty row does not have chairID equal to item[1]
+              object_not_in_next_row = False
+              for l in range(k+1, dining_tables):
+                if item[1][l] != item[1][l:][-1]:
+                  if item[1][l] and item[0][l] and item[1][l] != item[1][l:][-1]:
+                    # Save detected objects and object count
+                    saved_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/" + item[0][k][:-1] + "__" + item[1][k][:-1] + "__" + item[0][k+1][:-1] + "__" + item[1][k+1][:-1] + "__" + item[0][k+2][:-1] + "__" + item[1][k+2][:-1]
+                    parsed_text = ""
+                    detected_text_blocks = []
+                    for detected_text_block in text_detector_tool.execute(image=image_path, languages=['nl'], detail=1)([item[0][k][:-1], item[1][k][:-1], item[0][k+1][:-1], item[1][k+1][:-1], item[
+Reward: 0.0
+
+--- Completion 4 ---
+<command>
+from object_detector_tool import object_detector_tool, object_number, detected_objects, object_number
+
+def find_dining_tables():
+    # Assuming object_detector_tool can be instantiated with specific arguments
+    detected_objects = object_detector_tool(image="path/to/image", save_object=True, languages=['en', 'de'])
+    text_blocks = text_detector_tool(image="path/to/image", languages=['en', 'de'], detail=1)
+
+    # Calculate total number of detected objects for 'basket' and other categories
+    dining_tables = len([obj for obj in detected_objects if obj['labels'] == 'baseball'])
+    
+    dining_tables, object_number
+</command>
+Reward: 0.5
+
+--- Completion 5 ---
+<num>scene</num> = {
+  "object_detector": {
+    "command": "object_detector_tool = Object_Detector_Tool()\ndetected_objects, object_number = object_detector_tool.execute(image='path/to/image', labels=[\"baseball\", \"basket\"], save_object=True, saved_image_path='detected_objects')\n",
+    "user_metadata": {"tool_version": "<command>version+"</command>}
+  }
+}
+Reward: 0.0
+
+--- Completion 6 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+
+def detect_objects(image_path, labels, save_object=False, saved_image_path="detected_objects"):
+    image = Image.open(image_path)
+    transformed_image = object_detector_tool.annotate_one_image(image, labels, save_object=save_object, saved_image_path=saved_image_path)
+    return transformed_image
+
+final_result = {}
+final_result["labels"], final_result["boxes"] = [], []
+final_result["boxes"] = []
+final_result["final_result"] = []
+
+progress = 0
+
+for label in labels:
+    obj_name, obj_conf = object_detector_tool.annotate_one_label(image, label, save_object=save_object, detected_object_info=True)
+    
+    obj_name_list = obj_name.split(", ")
+    x_list, y_list = [], []
+    
+    for object_info in obj_name_list:
+        x_info, y_info = [float(num) for num in object_info.split()[1].split() if num]
+        x_list.append(x_info)
+        y_list.append(y_info)
+        
+    progress += len(x_list)
+    
+    if len(x_list):
+        for i in range(len(x_list) - 1):
+            x_temp = int(max(x_list[i], x_list[i+1])) - 1
+            if len(saved_image_path) > 0:
+                new_image_path = os.path.join(os.path.dirname(image_path),
+                                              "detect_object_" + label + "_" + str(i) +
+                                              ".png")
+                object_detector_tool.annotate_one_image(image, x_temp, y_list[i] + 110,
+                                                         new_image_path)
+                x_list[i], y_list[i] = 0, 0  
+            else:
+                if progress >= 2:
+                    break
+                
+    final_result["labels"].append({"bbox": [progress, len(x_list), len(x_list) - 1, progress], 
+                                    "score": obj_conf, "image_name": image_path})
+    final_result["final_result"].append({"bbox": [progress, len(x_list), len(x_list) - 1, progress], 
+                                        "bbox_info": {"bbox_data": x_list, "bbox_score": obj_conf}})
+    final_result["boxes"].append({"bbox": [progress, len(x_list), len(x_list) - 1, progress], 
+                                  "bbox_info": {"bbox_data": x_list, "bbox_score": obj_conf}})
+    
+if progress >= 2:
+    progress = 0
+
+if
+Reward: 0.0
+

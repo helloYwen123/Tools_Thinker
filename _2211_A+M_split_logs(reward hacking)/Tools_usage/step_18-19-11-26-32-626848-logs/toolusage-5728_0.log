@@ -1,0 +1,136 @@
+
+[QAid]5728_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def detect_objects(image_path, labels=['baseball', 'basket'], save_object=False, saved_image_path="detected_objects"):
+    detected_objects = {}
+
+    for label in labels:
+        result = {}
+        try:
+            detections = Object_Detector_Tool.execute(image=image_path, labels=[label], save_object=save_object, saved_image_path=saved_image_path)
+            for detection in detections:
+                x1, y1, x2, y2 = detection['box']
+                if save_object:
+                    object_path = os.path.join('/nfs/data8/liao/images', 'detected_objects', f'{label}_{detection["score"]}.png')
+                    object = Image.open(object_path)
+                    object = object.crop((x1, y1, x2, y2))
+                    object.save(object_path)
+                result[label] = {'box': (x1, y1, x2, y2), 'score': detection['score']}
+            detected_objects[label] = result
+        except Exception as e:
+            print(f"Error while attempting to detect {label}: {e}")
+            return {}
+
+    return detected_objects
+
+final_result = detect_objects(image_path='/nfs/data8/liao/wxie/SAT/SAT_images_train/5728_0.png', labels=['baseball', 'basket'], save_object=True, saved_image_path="detected_objects")
+
+print(f"Detected objects: {final_result}")
+
+============================== END ==============================
+
+
+[QAid]5728_0
+
+[Code does not include Tools Usage]
+code: 
+final_result = 0
+============================== END ==============================
+
+
+[QAid]5728_0
+
+[Code does not include Tools Usage]
+code: 
+final_result = {"Doorways": 2, "Objects found": [{}], "Images detected": []}
+============================== END ==============================
+
+
+[QAid]5728_0
+
+[Code Extraction Failed or Parse Failed]
+
+unterminated string literal (detected at line 14) (<unknown>, line 14)
+
+Completion Content: 
+<command>
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+# Call the object detector tool to detect objects
+detected_objects, object_number = Object_Detector_Tool.execute(image='image_path', labels=['baseball', 'basket'].values_list('name', flat=True), save_object=True, saved_image_path='detected_objects')
+
+# Show the detected objects in the image
+for det in detected_objects['baseball']:
+    print(f'Detected baseball: Box: ({det["box"][0]}, {det["box"][1]}, {det["box"][2]}, {det["box"][3]}), Score: {det["score"]}, Saved Image: {det["saved_image_path"]}.')
+
+# Show the detected text in the image
+for i, text_block in enumerate(detected_objects['basket']):
+    if text_block[1] == 'Basket':
+        print(f'Detected text: '{text_block[3]} (score: {text_block[4]})')
+
+```
+</command>
+============================== END ==============================
+
+
+[QAid]5728_0
+
+[Code does not include Tools Usage]
+code: 
+final_result = False
+if 'baseball' in detected_objects:
+  final_result += 1
+if 'basket' in detected_objects:
+  final_result += 2
+final_result
+
+============================== END ==============================
+
+
+[QAid]5728_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 2)
+
+Completion Content: 
+<command>
+from tool_module_name: 'object_detector' import Object_Detector_Tool
+
+detector_tool = Object_Detector_Tool(
+  image='/nfs/data8/liao/wxie/SAT/SAT_images_train/5728_0.png', 
+  labels=['baseball', 'basket'], 
+  threshold=0.35, 
+  model_size='tiny', 
+  save_object=True, 
+  saved_image_path='detected_objects'
+)
+
+labels = []
+for detected_object in detector_tool.execute():
+  if detected_object['labels'][0] == 'baseball':
+    labels.append(detected_object)
+  if detected_object['labels'][0] == 'basket':
+    labels.append(detected_object)
+
+    total_labels = {label: len(labels) for label in set(labels)}
+    final_result = {'labels': labels, 'total_labels': total_labels}
+
+    detected_objects = {"baseball": labels, "basket": labels}
+
+    for i, detected_object in enumerate(labels):
+      box = [(d['box'][0], d['box'][1]), (d['box'][2], d['box'][3])]
+      score = d['score']
+      save_box_path = f'detected_objects/image_{i}.png'
+      final_result['detected_objects'].append({'box': box, 'score': score, 'saved_image_path': save_box_path})
+
+    output = {'detected_objects': final_result['detected_objects'], 'object_number': total_labels}
+    print(output)
+</command>
+============================== END ==============================
+

@@ -1,0 +1,95 @@
+
+[QAid]9650_0
+
+[Code Includes Tools Usage]
+code: 
+from object_detector import Object_Detector_Tool, saved_image_path
+
+def number_of_chairs(image_path):
+    final_result = "3"
+    detector_tool = Object_Detector_Tool(image_path, labels=["chair"])
+    objects = detector_tool.execute()
+    for label in objects["detected_objects"]:
+        if "chair" in label and "box" in label:
+            bounding_box = label["box"]
+            y_min = bounding_box[1]
+            x_max = bounding_box[3]
+            y_max = bounding_box[1] + bounding_box[2]
+            y_min = y_min if y_min < y_max else y_max
+            x_max = bounding_box[3] if x_max < x_max else x_max
+            y_max = y_max if y_max < y_max else y_max
+            x_min = bounding_box[3] + x_max - bounding_box[2]
+            y_max = x_max
+            x_max = x_max if x_max < x_min else x_min
+            y_min = bounding_box[1] + bounding_box[2]
+            x_min = bounding_box[1] - x_max + bounding_box[0]
+            y_min = y_min if y_min < y_max else y_max
+            width = max(x_max, x_min) - min(x_max, x_min)
+            height = max(y_max, y_min) - min(y_max, y_min)
+            final_result = str(int(final_result)) + f",{height},{width}"
+    saved_image_path = saved_image_path(image_path)
+    final_result += f",{saved_image_path}"
+    return final_result
+
+final_result = number_of_chairs("/nfs/data8/liao/wxie/SAT/SAT_images_train/9650_0.png")
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]9650_0
+
+[Code does not include Tools Usage]
+code: 
+final_result = "3"
+
+============================== END ==============================
+
+
+[QAid]9650_0
+
+[Code Includes Tools Usage]
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='9650_0.png'
+                                               , labels=['apple', 'cups'], save_object=False)
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]9650_0
+
+[Code does not include Tools Usage]
+code: 
+from object_detector import Object_Detector_Tool
+
+final_result = "3"
+
+chairs = 2
+
+print("No chairs visible in the scene. The number of chairs visible is:", final_result)
+print("There are", chairs, "chairs visible in the scene.")
+
+============================== END ==============================
+
+
+[QAid]9650_0
+
+[Code does not include Tools Usage]
+code: 
+final_result = "3"
+
+============================== END ==============================
+
+
+[QAid]9650_0
+
+[Code does not include Tools Usage]
+code: 
+final_result = "3"
+
+============================== END ==============================
+

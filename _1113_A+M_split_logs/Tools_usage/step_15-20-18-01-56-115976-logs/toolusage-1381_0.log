@@ -1,0 +1,152 @@
+
+[QAid]1381_0
+
+[Code does not include Tools Usage]
+code: 
+final_result = []
+command = "detected_objects, object_number = Object_Detector_Tool.execute(image=\"path/to/image.png\", labels=[\"baseball\", \"basket\"], save_object=True, saved_image_path=\"detected_objects\")"
+exec(command)
+
+for obj in detected_objects:
+    final_result.append({'label': obj[0], 'count': obj[1]})
+
+final_result
+============================== END ==============================
+
+
+[QAid]1381_0
+
+[Code Includes Tools Usage]
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['chair'], save_object=False, saved_image_path='')
+
+print(final_result)
+
+============================== END ==============================
+
+
+[QAid]1381_0
+
+[Code Extraction Failed or Parse Failed]
+
+invalid syntax (<unknown>, line 1)
+
+Completion Content: 
+<command>from_object_detector: Object_Detector_Tool, from_text_detection: Text_Detector_Tool</command>
+```python
+import object_detector
+import text_detector
+
+result = text_detector.execute(image='path_to_image.png', languages=['en', 'de'], detail=1)
+detected_text_blocks = result.text_blocks
+
+# Calculate total detected text blocks
+total_text_blocks = len(detected_text_blocks)
+
+final_result = {
+    "ch_sim": 0,  # Placeholder for similar detection performance
+    "de": 0,  # Placeholder for similar detection performance
+    "en": 0,  # Placeholder for similar detection performance
+    "ja": 0  # Placeholder for similar detection performance
+}
+
+if detected_text_blocks:
+    text_blocks_info = []
+    for i, text_block in enumerate(detected_text_blocks):
+        text_info = []
+        text_blocks_info.append(f[text_block.box[0], text_block.box[1]:text_block.box[2], text_block.box[3]:text_block.box[4]], "Detected text", text_block.confidence_score[i])
+        total_text_blocks -= 1
+        if total_text_blocks < 1:
+            break
+
+# Save detected text blocks as images
+for i in range(len(text_blocks_info)):
+    for j in range(len(text_blocks_info[i])):
+        text_blocks_info[i][j] = f"text_blocks/{text_blocks_info[i][j]['box'][i]}"
+
+for i, text_blocks in enumerate(text_blocks_info):
+    if len(text_blocks) == 1:
+        text_blocks_info = text_blocks[0]
+        image_name = text_blocks_info[0]['box'][0]
+        image_size = text_blocks_info[0]['box'][0]
+        bbox = text_blocks_info[0]['box'][0]
+        confidence_score = text_blocks_info[0]['confidence_score'][i]
+        save_path = f"{image_name}_image_{i}.png"
+        image = text_detector.detected_objects[image_name]
+        image = image.crop_bbox_bbox(bbox, image_size)
+        image.save(save_path)
+        final_result['ch_sim'] += 1
+        final_result['de'] += 1
+        final_result['en'] += 1
+        final_result['ja'] += 1
+
+final_result_str = json.dumps(final_result, indent=2)
+
+print("Final detection result:")
+print(final_result_str)
+```
+============================== END ==============================
+
+
+[QAid]1381_0
+
+[Code does not include Tools Usage]
+code: 
+generated_lines
+============================== END ==============================
+
+
+[QAid]1381_0
+
+[Code Includes Tools Usage]
+code: 
+
+from tool_object_detector import Object_Detector_Tool
+object_labels = ["chair", "table", "bed"]
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png', labels=object_labels)
+print("Detected objects: \n")
+for obj in final_result["detected_objects"]:
+    for ob in obj:
+        print(ob)
+
+============================== END ==============================
+
+
+[QAid]1381_0
+
+[Code Extraction Failed or Parse Failed]
+
+No Python code block found in completion.
+
+Completion Content: 
+```python
+from object_detector import Object_Detector_Tool
+
+# Assuming the image is located at 'path/to/image.png'
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/1381_0.png'
+
+# Set the language codes for Multi-Extraction (e.g., English and German)
+languages_codes = ["en", "de"]
+
+# Set the detail level ('0' for simpler output, and 1 for detailed output for this demonstration)
+detail = 0  # Set to 3 for demonstration purposes
+
+result = Object_Detector_Tool.execute(image=image_path, languages=languages_codes, detail=detail)
+finally:
+    if result:
+        detected_objects = result[0]
+        
+        # Check for number of detected objects and save them
+        object_number = {'baseball': len(detected_objects)}
+        final_result = {'detected_objects': detected_objects, 'object_number': object_number}
+    else:
+        final_result = {'detected_objects': [], 'object_number': {}}
+        
+print(final_result)
+```
+============================== END ==============================
+

@@ -1,0 +1,88 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 8)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Call the function with the specified input
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/1494_0.png', labels=['count'], threshold=0.35, model_size='base', save_object=True, saved_image_path='detected_objects')
+
+# Extract the relevant information
+counter Tops = final_result[0]['object_number'].values().values()
+counter Tops
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'image_path' is not defined
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Function to count the number of countertops based on the image path
+def count_countertops(image_path):
+    detected_objects = Object_Detector_Tool.execute(image=image_path, labels=['countertop'], save_object=False)
+
+    countertop_count = {label: len(detected_objects.get('countertop', [])) for label in detected_objects.get('countertop', [])}
+    return countertop_count
+
+# Image path contains the coordinates of the countertop region
+final_result = count_countertops(image_path)
+print(f"Number of Countertops: {final_result}")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'objects_detector_tool'
+code: 
+
+from objects_detector_tool import Object_Detector_Tool
+
+def find_counterops(image_path, labels=['cup', 'bowl'], save_object=True):
+    final_result = {}
+    
+    object_detector = Object_Detector_Tool()
+    result = object_detector.execute(image_path, labels=labels, save_object=save_object)
+    
+    if result:
+        counterops = result['detected_objects']['basket']
+        for counterop in counterops:
+            if counterop['box'][0] > 0 and counterop['box'][1] > 0:
+                counterops.append(counterop)
+    
+        counteroffs = result['detected_objects']['baseball']
+        for counteropp in counteroffs:
+            if counteropp['box'][0] > 0 and counteropp['box'][1] > 0:
+                counteroffs.append(counteropp)
+                
+        final_result["CounterTopops"] = counterops
+        final_result["CounterOffs"] = counteroffs
+        
+        return {"CounterTopops": final_result["CounterTopops"],
+                "CounterOffs": final_result["CounterOffs"]}
+    else:
+        return {"CounterTopops": [], "CounterOffs": []}
+
+# Example usage
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1494_0.png"
+result = find_counterops(image_path)
+
+if result:
+    for op in result["CounterTopops"]:
+        print(f"Found counterop at (x: {op['x0']}, y: {op['y0']}), name: {op['species_name']}")
+    for op in result["CounterOffs"]:
+        print(f"Found counteroff at (x: {op['x0']}, y: {op['y0']}), name: {op['species_name']}")
+else:
+    print("No objects detected.")
+
+
+============================== END ==============================
+

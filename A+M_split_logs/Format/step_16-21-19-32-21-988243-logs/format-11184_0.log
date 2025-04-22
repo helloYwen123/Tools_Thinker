@@ -1,0 +1,192 @@
+--- Completion 1 ---
+<command>
+from toolobject_detector_tool import Object_Detector_Tool
+
+# Parameters
+input_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11184_0.png"
+labels_to_detect = ['baseball', 'basket']
+save_object = True
+
+# Create the tool object
+object_detector = Object_Detector_Tool()
+
+# Execute the tool
+detected_objects, object_number = object_detector.execute(input_image=input_image, labels=labels_to_detect, save_object=save_object)
+
+final_result = {
+    "total_labels": len(detected_objects["baseball"]),
+    "total_objects": len(detected_objects),
+    "detailed_results": [
+        {
+            "label": "baseball",
+            "detected_labels": detected_objects["baseball"],
+            "total_numbers": len(detected_objects["baseball"])
+        },
+        {
+            "label": "basket",
+            "detected_labels": detected_objects["basket"],
+            "total_numbers": len(detected_objects["basket"])
+        }
+    ]
+}
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+def get_objects(labels=None, thresholds=None, model_size=None, save_object=False, saved_image_path=None):
+    object_detection_tool = Object_Detector_Tool()
+    labels = labels or []
+    thresholds = thresholds or [0.7]
+    model_size = model_size or 'base'
+    save_object = save_object or True
+    saved_image_path = saved_image_path or 'detected_objects'
+
+    objects = object_detection_tool.execute(image='path/to/image', labels=labels, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path, save_object=save_object)
+    object_number = {
+        'baseball': 0,
+        'basket': 0
+    }
+    
+    for label, obj in objects.items():
+        object_number[label] = len(obj['bbox'])
+
+    return (objects, object_number)
+
+# Example code to check the tool
+detected_objects, object_number = get_objects()
+
+real_result = {
+    'baseball': 0,
+    'basket': 0,
+}
+
+for label in detected_objects.keys():
+    if 'bbox' in detected_objects[label]:
+        if len(detected_objects[label]['bbox']) > 0:
+            real_result[label] = len(detected_objects[label]['bbox'])
+    
+for label in object_number:
+    if label in real_result.keys():
+        object_number[label] = real_result[label]
+
+final_result = {'detected_objects': objects, 'object_number': object_number}
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from text_detector_tool import Text_Detector_Tool
+import_name: 'Text_Detector_Tool'
+final_result = []
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/11184_0.png'
+total_objects = {}
+for language in ["en", "de"]:
+    text_result = Text_Detector_Tool().execute(image=image_path, languages=[language])
+    if text_result and language == "en":
+        for text_block in text_result:
+            if text_block[3] < 0.9:  # Ignore small text
+                final_result.append([text_block[1], text_block[3], language])
+            total_objects[target_language] = total_objects.get(target_language, 0) + 1  # Update total count
+
+    else:
+        print("Failed to detect text in the image: ", language)
+generated_lines = [
+    "total_objects",
+    "{'en': 1, 'de': 2}",
+    "final_result",
+    "{'en': [{'box': (125, 100, 220, 200), 'score': 0.92, 'saved_image_path': None}, {'box': (220, 200, 320, 300), 'score': 0.95, 'saved_image_path': None}], 'de': [{'box': (100, 200, 200, 300), 'score': 0.7, 'saved_image_path': None}},",
+    "total_objects",
+]
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+```python
+import import_name
+
+tool = ImportObject_Detector_Tool()
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11184_0.png"
+
+labels = ['baseball', 'basket']
+labels_num = {}
+confidence_threshold = 0.35
+model_size = 'tiny'
+save_object = True
+
+result = tool.execute(image_path=image_path, labels=labels, model_size=model_size, save_object=save_object, confidence_threshold=confidence_threshold)
+
+labels_result = {label: detect_result for label, detect_result in result[0].items()}
+label_count = {label: len(labels) - labels_index for label, labels_index in result[1].items() if labels_index < len(result[1])}
+
+final_result = {'labels': labels_result, 'label_count': label_count}
+```
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+import numpy as np
+import cv2
+from torchvision import transforms
+from object_detector_tool import Object_Detector_Tool
+
+# Set device and input path
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/11184_0.png"
+labels = ["baseball", "basket"]  # Replace with actual labels
+save_object = True
+threshold = 0.35  # Confidene threshold
+
+# Load object detector model
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=save_object, threshold=threshold)
+detected_objects = {k: [detected_objects[k][0], detected_objects[k][1], detected_objects[k][2]] for k in detected_objects}
+object_number = {k: int(len(detected_objects[k])) for k in detected_objects}
+
+# Create a list to hold results
+results = []
+for k, lvps in object_number.items():
+    text_detection = text_detector_tool.execute(image=image_path, languages=['en', 'de'], detail=1)
+    if text_detection:
+        blocks = []
+        for row in text_detection:
+            for cv_img in row:
+                bbs = []
+                for blk in cv_img:
+                    box = blk[0]
+                    h, w, c = cv_img.shape
+                    box_t = np.array([[box[0], box[1]], [box[0] + w, box[1] + h]])
+                    bbs.append(box_t)
+                blocks.append(((k, lvps[0], lvps[1]), text_detection[1][0], lvps[1]))
+        det_results = [blocks]
+    else:
+        det_results = []
+    results.append(det_results)
+
+# Return results as a string
+detected_objects_str = ','.join(f"{' | '.join([f'{label[0]}: {label[1]} {score:.0%}' for score, label, lvp in result])}" for result in results)
+object_number_str = ','.join(f"{label}. {num} {" " ".join(f"{num + 1} " * num for num in lvps[:-1])} " + labels[-1] if labels[-1] in lvps else f"{num} {" " ".join(repe
+Reward: 0.0
+
+--- Completion 6 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+
+# Test the object_detector_tool function
+# image = '/nfs/data8/liao/wxie/SAT/SAT_images_train/11184_0.png'
+# labels = ['baseball', 'basket']
+# save_object = True
+# saved_image_path = 'detected_objects'
+# object_detector_tool = Object_Detector_Tool()
+# detected_objects, object_number = object_detector_tool.execute(image=image, labels=labels, save_object=save_object, saved_image_path=saved_image_path)
+#
+# final_result = {
+#     'detected_objects': {'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}], 'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]},
+#     'object_number': {'baseball': 1, 'basket': 2}
+# }
+</command>
+Reward: 1.0
+

@@ -1,0 +1,148 @@
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 1)
+code: 
+from_tool_module: "Object_Detector_Tool", final_result: "1"
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 30)
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+# Read image filepath and labels (e.g., "baseball" and "basket")
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/training256_base728_255_162_305_image_1.png"
+labels = ["baseball", "basket"]
+
+# Initialize the Object_Detector_Tool
+object_detector = Object_Detector_Tool()
+
+# Execute the tool
+detected_objects, object_number = object_detector.execute(image=image_path, labels=labels)
+
+# If there are no objects detected, return False
+if not detected_objects:
+    final_result = False
+    return final_result
+
+# Extract the total count for each detected label
+object_number = {
+    "baseball": len(detected_objects),
+    "basket": len(detected_objects)
+}
+
+final_result = {
+    "detected_objects_tuple": ([{"box": tuple(d["box"])} for d in detected_objects], "Detected objects"),
+    "total_objects": object_number
+}
+
+<command>final_result
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 1)
+code: 
+```python
+from Object_Detector_Tool import Object_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+
+def calculate_dresser_count(image_path):
+    detected_objects = {}
+    total_objects = 0
+
+    # Detect the dresser
+    object_detector_tool = Object_Detector_Tool()
+    detected_objects = object_detector_tool.execute(image_path=image_path, labels=["Dresser"], threshold=0.93, model_size="tiny", save_object=True)
+
+    if detected_objects:
+        object_number = len(detected_objects['Dresser'])
+        detected_objects['Dresser'] = [{'box': det['box'], 'score': det['score'], 'saved_image_path': f'detected_objects/{det["label"]}_box={det["box"]}_score={det["score"]}.png'} for det in detected_objects['Dresser']]
+        total_objects += object_number
+
+    # Detect the remaining objects
+    text_detector_tool = Text_Detector_Tool()
+    result = text_detector_tool.execute(image_path=image_path, languages=['en', 'de']).result()
+
+    if result:
+        detected_objects = {**detected_objects, **result}
+        detected_objects = sorted(detected_objects.items(), key=lambda x: x[1]['score'], reverse=True)
+        detected_objects = [{'box': det['box'], 'score': det['score'], 'text': det['text']} for det in detected_objects]
+
+        total_objects += len(detected_objects)
+
+    return detected_objects, total_objects
+
+result, overall_dresser_count = calculate_dresser_count('/image_path')
+final_result = {"Dressers": result, "Total dressers": overall_dresser_count}
+```
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+import numpy as np
+import matplotlib.pyplot as plt
+from object_detector_tool import Object_Detector_Tool, Text_Detector_Tool
+
+def count_dressers(image_path):
+    tool = Object_Detector_Tool()
+    tool.execute(image=image_path)
+
+    # Load the object dictionary with 'baseball' and 'basket' labels
+    labels = tool.object_labels
+
+    # Create a dictionary to count the number of occurrences per label
+    object_number = {
+        'baseball': 0,
+        'basket': 0
+    }
+
+    total_objects = {
+        'baseball': 0,
+        'basket': 0
+    }
+
+    # Count the occurrences of 'baseball' and 'basket' in the image
+    for label in labels:
+        if label in ('baseball', 'basket'):
+            object_number[label] += len(tool.detect_objects([label]))
+            total_objects[label] += 1
+
+    return object_number
+
+def show_image(image_path):
+    tool = Object_Detector_Tool()
+    img = tools.tools(image_path)
+
+    tool.export()
+
+    tool.execute(image='path/to/image')
+
+    plt.imshow(img)
+
+    plt.axis('off')
+    plt.show()
+
+image_path = 'path/to/image'
+object_number = count_dressers(image_path)
+show_image(image_path)
+
+print(f"Number of dressers: {object_number}")
+
+final_result = {'Number of Dressers': object_number}
+
+
+============================== END ==============================
+

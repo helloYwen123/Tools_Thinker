@@ -1,0 +1,200 @@
+------------- 20-22-04-04-172301 Execution reward: 0.0 -------------
+[Reward computation time: 3.0331 seconds]
+QAid: 6886_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Execute the Object Detector Tool with the provided parameters
+result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+object_labels = {}
+total_basket = 0
+total_baseball = 0
+
+for det in result:
+    detected_label = det["label"]
+    box = det["box"]
+    score = det["score"]
+    saved_image_path = str(det["saved_image_path"])
+
+    if detected_label == 'baseball':
+        total_baseball += 1
+    else:
+        total_baseball += len(det["label"])  # Count every label
+
+    if detected_label == 'basket':
+        total_basket += 1
+    else:
+        total_basket += len(det["label"][:-1])
+
+    object_label = None
+    if detected_label.lower() in ('baseball', 'basket', 'tennis'):
+        object_label = detected_label
+
+    object_labels[object_label] = [(box[0], box[1], box[2], box[3]), score]
+
+print("Total Baseballs: ", total_baseball)
+print("Total Baskets: ", total_basket)
+
+for label, obj in object_labels.items():
+    for item in obj:
+        print("Object: ", label)
+        print("Bounding Box: ", int(item[0]), ", ", int(item[1]), ", ", int(item[2]), ", ", int(item[3]))
+
+
+============================== END ==============================
+
+------------- 20-22-04-04-172301 Execution reward: 0.0 -------------
+[Reward computation time: 2.1512 seconds]
+QAid: 6886_0
+Code: 
+
+from tool_module.object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+    image="/nfs/data8/liao/wxie/SAT/SAT_images_train/6886_0.png",
+    labels=["baseball", "basket"],
+    save_object=True,
+    saved_image_path="detected_objects"
+)
+
+print(f"Detected objects: {final_result['detected_objects']}")
+print(f"Number of detected objects: {final_result['object_number']}")
+
+
+============================== END ==============================
+
+------------- 20-22-04-04-172301 Execution reward: 0.0 -------------
+[Reward computation time: 2.6467 seconds]
+QAid: 6886_0
+Code: 
+
+from object_detector import Object_Detector_Tool as ODTC
+
+# Define command path for image and labels
+command = 'detected_objects, object_number = ODTC.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")'
+
+# Execute the command
+result = ODTC.execute(command, languages=['en', 'de'])
+
+# Process the results
+def process_results(result):
+    if result and result['detected_objects']:
+        object_labels = [obj['saved_image_path'].split('/')[-1].split('.')[0] for obj in result['detected_objects']]
+        final_result = {
+            'count': result['object_number'].get('baseball', 0) + result['object_number'].get('basket', 0),
+            'objects': object_labels
+        }
+        detection_entries = [{'box': box['box'], 'score': score} for box, score in result['detected_objects']]
+        image_path = f'delected_objects/{final_result["count"]}.png'
+        ODTC.save_object(detection_entries, saved_image_path=image_path)
+
+# Call the function to process the results
+process_results(result)
+
+
+============================== END ==============================
+
+------------- 20-22-04-04-172301 Execution reward: 0.0 -------------
+[Reward computation time: 2.6800 seconds]
+QAid: 6886_0
+Code: 
+
+from object_detector import Object_Detector_Tool, text_detector
+
+# Set model size (for example, 'tiny')
+model_size = 'tiny'
+
+# Demonstration of calling the tool
+result = object_Detector_Tool.execute(image='path/to_image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+# Function that generates the final result
+def get_image_stats(image_path, language_list, detail=0):
+    languages = set()
+    languages.extend(language_list)
+    
+    if 'ch_sim' in language_list:
+        languages.add('zh')
+    
+    # Try to recognize text
+    detected_texts = text_detector.execute(image=image_path, languages=languages, detail=detail)
+    counts = {'baseball': 0, 'basket': 0}
+    
+    if detected_texts:
+        for text_results in detected_texts:
+            for text_result in text_results:
+                # Check if the result matches 'baseball' or 'basket'
+                if text_result[1] == 'baseball' or text_result[1] == 'basket':
+                    if text_result[7] <= 0.5:
+                        count = counts.get(text_result[1], 0)
+                        counts[text_result[1]] = (count + 1) if counts.get(text_result[1], 0) else 1
+    else:
+        for text_result in text_results:
+            detected_text = text_result[1]
+            # Custom check or logic to determine if the text is correctly classified
+                
+    return counts
+
+
+============================== END ==============================
+
+------------- 20-22-04-04-172301 Execution reward: 0.0 -------------
+[Reward computation time: 2.7611 seconds]
+QAid: 6886_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+# Set the image path and labels
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6886_0.png"
+labels = ["baseball", "basket"]
+
+# Run the tool with the desired parameters
+result_object = Object_Detector_Tool.execute(image=image_path, labels=labels)
+result_text = Text_Detector_Tool.execute(image=image_path, languages=["en", "de"])
+if result_text:
+    detected_objects = result_text[0][0]  # Extract the block with bounding box and text from the list
+    detected_text = result_text[0][1]  # Extract the text
+    text_confidence = result_text[0][5]  # Extract the confidence score
+
+    final_result = {"objects": [],
+                     "text_score": 0.}
+    if detected_objects:
+        final_result["objects"].append({"bbox": detected_objects[0]["box"],
+                                         "text": detected_objects[0]["text"],
+                                         "score": detected_objects[0]["score"]})
+
+    if text_confidence > 0.5:
+        final_result["text_score"] = text_confidence
+        final_result["text"] = detected_text
+final_result = {f"objects": [final_result]}
+
+
+============================== END ==============================
+
+------------- 20-22-04-04-172301 Execution reward: 0.0 -------------
+[Reward computation time: 1.7973 seconds]
+QAid: 6886_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+# Convert question text to lowercase for a case-insensitive compare
+question = question.lower()
+
+# Function to run object detection and return the number of paintings
+def count_paintings(image_path, languages=None, detail=None):
+    detections = Object_Detector_Tool.execute(image_path, languages, detail)
+    painting_count = sum(1 for label, detection in detections if "baseball" in label and "basketball" in label)
+    return painting_count
+
+# Call the function with the image paths
+paintings = count_paintings("/nfs/data8/liao/wxie/SAT/SAT_images_train/6886_0.png")  # Replace with image_path
+final_result = paintings
+print("There are:", final_result, "paintings in the scene.")
+
+
+============================== END ==============================
+

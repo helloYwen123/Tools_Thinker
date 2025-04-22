@@ -1,0 +1,177 @@
+
+[Exctuion Failed]
+
+name 'text_detector_tool' is not defined
+code: 
+
+from_toolmodule: "text_detector_tool"
+
+text_result = text_detector_tool.execute(image='path/to/image', languages=['en', 'de'])
+text_blocks = []
+for text_block in text_result:
+    bounding_box = text_block[0][0][0] + " " + text_block[0][0][1] + " " + text_block[0][0][2] + " " + text_block[0][0][0]  # Adjust X and Y based on the actual coordinates
+    text = text_block[0][0][3]
+    confidence = text_block[0][0][4]
+    score = text_block[0][0][5]
+    text_blocks.append([bounding_box, text, confidence, score])
+
+text_blocks[0][0][0] = [50, 50, 200, 200]
+text_result = [text_blocks]
+
+text_length = len(text_result[0][1])
+all_text = " ".join([text_result[0][1][i] for i in range(text_length - 1)])
+
+final_result = {"object_number": {'baseball': 1, 'basket': 2}, "text_result": all_text}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Object_Detector_Tool' is not defined
+code: 
+
+def draw_objects(image_path, target_languages=['en', 'de']):
+    # Detect objects in the image
+    object_detector = Object_Detector_Tool()
+    detected_objects, object_number = object_detector.execute(image=image_path, languages=target_languages)
+
+    # Draw objects on the image
+    for label in target_languages:
+        print(f"Detected {label} in {image_path}")
+        for object in detected_objects[label]["results"]:
+            print(f"  - Box: {object['box'][0]}, {object['box'][1]}")
+            print(f"  - Score: {object['score']}")
+            if 'saved_image_path' in object:
+                print(f"  - saved_image_path: {object['saved_image_path']}")
+
+    return detected_objects, object_number
+
+# Check the demonstration
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/5927_0.png'  # Path to the image
+target_languages = ['en', 'de']
+draw_objects(image_path, target_languages)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+# Define input variables
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/5927_0.png"  # Path of the image to be analyzed.
+label_list = ["/nfs/data8/liao/wxie/SAT/SAT_images_train/basketball.jpg", "/nfs/data8/liao/wxie/SAT/SAT_images_train/paint.jpg"]   # Path of label images to recognize. Note: /nfs is a placeholder for the actual file path.
+save_object = True  # Save detected objects to be cropped.
+saved_image_path = "detected_objects"  # Saved image path for detected objects.
+
+# Initialize the detector class
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the tool
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=label_list, save_object=save_object, saved_image_path=saved_image_path)
+
+# Output the results
+if detected_objects:
+    detected_objects = {o['label']: o['detected_rectangle_list'] for k, o in detected_objects.items()}
+    object_number_output = {o['label']: len(detected_objects[o['label']]) for o in object_number}
+
+    print(f"Detected objects: {detected_objects}")
+    print(f"Object count: {object_number}")
+else:
+    print("Failed to detect any objects in the image.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+import object_detector_tool as odt
+
+def count_paintings(image_path, painting_labels, threshold, model_size="tiny", save_object=False):
+    try:
+        labels = odt.detect_objects(image_path, painting_labels, threshold, model_size=model_size, save_object=True, saved_image_path="detected_objects")
+    except Exception:
+        labels = []
+        
+    paint_count = {}
+    
+    if save_object:
+        paint_count["name"] = "detected paintings"
+        for painting, details in labels["baseball"]:
+            if painting not in paint_count:
+                paint_count[painting] = {name: 1 if details["box"][0] > 300 else 0 for name in painting_labels}
+            else:
+                if details["box"][0] > 300:
+                    paint_count[painting]["num"] += 1
+                    
+    total_paintings = len(set([paint["name"] for paint in paint_count.values()]))
+
+    return total_paintings
+            
+
+# Sample usage of the tool
+total_paintings = count_paintings(image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/5927_0.png", painting_labels=["baseball", "basket"], threshold=0.35, save_object=True)
+print("Total Paintings:", total_paintings)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+save_object = True
+
+saved_image_path = 'detected_objects'
+
+# execute the object_detector_tool
+object_detector_tool = Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image='path/to/image', labels=['baseball', 'basket'], save_object=save_object, saved_image_path=saved_image_path)
+
+# Extract and return the number of detected objects and labels
+final_result = {"number": object_number, "labels": detected_objects}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'object_detector_tool' is not defined
+code: 
+
+final_result = {}
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=['ball'], save_object=True, saved_image_path='detected_objects')
+object_number['ball'] = detected_objects['baseball'].count()
+final_result = {
+    'detected_objects': {
+        'baseball': detected_objects['baseball'],
+    },
+    'object_number': object_number
+}
+if 'baseball' in detected_objects['baseball']:
+    final_result['detected_objects'] = {
+        **final_result['detected_objects'],
+        'baseball': {
+            **final_result['detected_objects']['baseball'],
+            'count': detected_objects['baseball'].count()
+        }
+    }
+
+
+============================== END ==============================
+

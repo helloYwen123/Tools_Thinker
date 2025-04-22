@@ -1,0 +1,159 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Parameters
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/1617_0.png"
+labels = ["bed"]
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+#Execute object detection
+detected_objects, object_number = Object_Detector_Tool.execute(image=image_path, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+# Extract number of beds
+beds = [obj['box'][0] for obj in detected_objects['baseball'] if obj['box'][0] in range(325, 425)] + [obj['box'][0] for obj in detected_objects['basket'] if obj['box'][0] in range(325, 425)]
+
+final_result = {'bodies': len(beds), 'description': f'Versus {len(labels)} beds exist in the image, with {len(beds)} visible bodies found.'}
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+object_detector_tool = Object_Detector_Tool()
+
+result = object_detector_tool.execute(image='path/to/image.png', labels=[('basket',)], save_object=True)
+print(result)
+</command>
+
+final_result = result
+print(final_result)
+if 'basket' in final_result[0][0]:
+    print("There are 2 baskets visible in the scene.")
+else:
+    print("No baskets visible in the scene.")
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool as OIDT
+
+def detect_objects(image_path, labels, threshold, model_size, save_object):
+    label_detected_objects = OIDT.execute(image_path=image_path, labels=labels, save_object=save_object, threshold=threshold, model_size=model_size, save_object=True).split("\n")
+    return label_detected_objects
+
+def count_objects(image_path):
+    label_detected_objects = {}
+    for detected_objects in label_detected_objects:
+        label, *box = detected_objects.split(',')
+        id = box[0]
+        score = detected_objects[-1]
+        
+        if id not in label_detected_objects:
+            label_detected_objects[id] = []
+        
+        label_detected_objects[id].append({'box': [int(x) for x in box], 'score': score})
+    return label_detected_objects
+
+def get_objects(image_path, languages, detail=0):
+    label_detected_objects = counter_counter(image_path, languages)
+    return [label detected objects for label detected objects in label_detected_objects]
+
+finally_result = get_objects('/nfs/data8/liao/wxie/SAT/SAT_images_train/1617_0.png', ['baseball', 'basket'], detail)
+for label, objects in get_objects('/nfs/data8/liao/wxie/SAT/SAT_images_train/1617_0.png', ['baseball','basket'], detail).items():
+    print(f'{label}): {len(objects)} detected objects.')
+    print(objects)
+
+final_result = {'baseball': 1, 'basket': 2}
+print("Number of detected baseballs:", final_result['baseball'])
+print("Number of detected baskets:", final_result['basket'])
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<image>
+<command>
+  from object_detector import Object_Detector_Tool
+
+  label = "baseball"
+  result = object_detector_tool.detect_objects(image="1617_0.png", labels=label)
+  final_result = {
+    "detected_objects": {
+      label: result
+    },
+    "object_number": {
+      label: len(result[0][1])
+    }
+  }
+
+  return {"result": final_result, "message": "Text detected successfully."}
+</command>
+Reward: 0.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Initialize variable to store detected items and their number
+detected_objects = {}
+
+# Sample image path
+sample_image_path = "/mnt/data8/liao/wxie/SAT/SAT_images_train/1617_0.png"
+
+# Specify the number of languages to use (in this case, English and German)
+num_languages = 2
+
+# Try to extract text detection results using the multi-language text detection tool
+result = Object_Detector_Tool.execute(image=sample_image_path, languages=["en", "de"])
+
+# Parse the detection results and extract the objects
+for line in result:
+    detected_objects.update({**line[1]})
+
+# Check if there was at least one detected object
+if detected_objects:
+    detected_objects = detected_objects.values()
+    object_number = any([len(detected_objects) for detected_objects in detected_objects.keys()])
+
+    # Generate the output
+    final_result = "\nNumber of detected objects: " + str(object_number)
+    text_data = ""
+
+    for label, detected_objects in detected_objects.items():
+        if len(detected_objects) > 1:
+            text_data += f"{' - '.join(sorted([detected_objects[-1][0]})}) - count: {len(detected_objects)}\n"
+        else:
+            text_data += f"{'-'.join(sorted([detected_objects[0][0]]))} - count: {len(detected_objects[0][1])}\n"
+
+    final_result += f"Text detected: {text_data}"
+else:
+    final_result = "No objects detected in the image."
+
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['bed', 'chair'], save_object=True, saved_image_path='detected_objects')
+
+print("Number of Beds: ", final_result.object_number['bed'])
+print("Number of Chairs: ", final_result.object_number['chair'])
+
+if final_result.detected_objects.shape[0] > 0:
+    print("Bed Image: ", final_result.detected_objects[0][1]['box'].tolist())
+    print("Bed Shape: ", final_result.detected_objects[0][1]['box'].tolist())
+    print("Bed Dimensions: ", final_result.detected_objects[0][1]['box'].tolist())
+
+if final_result.detected_objects.shape[0] > 1:
+    print("Chair Image: ", final_result.detected_objects[1][1]['box'].tolist())
+    print("Chair Shape: ", final_result.detected_objects[1][1]['box'].tolist())
+    print("Chair Dimensions: ", final_result.detected_objects[1][1]['box'].tolist())
+</command>
+Reward: 1.0
+

@@ -1,0 +1,174 @@
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+import object_detector_tool
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/4189_0.png"
+labels_to_detect = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+save_detected_objects = True
+
+object_detector_tool = object_detector_tool.Object_Detector_Tool()
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels_to_detect, save_object=True, threshold=threshold, model_size=model_size)
+print(f"Total detected objects: {len(detected_objects['baseball'])} {detected_objects['baseball'][0]['score']}")
+if save_detected_objects:
+    for i, detected_object in enumerate(detected_objects['baseball']):
+        detected_object_file_path = f"detected_objects/image_{i}.png"
+        object_detector_tool.object_detector_tool.save_object(detected_object, detected_object_file_path)
+
+print(object_number)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 1)
+code: 
+```from Object_Detector_Tool import Object_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+
+def calculate_number_of_doors(image_path):
+    tool_version = "1.0.0"
+    image_label_count = 0
+
+    image = '/nfs/data8/liao/wxie/SAT/SAT_images_train/4189_0.png'
+    labels = ['baseball', 'basket']
+
+    object_detector_tool = Object_Detector_Tool()
+    object_detector_tool.input_types.update({"image": image, "labels": labels})
+    object_detector_tool.threshold = 0.35
+    object_detector_tool.model_size = "tiny"
+    object_detector_tool.save_object = True
+    object_detector_tool.saved_image_path = 'detected_objects'
+
+    result = object_detector_tool.execute(image)
+    text_detector_tool = Text_Detector_Tool()
+    text_detector_tool.input_types.update({"image": image, "languages": ["en", "de"]})
+    text_detector_tool.detail = 1
+
+    text_results = text_detector_tool.execute(image)
+
+    for detected_objects in result:
+        if "baseball" in detected_objects["labels"]:
+            image_label_count += 1
+
+    return image_label_count
+
+final_result = calculate_number_of_doors('/path/to/image_path')
+print('Number of doors seen: ', final_result)```
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'module_object_detector_tool'
+code: 
+
+from module_object_detector_tool import *  # Import Object_Detector_Tool class
+from module_text_detector_tool import *  # Import Text_Detector_Tool class
+
+def detect_objects(image_path, labels=("baseball", "basket"), language="en", detail=0):
+    try:
+        res = object_detector_tool.execute(image=image_path, labels=labels, languages=language, detail=detail)
+        if len(res) == 0:
+            return "An error occurred during text detection."
+        else:
+            return res
+    except Exception as e:
+        return str(e)
+
+def detect_text(image_path, languages=["en", "de"], detail=0):
+    try:
+        res = text_detector_tool.execute(image=image_path, languages=languages, detail=detail)
+        if len(res) == 0:
+            return "An error occurred during text detection."
+        else:
+            return res
+    except Exception as e:
+        return str(e)
+
+def count_objects(image_path):
+    detected_objects, object_count = [], []
+    labels_to_count = set([l.split("(")[0].strip() for l in text_detector_tool.execute(image=image_path, languages=["en"], detail=0)])
+    if not labels_to_count:
+        return f"No object detected. Image: {image_path}"
+    for l in labels_to_count:
+        res = [1 if x["recognized_text"] == l else 0 for x in detected_objects if x["recognized_text"] == l]
+        object_count.append(sum(res))
+    object_count = {"baseball": sum(x if x else 0 for x in object_count)}, {"basket": sum(x if x else 0 for x in object_count)}
+    object_count_output = ["{'baseball': {}}", "'basket': {0}"]
+    object_count_output = ['\n'.join(object_count_output)]
+    return object_count_output[0][:-1] if len(object_count_output) else 0
+
+# Example usage with image 'image_path'/label 'basketball'
+final_result = detect_objects(image_path="Path_to_your_image.jpg", labels=("basketball",), languages="en")
+print(final_result)
+
+final_result = detect_text(image_path="Path_to_your_image.jpg", languages=["en", "de"])
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'mmcv'
+code: 
+from mmcv import SingleImageMultiscaleDetector
+
+def count_doors(image_path):
+    # Load the image and perform detection
+    detector = SingleImageMultiscaleDetector(
+        "object_detector_tool",
+        {
+            "image": image_path,
+            "labels": ["door"],
+            "save_object": False,
+            "saved_image_path": "detected_objects"
+        },
+        ["baseball", "basket"],
+        language_list=["en"]
+    )
+    
+    # Detect doors
+    res = [[{} for _ in range(4)] for _ in range(2)]
+    
+    # Simulate retries until at least 1 door is detected
+    retries = 2
+    while len(res[0]) == 0 and retries > 0:
+        try:
+            res[0] = detector(
+                image=image_path,
+                languages=Detector.Tool.language_list,
+                details=Detector.Tool.data.get("detail", 0)
+            )
+            retries -= 1
+        except Exception as e:
+            continue
+    
+    # Remove failed retries if any
+    if retries:
+        res = res[1:]
+    
+    # Count doors
+    door_count = sum([len(detected_objects) for (labels, detected_objects) in res])
+    
+    return door_count, res
+
+if __name__ == "__main__":
+    door_count, detected_objects = count_doors("test_image.jpg")
+    print("Number of doors detected:", door_count)
+    for label, boxes in detected_objects.items():
+        print(f"{label}: {len(boxes)}")
+    
+
+============================== END ==============================
+

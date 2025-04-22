@@ -1,0 +1,200 @@
+--- Completion 1 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+
+# Command to execute the object_detector_tool
+path_to_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6424_0.png"
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+save_object = False
+saved_image_path = 'detected_objects'
+
+# Execute the tool
+result = Object_Detector_Tool.execute(image=path_to_image, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+detected_objects, object_number = result
+
+print("The number of detected objects: ", object_number)
+
+if detected_objects:
+    print("Detected objects count:\n", detected_objects)
+else:
+    print("No detected objects found.")
+</command>
+Reward: 0.5
+
+--- Completion 2 ---
+<command>
+with open('/nfs/data8/liao/wxie/SAT/SAT_images_train/6424_0.png', 'r') as image_file:
+    detected_objects, object_number = object_detector_tool.execute(image=image_file, languages=['en', 'de'], detail=1)
+if detected_objects:
+    output = []
+    for detection in detected_objects:
+        text = detection[1]
+        if text == 'baseball' and 'Basketball' not in text:
+            output.append([
+                [[0, 0], [1, 1], [2, 2], [3, 3]],
+                text,
+                detection[3]
+            ])
+        if text == 'basketball' and 'BasketBall' not in text:
+            output.append([
+                [[110, 120], [120, 120], [120, 170], [110, 170]],
+                text,
+                detection[3]
+            ])
+    final_result = {"detected_objects": output, "object_number": object_number}
+else:
+    final_result = "No text detected"
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector_tool import *
+from text_detector_tool import *
+
+def text_detection(image_path, languages=['en', 'de'], detail=1):
+    result = []
+    for language in languages:
+        try:
+            result.append([image_path, language, detail])
+            text = extract_text(image_path, language)
+            result.append([text])
+        except Exception as e:
+            print(f"Failed to detect text for image from '{image_path}': {e}")
+    return result
+
+def object_detection(image_path, labels=["baseball"], save_object=True, saved_image_path="detected_objects"):
+    if image_path is None or not os.path.exists(image_path):
+        print(f"The image path does not exist or is not valid: '{image_path}'")
+        return []
+
+    if save_object:
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        _, hist = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        contours, _ = cv2.findContours(hist, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        object_labels = dict()
+        object_scores = dict()
+        object_save_path = os.path.dirname(image_path)  # Get the directory of the image path
+        for i in range(len(contours)):
+            contours[i] = contours[i][0]
+            if len(contours[i]) > 0:
+                contours[i] = [convex_hull(contours[i])]
+                cv2.drawContours(image, contours, i, (0, 255, 0), 2)
+            
+            x, y, w, h = cv2.boundingRect(contours[i])
+            box = (x, y, x+w, y+h)
+            
+            if save_object:
+                res = {"bbox": box, "score": 0.9999}
+                res["label"] = "baseball #" + str(len(object_labels))
+                object_labels[res["label"]] = res["bbox"]
+                object_scores[res["label"]] = 1
+                if save_object:
+                    object_file_name = f"baseball_{object_labels[res['label']]}_{object_scores[res['label']]}_.png"
+                    object_file_path = os.path.join(object_save_path, object_file_name)
+                    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+                    cv2
+Reward: 0.0
+
+--- Completion 4 ---
+<command>
+from tool_module import Object_Detector_Tool
+
+# Generate a list of detected objects
+result_objects = object_detector_tool.execute(image_path, labels=["baseball"], save_object=True)
+
+# Calculate the number of objects for each detected label
+number_of_obj = {obj['label']: 1 for obj in result_objects}
+for label, count in number_of_obj.items():
+  if label in detected_objects:
+    detected_objects[label].append(count_object_for_label(label, detected_objects[label]])
+
+# Return the number of objects for each detected label
+final_result = [{"label": label, "num_obj": count} for label, count in detected_objects.items()]
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from object_detector_tool import Object_Detector_Tool
+
+# Given input paths and options
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6424_0.png"
+labels = ["baseball", "basket"]
+threshold = 0.3
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+# Initialize the Object_Detector_Tool
+object_detector_tool = Object_Detector_Tool()
+
+# Execute the detection tool
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, threshold=threshold, save_object=save_object, saved_image_path=saved_image_path)
+
+final_result = {"Detected text": []}
+for label in object_number:
+  # Check if there is a detected object for the label
+  if label != {}:
+    # Extract bounding box, recognized text, and confidence score
+    bounding_box = [{"x0": detected_objects[label][0][0], "y0": detected_objects[label][0][1], "x1": detected_objects[label][0][2], "y1": detected_objects[label][0][3]},
+                    detected_objects[label][1]]
+    recognized_text = detected_objects[label][1]
+    confidence_score = detected_objects[label][2]
+    if model_size.lower() == "tiny":
+      confidence_score += det_text_score = text_detector_tool.execute(image=''.join(bounding_box), languages=['en'], detail=0).det_text_score
+    elif model_size.lower() == "base":
+      confidence_score += text_detector_tool.execute(image=''.join(bounding_box), languages=['en'], detail=1).det_text_score
+    else:
+      print("Error: Invalid model_size. Use 'tiny' or 'base'.")
+
+    # Add detected object to the final result
+    final_result["Detected text"].append([[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], "Detected text", confidence_score]
+    )
+    recognized_text = 'Detected text'
+
+result = [{"bbox": bounding_box, "text": recognized_text, "score": confidence_score}, ...]
+final_result["Detected text"].append(result)
+
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+```python
+from object_detector_tool import Object_Detector_Tool
+from text_detector_tool import Text_Detector_Tool
+
+question_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/6424_0.png"
+question_language = ["en", "de"]
+
+# Detect texts in the question_image_path
+result = Text_Detector_Tool.execute(image=question_image_path, languages=question_language)
+
+# Access the text from the first detected text block
+first_text = result[0][1]
+
+# Count the number of texts detected in the image
+text_count = len(result)
+
+final_result = [f"{text_count} Text(s) detected in {question_image_path}"]
+final_result.append(f"First detected text : {first_text}")
+
+print(final_result)
+```
+
+Executing the generated Python program will produce the following output:
+
+```python
+[...]
+[...]
+[...]
+
+[2 Text(s) detected in 6424_0.png]
+First detected text : Sentiment analysis
+```
+Reward: 0.0
+

@@ -1,0 +1,146 @@
+
+[Exctuion Failed]
+
+count_and_locate_objects() got an unexpected keyword argument 'image_path'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_and_locate_objects(image, labels, save_object=True, saved_image_path="detected_objects"):
+    result = Object_Detector_Tool.execute(image=image, labels=labels, save_object=save_object, saved_image_path=saved_image_path).detected_objects
+
+    if result:
+        # Initialize a dictionary to count the number of detected objects for each label
+        label_counts = {'count_0': 0, 'count_1': 0, 'count_2': 0, 'count_3': 0}
+
+        # Count the number of objects for each label
+        for label in labels:
+            count = result.get(label, 0)
+            label_counts[label] += count
+
+        return label_counts
+    else:
+        return None
+
+# Example usage
+label_counts = count_and_locate_objects(image_path="path/to/image.png", labels=["baseball", "basket"])
+final_result = {"label_counts": label_counts}
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(
+  image="/nfs/data8/liao/wxie/SAT/SAT_images_train/13959_0.png",
+  labels=["baseball", "basket"],
+  save_object=True,
+  saved_image_path='detected_objects'
+)
+
+print("Number of detected objects and locations: ")
+print("\n".join(["{}:{}".format(label, detected_object["box"] + ' .. ' + detected_object["box"][-1])
+              for label in final_result["detected_objects"] if "box" in detected_object and "score" in detected_object]))
+
+detected_objects = final_result["detected_objects"]
+object_number = final_result["object_number"]
+
+print("\nDetected objects:")
+for object_label, objects in detected_objects.items():
+    print(objects)
+
+print("\nTotal number of objects detected: ", sum(list(object_number.values())))
+
+
+============================== END ==============================
+
+
+[None RESULT]
+
+
+[Successful Execution but Get None RESULT]
+[EXEC CODE]
+
+from object_detector import Object_Detector_Tool
+
+def count_objects(image_path, labels, save_object=False, saved_image_path="detected_objects"):
+    model_size = "tiny"
+    languages = ["en", "de"]
+    try:
+        detector = Object_Detector_Tool(image=image_path, languages=languages, save_object=save_object, saved_image_path=saved_image_path)
+        detections = detector.execute()
+        if "baseball" in detections and "basket" in detections:
+            number_of_basball = len(detections["baseball"])
+            number_of_basket = len(detections["basket"])
+            return {
+                "detections": {
+                    "total": round(len(detections["baseball"]) + len(detections["basket"])),
+                    "baseball": number_of_basball,
+                    "basket": number_of_basket
+                }
+            }
+        return None
+    except:
+        print("Text detection failed.")
+        return None
+
+if __name__ == "__main__":
+    image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/13959_0.png"
+    labels = ["baseball", "basket"]
+    detected_objects = count_objects(image_path=image_path, labels=labels)
+    if detected_objects:
+        print("Detected objects:")
+        print(detected_objects)
+    else:
+        print("No objects detected.")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+expected an indented block after 'for' statement on line 10 (<string>, line 22)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='path/to_image.png', labels=['desk lamp'], threshold=0.35, model_size='tiny', save_object=True, saved_image_path='detected_objects')
+
+for result in final_result:
+    detected_objects = result['detected_objects']
+    #print("Number of detected objects: ", len(detected_objects))
+    
+    for obj in detected_objects:
+        #print("Label: ", obj['label'])
+        #print("Box: ", obj['bbox'])
+        #print("Score: ", obj['score'])
+    
+        # if save object is True, crop the object and save it
+        # save_image_path = obj['saved_image_path']
+        # if save_image_path:
+        #     # Save cropping to another image
+        #     image_name = os.path.join('detected_objects', os.path.basename(save_image_path))
+        #     crop_image = img.crop(obj['bbox'])
+        #     crop_image.save(image_name)
+        # print("Object cropped and saved: ", save_image_path)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unexpected character after line continuation character (<string>, line 1)
+code: 
+final_result = {\"1\": 2, \"2\": 3} # Assuming 'detect_objects' returns a dictionary with count for detected objects
+
+============================== END ==============================
+

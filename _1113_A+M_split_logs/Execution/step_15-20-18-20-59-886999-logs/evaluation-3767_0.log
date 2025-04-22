@@ -1,0 +1,122 @@
+------------- 20-18-20-59-886999 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 3767_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-18-20-59-886999 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 3767_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-18-20-59-886999 Execution reward: 0.0 -------------
+[Reward computation time: 2.7479 seconds]
+QAid: 3767_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Set the desired options
+path_to_image = "/path/to/image.png"
+labels = ['baseball', 'basket']
+threshold = 0.35
+model_size = 'tiny'
+save_object = True
+saved_image_path = 'detected_objects'
+labels = objects = [
+    {"bbox": (0, 0, 100, 100), "score": 0.95},
+    {"bbox": (100, 0, 200, 100), "score": 0.85}
+]
+
+# Execute the object detection tool
+result = Object_Detector_Tool.execute(
+    image=path_to_image,
+    labels=labels,
+    save_object=save_object,
+    saved_image_path=saved_image_path,
+    model_size=model_size
+)
+
+object_count = {}
+for obj in result["detected_objects"]:
+    obj["count"] = 1 if obj["count"] > 0 else 0
+    if obj["count"] > 0:
+        object_count[obj["bbox"][1]] = obj["count"]
+
+final_result = {"objects": object_count, "results": result["detected_objects"]}
+
+print("final_result: " + final_result)
+
+
+============================== END ==============================
+
+------------- 20-18-20-59-886999 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 3767_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 20-18-20-59-886999 Execution reward: 0.0 -------------
+[Reward computation time: 1.9211 seconds]
+QAid: 3767_0
+Code: 
+
+```python
+import Object_Detector_Tool
+
+# Load the saved object images.
+detected_objects, object_number = Object_Detector_Tool.execute(image="image_path.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Assign the total count to each detected label.
+object_number = {label: len(detected_objects.get(label, [])) for label in set(detected_objects).intersection(set(obj["labels"] for obj in object_number))}
+
+final_result = {
+    "Detected objects": [ {
+        "box": [bbox[0], bbox[1], bbox[2] - bbox[0] + 1, bbox[3] - bbox[1] + 1],
+        "score": score,
+        "saved_image_path": "detected_objects/" + saved_image_path.split("/")[-1][:3] + "_" + obj.label + "_" + str(score) + ".png"
+    } for box, obj in detected_objects.items(), object_number if detected_objects and object_number ]
+}
+```
+
+
+============================== END ==============================
+
+------------- 20-18-20-59-886999 Execution reward: 0.0 -------------
+[Reward computation time: 3.6573 seconds]
+QAid: 3767_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+
+# Open the image file
+with open("/nfs/data8/liao/wxie/SAT/SAT_images_train/3767_0.png", 'rb') as image_file:
+    image = image_file.read()
+
+labels = ["baseball"]
+object_number = {"baseball": 1, "basket": 2}
+threshold = 0.5
+model_size = "tiny"
+
+# Initialize the object detector tool
+obj_detector = Object_Detector_Tool()
+
+# Detect objects in the image
+detected_objects, object_number_result = obj_detector.execute(image=image, labels=labels, saved_image_path= "detected_objects")
+
+final_result = f"Number of Dressers visible: {len(detected_objects)}" 
+
+if "basket" in object_number_result or "baseball" in object_number_result:
+    final_result += f". Number of Dressers: {object_number_result['basket']} or {object_number_result['baseball']} depending on which interest object was detected."
+else:
+    final_result += f". Number of Dressers: {object_number_result['basket']}."
+
+final_result
+
+
+============================== END ==============================
+

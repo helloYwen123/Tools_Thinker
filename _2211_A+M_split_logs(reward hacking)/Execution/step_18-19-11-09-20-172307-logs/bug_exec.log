@@ -1,0 +1,158 @@
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() got an unexpected keyword argument 'languages'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_dressers():
+    final_result = {}
+    final_result["dressers"] = 0
+
+    # Check if there is at least one dresser in the scene
+    dresser_found = False
+    for index, label in enumerate(labels):
+        if label == "dresser":
+            dresser_found = True
+            break
+
+    if dresser_found:
+        final_result["dressers"] = max(1, counters[label] + 1)
+
+    return final_result
+
+# Example usage
+# Load the scene image path from "/nfs/data8/liao/wxie/SAT/SAT_images_train/1038_0.png"
+scene_image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/5112_0.png"
+
+# Initialize counters for objects being detected
+counters = {
+    "baseball": 0,
+    "basket": 0
+}
+
+# Initialize the object detector tool
+tool = Object_Detector_Tool()
+
+# Detect objects
+result = tool.execute(
+    image=scene_image_path,
+    languages=["en"],
+    detail=0
+)
+objects = result["result"]
+
+for object in objects:
+    for index, label in enumerate(objects):
+        if label == "dresser":
+            dresser_found = True
+            break
+
+if dresser_found:
+    dressers_count = max(1, counters["dresser"] + 1)
+
+    # Calculate the total number of dressers seen in the scene
+    counters["dressers"] = sum(int(dresser_count) for dresser_count in dressers_count.values())
+
+    # Store the calculated value in the final result for display or further analysis
+    final_result["dressers"] = sum(int(dresser_count) for dresser_count in dressers_count.values())
+
+if dressing_found:
+    print("dressing count:", dressers_count)
+    print("dressing total:", total_dressers)
+    print("dressing total:", object_count)
+
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Object_Detector_Tool' is not defined
+code: 
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/5112_0.png', labels=['Dresser'], save_object=True)
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+name 'Text_Detector_Tool' is not defined
+code: 
+final_result = []
+text_result = Text_Detector_Tool.execute(image='5112_0.png', languages=['en', 'de'])
+for detection in text_result:
+    final_result.append({'box': (detection[0][0], detection[0][1], detection[0][2], detection[0][3]), 'text': detection[1], 'confidence': detection[2]})
+final_result
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/5112_0.png', labels=['Dresser'], save_object=False)
+\
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+keyword argument repeated: languages (<string>, line 27)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+final_result = {
+  "Detected Objects": [],
+  "Object Counts": {}
+}
+
+path_to_image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/5112_0.png"
+languages = ["en", "de"]
+
+try:
+    detected_objects = Object_Detector_Tool.execute(image=path_to_image, languages=languages, save_object=True, saved_image_path="detected_objects")
+
+    for detected_object in detected_objects:
+        if "baseball" in detected_object["labels"]:
+            detected_object["labels"] = "baseball"
+        elif detected_object["labels"] == "basket":
+            detected_object["labels"] = "basket"
+
+        det_count = detected_object["labels"]
+        detected_object["count"] = det_count
+        final_result["Detected Objects"].append(detected_object)
+        
+        language_name = languages[0]
+        for language in languages[1:]:
+            current_lang_objects = Object_Detector_Tool.execute(image=path_to_image, languages=[language_name, language], languages=[language_name], saved_object=True, saved_image_path=f"detected_objects_{language}")
+
+            for detected_object in current_lang_objects["labels"]:
+                if "baseball" in detected_object["labels"]:
+                    detected_object["labels"] = "baseball"
+                elif detected_object["labels"] == "basket":
+                    detected_object["labels"] = "basket"
+
+                det_count += seen_languages["baseball"] + seen_languages["basket"]
+                seen_languages["baseball"] += len(current_lang_objects["labels"])
+                seen_languages["basket"] += len(current_lang_objects["labels"])
+
+        detected_object["count"] = det_count
+
+finally:
+    print(final_result)
+
+
+============================== END ==============================
+

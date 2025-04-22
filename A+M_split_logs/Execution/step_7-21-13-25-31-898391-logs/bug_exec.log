@@ -1,0 +1,71 @@
+
+[Exctuion Failed]
+
+No module named 'text_detector_tool'
+code: 
+
+from text_detector_tool import Text_Detector_Tool
+
+final_result = []
+
+class Image:
+    def __init__(self, image_path):
+        self.image_path = image_path
+
+    def detect_text(self):
+        language_codes = ['en', 'de']
+        try:
+            return self._detect_text_language_code(*language_codes)
+        except:
+            return []
+
+    def _detect_text_language_code(self, *languages):
+        detect_language_codes = ["simplified_chinese", "german", "english", "japanese", "japanese_chikenpooe"]
+        text_detector = Text_Detector_Tool()
+
+        detected_texts_lists = []
+        for language in languages:
+            languages_to_detect = detect_language_codes
+
+            for language_code in languages_to_detect:
+                try:
+                    input_language = language_code
+                    detected_text_result = text_detector_tool.execute(image=self.image_path, languages=[language_code], detail=1)
+
+                    translated_text_result = []
+                    text_result_list = []
+                    for text_result in detected_text_result:
+                        text_result_translation = detected_text_result.copy()
+                        text_result_translation.pop(0)
+                        text_result_translation.append(text_result[2])
+                        translated_text_result.append(text_result_translation)
+
+                    for texts_result in text_result_translation:
+                        for text_to_detect in texts_result:
+                            for language_code in languages:
+                                try:
+                                    text = text_detector_tool.execute(image='.'.join(text_to_detect), languages=[language_code])
+                                    detected_texts_lists.append([word for word in text[0] if word != ''])
+                                except:
+                                    continue
+
+                    for languages_to_detect, detected_texts_lists in zip(languages_to_detect, detected_texts_lists):
+                        for index, languages_to_language_code in enumerate(languages):
+
+                            if languages_to_language_code in languages_to_detect:
+                                try:
+                                    text = text_detector_tool.execute(image='.'.join(text_to_detect), languages=[languages_to_language_code])
+                                    detected_texts_lists[index].append(text.text)
+                                except:
+                                    continue
+                    detected_texts_lists.append(detected_texts_lists)
+                except Exception as e:
+                    print(f"Failed to detect text using language {language_code.lower()}. {e}")
+            return translated_text_result
+
+        print("Failed to detect text. Check if the language support is needed.")
+        return 0
+
+
+============================== END ==============================
+

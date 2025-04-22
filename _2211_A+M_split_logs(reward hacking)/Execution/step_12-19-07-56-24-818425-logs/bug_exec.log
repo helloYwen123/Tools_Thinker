@@ -1,0 +1,184 @@
+
+[Exctuion Failed]
+
+'Object_Detector_Tool' object has no attribute 'load_image'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Sample image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/8981_0.png'
+
+def detect_DiningTable_objects(image_path):
+    # Initialize the Object_Detector_Tool
+    detector_tool = Object_Detector_Tool()
+
+    # Load the image
+    image = detector_tool.load_image(image_path)
+
+    # Set the detection parameters
+    labels = ["DiningTable"]
+    threshold = 0.35
+    model_size = "tiny"
+    save_object = False
+
+    # Apply object detection
+    result = detector_tool.execute(image=image, labels=labels, save_object=save_object, save_image_path="detected_objects")
+
+    # Check for successful detection
+    if result["detected_objects"]:
+        # Get the total number of detected objects
+        object_number = result["object_number"]
+
+        return result, object_number
+    else:
+        return [], 0
+
+# Call the function
+result, object_count = detect_DiningTable_objects(image_path)
+
+# Print the results
+print("Detected tables: ", result)
+print("Objects detected:", object_count)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+# Import necessary command arguments
+command_args = {
+    "image": "/nfs/data8/liao/wxie/SAT/SAT_images_train/8981_0.png",
+    "labels": ["baseball", "basket"],
+    "save_object": True,
+    "saved_image_path": "detected_objects"
+}
+
+# Execute code inside the 'Object_Detector_Tool' function
+object_data = Object_Detector_Tool.execute(image=command_args["image"], labels=command_args["labels"], save_object=True, saved_image_path=command_args["saved_image_path"])
+
+# Export the detected objects to dictionary
+detected_objects = object_data["detected_objects"]
+object_count = object_data["object_number"]
+
+final_result = {"detected_objects": detected_objects, "object_count": object_count}
+
+final_result
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+cannot import name 'Text_Detector_Tool' from 'object_detector' (/home/stud/wxie/miniconda3/envs/VisualThinker/lib/python3.11/site-packages/object_detector/__init__.py)
+code: 
+
+from object_detector import Object_Detector_Tool, Text_Detector_Tool
+
+def count_dining_tables():
+  # Load the example image
+  image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8981_0.png"
+
+  # Perform object detection using the Grounding DINO model
+  result = object_detector.execute(image=image_path, labels=["table"], threshold=0.35, model_size="tiny", save_object=False, saved_image_path="detected_objects")
+
+  # Check if text detection was successful
+  if text_detector.execute(image="./detected_objects/image_table_1.png", languages=["en", "de"], detail=0).length > 0:
+
+    # List all the detected objects
+    all_objects = result["detected_objects"]
+
+    # Create a dictionary to count the number of dining tables
+    dining_tables_count = dict()
+    for result in all_objects:
+      label = result["labels"][0]
+      box = result["box"]
+      score = result["score"]
+      if label == "table":
+        dining_tables_count[label] = dining_tables_count.get(label, 0) + 1
+
+    # Return the count of dining tables
+    return dining_tables_count
+
+final_result = count_dining_tables()
+print(final_result)
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 1 required positional argument: 'self'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Demo to detect objects with bounding boxes and return them in a dictionary
+detected_objects = Object_Detector_Tool.execute(image='example_image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')
+
+# Analyze the results
+num_objects_baseball = detected_objects['baseball'][0]['score']
+num_objects_basket = detected_objects['basket'][0]['score']
+
+final_result = [{"label": "baseball", "num_objects": num_objects_baseball}, {"label": "basket", "num_objects": num_objects_basket}]
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+invalid syntax (<string>, line 22)
+code: 
+
+from object_detector import Object_Detector_Tool
+
+# Set the path to the image file
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/8981_0.png"
+
+# Detect baseball and basket with default parameters
+result = Object_Detector_Tool.execute(image_path, labels=["baseball", "basket"], save_object=True)
+
+# Extract the total number of detected baseball and basket
+total_objects_detected = len(result["baseball"]) + len(result["basket"])
+
+# Calculate the number of objects detected with default confidence threshold
+confidence_threshold = 0.35
+num_objects_detected_threshold = result["object_number"]
+
+if total_objects_detected > num_objects_detected_threshold:
+  print("Total objects detected is greater than default confidence threshold: " + str(total_objects_detected) + " > " + str(num_objects_detected_threshold))
+  
+else:
+  print("No objects detected greater than default confidence threshold: " + str(num_objects_detected_threshold))
+finally:
+  print("Finished with the baseball basket object detection job using default settings")
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+Object_Detector_Tool.execute() missing 2 required positional arguments: 'self' and 'labels'
+code: 
+
+from object_detector import Object_Detector_Tool
+
+def count_dining_tables():
+    return len(Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/8981_0.png")).get("detected_objects", [])[1]["number"]
+
+final_result = count_dining_tables()
+print(final_result)
+
+
+============================== END ==============================
+

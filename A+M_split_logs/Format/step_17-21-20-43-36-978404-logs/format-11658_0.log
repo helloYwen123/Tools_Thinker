@@ -1,0 +1,170 @@
+--- Completion 1 ---
+<command>from_object_detector_tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image='path_to_image_image_path', labels=[{'word': 'Door', 'box': (242, 185, 268, 220), 'score': 0.65}, {'word': 'Closet', 'box': (354, 276, 374, 311), 'score': 0.5}, {'word': 'Door', 'box': (238, 280, 472, 330), 'score': 0.95}], save_object=True, saved_image_path='detected_objects')
+
+if '<command>final_result</command>' in final_result and 'Door' in final_result[0] and 'Closet' in final_result[0]:
+    numberOfDoors = len(final_result[0].get('Door', []))
+else:
+    numberOfDoors = 0
+
+print(f"Number of doors visible in the scene: {numberOfDoors}")
+
+if '<command>final_result</command>' in final_result and 'Basket' in final_result[0] and 'Cupboard' in final_result[0]:
+    numberOfCupboards = len(final_result[0].get('Basket', []))
+else:
+    numberOfCupboards = 0
+
+print(f"Number of cupboards visible in the scene: {numberOfCupboards}")
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+```python
+from object_detector_tool import Object_Detector_Tool
+
+tools = {
+    "object_detector_tool": {
+        "tool_module_name": "object_detector_tool",
+        "tool_class_name": "Object_Detector_Tool",
+        "tool_description": "A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.",
+        "tool_version": "1.0.0",
+        "input_types": {
+          "image": "str - The path to the image file.",
+          "labels": "list - A list of object labels to detect.",
+          "threshold": "float - The confidence threshold for detection (default: 0.35).",
+          "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
+          "save_object": "bool - Whether to save the detected objects as images (default: False).",
+          "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects')."
+        },
+        "output_types": "\"tuple - A tuple containing two elements: (1) a dictionary mapping each detected label to a list of detection entries, e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}]}, (2) a dictionary mapping each label to the number of detected objects in the image. e.g. {'baseball': 2, 'basket': 1}\".\n",
+        "demo_commands": {
+          "command": "object_detector_tool = Object_Detector_Tool()\ndetected_objects, object_number = object_detector_tool.execute(image=\"path/to/image\", labels=['baseball', 'basket'], save_object=True, saved_image_path=\"detected_objects\")\n",
+          "description": "Detects 'baseball' and 'basket' in the image. Returns a tuple: (1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path); (2) a dict with the total count for each detected label. If 'save_object' is True, detected objects are cropped and saved to the specified directory.\n"
+        },
+        "user_metadata": {
+          "potential usage": "The tool can be used for counting and locating interest
+Reward: 0.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+tool = Object_Detector_Tool()
+detected_objects, object_number = tool.execute(image="path/to/image.png", labels=["baseball", "basket"], save_object=True)
+final_result = f"Detected {len(detected_objects)} objects:\n{detected_objects}\nTotal number of detected objects: {list(object_number.values())[0]}"
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Define the image path
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/11658_0.png'
+
+# Define the labels to detect
+labels = [ 'baseball', 'basket', 'garbage', 'trash', 'cardboard']
+
+# Set the confidence threshold
+confidence_threshold = 0.35
+
+# Set the name of the saved object image
+object_save_folder = 'detected_objects'
+
+# Execute the tool
+tool = Object_Detector_Tool()
+result = tool.execute(image_path, labels=labels, confidence_threshold=confidence_threshold, save_object=True, saved_image_path=object_save_folder)
+
+# Check for successful detection
+if 'detected_objects' in result.keys():
+    # Check if the labels are present in the result
+    detected_objects = result['detected_objects']
+    object_number = len(detected_objects)
+
+    # Convert the detected objects to a list of strings
+    detected_objects_list = [[detected_objects, {'score': detected_objects['score']}]]
+
+    # Convert the object number to a dictionary
+    object_number_dict = {'baseball': object_number, 'basket': 1}
+
+    # Format the final result
+    final_result = f"Number of detected objects: {object_number}\nDetected objects ({\"score\": detected_objects['score']}): {detected_objects_list}\nTotal number of detected objects: {"'.join(object_number_dict.keys())*" "}"
+
+    return final_result
+else:
+    return "Text detection failed after retries."
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+    >>> import_name: "Object_Detector_Tool"
+    >>> object_detection_result = import_name().execute(image="path/to/sorted_image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+    detected_objects = {
+        'baseball': [{'box': (50, 30, 300, 200), 'score': 0.95, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],
+        'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]
+    }
+    object_number = {'baseball': 1, 'basket': 2}
+    final_result = "Detected objects are visible here:\n" + json.dumps(detected_objects) + "\nNumber of object detections = " + str(object_number)
+
+    import_name: "text_detector_Tool"
+    text_detection_result = text_detector_Tool.execute(image="path/to/sorted_image", languages=['en', 'de'], detail=0)
+    detected_text = text_detection_result[0]
+    final_result += "Detected text in the image:" + json.dumps(detected_text)
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Set the image file path
+image_path = "path/to/image.png"
+
+# Initialize the object_detector tool
+object_detector_tool = Object_Detector_Tool()
+
+# Set the labels to detect
+labels = ['baseball', 'basket']
+
+# Set the confidence threshold and model size
+confidence_threshold = 0.35
+model_size = "tiny"
+
+# Execute the object_detector tool
+detected_objects, object_number = object_detector_tool.execute(image=image_path, labels=labels, save_object=True, saved_image_path="detected_objects")
+
+# Check if the detection has failed
+if len(detected_objects) <= 0:
+    final_result = "0"
+else:
+    detected_objects = sorted(detected_objects, key=lambda x: x[3])
+
+    # Calculate the total number of detected objects
+    total_objects = sum([len(os.path.basename(os.path.dirname(f['saved_image_path']))) for f in detected_objects])
+
+    # Calculate the objects on top of doors
+    objects_on_top_of_doors = sum([f['box'][2] - f['box'][0] in (x for x in f['box'][4] - f['box'][2].values()) / f['box'][3] for f in detected_objects if f['saved_image_path'].endswith(".png")])
+
+    # Add a message for each label
+    for obj in detected_objects:
+        if 'score' in obj:
+            final_result += f" - {obj['box'][0]}-{obj['box'][2]}, {obj['box'][1]}-{obj['box'][3]} ({obj['score']:0.0f}%)\n"
+
+# Save object images based on the save_object parameter
+if len(detected_objects) >= 1:
+    for obj in detected_objects:
+        if 'score' in obj and len(obj) >= 2:  # Ensure there are at least 2 detected objects for saving
+            object_name = obj['box'][0]-obj['box'][2]+obj['box'][0]+obj['box'][2] if 'box' in obj else obj['index']
+            image_name = f"detected_objects/{object_name}.png"
+            object_detector_tool.save(obj, saved_image_path=image_name)
+
+# Return the final results
+final_result = {
+  'detected_objects' : detected_objects,
+  'object_number' : object_number,
+  'total
+Reward: 0.0
+

@@ -1,0 +1,178 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+def count_windows(image_path, labels, save_object):
+    window_count = {'baseball': 0, 'basket': 0}
+    with open(image_path, 'rb') as image_file:
+        with open('/nfs/data8/liao/wxie/SAT/SAT_images_train/12518_0.txt', 'a') as txt_file:
+            for window in Image.open(image_path):
+                window_bbox = window.getbbox()
+                if window_bbox and ('baseball' in labels or 'basket' in labels):
+                    window_count['baseball'] += 1
+                    window_bbox = box_to_bb(window_bbox)
+                    txt_line = f"baseball('{window_bbox}', {window_count['baseball']}, {window_bbox[:-1]})"
+                    txt_file.write(f"baseball('{window_bbox}', {window_count['baseball']}, {window_bbox[:-1]}){'\n'}")
+                    window_count = {'baseball': 0, 'basket': 0}
+    txt_file.close()
+    return window_count, window_count['baseball'], window_count['basket']
+
+def box_to_bb(box):
+    x, y, w, h = box
+    return [x, y - h // 2, x + w // 2, y + h // 2]
+
+window_count, count_baseball, count_basket = count_windows('/nfs/data8/liao/wxie/SAT/SAT_images_train/12518_0.png', labels=['baseball', 'basket'], save_object=True)
+final_result = (f"'baseball': {count_baseball}', 'basket': {count_basket}')"
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+# Execute detection
+final_result = Object_Detector_Tool.execute(image_path="/nfs/data8/liao/wxie/SAT/SAT_images_train/12518_0.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+# Print the result
+print("Detected baseball and basket:")
+print("Detected baseball:", final_result[0])
+print("Detected basket:", final_result[1])
+print("Total number of detected baseball:", final_result[2]['baseball'])
+print("Total number of detected basket:", final_result[2]['basket'])
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+
+from object_detector import Object_Detector_Tool
+
+# Load the image
+with open('/nfs/data8/liao/wxie/SAT/SAT_images_train/12518_0.png', 'rb') as f:
+    img = f.read()
+
+object_labels = ['baseball', 'basket']
+
+# Detect the objects
+image_path = '/nfs/data8/liao/wxie/SAT/SAT_images_train/12518_0.png'
+result = Object_Detector_Tool.execute(image=image_path, labels=object_labels, save_object=True, saved_image_path="detected_objects")
+detected_objects = result[1]
+object_number = result[0]
+
+final_result = {
+    "detected_objects": {label: [{
+        "box": detected_objects[label][0],
+        "score": detected_objects[label][1],
+        "saved_image_path": detected_objects[label][2]
+    } for label in object_labels]},
+    "object_number": {label: object_number[label]}
+}
+
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<div>
+  <code>
+    
+    from object_detector import Object_Detector_Tool
+
+    tool_class_name = "object_detector"
+    tool_object = tool_class_name()
+    label_list = ['baseball', 'basket']  # Replace 'baseball' and 'basket' with the desired labels
+    
+    model_size = 'tiny'
+    save_object = True
+    saved_image_path = 'detected_objects'
+    window = Image.open('/nfs/data8/liao/wxie/SAT/SAT_images_train/12518_0.png')
+    
+    try:
+      detections = tool_object.execute(image=window, labels=label_list, save_object=save_object, saved_image_path=saved_image_path)
+      detected_objects = detections[0]
+      final_result = {"detected_objects": detected_objects if detected_objects else [], "object_number": {label: len(detected_objects) for label in label_list}}
+      
+      # Export detected objects for use
+      if save_object:
+        output_path = os.path.join(saved_image_path, 'detected_objects.png')
+        tool_object.detected_objects.export_with_path(output_path, labels, object_number=final_result['object_number'])
+    
+      detected_objects_result = []
+      confidence_scores = detections[1]["object_number"]
+      for detection in detections:
+        if "object_number" in detection and detection["object_number"] > 1:
+          detected_objects_result.append({"bbox": detection["box"], "value": detection["id"], "image_path": detection["value"] if "value" in detection else None})
+    
+      detected_objects_result = sorted(detected_objects_result, key=lambda item: -item["bbox"][1])  
+      final_result["detected_objects"] = detected_objects_result
+    
+      final_result
+    except Exception as e:
+      print(f"An error occurred: {str(e)}")
+  </code></div>
+Reward: 0.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+class Text_Detector_Tool:
+    def execute(self, image_path: str, languages: list, detail: int):
+        """
+        Execute the text detection tool using the ground-truth model.
+        """
+        model = 'ch_sim'
+        tools = [{"code": "ch_sim"}, {"code": "germannic_transform", "params": {"char_type": "small", "substitution": ""}}]
+        output_text = {"tools": tools}
+
+
+if __name__ == '__main__':
+    final_result = 1
+
+    img_files = {'path/to/image.png': None}
+    final_result = Object_Detector_Tool.execute(image='path/to/image.png', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')  
+    if final_result['object_number'] != 0:
+        final_result = Text_Detector_Tool.execute(image='path/to/image.png', languages=['en', 'de'], detail=1)
+        texts = []
+        for language in [i["label"].split(' ')[0] for i in final_result]:  # 'baseball' or 'basket'
+            for output in [text for text in final_result if text['label'] == language]:
+                texts.append(output['text'])
+        texts = [f"[{text}] {'detected by {language}' if language != 'en' else ''}" for text in texts]
+
+        print(f"Detected texts: {texts}")
+else:
+    final_result = 0
+    print("Text detection failed.")
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+def count_windows(image_path, languages=['en'], detail=0):
+    try:
+        model_size = "tiny"
+        detector = Object_Detector_Tool(image_path=image_path, languages=languages, model_size=model_size, detail=detail)
+        for label in detector.labels:
+            if label == "window":
+                total_windows = detector.labels[label]["total"]
+                for window in detector.labels[label]["windows"]:
+                    x1 = window["bbox"]["x1"]
+                    y1 = window["bbox"]["y1"]
+                    x2 = window["bbox"]["x2"]
+                    y2 = window["bbox"]["y2"]
+                    print(f"Window detected: ({x1}, {y1}, {x2}, {y2})")
+                    window_count = len(detector.labels[label]["windows"])
+                    print(f"{label} detected in the image with {window_count} windows.")
+                return True
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/12518_0.png"
+window_count = count_windows(image_path, languages=['en'])
+print(f"Window detected: {window_count} windows")
+</command>
+Reward: 0.5
+

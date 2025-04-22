@@ -1,0 +1,127 @@
+------------- 21-16-05-16-665194 Execution reward: 0.0 -------------
+[Reward computation time: 2.3475 seconds]
+QAid: 8220_0
+Code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+final_result = [
+  {
+    'labels': [['baseball'], ['basket']],
+    'count': 5
+  }
+]
+
+if isinstance(detected_objects, list):
+  final_result = [{'labels': label, 'count': count} for label, count in detected_objects]
+
+print(final_result)
+
+
+============================== END ==============================
+
+------------- 21-16-05-16-665194 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 8220_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-16-05-16-665194 Execution reward: 0.0 -------------
+[Reward computation time: 2.2696 seconds]
+QAid: 8220_0
+Code: 
+from_module: "object_detector", import_name: "Object_Detector_Tool"
+
+import_name: "Text_Detector_Tool"
+
+final_result = []
+
+detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+for label, detection in detected_objects.items():
+    detected_objects[label].append({
+        "bbox": (detection['bbox']),
+        "score": detection['score'],
+        "saved_image_path": detection['saved_image_path']
+    })
+
+object_number = {
+    label: len(detected_objects[label])
+    for label in detected_objects.keys()
+}
+
+detected_objects = {
+    label: {
+        'bbox': [bbox] if not isinstance(bbox, list) else [bbox[0], bbox[2] - bbox[0], bbox[1], bbox[3] - bbox[1]],
+        'score': score
+    } for label, detection in detected_objects.items()
+}
+
+text_result = text_detector_tool.execute(image='path/to/image', languages=['en', 'de'])
+
+if text_result and 'Detected text' in text_result[0][1]:
+    detected_objects["Detected text"] = [
+        {'bbox': [bbox], 'score': score} for bbox, score in text_result[0][1].items() if 'Detected text' in bbox and (not 'Detected' in bbox) and ('en' in languages or 'de' in languages) and ("Detected text" not in object_number)
+    ]
+
+final_result = {
+    "detected_objects": {
+        "1": detected_objects["baseball"], 
+        "2": detected_objects["basket"]
+    },
+    "object_number": object_number
+}
+
+if final_result["detected_objects"] and final_result["object_number"] > 0:
+    print(final_result)
+else:
+    print("No text detected in the image.")
+
+
+============================== END ==============================
+
+------------- 21-16-05-16-665194 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 8220_0
+Code: [EMPTY]
+
+============================== END ==============================
+
+------------- 21-16-05-16-665194 Execution reward: 0.0 -------------
+[Reward computation time: 2.0864 seconds]
+QAid: 8220_0
+Code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+# Executing the object detection tool
+object_number = {}
+detected_objects = {}
+
+try:
+    object_detector_tool = Object_Detector_Tool()
+    result = object_detector_tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/8220_0.png', labels=['basketball', 'baseball'], model_size='base', save_object=True, saved_image_path='detected_objects')
+       
+
+    detected_objects['baseball'] = [det for det in result if 'baseball' in det['label']]
+    detected_objects['basketball'] = [det for det in result if 'basket' in det['label']]
+
+    object_number = {k: len(detected_objects.get(k, [])) for k in detected_objects.keys()}
+
+except Exception as e:
+    print('Error:', e)
+
+print(f"Detected objects: {detected_objects}")  # Debugging
+print(f"Number of detected objects: {object_number}\n")
+
+
+============================== END ==============================
+
+------------- 21-16-05-16-665194 Code Extraction Failed -------------
+Reward: 0.0
+QAid: 8220_0
+Code: [EMPTY]
+
+============================== END ==============================
+

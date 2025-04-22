@@ -1,0 +1,171 @@
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+from Object_Detector_Tool import object_detector_tool
+
+def count_objects_and_objects_per_label(image_path, labels, languages=['en', 'de']):
+    # Load the image
+    image = Image.open(image_path).convert('RGB')  # Convert the image to RGB format
+    
+    # Create a new list to store the text detection results
+    text_results = []
+    
+    # Detect text in the image using the text_detector tool
+    for lang in languages:
+        result = text_detector_tool.execute(image=image_path, languages=[lang])
+        if result:
+            text_results.append(result)
+    
+    # Check if there is at least one detected text in the image
+    if len(text_results) > 0:
+        # Detect objects in the image
+        detected_objects, object_count = object_detector_tool.execute(image=image_path, labels=labels, languages=languages, threshold=0.35, model_size='tiny', save_object=True, saved_image_path='detected_objects')
+        if detected_objects:
+            # Determine the number of objects per label
+            object_count_per_label = {}
+            for label, objects in detected_objects.items():
+                for obj in objects:
+                    if 'box' in obj and obj['box']:
+                        # Convert bounding box coordinates to tuple
+                        x1, y1, x2, y2 = tuple([int(coord) for coord in obj['box']])
+                    
+                        # Add the label to the object_count_per_label dictionary with the number of detected objects matching the label
+                        count = object_count.get(label, 0)
+                        if count == 0 and detected_objects[label]:
+                            object_count_per_label[label] = 1
+                        else:
+                            object_count_per_label[label] += detected_objects[label]
+                # Output the results
+                object_count = {
+                    'baseball': detected_objects['baseball'],
+                    'basket': detected_objects['basket']
+                }
+                return text_results, object_count
+    else:
+        # Return an empty result if text is not detected after retries
+        return []
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import object_detector_tool, object_detector_Tool, object_number, detected_objects
+import_name: "object_detector_Tool"
+from text_detector_tool import text_detector_tool, text_detector_Tool, result
+
+# Specify image path
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/615_0.png"
+# Set languages and confidence level
+languages = ["en", "de"]
+detail = 1
+
+# Execute text detection
+result = text_detector_tool.execute(image=image_path, languages=languages, detail=detail)
+text_blocks = result
+
+# Determine object number
+object_num = {label: detection_num for label, detection_num in object_number["baseball"].items() | object_number["basket"].items()}
+
+final_result = detected_objects if detected_objects else "No objects detected."
+
+final_result = {
+"1": "No objects detected.",
+"2": "No objects detected.",
+"3": "No objects detected.",
+"4": None
+} if len(final_result) == 0 else {
+"2": object_num,
+"3": object_number["text"],
+"4": None
+} if len(final_result) == 0 else {
+"2": object_num,
+"3": object_number["baseball"],
+"4": object_number["basket"]
+}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'object_detector_tool'
+code: 
+
+from object_detector_tool import Object_Detector_Tool
+
+def count_and_estimate_text(image_path, languages=["en", "de"], detail=1):
+    object_detector_tool = Object_Detector_Tool()
+    with open(image_path, 'rb') as img_file:
+        image_content = img_file.read()
+
+    labels = object_detector_tool.labels(image_content, languages=languages, detail=detail)
+
+    # Filter text labels
+    text_labels = [label for label in labels if label['type'] == 'text']
+    
+    # Count text labels
+    number_of_text_labels = len(text_labels)
+
+    # Return text counts
+    return {"number_of_text_labels": number_of_text_labels}
+
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+unexpected character after line continuation character (<string>, line 1)
+code: 
+detected_objects : {\n'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],\n'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]\n}\nobject_number : {'baseball': 1, 'basket': 2}\n
+
+============================== END ==============================
+
+
+[Exctuion Failed]
+
+No module named 'Object_Detector_Tool'
+code: 
+
+import Object_Detector_Tool
+
+# Function to count and locate interest-objects in the image based on their bounding boxes.
+def count_objects(image_path, labels, save_objects):
+    object_detector = Object_Detector_Tool.Object_Detector_Tool()
+    object_detection, object_count = object_detector.execute(image=image_path, labels=labels, save_objects=bool(save_objects))
+    return object_detection
+
+# Check if a floor lamp is visible in the image.
+def count_lamp(image_path):
+    lamp_detector = Object_Detector_Tool.Object_Detector_Tool()
+    lamp_detection_result = lamp_detector.execute(image=image_path)
+    lamp_count = len(lamp_detection_result['baseball'])
+    return lamp_detection_result
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/615_0.png"
+
+# Detect objects
+if object_count['baseball'] == 1:
+    detected_objects = count_objects("/nfs/data8/liao/wxie/SAT/SAT_images_train/615_0.png", labels=["baseball"], save_objects=True)
+    print(f"Detected ball: {detected_objects}")
+else:
+    print("No ball detected.")
+
+# Detect a floor lamp in the scene
+if count_lamp("/nfs/data8/liao/wxie/SAT/SAT_images_train/615_0.png")['basket']:
+    print(f"Floor lamp detected")
+else:
+    print("No floor lamp detected.")
+
+
+============================== END ==============================
+

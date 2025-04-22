@@ -1,0 +1,155 @@
+--- Completion 1 ---
+<command>
+```python
+import Object_Detector_Tool
+
+class Room:
+    def __init__(self):
+        self.bed = None
+        self.table = None
+
+    def search(self, target):
+        # Searching for a bed
+        for bed in self.beds:
+            if bed.label == 'Bed':
+                return bed
+
+        return None,
+
+    def view(self, label):
+        for bed in self.beds:
+            if bed.label == label:
+                return [[bed.box]]
+        return []
+
+# Load the JSON model for the object detector
+model_path = '/path/to/model.json'
+object_detector = Object_Detector_Tool.Object_Detector_Tool()
+
+# Read the JSON file to get the classes
+with open(model_path) as f:
+    classes = json.load(f)
+
+for label in classes.keys():
+    detected_objects, object_number = object_detector.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/0.png', labels=[label], save_object=True, saved_image_path='detected_objects')
+    if detected_objects:
+        # Create a room instance if it doesn't exist
+        if not self.room:
+            room = Room()
+            self.room = room
+
+        # Check if the label matches the one detected
+        if detected_objects[0].label == label:
+            # Add the detected bed object to the room
+            self.room.beds.append(detected_objects[0])
+
+            if label == 'Bed':
+                # Check if there's a table nearby
+                if detected_objects[1].label in ['Nightstand', 'Ottoman']:
+                    self.table = detected_objects[1]
+                elif label == 'Bed':
+                    # Check if it's a nightstand
+                    if detected_objects[1].label == 'Nightstand':
+                        self.table = detected_objects[1]
+                    # Check if it's a bed (and confirm label)
+                    self.bed = detected_objects[0]
+                    # Check if there's a cup nearby
+                    if 'cup' in detected_objects[1].data:
+                        self.corner = detected_objects[1]
+                    elif 'cabinet' in detected_objects[1].data and 'cabinet' not in self.corner.data:
+                        self.corner = detected_objects[1]
+
+    if not object_number[0]:
+        print('No object found in the image. Did you try a new image with the same view?')
+        break
+# Check if there's a bed
+if self.bed.label
+Reward: 0.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool as OD_Tool
+
+# Define file paths
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/9327_0.png"
+labels_to_detect = ['baseball', 'basket']
+save_objects = True
+
+# Initialize tool with user-defined parameters
+object_detector = OD_Tool(image_path, labels=labels_to_detect, threshold=0.35, model_size='tiny')
+all_objects, object_count = object_detector.execute()
+if save_objects:
+    image_path = f"detected_objects/{object_detector.get_final_name_all_objects()[:100]}"
+
+# Extract object data
+object_labels = {label: boxes for label, boxes in all_objects.items() if label in labels_to_detect}
+object_count_str = f"{object_count}"
+
+# Prepare final result
+final_result = [{"label": label, "box": [x for y in box for x in boxes if y[2] - y[0] < 50 and y[3] - y[1] < 50], "score": score, "saved_image_path": os.path.join("detected_objects", image_path)} for label, boxes in object_labels.items()]
+final_result = {"detected_objects": final_result, "object_count": object_count_str} if object_count else {"detected_objects": []}
+final_result.update({"object_count": object_count_str})
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+import_text_detector = Text_Detector_Tool()
+result = import_text_detector.execute(image='path_to_image', languages=['en', 'de'])
+</command>
+Reward: 0.5
+
+--- Completion 4 ---
+<command>
+from tool(object_detector_tool) import Object_Detector_Tool
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/9327_0.png"
+labels = ['baseball', 'basket']
+save_object = True
+final_result = Object_Detector_Tool.execute(image=image_path, labels=labels, save_object=save_object)
+if final_result is not None:
+    detected_objects = final_result[0]
+    total_objects = final_result[1]
+    text = final_result[2]
+    if not text:
+        text.append("UNABLE TO DETECT TEXT")
+    print(f"Detected Objects: {"".join([f"'{d['label']}'" for d in detected_objects])} ({', '.join([f"'{d['label']}'" for d in detected_objects if d['score'] > 0.5])})")
+    print(f"Text Count: {''.join([f"'{d['label']}'" for d in detected_objects if d['score'] > 0.5])}")
+else:
+    print("Text Detection Failed")
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from Object_Detector_Tool import Object_Detector_Tool
+
+object_detector_tool = Object_Detector_Tool()
+
+detected_objects, object_number = object_detector_tool.execute(image='path/to/scene_image.png', labels=['bed', 'baseball'], save_object=True, saved_image_path='detected_objects')
+
+final_result = {
+  "detected_objects": (detected_objects, {['bed': 1, 'baseball': 2})),
+  "object_number": object_number
+}
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+def count_beds(image_path):
+    total_beds = 0
+    object_detector = Object_Detector_Tool()
+    result = object_detector.execute(image=image_path, labels=['bed'], save_object=True, saved_image_path='detected_objects')
+    for detected_object in result['detected_objects']:
+        bed = detected_object['bbox'][0]  # Assuming bed is at the bottom of the image. Adjust this as needed.
+        if bed[0] > 50 and bed[2] < 500:  # Adjust the bounding box position as needed
+            total_beds += 1
+    return total_beds
+
+total_beds = count_beds('/nfs/data8/liao/wxie/SAT/SAT_images_train/9327_0.png')
+print("Total beds:", total_beds)
+</command>
+Reward: 0.5
+

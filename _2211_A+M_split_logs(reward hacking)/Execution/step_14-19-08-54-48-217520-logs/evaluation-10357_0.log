@@ -1,0 +1,144 @@
+------------- 19-08-54-48-217520 Execution reward: 0.0 -------------
+[Reward computation time: 2.3146 seconds]
+QAid: 10357_0
+Code: 
+
+from tool_object_detector import Object_Detector_Tool
+
+# Sample inputs for debugging
+image = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10357_0.png"
+languages = ["en", "de"]
+detail = 1
+
+result = Object_Detector_Tool.execute(image=image, languages=languages, detail=detail)
+
+detected_objects = result["detected_objects"]
+object_number = result["object_number"]
+
+print(f"Detected objects:")
+for label, detections in detected_objects.items():
+    for detection in detections:
+        print(f"  {label}:")
+        print(f"    Box: {detection['box']}")
+        print(f"    Score: {detection['score']}")
+        print("    Saved image:", detection['saved_image_path'])
+
+print(f"Total detected objects: {object_number}")
+
+
+============================== END ==============================
+
+------------- 19-08-54-48-217520 Execution reward: 1.0 -------------
+[Reward computation time: 2.2616 seconds]
+QAid: 10357_0
+Code: 
+final_result = {}
+
+============================== END ==============================
+
+------------- 19-08-54-48-217520 Execution reward: 0.0 -------------
+[Reward computation time: 2.8686 seconds]
+QAid: 10357_0
+Code: 
+
+from object_detector import Object_Detector_Tool
+from text_detector import Text_Detector_Tool
+
+def detect_windows(image_path, languages, details=False):
+    """Detect windows in an image file."""
+    # Check if all languages are specified
+    languages = set(languages) - set(['all'])
+
+    if languages:
+        raise ValueError("All languages must be specified for detection.")
+
+    img = Image.open(image_path)
+
+    # Process image using Object_Detector_Tool
+    det_out = Object_Detector_Tool.execute(img=image, languages=languages, details=details)
+
+    windows = []
+    for label, score, detections in det_out:
+        if label == 'window':
+            windows.append({
+                'box': detections[::2],
+                'score': score,
+                'label': label
+            })
+    return windows
+
+image_path = "/nfs/data8/liao/wxie/SAT/SAT_images_train/10357_0.png"
+
+windows = detect_windows(image_path=image_path, languages=['all'], details=True)
+for window in windows:
+    print(window)
+
+
+============================== END ==============================
+
+------------- 19-08-54-48-217520 Execution reward: 0.0 -------------
+[Reward computation time: 2.3714 seconds]
+QAid: 10357_0
+Code: 
+from Object_Detector_Tool import Object_Detector_Tool
+from Text_Detector_Tool import Text_Detector_Tool
+
+final_result = {}
+final_result["window_size"] = 1
+
+# Detect the window
+window_dict = Object_Detector_Tool.execute(image="/nfs/data8/liao/wxie/SAT/SAT_images_train/10357_0.png", labels=["window"], save_object=True, saved_image_path="")
+window_list = [item for sublist in window_dict for item in sublist]
+window_list
+
+if window_list:
+    window_info_list = [result for result in window_list if result[-1].get("score") > 0.1]
+    final_result = {"window_size": len(window_list) if len(window_list) > 0 else 0, "window_info_list": window_info_list}
+
+
+============================== END ==============================
+
+------------- 19-08-54-48-217520 Execution reward: 0.0 -------------
+[Reward computation time: 2.3727 seconds]
+QAid: 10357_0
+Code: 
+
+from Object_Detector_Tool import Object_Detector_Tool
+
+final_result = Object_Detector_Tool.execute(image='/nfs/data8/liao/wxie/SAT/SAT_images_train/10357_0.png', labels=['window'], save_object=True, saved_image_path='detected_objects')
+
+print(f"The window is visible in the scene with the coordinates: {final_result['window'][0]}")
+
+
+============================== END ==============================
+
+------------- 19-08-54-48-217520 Execution reward: 0.0 -------------
+[Reward computation time: 2.1396 seconds]
+QAid: 10357_0
+Code: 
+
+from Object_Detector_Tool import *  # Import necessary tool to detect objects
+
+def find_windows(source_image_path):
+    window_labels = ['window']  # List of possible window labels
+
+    image = load_image(filename=source_image_path)
+
+    for label in window_labels:
+        result = get_objects(image, tool_name="Object_Detector_Tool", labels=[label], save_object=True, saved_image_path="detected_objects")
+
+    for detection_entry in result['detected_objects']:
+        if detection_entry['saved_image_path'] == 'detected_objects/window.png':
+            return label
+
+window_result = find_windows('/nfs/data8/liao/wxie/SAT/SAT_images_train/10357_0.png')
+
+final_result = {'window': None}
+if window_result is not None:
+    final_result['window'] = window_result['detected_objects'][0]['box']
+
+print(final_result)
+
+
+============================== END ==============================
+

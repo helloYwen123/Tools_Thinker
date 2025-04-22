@@ -26,7 +26,10 @@ class Letter_Detector_Tool(BaseTool):
             output_types = "list - A list of detected letters with bounding box coordinates (relative to original image), recognized text, and confidence score.", # Clarified output
             demo_commands = [
                 {
-                    "command": "results = Letter_Detector_Tool.execute(image='path/to/image.png')",
+                    "command": """
+                    letter_detector_tool = Letter_Detector_Tool()
+                    results = letter_detector_tool.execute(image='path/to/image')
+                    """,
                     "description": "Detect letters in an image, return the list of tuple (bbx, letter, and score). Bbox coordinates are relative to the original image.",
                     "output_example": '[[[100, 150], [200, 150], [200, 200], [100, 200]], "A", 0.95], ...]'
                 }

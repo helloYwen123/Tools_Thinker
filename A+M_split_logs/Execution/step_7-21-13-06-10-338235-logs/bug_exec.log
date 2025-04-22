@@ -1,0 +1,41 @@
+
+[Exctuion Failed]
+
+No module named 'tool_module_name'
+code: 
+
+from tool_module_name.object_detector import object_detector_tool as odtool
+
+path_to_image = "/path/to/image.png"  # Modify this to the actual path of your image file.
+labels = ["baseball", "basket"]
+threshold = 0.35
+model_size = "tiny"
+save_object = True
+saved_image_path = "detected_objects"
+
+detected_objects, total_objects = odtool.execute(image=path_to_image, labels=labels, threshold=threshold, model_size=model_size, save_object=save_object, saved_image_path=saved_image_path)
+
+if detected_objects:
+    detected_objects_dict = {label: objects for label, objects in detected_objects.items()}
+    total_objects_dict = {label: len(detected_objects) for label in detected_objects}
+    final_result = [
+        {"labels": [label]},  # This is only for demonstration purposes; in the actual process, you would directly use the detected objects dictionary.
+        total_objects_dict
+    ]
+else:
+    final_result = [{"labels": []}]
+    total_objects_dict = {"labels": []}
+
+if save_object:
+    for label, box in detected_objects.items():
+        save_image_path = f"detected_objects/image_{label}_{total_objects_dict[label]}.png"
+        detected_objects[label].append({"box": box, "score": 1.0})
+
+detected_objects, _ = odtool.execute(image=path_to_image, labels=labels, threshold=threshold, model_size=model_size, save_object=False)
+final_result.append({})
+
+final_result
+
+
+============================== END ==============================
+
