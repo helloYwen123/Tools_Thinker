@@ -1,0 +1,99 @@
+--- Completion 1 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="image_with_objects.png", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 2 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image='path/to/image', labels=['baseball', 'basket'], save_object=True)
+</command>
+Reward: 1.0
+
+--- Completion 3 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 4 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="path/to/image", labels=['baseball', 'basket'], save_object=False, saved_image_path="detected_objects")
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 5 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+final_result = Object_Detector_Tool().execute(image="path_to_image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+
+print(final_result)
+</command>
+Reward: 1.0
+
+--- Completion 6 ---
+<command>
+from object_detector import Object_Detector_Tool
+
+def detect_doorways(image_path, labels=['porte'], debug=False):
+    detected_objects = None
+    object_number = None
+
+    try:
+        tool = Object_Detector_Tool()
+        tool.set_image_path(image_path)
+        tool.set_labels(labels)
+        tool.set_save_object(debug)
+        results = tool.execute()
+
+        if results['saved_image_path'] is not None:
+            final_result = []
+            for label in tool.results_dic:
+                for detection in tool.results_dic[label]:
+                    if 'box' in detection:
+                        bounding_box = (detection['box'][0], detection['box'][1], detection['box'][2], detection['box'][3])
+                        score = detection['score']
+                    else:
+                        bounding_box = None
+                        score = None
+
+                    if score is not None and score >= 0.9: # Use a confidence threshold of 0.9
+                        if labels:
+                            final_result.append({'label': label, 'bbox': bounding_box, 'score': score, 'saved_image_path': results['saved_image_path']})
+                        else:
+                            final_result.append({'bbox': bounding_box, 'score': score, 'saved_image_path': results['saved_image_path']})
+                    elif debug:
+                        tool.log_details(image_path)
+                        tool.log_details(results)
+                
+                if final_result:
+                    object_number = len(final_result)
+                else:
+                    object_number = 0
+
+        return final_result, object_number
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return None, 0
+
+    # Placeholder for testing
+    # image_path = 'path/to/image.png'
+    # final_result, object_number = detect_doorways(image_path)
+    # print(final_result)
+    # print(object_number)
+</command>
+Reward: 1.0
+

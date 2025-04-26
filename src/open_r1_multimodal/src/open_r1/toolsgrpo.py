@@ -212,7 +212,6 @@ async def run_all_checks_async(tasks, log_root_dir, current_time):
             loop.run_in_executor(pool, check_correctness, task, log_root_dir, current_time)
             for task in tasks
         ]
-    #
     # 这里用异步并发单线程Asyncio&多进程Multiprocessing的形式运行check_correctness这个函数， task变量为一个dict 的数据类型: "code" 和 "QAid"；[log_root_dir与current_time仅做debug用]
     # 也就是这里的check_correctness接收 模型生成的code->执行code->返回结果
     # TODO
@@ -456,7 +455,6 @@ def main(script_args, training_args, model_args, conf):
 
         return active_tool_names, filtered_metadata_dict
 
-
     PROMPT_TEMPLATE = conf.get("prompt_template")
     # for Blink Dataset
     def make_conversation_sat(example, prefix, conf, base_model_prompt=False):
@@ -523,15 +521,13 @@ def main(script_args, training_args, model_args, conf):
                 "solution": answer, ###
                 "QAid": idx
             }
-
     #################### Data Loading Start ####################
 
-    dataset_prefix = "/nfs/data8/liao/wxie/SAT/" # "/home/stud/wxie/"
-    dataset_path = f"SAT_subtasks/SAT_Counting.json"
+    dataset_prefix = "/nfs/data8/liao/wxie/SAT/"  # "/home/stud/wxie/"
+    dataset_path = "SAT_subtasks/SAT_Counting.json"
     # SAT Dataloader
     dataset = {}
     all_samples = []
-    
     
 
     full_path = os.path.join(dataset_prefix, dataset_path)
@@ -575,7 +571,6 @@ def main(script_args, training_args, model_args, conf):
     elif script_args.freeze_llm:
         trainer.model.model.requires_grad_ = False
 
-    
     trainer.train()
     
     # solve the warning: process group has NOT been destroyed before we destruct ProcessGroupNCCL

@@ -172,7 +172,7 @@ if __name__ == '__main__':
     # -----------------------
     # Test Image Mode
     # -----------------------
-    test_image_path = ['./assets/examples/demo01.jpg']  # Can be a single image file, directory, or a txt file containing image paths.
+    test_image_path = ['./assets/examples/demo01.jpg'] 
     print("Testing image mode...")
     # When testing image mode, the video_path parameter is not used.
     image_results = tool.execute(

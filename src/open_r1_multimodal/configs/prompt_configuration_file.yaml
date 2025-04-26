@@ -10,9 +10,15 @@ prompt_template: |
   Tools Metadata(JSON): 
   {toolbox_metadata}
 
-  Include import paths like: from_module: `<tool_module_name>`, import_name: `<tool_class_name>`.
+  Include import module like: from_module: `<tool_module_name>`, import_name: `<tool_class_name>`.
+  For Example: if the tool class name is `Tool` and tool module name is tool, import it as from tool import Tool 
+
   Generate the Python program enclosed in <command></command> tags, e.g., <command>generated lines</command>.
   Assign the final answer (as a string) to a variable named final_result within the Python code.
+
+  Remember to instantiate the tool class before using it.
+  For object instantiation, convert the class name by changing only the first letter to lowercase
+  For Example: if the class name is `Tool` instantiate it as `tool = Tool()`.
 # {question}；{available_tools}；{available_tools}；{image_paths}
 
 # available_tools for usage
@@ -118,8 +124,8 @@ toolbox_metadata:
       e.g. 'assets/video1.mp4': {'video_depth_map': <list of numpy arrays with shape (H, W)>, 'output_video_path': 'path/to/saved/video.mp4'}
     demo_commands:
       command: |
-        depth_estimator = Pixel_Depth_Tool()
-        image_results = depth_estimator.execute(image_path=['path/to/image1', 'path/to/image2'], output=True, outdir= './vis_depth')
+        pixel_depth_tool = Pixel_Depth_Tool()
+        image_results = pixel_depth_tool.execute(image_path=['path/to/image1', 'path/to/image2'], output=True, outdir= './vis_depth')
       description: Processes a list of input images, estimates their depth maps, and returns genereated depth images paths.
       output_example: |
         {
@@ -177,8 +183,8 @@ toolbox_metadata:
       object_counts: "A dictionary with count of detected objects for each label. e.g., {'person': 2, 'tree': 1}"
     demo_commands:
       command: |
-        tool = Advanced_Object_Detector()
-        result, object_counts = tool.execute(image='path/to/demo', labels=['person', 'bicycle'], threshold=0.4, save_object=False)
+        advanced_object_detector = Advanced_Object_Detector()
+        result, object_counts = advanced_object_detector.execute(image='path/to/demo', labels=['person', 'bicycle'], threshold=0.4, save_object=False)
       description: "Detect 'person' and 'bicycle' in the image return dictionary with key `label`: bounding boxes and pixel-level masks."
       output_example: |
         results: {'person': [{'box': (50, 30, 200, 400), 'score': 0.92, 'saved_path': None}],'bicycle': [{'box': (400, 200, 550, 420), 'score': 0.85, 'saved_path': None}]}
