@@ -1,0 +1,1120 @@
+:job_id:01000000
+INFO 05-04 19:32:45 [__init__.py:239] Automatically detected platform cuda.
+:actor_name:Runner
+{
+  "data": {
+    "train_files": "BLINK-Benchmark/BLINK",
+    "val_files": "BLINK-Benchmark/BLINK",
+    "prompt_key": "problem",
+    "answer_key": "answer",
+    "image_key": "images",
+    "max_prompt_length": 2048,
+    "max_response_length": 2048,
+    "rollout_batch_size": 4,
+    "val_batch_size": -1,
+    "format_prompt": "/home/stud/wxie/EasyR1/examples/format_prompt/tools_thinker_format.jinja",
+    "override_chat_template": null,
+    "shuffle": true,
+    "seed": 1,
+    "max_pixels": 4194304,
+    "min_pixels": 262144,
+    "filter_overlong_prompts": false,
+    "subtasks": [
+      "Counting"
+    ],
+    "dataset_prefix": "/home/stud/wxie",
+    "tools_config": "./examples/tools_config/tools_configuration_file.yaml"
+  },
+  "worker": {
+    "hybrid_engine": true,
+    "actor": {
+      "strategy": "fsdp",
+      "global_batch_size": 2,
+      "micro_batch_size_per_device_for_update": 2,
+      "micro_batch_size_per_device_for_experience": 4,
+      "max_grad_norm": 1.0,
+      "clip_ratio_low": 0.2,
+      "clip_ratio_high": 0.3,
+      "clip_ratio_dual": 3.0,
+      "ppo_epochs": 1,
+      "padding_free": true,
+      "ulysses_sequence_parallel_size": 1,
+      "use_torch_compile": true,
+      "model": {
+        "model_path": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "tokenizer_path": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "override_config": {},
+        "enable_gradient_checkpointing": true,
+        "trust_remote_code": false,
+        "freeze_vision_tower": false
+      },
+      "optim": {
+        "lr": 1e-06,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "weight_decay": 0.01,
+        "strategy": "adamw_bf16",
+        "lr_warmup_ratio": 0.0,
+        "min_lr_ratio": null,
+        "warmup_style": "constant",
+        "training_steps": -1
+      },
+      "fsdp": {
+        "enable_full_shard": true,
+        "enable_cpu_offload": false,
+        "enable_rank0_init": true,
+        "use_orig_params": false,
+        "torch_dtype": "bf16",
+        "fsdp_size": -1,
+        "mp_param_dtype": "bf16",
+        "mp_reduce_dtype": "fp32",
+        "mp_buffer_dtype": "fp32"
+      },
+      "offload": {
+        "offload_params": true,
+        "offload_optimizer": true
+      },
+      "global_batch_size_per_device": -1,
+      "disable_kl": false,
+      "use_kl_loss": true,
+      "kl_penalty": "low_var_kl",
+      "kl_coef": 0.01
+    },
+    "critic": {
+      "strategy": "fsdp",
+      "global_batch_size": 256,
+      "micro_batch_size_per_device_for_update": 4,
+      "micro_batch_size_per_device_for_experience": 16,
+      "max_grad_norm": 1.0,
+      "cliprange_value": 0.5,
+      "ppo_epochs": 1,
+      "padding_free": false,
+      "ulysses_sequence_parallel_size": 1,
+      "model": {
+        "model_path": null,
+        "tokenizer_path": null,
+        "override_config": {},
+        "enable_gradient_checkpointing": true,
+        "trust_remote_code": true,
+        "freeze_vision_tower": false
+      },
+      "optim": {
+        "lr": 1e-06,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "weight_decay": 0.01,
+        "strategy": "adamw",
+        "lr_warmup_ratio": 0.0,
+        "min_lr_ratio": null,
+        "warmup_style": "constant",
+        "training_steps": -1
+      },
+      "fsdp": {
+        "enable_full_shard": true,
+        "enable_cpu_offload": false,
+        "enable_rank0_init": false,
+        "use_orig_params": false,
+        "torch_dtype": null,
+        "fsdp_size": -1,
+        "mp_param_dtype": "bf16",
+        "mp_reduce_dtype": "fp32",
+        "mp_buffer_dtype": "fp32"
+      },
+      "offload": {
+        "offload_params": false,
+        "offload_optimizer": false
+      },
+      "global_batch_size_per_device": -1
+    },
+    "ref": {
+      "strategy": "fsdp",
+      "fsdp": {
+        "enable_full_shard": true,
+        "enable_cpu_offload": true,
+        "enable_rank0_init": true,
+        "use_orig_params": false,
+        "torch_dtype": "bf16",
+        "fsdp_size": -1,
+        "mp_param_dtype": "bf16",
+        "mp_reduce_dtype": "fp32",
+        "mp_buffer_dtype": "fp32"
+      },
+      "offload": {
+        "offload_params": false,
+        "offload_optimizer": false
+      },
+      "micro_batch_size_per_device_for_experience": 4,
+      "padding_free": true,
+      "ulysses_sequence_parallel_size": 1,
+      "use_torch_compile": true
+    },
+    "reward": {
+      "reward_type": "batch",
+      "reward_function": "/home/stud/wxie/EasyR1/examples/reward_function/tool_reward.py",
+      "reward_function_kwargs": {
+        "format_weight": 0.3,
+        "usage_weight": 0.5,
+        "execution_weight": 0.2
+      },
+      "skip_special_tokens": true,
+      "num_cpus": 1,
+      "num_gpus": 0,
+      "reward_function_name": "compute_score"
+    },
+    "rollout": {
+      "name": "vllm",
+      "n": 5,
+      "temperature": 1.0,
+      "top_p": 0.99,
+      "top_k": -1,
+      "seed": 1,
+      "limit_images": 0,
+      "dtype": "bf16",
+      "gpu_memory_utilization": 0.5,
+      "ignore_eos": false,
+      "enforce_eager": false,
+      "enable_chunked_prefill": false,
+      "tensor_parallel_size": 1,
+      "max_model_len": null,
+      "max_num_batched_tokens": 8192,
+      "disable_log_stats": true,
+      "val_override_config": {
+        "temperature": 0.5,
+        "n": 1
+      },
+      "prompt_length": 2048,
+      "response_length": 2048,
+      "trust_remote_code": false
+    }
+  },
+  "algorithm": {
+    "gamma": 1.0,
+    "lam": 1.0,
+    "adv_estimator": "grpo",
+    "disable_kl": false,
+    "use_kl_loss": true,
+    "kl_penalty": "low_var_kl",
+    "kl_coef": 0.01,
+    "kl_type": "fixed",
+    "kl_horizon": 0.0,
+    "kl_target": 0.0
+  },
+  "trainer": {
+    "total_epochs": 1,
+    "max_steps": null,
+    "project_name": "Debug",
+    "experiment_name": "qwen2_5_vl_3b_grpo",
+    "logger": [
+      "console",
+      "wandb"
+    ],
+    "nnodes": 1,
+    "n_gpus_per_node": 1,
+    "critic_warmup": 0,
+    "val_freq": -1,
+    "val_before_train": false,
+    "val_only": false,
+    "val_generations_to_log": 3,
+    "save_freq": -1,
+    "save_limit": 3,
+    "save_checkpoint_path": "/home/stud/wxie/EasyR1/checkpoints/Debug/qwen2_5_vl_3b_grpo",
+    "load_checkpoint_path": null
+  }
+}
+loading dataset: BLINK-Benchmark/BLINK
+
+loading dataset: BLINK-Benchmark/BLINK
+
+Size of train dataloader: 30
+Size of val dataloader: 1
+Tool usage reward: True
+Total training steps: 30
+Config
+algorithm:
+  adv_estimator: grpo
+  disable_kl: false
+  gamma: 1.0
+  kl_coef: 0.01
+  kl_horizon: 0.0
+  kl_penalty: low_var_kl
+  kl_target: 0.0
+  kl_type: fixed
+  lam: 1.0
+  use_kl_loss: true
+data:
+  answer_key: answer
+  dataset_prefix: /home/stud/wxie
+  filter_overlong_prompts: false
+  format_prompt: /home/stud/wxie/EasyR1/examples/format_prompt/tools_thinker_format.jinja
+  image_key: images
+  max_pixels: 4194304
+  max_prompt_length: 2048
+  max_response_length: 2048
+  min_pixels: 262144
+  override_chat_template: null
+  prompt_key: problem
+  rollout_batch_size: 4
+  seed: 1
+  shuffle: true
+  subtasks:
+  - Counting
+  tools_config: ./examples/tools_config/tools_configuration_file.yaml
+  train_files: BLINK-Benchmark/BLINK
+  val_batch_size: -1
+  val_files: BLINK-Benchmark/BLINK
+trainer:
+  critic_warmup: 0
+  experiment_name: qwen2_5_vl_3b_grpo
+  load_checkpoint_path: null
+  logger:
+  - console
+  - wandb
+  max_steps: null
+  n_gpus_per_node: 1
+  nnodes: 1
+  project_name: Debug
+  save_checkpoint_path: /home/stud/wxie/EasyR1/checkpoints/Debug/qwen2_5_vl_3b_grpo
+  save_freq: -1
+  save_limit: 3
+  total_epochs: 1
+  val_before_train: false
+  val_freq: -1
+  val_generations_to_log: 3
+  val_only: false
+worker:
+  actor:
+    clip_ratio_dual: 3.0
+    clip_ratio_high: 0.3
+    clip_ratio_low: 0.2
+    disable_kl: false
+    fsdp:
+      enable_cpu_offload: false
+      enable_full_shard: true
+      enable_rank0_init: true
+      fsdp_size: -1
+      mp_buffer_dtype: fp32
+      mp_param_dtype: bf16
+      mp_reduce_dtype: fp32
+      torch_dtype: bf16
+      use_orig_params: false
+    global_batch_size: 2
+    global_batch_size_per_device: -1
+    kl_coef: 0.01
+    kl_penalty: low_var_kl
+    max_grad_norm: 1.0
+    micro_batch_size_per_device_for_experience: 4
+    micro_batch_size_per_device_for_update: 2
+    model:
+      enable_gradient_checkpointing: true
+      freeze_vision_tower: false
+      model_path: Qwen/Qwen2.5-VL-3B-Instruct
+      override_config: {}
+      tokenizer_path: Qwen/Qwen2.5-VL-3B-Instruct
+      trust_remote_code: false
+    offload:
+      offload_optimizer: true
+      offload_params: true
+    optim:
+      betas:
+      - 0.9
+      - 0.999
+      lr: 1.0e-06
+      lr_warmup_ratio: 0.0
+      min_lr_ratio: null
+      strategy: adamw_bf16
+      training_steps: 30
+      warmup_style: constant
+      weight_decay: 0.01
+    padding_free: true
+    ppo_epochs: 1
+    strategy: fsdp
+    ulysses_sequence_parallel_size: 1
+    use_kl_loss: true
+    use_torch_compile: true
+  critic:
+    cliprange_value: 0.5
+    fsdp:
+      enable_cpu_offload: false
+      enable_full_shard: true
+      enable_rank0_init: false
+      fsdp_size: -1
+      mp_buffer_dtype: fp32
+      mp_param_dtype: bf16
+      mp_reduce_dtype: fp32
+      torch_dtype: null
+      use_orig_params: false
+    global_batch_size: 256
+    global_batch_size_per_device: -1
+    max_grad_norm: 1.0
+    micro_batch_size_per_device_for_experience: 16
+    micro_batch_size_per_device_for_update: 4
+    model:
+      enable_gradient_checkpointing: true
+      freeze_vision_tower: false
+      model_path: null
+      override_config: {}
+      tokenizer_path: null
+      trust_remote_code: true
+    offload:
+      offload_optimizer: false
+      offload_params: false
+    optim:
+      betas:
+      - 0.9
+      - 0.999
+      lr: 1.0e-06
+      lr_warmup_ratio: 0.0
+      min_lr_ratio: null
+      strategy: adamw
+      training_steps: 30
+      warmup_style: constant
+      weight_decay: 0.01
+    padding_free: false
+    ppo_epochs: 1
+    strategy: fsdp
+    ulysses_sequence_parallel_size: 1
+  hybrid_engine: true
+  ref:
+    fsdp:
+      enable_cpu_offload: true
+      enable_full_shard: true
+      enable_rank0_init: true
+      fsdp_size: -1
+      mp_buffer_dtype: fp32
+      mp_param_dtype: bf16
+      mp_reduce_dtype: fp32
+      torch_dtype: bf16
+      use_orig_params: false
+    micro_batch_size_per_device_for_experience: 4
+    offload:
+      offload_optimizer: false
+      offload_params: false
+    padding_free: true
+    strategy: fsdp
+    ulysses_sequence_parallel_size: 1
+    use_torch_compile: true
+  reward:
+    num_cpus: 1
+    num_gpus: 0
+    reward_function: /home/stud/wxie/EasyR1/examples/reward_function/tool_reward.py
+    reward_function_kwargs:
+      execution_weight: 0.2
+      format_weight: 0.3
+      usage_weight: 0.5
+    reward_function_name: compute_score
+    reward_type: batch
+    skip_special_tokens: true
+  rollout:
+    disable_log_stats: true
+    dtype: bf16
+    enable_chunked_prefill: false
+    enforce_eager: false
+    gpu_memory_utilization: 0.5
+    ignore_eos: false
+    limit_images: 0
+    max_model_len: null
+    max_num_batched_tokens: 8192
+    n: 5
+    name: vllm
+    prompt_length: 2048
+    response_length: 2048
+    seed: 1
+    temperature: 1.0
+    tensor_parallel_size: 1
+    top_k: -1
+    top_p: 0.99
+    trust_remote_code: false
+    val_override_config:
+      n: 1
+      temperature: 0.5
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 1, "pos": 0, "desc": "Epoch", "total": 1, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "29f789b53e644cd1baf83ffc87531776", "closed": false}
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 1, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 1
+Step 1
+actor:
+  entropy_loss: 0.408
+  grad_norm: 3.992
+  kl_coef: 0.01
+  kl_loss: 0.001
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.001
+  pg_clipfrac_lower: 0.0
+  pg_loss: -0.033
+  ppo_kl: -2.6851864095078782e-05
+critic:
+  advantages:
+    max: 0.856
+    mean: -0.144
+    min: -1.789
+  returns:
+    max: 0.856
+    mean: -0.144
+    min: -1.789
+  rewards:
+    max: 0.8
+    mean: 0.605
+    min: 0.0
+  score:
+    max: 0.8
+    mean: 0.605
+    min: 0.0
+global_seqlen:
+  balanced_max: 36933
+  balanced_min: 36933
+  max: 36933
+  mean: 36933.0
+  min: 36933
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 31.195
+  max_memory_allocated_gb: 46.848
+  max_memory_reserved_gb: 57.5
+  mfu_actor: 0.121
+  throughput: 624.994
+  time_per_step: 59.093
+  total_num_tokens: 36933
+prompt_length:
+  clip_ratio: 0.0
+  max: 1693.0
+  mean: 1681.75
+  min: 1674.0
+response_length:
+  clip_ratio: 0.0
+  max: 670.0
+  mean: 164.9
+  min: 22.0
+reward:
+  execution: 0.05
+  format: 0.65
+  overall: 0.605
+  tool_usage: 0.8
+timing_per_token_ms:
+  adv: 0.0
+  gen: 2.966
+  old: 0.067
+  ref: 0.614
+  reward: 0.043
+  update_actor: 0.648
+timing_s:
+  adv: 0.006
+  gen: 9.783
+  old: 2.465
+  ref: 22.688
+  reward: 0.14
+  step: 59.093
+  update_actor: 23.947
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 2, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 2
+Step 2
+actor:
+  entropy_loss: 0.533
+  grad_norm: 4.664
+  kl_coef: 0.01
+  kl_loss: 0.001
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.001
+  pg_clipfrac_lower: 0.0
+  pg_loss: 0.037
+  ppo_kl: 5.863391852471978e-05
+critic:
+  advantages:
+    max: 0.906
+    mean: -0.142
+    min: -1.789
+  returns:
+    max: 0.906
+    mean: -0.142
+    min: -1.789
+  rewards:
+    max: 0.8
+    mean: 0.545
+    min: 0.0
+  score:
+    max: 0.8
+    mean: 0.545
+    min: 0.0
+global_seqlen:
+  balanced_max: 37187
+  balanced_min: 37187
+  max: 37187
+  mean: 37187.0
+  min: 37187
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 33.328
+  max_memory_allocated_gb: 47.118
+  max_memory_reserved_gb: 67.422
+  mfu_actor: 0.119
+  throughput: 1857.666
+  time_per_step: 20.018
+  total_num_tokens: 37187
+prompt_length:
+  clip_ratio: 0.0
+  max: 1688.0
+  mean: 1682.25
+  min: 1674.0
+response_length:
+  clip_ratio: 0.0
+  max: 424.0
+  mean: 177.1
+  min: 87.0
+reward:
+  execution: 0.0
+  format: 0.65
+  overall: 0.545
+  tool_usage: 0.7
+timing_per_token_ms:
+  adv: 3.7521578289980554e-05
+  gen: 1.698
+  old: 0.064
+  ref: 0.042
+  reward: 0.009
+  update_actor: 0.27
+timing_s:
+  adv: 0.001
+  gen: 6.016
+  old: 2.365
+  ref: 1.551
+  reward: 0.033
+  step: 20.018
+  update_actor: 10.048
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 3, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 3
+Step 3
+actor:
+  entropy_loss: 0.562
+  grad_norm: 6.031
+  kl_coef: 0.01
+  kl_loss: 0.001
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.001
+  pg_clipfrac_lower: 0.0
+  pg_loss: -0.095
+  ppo_kl: 0.0
+critic:
+  advantages:
+    max: 1.336
+    mean: 0.032
+    min: -1.68
+  returns:
+    max: 1.336
+    mean: 0.032
+    min: -1.68
+  rewards:
+    max: 0.8
+    mean: 0.55
+    min: 0.0
+  score:
+    max: 0.8
+    mean: 0.55
+    min: 0.0
+global_seqlen:
+  balanced_max: 36374
+  balanced_min: 36374
+  max: 36374
+  mean: 36374.0
+  min: 36374
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 33.594
+  max_memory_allocated_gb: 47.726
+  max_memory_reserved_gb: 68.029
+  mfu_actor: 0.115
+  throughput: 2020.178
+  time_per_step: 18.005
+  total_num_tokens: 36374
+prompt_length:
+  clip_ratio: 0.0
+  max: 1692.0
+  mean: 1682.25
+  min: 1676.0
+response_length:
+  clip_ratio: 0.0
+  max: 327.0
+  mean: 136.45
+  min: 22.0
+reward:
+  execution: 0.0
+  format: 0.5
+  overall: 0.55
+  tool_usage: 0.8
+timing_per_token_ms:
+  adv: 8.338158611723764e-05
+  gen: 1.562
+  old: 0.068
+  ref: 0.043
+  reward: 0.017
+  update_actor: 0.266
+timing_s:
+  adv: 0.003
+  gen: 4.261
+  old: 2.46
+  ref: 1.546
+  reward: 0.045
+  step: 18.005
+  update_actor: 9.686
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 4, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 4
+Step 4
+actor:
+  entropy_loss: 0.418
+  grad_norm: 5.859
+  kl_coef: 0.01
+  kl_loss: 0.001
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.003
+  pg_clipfrac_lower: 0.0
+  pg_loss: -0.089
+  ppo_kl: 0.002
+critic:
+  advantages:
+    max: 0.796
+    mean: 0.035
+    min: -1.789
+  returns:
+    max: 0.796
+    mean: 0.035
+    min: -1.789
+  rewards:
+    max: 0.8
+    mean: 0.62
+    min: 0.0
+  score:
+    max: 0.8
+    mean: 0.62
+    min: 0.0
+global_seqlen:
+  balanced_max: 36114
+  balanced_min: 36114
+  max: 36114
+  mean: 36114.0
+  min: 36114
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 31.678
+  max_memory_allocated_gb: 47.726
+  max_memory_reserved_gb: 68.029
+  mfu_actor: 0.1
+  throughput: 1839.775
+  time_per_step: 19.63
+  total_num_tokens: 36114
+prompt_length:
+  clip_ratio: 0.0
+  max: 1685.0
+  mean: 1681.5
+  min: 1677.0
+response_length:
+  clip_ratio: 0.0
+  max: 264.0
+  mean: 124.2
+  min: 36.0
+reward:
+  execution: 0.0
+  format: 0.65
+  overall: 0.62
+  tool_usage: 0.85
+timing_per_token_ms:
+  adv: 0.0
+  gen: 1.826
+  old: 0.067
+  ref: 0.048
+  reward: 0.019
+  update_actor: 0.301
+timing_s:
+  adv: 0.004
+  gen: 4.537
+  old: 2.436
+  ref: 1.74
+  reward: 0.047
+  step: 19.63
+  update_actor: 10.863
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 5, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 5
+Step 5
+actor:
+  entropy_loss: 0.641
+  grad_norm: 5.812
+  kl_coef: 0.01
+  kl_loss: 0.004
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.001
+  pg_clipfrac_lower: 0.0
+  pg_loss: -0.001
+  ppo_kl: -0.001
+critic:
+  advantages:
+    max: 1.789
+    mean: -0.019
+    min: -1.424
+  returns:
+    max: 1.789
+    mean: -0.019
+    min: -1.424
+  rewards:
+    max: 0.8
+    mean: 0.455
+    min: 0.0
+  score:
+    max: 0.8
+    mean: 0.455
+    min: 0.0
+global_seqlen:
+  balanced_max: 36468
+  balanced_min: 36468
+  max: 36468
+  mean: 36468.0
+  min: 36468
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 31.661
+  max_memory_allocated_gb: 47.726
+  max_memory_reserved_gb: 68.029
+  mfu_actor: 0.113
+  throughput: 2068.151
+  time_per_step: 17.633
+  total_num_tokens: 36468
+prompt_length:
+  clip_ratio: 0.0
+  max: 1682.0
+  mean: 1678.25
+  min: 1674.0
+response_length:
+  clip_ratio: 0.0
+  max: 398.0
+  mean: 145.15
+  min: 37.0
+reward:
+  execution: 0.0
+  format: 0.35
+  overall: 0.455
+  tool_usage: 0.7
+timing_per_token_ms:
+  adv: 0.0
+  gen: 1.747
+  old: 0.052
+  ref: 0.038
+  reward: 0.016
+  update_actor: 0.252
+timing_s:
+  adv: 0.004
+  gen: 5.07
+  old: 1.914
+  ref: 1.394
+  reward: 0.046
+  step: 17.633
+  update_actor: 9.2
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 6, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 6
+Step 6
+actor:
+  entropy_loss: 0.406
+  grad_norm: 4.469
+  kl_coef: 0.01
+  kl_loss: 0.002
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.001
+  pg_clipfrac_lower: 0.0
+  pg_loss: 0.091
+  ppo_kl: -0.001
+critic:
+  advantages:
+    max: 1.565
+    mean: -0.098
+    min: -1.789
+  returns:
+    max: 1.565
+    mean: -0.098
+    min: -1.789
+  rewards:
+    max: 0.8
+    mean: 0.673
+    min: 0.5
+  score:
+    max: 0.8
+    mean: 0.673
+    min: 0.5
+global_seqlen:
+  balanced_max: 36709
+  balanced_min: 36709
+  max: 36709
+  mean: 36709.0
+  min: 36709
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 32.279
+  max_memory_allocated_gb: 47.726
+  max_memory_reserved_gb: 68.029
+  mfu_actor: 0.093
+  throughput: 1918.785
+  time_per_step: 19.131
+  total_num_tokens: 36709
+prompt_length:
+  clip_ratio: 0.0
+  max: 1679.0
+  mean: 1677.0
+  min: 1676.0
+response_length:
+  clip_ratio: 0.0
+  max: 308.0
+  mean: 158.45
+  min: 65.0
+reward:
+  execution: 0.0
+  format: 0.575
+  overall: 0.673
+  tool_usage: 1.0
+timing_per_token_ms:
+  adv: 0.0
+  gen: 1.444
+  old: 0.05
+  ref: 0.038
+  reward: 0.013
+  update_actor: 0.307
+timing_s:
+  adv: 0.004
+  gen: 4.575
+  old: 1.85
+  ref: 1.399
+  reward: 0.042
+  step: 19.131
+  update_actor: 11.258
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 7, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 7
+Step 7
+actor:
+  entropy_loss: 0.341
+  grad_norm: 5.016
+  kl_coef: 0.01
+  kl_loss: 0.004
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.0
+  pg_clipfrac_lower: 0.0
+  pg_loss: 0.028
+  ppo_kl: -0.0
+critic:
+  advantages:
+    max: 1.336
+    mean: -0.171
+    min: -1.789
+  returns:
+    max: 1.336
+    mean: -0.171
+    min: -1.789
+  rewards:
+    max: 0.8
+    mean: 0.668
+    min: 0.3
+  score:
+    max: 0.8
+    mean: 0.668
+    min: 0.3
+global_seqlen:
+  balanced_max: 36766
+  balanced_min: 36766
+  max: 36766
+  mean: 36766.0
+  min: 36766
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 31.823
+  max_memory_allocated_gb: 47.726
+  max_memory_reserved_gb: 68.029
+  mfu_actor: 0.13
+  throughput: 2141.94
+  time_per_step: 17.165
+  total_num_tokens: 36766
+prompt_length:
+  clip_ratio: 0.0
+  max: 1685.0
+  mean: 1677.25
+  min: 1674.0
+response_length:
+  clip_ratio: 0.0
+  max: 502.0
+  mean: 161.05
+  min: 93.0
+reward:
+  execution: 0.0
+  format: 0.725
+  overall: 0.668
+  tool_usage: 0.9
+timing_per_token_ms:
+  adv: 9.318479412639452e-05
+  gen: 1.612
+  old: 0.053
+  ref: 0.037
+  reward: 0.008
+  update_actor: 0.235
+timing_s:
+  adv: 0.003
+  gen: 5.192
+  old: 1.937
+  ref: 1.378
+  reward: 0.025
+  step: 17.165
+  update_actor: 8.626
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 8, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 8
+Step 8
+actor:
+  entropy_loss: 0.304
+  grad_norm: 2.945
+  kl_coef: 0.01
+  kl_loss: 0.004
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.001
+  pg_clipfrac_lower: 0.0
+  pg_loss: 0.008
+  ppo_kl: -0.0
+critic:
+  advantages:
+    max: 0.73
+    mean: -0.001
+    min: -1.789
+  returns:
+    max: 0.73
+    mean: -0.001
+    min: -1.789
+  rewards:
+    max: 0.8
+    mean: 0.748
+    min: 0.5
+  score:
+    max: 0.8
+    mean: 0.748
+    min: 0.5
+global_seqlen:
+  balanced_max: 36423
+  balanced_min: 36423
+  max: 36423
+  mean: 36423.0
+  min: 36423
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 31.849
+  max_memory_allocated_gb: 47.726
+  max_memory_reserved_gb: 68.029
+  mfu_actor: 0.133
+  throughput: 2465.069
+  time_per_step: 14.776
+  total_num_tokens: 36423
+prompt_length:
+  clip_ratio: 0.0
+  max: 1682.0
+  mean: 1679.5
+  min: 1678.0
+response_length:
+  clip_ratio: 0.0
+  max: 217.0
+  mean: 141.65
+  min: 81.0
+reward:
+  execution: 0.0
+  format: 0.825
+  overall: 0.748
+  tool_usage: 1.0
+timing_per_token_ms:
+  adv: 9.613631803700805e-05
+  gen: 1.162
+  old: 0.052
+  ref: 0.04
+  reward: 0.014
+  update_actor: 0.222
+timing_s:
+  adv: 0.004
+  gen: 3.291
+  old: 1.886
+  ref: 1.467
+  reward: 0.041
+  step: 14.776
+  update_actor: 8.084
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 9, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}
+global_step in reward computation: 9
+Step 9
+actor:
+  entropy_loss: 0.375
+  grad_norm: 5.0
+  kl_coef: 0.01
+  kl_loss: 0.015
+  lr: 1.0e-06
+  pg_clipfrac_higher: 0.001
+  pg_clipfrac_lower: 0.0
+  pg_loss: -0.046
+  ppo_kl: -3.884945749632607e-06
+critic:
+  advantages:
+    max: 0.73
+    mean: 0.116
+    min: -1.789
+  returns:
+    max: 0.73
+    mean: 0.116
+    min: -1.789
+  rewards:
+    max: 0.8
+    mean: 0.733
+    min: 0.5
+  score:
+    max: 0.8
+    mean: 0.733
+    min: 0.5
+global_seqlen:
+  balanced_max: 36549
+  balanced_min: 36549
+  max: 36549
+  mean: 36549.0
+  min: 36549
+  minmax_diff: 0
+perf:
+  cpu_memory_used_gb: 33.146
+  max_memory_allocated_gb: 47.726
+  max_memory_reserved_gb: 68.029
+  mfu_actor: 0.085
+  throughput: 1846.531
+  time_per_step: 19.793
+  total_num_tokens: 36549
+prompt_length:
+  clip_ratio: 0.0
+  max: 1684.0
+  mean: 1680.5
+  min: 1675.0
+response_length:
+  clip_ratio: 0.0
+  max: 342.0
+  mean: 146.95
+  min: 63.0
+reward:
+  execution: 0.0
+  format: 0.775
+  overall: 0.733
+  tool_usage: 1.0
+timing_per_token_ms:
+  adv: 5.6475723010576706e-05
+  gen: 1.571
+  old: 0.054
+  ref: 0.038
+  reward: 0.016
+  update_actor: 0.322
+timing_s:
+  adv: 0.002
+  gen: 4.618
+  old: 1.975
+  ref: 1.384
+  reward: 0.048
+  step: 19.793
+  update_actor: 11.76
+
+{"__magic_token__": "__ray_tqdm_magic_token__", "x": 10, "pos": 1, "desc": "Running step", "total": 30, "unit": "it", "ip": "10.153.51.195", "pid": 1924074, "uuid": "4a587cf4b457401a9addec5a31314986", "closed": false}

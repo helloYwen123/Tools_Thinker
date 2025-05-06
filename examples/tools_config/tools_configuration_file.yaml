@@ -1,0 +1,176 @@
+# {question}；{available_tools}；{available_tools}；{image_paths}
+
+# available_tools for usage
+available_tools:
+  - Object_Detector_Tool
+  - Text_Detector_Tool
+
+# metadata for available tools
+toolbox_metadata:
+  Object_Detector_Tool:
+    tool_package_name: "object_detector"
+    tool_class_name: "Object_Detector_Tool"
+    tool_description: "A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding."
+    tool_version: "1.0.0"
+    input_types:
+      image: str - The path to the image file.
+      labels: list - A list of object labels to detect.
+      threshold: "float - The confidence threshold for detection (default: 0.35)."
+      model_size: "str - The size of the model to use ('tiny' or 'base', default: 'tiny')."
+      save_object: "bool - Whether to save the detected objects as images (default: False)."
+      saved_image_path: "str - The path to save the detected object images (default: 'detected_objects')."
+    output_types: >
+      "tuple - A tuple containing two elements:
+      (1) a dictionary mapping each detected label to a list of detection entries,
+      e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}]},
+      (2) a dictionary mapping each label to the number of detected objects in the image.
+      e.g. {'baseball': 2, 'basket': 1}".
+    demo_commands:
+      command: |
+        object_detector_tool = Object_Detector_Tool()
+        detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+      description: >
+        Detects 'baseball' and 'basket' in the image. Returns a tuple:
+        (1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path);
+        (2) a dict with the total count for each detected label.
+        If 'save_object' is True, detected objects are cropped and saved to the specified directory."
+      output_example: |
+        detected_objects : {
+        'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],
+        'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]
+        }
+        object_number : {'baseball': 1, 'basket': 2}
+    user_metadata:
+      potential usage: The tool can be used for counting and locating interest-objects in images by utilizing the bounding boxes
+  Text_Detector_Tool:
+    tool_package_name: "text_detector"
+    tool_class_name: "Text_Detector_Tool"
+    tool_description: "A tool that detects text in an image using EasyOCR."
+    tool_version: "1.0.0"
+    input_types:
+      image: "str - The path to the image file."
+      languages: "list - A list of language codes for the OCR model."
+      detail: "int - The level of detail in the output. Set to 0 for simpler output, 1 for detailed output."
+    output_types: >
+      "list - A list of detected text blocks.
+      Each block contains the bounding box coordinates, the recognized text, and the confidence score (float).
+      e.g. [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], "Detected text", score], ...].
+      An empty list is returned if text detection fails after retries."
+    demo_commands:
+      command: |
+        text_detector_tool = Text_Detector_Tool()
+        result = text_detector_tool.execute(image='path/to/image', languages=['en', 'de'])
+      description: "Detect text in an image using multiple languages (English and German), including coordinates and confidence scores."
+      output_example: "[[[[100, 150], [200, 150], [200, 200], [100, 200]], 'Detected text', 0.95], ...]"
+    user_metadata:
+      frequently_used_language: 
+        "ch_sim": "Simplified Chinese"
+        "de": "German"
+        "en": "English"
+        "ja": "Japanese"
+      important_note: >
+        "The text detector may return additional text beyond the correct result.
+        Make sure to extract the required text according to your needs.
+  Letter_Detector_Tool:
+    tool_package_name: letter_detector
+    tool_class_name: Letter_Detector_Tool
+    tool_description: A tool that detects specific letters(e.g. Aa Bb Cc) in an image.
+    input_types:
+      image: "str - The path to the image file."
+    output_types: "list - A list of detected letters with bounding box coordinates, recognized text, and confidence score."
+    demo_commands:
+      command: |
+        letter_detector_tool = Letter_Detector_Tool()
+        results = letter_detector_tool.execute(image='path/to/image')
+      description: "Detect letters in an image, return the list of list [bbx, letter, and score]."
+      output_example: "[[[[100, 150], [200, 150], [200, 200], [100, 200]], 'A', 0.95], ...]."
+  Pixel_Depth_Tool:
+    tool_package_name: pixel_level_depth_estimator
+    tool_class_name:  Pixel_Depth_Tool
+    tool_description: A tool that estimates pixel-level depth from image or video, which is useful for distance estimation.
+    input_types:
+      mode: str - The mode of operation, either 'image' or 'video' (default='image').
+      image_path: list[str] - The list of path to a single or several input images.
+      video_path: list[str] - The list of path to a single or severatl input videos
+      output: "bool - If True, save the depth image or depth video (default: False)."
+      outdir: "str - The output directory to save the depth images/videos (default: './vis_depth')."
+    output_types: >
+      image_results: dict - A dictionary containing the depth maps for each input image.
+      Each key is the image path and the corresponding value is a dictionary with keys:
+      e.g. 'assets/image1.jpg': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': 'path/to/saved/image.png'}
+      video_results: dict - A dictionary containing the depth maps for each input video.
+      Each key is the video path and the corresponding value is a dictionary with keys:
+      e.g. 'assets/video1.mp4': {'video_depth_map': <list of numpy arrays with shape (H, W)>, 'output_video_path': 'path/to/saved/video.mp4'}
+    demo_commands:
+      command: |
+        pixel_depth_tool = Pixel_Depth_Tool()
+        image_results = pixel_depth_tool.execute(image_path=['path/to/image1', 'path/to/image2'], output=True, outdir= './vis_depth')
+      description: Processes a list of input images, estimates their depth maps, and returns genereated depth images paths.
+      output_example: |
+        {
+        'assets/image1.jpg': {
+              'depth_map': <numpy array with shape (H, W)>,
+              'output_image_path': './vis_depth/image1.png'
+          },
+          'assets/image2.jpg': {
+              'depth_map': <numpy array with shape (H, W)>,
+              'output_image_path': './vis_depth/image2.png'
+          }
+        }
+  Segmentation_Tool:
+    tool_package_name: segmentation_tool
+    tool_class_name: Segmentation_Tool
+    tool_description: A segmentation tool using the SAM2 model. Supports point-based and box-based inputs for single or batch segmentation.
+    input_types:
+      segmentation_mode: "str: 'points' or 'boxes'."
+      input_prompts: >
+        list[dict]: Each dictionary must include an 'image_path' key (str).
+        Optionally, include one of the keys 'input_points' or 'input_box'.
+        For 'points' segmentation_mode, 'input_points' should be a list of [x, y] coordinates;
+        for 'boxes' segmentation_mode, 'input_box' should be a list of bounding boxes defined as [x1, y1, x2, y2].
+      model_size: "str: SAM2 model size, e.g., 'base_plus' or 'small' (default: 'small')."
+    output_types: >
+      masks: list: Segmentation masks as numpy arrays.
+      For single image input, the output is a list of masks, each of shape (O, 1, H, W). O is number of Obeject in image segmentation.
+      For batch input, the output is a list of length equal to the number of input images,
+      where each element is a list of masks for that image (each mask with shape (O, 1, H, W)).
+      Note that the number of masks may vary across images.
+    demo_commands:
+      command: |
+        segmentation_tool = Segmentation_Tool()
+        masks = segmentation_tool.execute(segmentation_mode='boxes', input_prompts=[{'image_path': 'path/to/image1', 'input_box': [[100,150,400,500]]}, 
+        {'image_path': 'path/to/image2', 'input_box': [[50,80,300,350]]}], model_size='small')"
+      description: Batch segmentation for multiple images using box-based input. Each image returns its segmentation mask as a numpy array.
+      output_example: >
+        masks = [mask_image1, mask_image2]
+        # Example: mask_image1.shape -> (1, 0, H1, W1), mask_image2.shape -> (1, 0, H2, W2)
+        # where each mask is a numpy array representing the segmentation result.
+  Advanced_Object_Detector:
+    tool_package_name: advanced_object_detector
+    tool_class_name: Advanced_Object_Detector
+    tool_description: "Advanced Object detector performs better than Object Detector. Supports single or multiple category prompts with optional cropping of detected objects."
+    input_types: 
+      image: "str: Path to the input image file."
+      labels: "List of object categories to detect, e.g., ['person', 'tree']"
+      threshold: "Detection score threshold. Only objects above this score will be returned."
+      save_object: Whether to save cropped images of detected objects (bool).
+      saved_image_path: Directory to save cropped object images if `save_object` is True.
+    output_types:
+      results: >
+        A dictionary grouped by label, each containing list of detection entries with box, score, and optional saved image path.
+        e.g., {'person': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_path': 'path/to/saved/image.png'}]}
+      object_counts: "A dictionary with count of detected objects for each label. e.g., {'person': 2, 'tree': 1}"
+    demo_commands:
+      command: |
+        advanced_object_detector = Advanced_Object_Detector()
+        result, object_counts = advanced_object_detector.execute(image='path/to/demo', labels=['person', 'bicycle'], threshold=0.4, save_object=False)
+      description: "Detect 'person' and 'bicycle' in the image return dictionary with key `label`: bounding boxes and pixel-level masks."
+      output_example: |
+        results: {'person': [{'box': (50, 30, 200, 400), 'score': 0.92, 'saved_path': None}],'bicycle': [{'box': (400, 200, 550, 420), 'score': 0.85, 'saved_path': None}]}
+        object_counts: {'person': 2, 'bicycle': 1}
+    user_metadata:
+      potential_usage: >
+        The bounding box can be used to determine precise object regions and pixel-level coordinates, enabling integration
+        with downstream tasks such as depth estimation, object segmentation, or regions localization for sparse matching.
+
+# TODO matcher tool
