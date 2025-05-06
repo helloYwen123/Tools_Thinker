@@ -10,7 +10,7 @@ timestamp=$(date +"%m%d_%H%M%S")
 
 # BUG regarding tmp file
 NODE_LOCAL_STORAGE="${TMPDIR:-/tmp}"
-JOB_LOCAL_DIR="$NODE_LOCAL_STORAGE/wxie/grpo_job_${SLURM_JOB_ID}"
+JOB_LOCAL_DIR="$NODE_LOCAL_STORAGE/syang/grpo_job_${SLURM_JOB_ID}"
 mkdir -p "$JOB_LOCAL_DIR"
 echo "Created job-specific local directory: $JOB_LOCAL_DIR"
 
@@ -32,7 +32,7 @@ mkdir -p "$WANDB_CONFIG_PATH"
 export WANDB_CONFIG_DIR="$WANDB_CONFIG_PATH"
 # BUG
 
-accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src/open_r1/toolsgrpo_syang.py \
+accelerate launch --main_process_port 29508 --config_file=configs/zero3_syang.yaml src/open_r1/toolsgrpo_syang.py \
     --confile configs/prompt_configuration_file_syang.yaml \
     --output_dir outputs/Qwen2-VL-2B-Instruct-GRPO-BLINK \
     --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
@@ -45,7 +45,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --bf16 true \
     --torch_dtype bfloat16 \
     --gradient_checkpointing true \
-    --attn_implementation flash_attention_2 \
+    --attn_implementation eager \
     --max_pixels 401408 \
     --num_train_epochs 2 \
     --temperature 1.0 \
@@ -54,7 +54,7 @@ accelerate launch --main_process_port 29508 --config_file=configs/zero3.yaml src
     --save_only_model true \
     --report_to none \
     --use_cpu False \
-    --num_generations 4 \
+    --num_generations 2 \
     --freeze_vision False \
     --freeze_llm False \
-    2>&1 | tee "Debug_logs/training_log_${timestamp}.txt"
+    2>&1 | tee "Debug_logs/syang_training_log_${timestamp}.txt"
