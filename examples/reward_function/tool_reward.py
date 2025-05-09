@@ -25,69 +25,60 @@ import multiprocessing
 import asyncio
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor , as_completed
 
-def reliability_guard():
-    faulthandler.disable()
-    import builtins
-    builtins.exit = None
-    builtins.quit = None
-    import os
-    os.kill = None
-    os.system = None
-    os.remove = None
-    os.rmdir = None
-    import shutil
-    shutil.rmtree = None
-    import subprocess
-    subprocess.Popen = None
-    import sys
-    sys.modules["ipdb"] = None
+import requests
 
-def unsafe_execute(code, timeout, result, log_path):
-    def timeout_handler(signum, frame):
-        raise TimeoutError("Execution timed out")
-    signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(int(timeout))
+REMOTE_URL   = "http://10.153.51.195:8080/api/sandbox/execute"
+
+def unsafe_execute(code, timeout, result, log_path, QAid: str | None = None):
+    """
+    把 code 发给远端 sandbox 执行，并按 ExecutionResult 协议解析返回值。
+    结果以 (reward, final_result) 追加到 result 列表，并写入日志文件。
+    """
+    payload = {
+        "code": code,
+        "timeout": timeout,
+        "q_aid": QAid or "unknown"
+    }
     try:
-        reliability_guard()
-        buffer = StringIO()
-        with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
-            exec_globals = {"final_result": None}
-            exec(code, exec_globals)
-        output_raw = buffer.getvalue()
-        output = exec_globals.get("final_result", None)
-        
-        reward = 0.0
-        if output is not None:
-            reward = 1.0
-            success_log_path = os.path.join(log_path, "success_execution.log")
-            with open(success_log_path, "a+") as df:
-                df.write("\n" + "=" * 30 + " New Completed Execution " + "=" * 30 + "\n")
-                df.write("[EXEC CODE]\n")
-                df.write(code + "\n")
-                df.write("[THE PRINT OUTPUT]\n")
-                df.write(output_raw + "\n")
-                df.write("[GENERATE VALID FINAL_RESULT]\n")
-                df.write(str(output) + "\n")
-                df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
-        else:
-            debug_log_path = os.path.join(log_path, "bug_exec.log")
-            with open(debug_log_path, "a+") as df:
-                df.write("\n[None RESULT]\n")
-                df.write("[Successful Execution but Get None RESULT]\n")
-                df.write("[EXEC CODE]\n")
-                df.write(code + "\n")
-                df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+        # 远端执行 + 网络超时 (sandbox 执行时长 + 5s 传输缓冲)
+        resp = requests.post(REMOTE_URL, json=payload, timeout=timeout + 5)
+        resp.raise_for_status()
+        data = resp.json()
+
+        status     = data.get("status")
+        stdout_raw = data.get("stdout", "")
+        stderr_raw = data.get("stderr", "")
+        output     = data.get("result", None)
+        err_msg    = data.get("error_message")
+
+        # 合并 stdout/stderr 用于日志
+        output_raw = stdout_raw + ("\n" + stderr_raw if stderr_raw else "")
+
+        # 失败状态视为 exception
+        if status != "success":
+            raise RuntimeError(f"Remote execution failed: {status} | {err_msg}")
+
+        reward = 1.0 if output is not None else 0.0
+        log_name = "success_execution.log" if reward else "bug_exec.log"
+
+        # 写日志
+        with open(os.path.join(log_path, log_name), "a+", encoding="utf-8") as lf:
+            lf.write("\n" + "=" * 30 + f" QAid={QAid} " + "=" * 30 + "\n")
+            lf.write("[EXEC CODE]\n" + code + "\n")
+            lf.write("[THE PRINT OUTPUT]\n" + output_raw + "\n")
+            lf.write("[GENERATE VALID FINAL_RESULT]\n" + str(output) + "\n")
+            lf.write("=" * 80 + "\n\n")
+
         result.append((reward, output))
+
     except Exception as e:
-        debug_log_path = os.path.join(log_path, "bug_exec.log")
-        with open(debug_log_path, "a+") as df:
-            df.write("\n[Execution Failed]\n")
-            df.write(str(e) + "\n")
-            df.write(f"code: \n{code}\n")
-            df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+        # 执行或网络异常记为失败
+        with open(os.path.join(log_path, "bug_exec.log"), "a+", encoding="utf-8") as lf:
+            lf.write("\n" + "=" * 30 + f" QAid={QAid} ERROR " + "=" * 30 + "\n")
+            lf.write(f"[Execution Failed] {e}\n")
+            lf.write("CODE:\n" + code + "\n")
+            lf.write("=" * 80 + "\n\n")
         result.append((0.0, None))
-    finally:
-        signal.alarm(0)
 
 def execution_reward(predict_str, QAid, step):
     def extract_code(completion):
@@ -111,7 +102,7 @@ def execution_reward(predict_str, QAid, step):
 
     manager = multiprocessing.Manager()
     result = manager.list()
-    p = multiprocessing.Process(target=unsafe_execute, args=(code, 120, result, log_root_dir))
+    p = multiprocessing.Process(target=unsafe_execute, args=(code, 120, result, log_root_dir, QAid))
     p.start()
     p.join(121)
     if p.is_alive():

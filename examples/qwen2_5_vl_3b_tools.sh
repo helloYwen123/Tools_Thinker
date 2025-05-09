@@ -1,6 +1,7 @@
 set -x
 
 export NCCL_P2P_DISABLE=1
+export CUDA_VISIBLE_DEVICES=0
 MODEL_PATH=Qwen/Qwen2.5-VL-3B-Instruct  # replace it with your local file path
 timestamp=$(date +"%m%d_%H%M%S")
 mkdir -p Debug_logs
@@ -9,7 +10,7 @@ echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 # Blink: BLINK-Benchmark/BLINK
 # SAT: SAT
 PYTHONUNBUFFERED=1 python3 -m verl.trainer.main_tools \
-    config=examples/config_tools.yaml \
+    config=config_tools.yaml \
     data.train_files=BLINK-Benchmark/BLINK \
     data.val_files=BLINK-Benchmark/BLINK \
     worker.actor.model.model_path=${MODEL_PATH} \
