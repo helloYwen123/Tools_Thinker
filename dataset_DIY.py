@@ -371,12 +371,12 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
         for idx, json_sample in enumerate(json_samples,start=1): # here json_samples is from `rollouts_x.json` file 
             # TODO 
             # # after one rollout(json_sample) finished, total executed number +1 & total accurate number +1
-            # exe_num += 1
-            # acc_num += 1
+            exe_num += 1
+            acc_num += 1
             print(f" processing and executing {idx}/{total} code in {sample_name}")
             if "final_solution" in json_sample:
-                # exe_success += 1
-                # acc_success += 1
+                exe_success += 1
+                acc_success += 1
                 print(f" The Trajectory stops extension because correct answer.\n")
                 continue
             codes_keys = [k for k in json_sample.keys() if k.startswith("code_ex")]
@@ -432,9 +432,6 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
             else:
                 json_sample[interpreter_key] = "Error: Use <code> </code> tags only—do not include markdown (e.g., python), text, or explanations."
 
-        # after one rollout(json_sample) finished, total executed number +1 & total accurate number +1
-            exe_num += 1
-            acc_num += 1
         print(f"up to current {i}-th sample, execution_rate:{exe_success}/{exe_num} and accuracy_rate:{acc_success}/{acc_num}.\n")    
         # save as new json file for rollouts
         new_json_name = f"rollouts_trajectory_{code_idx}.json"
@@ -453,11 +450,16 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
 if __name__ == "__main__":
     import sys
     from datetime import datetime
-    ######### need to adjust following variables to adapt to individuel environment setting and dataset location ###########
-    # confiuration_file = "prompt_configuration_file.yaml"
-    # dataset_prefix = "/home/stud/wxie/SAT/"  # "/nfs/data8/liao/wxie/SAT/"  # "/home/stud/wxie/"
-    # dataset_path = "SAT_subtasks/SAT_Counting.json" # "SAT_subtasks/SAT_Counting.json" BLINK_Dataset/Counting/val/Counting_val.json
-    # TODO: Convert these path to inputs of `vllm_inference()` 
+    
+######### Adjust the following variables based on your environment and dataset location #########
+
+# These should now be passed as arguments to `vllm_inference()`, not hardcoded here
+# Example:
+# configuration_file = "prompt_configuration_file.yaml"
+# dataset_prefix = "/home/stud/wxie/SAT/"
+# dataset_path = "SAT_subtasks/SAT_Counting.json"
+
+# TODO: Convert these paths into input parameters for `vllm_inference()`
     # 获取当前时间并格式化为字符串
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     class Logger(object):
