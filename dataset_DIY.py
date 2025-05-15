@@ -32,7 +32,7 @@ from vllm.distributed import cleanup_dist_env_and_memory
 from dataclasses import asdict
 
 
-def vllm_inference(n=2, output_root = "Rollout/Counting"):
+def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
     # for SAT Dataset
     def make_conversation_sat(example, prefix, conf):
         # get answer
@@ -122,7 +122,7 @@ def vllm_inference(n=2, output_root = "Rollout/Counting"):
     full_path = os.path.join(dataset_prefix, dataset_path)
     with open(full_path, 'r') as f:
         raw_dataset = json.load(f)
-        for sample in raw_dataset[0:n]: # n contorlling the number of QA pairs
+        for sample in raw_dataset[start:end]: # end-start contorlling the number of QA pairs
             wrapped_data = make_conversation_sat(sample, dataset_prefix, conf) 
             all_samples.append(wrapped_data)
             
@@ -221,13 +221,14 @@ def vllm_inference(n=2, output_root = "Rollout/Counting"):
                 # Rollout ending
                 
         elif phase == 2:
-            if max_idx < 3:
-                # 开始延展轨迹trajectory in rollout json
-                prompt_kwargs = sample["kwargs"]
-                for json_sample in json_samples: # here `json_samples` is from trajectory.json files
-                    if "final_solution" in json_sample:
-                        print(f"The Trajectory stops extension because of the correct answer.")
-                        continue
+            max_idx = min(max_idx,3)
+            # 开始延展轨迹`trajectory.json`
+            prompt_kwargs = sample["kwargs"]
+            for json_sample in json_samples: # here `json_samples` is from trajectory.json files
+                if "final_solution" in json_sample:
+                    print(f"The Trajectory stops extension because of the correct answer.")
+                    continue
+                if max_idx != 3:
                     codes = [k for k in json_sample.keys() if k.startswith("code_ex")] 
                     for k in codes:
                         # 从已有的json trajectory中更新prompt; 用新生成的code 更新prompt template
@@ -246,31 +247,41 @@ def vllm_inference(n=2, output_root = "Rollout/Counting"):
                         # code_text = json_sample[k].replace("\n", "\\n") # TODO check whether is better
                         interpreter_text = json_sample[k]
                         prompt_kwargs[f"interpreter{idx}"] = interpreter_text
-                    new_formatted = PROMPT_TEMPLATE.format(**prompt_kwargs)
-                    if PROMPT_SHOW:
-                        print(f"new_formatted: {new_formatted}\n")
-                        PROMPT_SHOW = False
-                    # break
-                    message_content = [*({'type': 'image'} for _ in range(len(json_sample["image"])))]
-                    message_content.append({
-                            "type": "text",
-                            "text": new_formatted})
-                    
-                    llm_prompt = [{"role":"user", "content": message_content}]
-                    text_phase_2 = processor.apply_chat_template(
-                        llm_prompt, tokenize=False, add_generation_prompt=True
-                    )
+                else: # 防止最后一次rollout时trajactory3存在情况的bug
+                    for i in [1, 2]:
+                        code_key = f"code_ex{i}"
+                        interpreter_key = f"interpreter{i}"
+                        if code_key in json_sample:
+                            prompt_kwargs[f"code_example{i}"] = json_sample[code_key]
+                        if interpreter_key in json_sample:
+                            prompt_kwargs[f"interpreter{i}"] = json_sample[interpreter_key]
+                              
+                new_formatted = PROMPT_TEMPLATE.format(**prompt_kwargs)
+                if PROMPT_SHOW:
+                    print(f"new_formatted: {new_formatted}\n")
+                    PROMPT_SHOW = False
+                # break
+                message_content = [*({'type': 'image'} for _ in range(len(json_sample["image"])))]
+                message_content.append({
+                        "type": "text",
+                        "text": new_formatted})
+                
+                llm_prompt = [{"role":"user", "content": message_content}]
+                text_phase_2 = processor.apply_chat_template(
+                    llm_prompt, tokenize=False, add_generation_prompt=True
+                )
 
-                    request = {
-                        "prompt": text_phase_2,
-                        "multi_modal_data": {"image": [images]},
-                    }
-                    outputs = llm.generate(request, sampling_params)
-                    out_text = outputs[0].outputs[0].text
-                    last_idx = len(codes) + 1 # 累积 在json 文件中的 code_id
-                    key = f"code_ex{last_idx}"
-                    json_sample[key] = out_text # 添加新的code text到json_sample json文件
-                    all_outputs.append(out_text)
+                request = {
+                    "prompt": text_phase_2,
+                    "multi_modal_data": {"image": [images]},
+                }
+                outputs = llm.generate(request, sampling_params)
+                out_text = outputs[0].outputs[0].text
+                
+                last_idx = min(len(codes) + 1, 3) # 累积 在json 文件中的 code_id
+                key = f"code_ex{last_idx}"
+                json_sample[key] = out_text # 添加新的code text到json_sample json文件
+                all_outputs.append(out_text)
         else:
             raise ValueError
         
@@ -298,15 +309,15 @@ def vllm_inference(n=2, output_root = "Rollout/Counting"):
                 json.dump(json_samples, f_json, ensure_ascii=False, indent=4)
                 
         if phase == 1:
-            max_idx = 0 # 这里需要改成1
+            max_idx = 1
             save_rollout_outputs(all_outputs, json_samples, sample_dir, sample_idx, max_idx)
         else:
-            if max_idx < 3:
-                max_idx += 1
-                save_rollout_outputs(all_outputs, json_samples, sample_dir, sample_idx, max_idx)
-            else:
+            max_idx += 1
+            max_idx = min(max_idx, 3)
+            save_rollout_outputs(all_outputs, json_samples, sample_dir, sample_idx, max_idx)
+            if max_idx == 3:
                 print("!!!!!!The number of turns has been up to the limit!!!!!!!! \n")
-                continue
+
 
     del llm
     cleanup_dist_env_and_memory()   # vLLM
@@ -319,7 +330,7 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
     def numerical_sort_key(name):
         match = re.search(r'(\d+)', name)
         return int(match.group(1)) if match else float('inf')
-    sample_names = sorted(os.listdir(root_dir), key=numerical_sort_key) # 文件名顺序
+    sample_names = sorted(os.listdir(root_dir), key=numerical_sort_key) # 调整文件名顺序
     total_samples = len(sample_names)
     def filter_result(result_data: dict):
         """
@@ -347,7 +358,6 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
     # initialization
     exe_success, exe_num = 0, 0
     acc_success, acc_num = 0, 0
-
     # iterate through files in folder default: "./Rollout/Counting"
     for i, sample_name in enumerate(sample_names,start=1):  # e.g. sample1,sample2 ...
         print(f"processing {i}/{total_samples} for {sample_name}.\n")
@@ -357,19 +367,18 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
             continue
 
         idx_rollout = -1 
-        for fname in os.listdir(sample_dir): # 列出当前sample文件夹中所有的rollout trajectory json文件
+        for fname in os.listdir(sample_dir): # 列出当前sample文件夹中所有的rollout json文件
             m = re.match(r"rollouts_(\d+)\.json$", fname)
             if m:
                 idx_rollout = max(idx_rollout, int(m.group(1)))
 
         load_path = os.path.join(sample_dir, f"rollouts_{idx_rollout}.json")
-        with open(load_path, 'r', encoding='utf-8') as f: # 加载最新的rollout trajectory json文件
+        with open(load_path, 'r', encoding='utf-8') as f: # 加载最新的rollout json文件
             json_samples = json.load(f) 
         
         total = len(json_samples)
         # get code from rollouts(n) json file for this sample
         for idx, json_sample in enumerate(json_samples,start=1): # here json_samples is from `rollouts_x.json` file 
-            # TODO 
             # # after one rollout(json_sample) finished, total executed number +1 & total accurate number +1
             exe_num += 1
             acc_num += 1
@@ -385,8 +394,8 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
             for k in codes_keys:
                 idx = int(k.replace("code_ex", ""))
                 code_idx = max(code_idx, idx) 
-            interpreter_key = INTERPRETOR_KEY + f"{code_idx}"    # the latest `interpreterid`` is consistent with `code_exid`
-            code_text = json_sample[f"code_ex{code_idx}"] # 获取最新的code text进行运行 从json文件中提取对应的code text
+            interpreter_key = INTERPRETOR_KEY + f"{code_idx}"    # the latest `interpreterid`` is consistent with `code_ex_id`
+            code_text = json_sample[f"code_ex{code_idx}"]        # 获取最新的code text进行运行 从json文件中提取对应的 `code text`
             
             # remove <code> tags
             if code_text.strip().startswith("<code>"):
@@ -405,7 +414,7 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
                 "q_aid": json_sample["rolloutID"]
                 }
                 try:
-                    resp = requests.post(MARAJO_SANDBOX_URL, json=payload, timeout=EXECUTION_TIMEOUT_SECONDS)
+                    resp = requests.post(MARAJO_SANDBOX_URL, json=payload, timeout=EXECUTION_TIMEOUT_SECONDS + DELAY_BETWEEN_REQUESTS)
                     resp.raise_for_status()
                     result_data = resp.json()
                     status = result_data.get("status")
@@ -450,17 +459,8 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
 if __name__ == "__main__":
     import sys
     from datetime import datetime
-    
-######### Adjust the following variables based on your environment and dataset location #########
 
-# These should now be passed as arguments to `vllm_inference()`, not hardcoded here
-# Example:
-# configuration_file = "prompt_configuration_file.yaml"
-# dataset_prefix = "/home/stud/wxie/SAT/"
-# dataset_path = "SAT_subtasks/SAT_Counting.json"
-
-# TODO: Convert these paths into input parameters for `vllm_inference()`
-    # 获取当前时间并格式化为字符串
+    # 获取当前时间并格式化为字符串，例如 2025-05-14_15-30-22
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     class Logger(object):
         def __init__(self, filename="pipeline_log.txt"):
@@ -486,7 +486,7 @@ if __name__ == "__main__":
     MARAJO_SANDBOX_URL = "http://10.153.51.195:8080/api/sandbox/execute"
     # --- End Configuration ---
     for i in range(1, MAX_CODE_EXECUTIONS_PER_ENTRY+1):
-        vllm_inference(n=100, output_root="Rollout/Counting") # n: the numbers of qa extracted from all datasets
+        vllm_inference(start=, end =, output_root="Rollout/Counting") # n: the numbers of qa extracted from all datasets
         time.sleep(2)
         print(f"{i}-th turn inference finished!\n")
         execution_success_rate, accuracy_rate = Trajectory_extension(root_dir="Rollout/Counting")
