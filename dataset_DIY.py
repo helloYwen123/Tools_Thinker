@@ -125,13 +125,11 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
         for sample in raw_dataset[start:end]: # end-start contorlling the number of QA pairs
             wrapped_data = make_conversation_sat(sample, dataset_prefix, conf) 
             all_samples.append(wrapped_data)
+    
             
     # print(f"\nThe first sample:\n {all_samples[0]}\n")
     # # Print the first sample for debugging
     # print(f"\nThe first sample image path:\n {all_samples[0]['image_path']}\n")
-
-    # prompt = all_samples[0]['prompt'][0]["content"][-1]["text"]
-    # print(f"\nDebug for message prompt:\n{prompt}")
 
     engine_args = EngineArgs(
         model="Qwen/Qwen2.5-VL-7B-Instruct",
@@ -156,7 +154,8 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
     # 开始历遍所有samples data
     os.makedirs(output_root, exist_ok=True)
     PROMPT_SHOW = True
-    for sample_idx, sample in enumerate(all_samples,start=1):
+    # genreate idx from `start` to `end`
+    for sample_idx, sample in zip(range(start+1, end+1), all_samples):
         sample_dir = os.path.join(output_root, f"sample_{sample_idx}")
         os.makedirs(sample_dir, exist_ok=True)
         
@@ -189,15 +188,19 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
             max_idx, latest_fname = max(rollout_files, key=lambda x: x[0]) # 找到最新的轨迹json文件 并加载
             # json_samples = {"image", "question", "QAid", "GT", "code_ex_i","RolloutID"}
             load_path = os.path.join(sample_dir, latest_fname)
-            print(f"[Sample {sample_idx}] Phase 2: load {latest_fname}")
             with open(load_path, 'r', encoding='utf-8') as f:
                 json_samples = json.load(f)
+            print(f"\n[Sample {sample_idx}] Phase 2: load {latest_fname}\n")
         else:
             phase = 1 # rollout seeds phase
             json_samples = []
-            print(f"[Sample {sample_idx}] Phase 1: start initial rollouts")
             
         if phase == 1:
+            # For debug
+            prompt = all_samples[0]['prompt'][0]["content"][-1]["text"]
+            print(f"\nDebug for message prompt:\n{prompt}")
+            
+            print(f"\n[Sample {sample_idx}] Phase 1: start initial rollouts\n")
             for id in range(20):
                 # 开始创建轨迹trajectory n
                 # every sample(1 qa) rollout 20 times; 大循环下对单个QA进行读取； 小循环对这个qa用模型(vLLM)推理20轮
@@ -228,8 +231,8 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
                 if "final_solution" in json_sample:
                     print(f"The Trajectory stops extension because of the correct answer.")
                     continue
+                codes = [k for k in json_sample.keys() if k.startswith("code_ex")] 
                 if max_idx != 3:
-                    codes = [k for k in json_sample.keys() if k.startswith("code_ex")] 
                     for k in codes:
                         # 从已有的json trajectory中更新prompt; 用新生成的code 更新prompt template
                         idx = int(k.replace("code_ex", ""))
@@ -326,12 +329,27 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
         print("Destroying distributed process group...")
         dist.destroy_process_group()
 
-def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的名字进行 给 trajectory 命名
+def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 rollout 最新的名字进行 给 trajectory 命名
     def numerical_sort_key(name):
         match = re.search(r'(\d+)', name)
         return int(match.group(1)) if match else float('inf')
-    sample_names = sorted(os.listdir(root_dir), key=numerical_sort_key) # 调整文件名顺序
-    total_samples = len(sample_names)
+    sample_names = sorted(os.listdir(root_dir), key=numerical_sort_key) # 文件名顺序
+    
+    sample_nums = []
+    for name in sample_names:
+        m = re.match(r'sample_(\d+)$', name)
+        if m:
+            sample_nums.append(int(m.group(1)))
+    # 检查(start,end)内的sample_N是否全部存在
+    for n in range(start+1, end+1):
+        if n not in sample_nums:
+            raise FileNotFoundError(f"file sample_{n} doesn't exists in {root_dir}")
+
+    # 只保留start到end区间的文件名，并且顺序排序
+    selected_sample_names = [f"sample_{n}" for n in range(start+1, end+1)]
+    
+    total_samples = len(selected_sample_names)
+    
     def filter_result(result_data: dict):
         """
         Picks the final result on success or the traceback on error.
@@ -359,7 +377,7 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
     exe_success, exe_num = 0, 0
     acc_success, acc_num = 0, 0
     # iterate through files in folder default: "./Rollout/Counting"
-    for i, sample_name in enumerate(sample_names,start=1):  # e.g. sample1,sample2 ...
+    for i, sample_name in enumerate(selected_sample_names,start=1):  # e.g. sample1,sample2 ...
         print(f"processing {i}/{total_samples} for {sample_name}.\n")
         sample_dir = os.path.join(root_dir, sample_name)
         if not os.path.isdir(sample_dir):
@@ -398,7 +416,7 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
             code_text = json_sample[f"code_ex{code_idx}"]        # 获取最新的code text进行运行 从json文件中提取对应的 `code text`
             
             # remove <code> tags
-            if code_text.strip().startswith("<code>"):
+            if re.fullmatch(r"<code>.*?</code>", code_text.strip(), re.DOTALL):
                 code_text = code_text.replace("<code>", "").replace("</code>", "").strip()
                 # Check if code still contains markdown-style block
                 if code_text.strip().startswith("```"):
@@ -414,7 +432,7 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
                 "q_aid": json_sample["rolloutID"]
                 }
                 try:
-                    resp = requests.post(MARAJO_SANDBOX_URL, json=payload, timeout=EXECUTION_TIMEOUT_SECONDS + DELAY_BETWEEN_REQUESTS)
+                    resp = requests.post(MARAJO_SANDBOX_URL, json=payload, timeout=EXECUTION_TIMEOUT_SECONDS)
                     resp.raise_for_status()
                     result_data = resp.json()
                     status = result_data.get("status")
@@ -427,7 +445,7 @@ def Trajectory_extension(root_dir="Rollout/Counting"): # 以 rollout 最新的�
                                 json_sample["final_solution"] = filtered
                                 # print(f"The final result of code: {filtered}; and the Ground Truth: {json_sample['GT']}, current acc_success_num: {acc_success}")
                             else:
-                                json_sample[interpreter_key] = f"The code ran successfully, but the final result:{filtered} does not match the ground truth:{json_sample['GT']}. Please revise your solution."
+                                json_sample[interpreter_key] = f"The code ran successfully, but the final result:{filtered} does not match the ground truth:{json_sample['GT']}. Adjust your solution and make some changes"
                         else: #
                             json_sample[interpreter_key] = filtered
                     # print(f"final result of execution: {filtered}\n")
@@ -479,18 +497,18 @@ if __name__ == "__main__":
     print("Start inference and execution loop...\n")
     # --- Configuration ---
     CODE_KEY_PREFIX = "code_ex" # e.g., code_ex01, code_ex02
-    MAX_CODE_EXECUTIONS_PER_ENTRY = 1 # Max number of code_exNN to check
+    MAX_CODE_EXECUTIONS_PER_ENTRY = 3 # Max number of code_exNN to check
     EXECUTION_TIMEOUT_SECONDS = 120
     INTERPRETOR_KEY = "interpreter"
     DELAY_BETWEEN_REQUESTS = 0.5
     MARAJO_SANDBOX_URL = "http://10.153.51.195:8080/api/sandbox/execute"
     # --- End Configuration ---
     for i in range(1, MAX_CODE_EXECUTIONS_PER_ENTRY+1):
-        vllm_inference(start=, end =, output_root="Rollout/Counting") # n: the numbers of qa extracted from all datasets
+        vllm_inference(start=0, end =1, output_root="Rollout/Counting") # n: the numbers of qa extracted from all datasets
         time.sleep(2)
-        print(f"{i}-th turn inference finished!\n")
-        execution_success_rate, accuracy_rate = Trajectory_extension(root_dir="Rollout/Counting")
-        print(f"{i}-th execution finished, and starting nexe turn!\n execution_success_rate:{execution_success_rate}%, accuracy_rate:{accuracy_rate}%\n")
+        print(f"\n{i}-th turn inference finished!\n")
+        execution_success_rate, accuracy_rate = Trajectory_extension(start=0 , end = 1,root_dir="Rollout/Counting")
+        print(f"\n{i}-th execution finished, and starting next turn!\n execution_success_rate:{execution_success_rate}%, accuracy_rate:{accuracy_rate}%\n")
         #
     print("All steps done.")
     sys.stdout.log.close()
