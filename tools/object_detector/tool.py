@@ -11,7 +11,7 @@ root_dir = os.path.dirname(os.path.dirname(current_dir))
 sys.path.insert(0, root_dir)
 from basetool import BaseTool
 from PIL import Image, ImageOps
-
+import json
 import os
 # If CUDA_HOME is set, print the value
 # print(os.environ.get('CUDA_HOME', 'CUDA_HOME is not set'))
@@ -25,7 +25,7 @@ class Object_Detector_Tool(BaseTool):
         super().__init__(
             tool_module_name="object_detector",
             tool_class_name="Object_Detector_Tool",
-            tool_description="A tool that detects objects in an image using the Grounding DINO model and saves individual object images with empty padding.",
+            tool_description="A tool that detects objects in an image using the Grounding DINO model, optionally saves individual object images and exports detection outputs as a JSON file.",
             tool_version="1.0.0",
             input_types={
                 "image": "str - The path to the image file.",
@@ -34,35 +34,37 @@ class Object_Detector_Tool(BaseTool):
                 "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
                 "save_object": "bool - Whether to save the detected objects as images (default: False).",
                 "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects').",
+                "save_json": "bool - Whether to save detection results as a JSON file (default: False).",
+                "json_path": "str - The file path to save the JSON results if `save_json` is True (default: 'detection_results.json')."
             },
-            output_types = "tuple - A tuple containing two elements: \
+            output_types = "dict - A dictionary mapping each detected label to a list of detection entries. \
             (1) a dictionary mapping each detected label to a list of detection entries,\
-            e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}]}, \
-            (2) a dictionary mapping each label to the number of detected objects in the image.\
-            e.g. {'baseball': 2, 'basket': 1}",
+            e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}, ...]} ",
             demo_commands = [
                 {
                     "command": """
                     object_detector_tool = Object_Detector_Tool()
-                    detected_objects, object_number = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects")
+                    detected_objects = object_detector_tool.execute(image="path/to/image", labels=["baseball", "basket"], save_object=True, saved_image_path="detected_objects", save_json=True, json_path="detected_objects/results.json")
                     """,
                     "description": (
-                        "Detects 'baseball' and 'basket' in the image. Returns a tuple: "
-                        "(1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path); "
-                        "(2) a dict with the total count for each detected label. "
+                        "Detects 'baseball' and 'basket' in the image. Returns a dictionary mapping each detected label to a list of detection entries.: "
+                        "(1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path)"
                         "If 'save_object' is True, detected objects are cropped and saved to the specified directory."
+                        "If 'save_json' is True, detection results are saved as JSON to 'detected_objects/results.json'."
                     ),
                     "output_example": """
-                        detected_objects : {
+                        detected_objects: {
                         'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],
                         'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]
                         }
-                        object_number : {'baseball': 1, 'basket': 2}
                     """
                 }
             ],
             user_metadata={
-                "potential usage": "The tool can be used for counting and locating interest-objects in images by utilizing the bounding boxes"
+                "potential usage": """
+                The bounding box obtained by tool can be used to determine precise object regions and pixel-level coordinates, enabling integration
+                with downstream tasks such as depth estimation, object segmentation, or regions localization for sparse matching.
+                """
             }
         )
 
@@ -93,7 +95,9 @@ class Object_Detector_Tool(BaseTool):
         padded_image.save(save_path)
         return save_path
 
-    def execute(self, image, labels, threshold=0.35, model_size='tiny', max_retries=10, retry_delay=2, clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images"):
+    def execute(self, image, labels, threshold=0.35, model_size='tiny', max_retries=10, retry_delay=2, 
+            clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images",
+            save_json=False, json_path="./detection_results.json"):
         
         # default padding value
         padding=20
@@ -114,7 +118,6 @@ class Object_Detector_Tool(BaseTool):
                 object_counts = {}
                 grouped_results = {}
                 for result in results:
-                    # pick box， label, and score
                     box = tuple(result["box"].values())
                     label = result["label"]
                     score = round(result["score"], 2)
@@ -137,7 +140,22 @@ class Object_Detector_Tool(BaseTool):
                         "saved_image_path": save_path
                     })
 
-                return grouped_results, object_counts
+                # 新增保存 json 功能
+                if save_json:
+                    os.makedirs(os.path.dirname(json_path), exist_ok=True)
+                    grouped_results_for_json = {
+                        label: [
+                            {
+                                "box": list(obj["box"]),
+                                "score": obj["score"],
+                                "saved_image_path": obj["saved_image_path"]
+                            } for obj in objs
+                        ] for label, objs in grouped_results.items()
+                    }
+                    with open(json_path, "w", encoding="utf-8") as f:
+                        json.dump(grouped_results_for_json, f, ensure_ascii=False, indent=2)
+                
+                return grouped_results
             
             except RuntimeError as e:
                 if "CUDA out of memory" in str(e):
@@ -188,7 +206,7 @@ if __name__ == "__main__":
 
     # Execute the tool
     try:
-        objs, labels_num = tool.execute(image=image_path, labels=["baseball"], save_object=True, saved_image_path="detected_objects",model_size='tiny')
+        objs = tool.execute(image=image_path, labels=["baseball"], save_object=True, save_json=True, saved_image_path="detected_objects",model_size='tiny')
         print("Detected Objects:")
         for label, entries in objs.items():
             print(f"Label: {label}")
@@ -197,7 +215,7 @@ if __name__ == "__main__":
                 print(f"    Confidence: {data['score']}")
                 print(f"    Bounding box: {data['box']}")
                 print(f"    Saved image path: {data['saved_image_path']}")
-            print(f"  Total detections for {label}: {labels_num[label]}")
+            # print(f"  Total detections for {label}: {labels_num[label]}")
 
     except ValueError as e: 
         print(f"Execution failed: {e}")
