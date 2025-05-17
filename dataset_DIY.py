@@ -504,10 +504,10 @@ if __name__ == "__main__":
     MARAJO_SANDBOX_URL = "http://10.153.51.195:8080/api/sandbox/execute"
     # --- End Configuration ---
     for i in range(1, MAX_CODE_EXECUTIONS_PER_ENTRY+1):
-        vllm_inference(start=0, end =1, output_root="Rollout/Counting") # n: the numbers of qa extracted from all datasets
+        vllm_inference(start=100, end =200, output_root="Rollout/Counting") # end-start: the numbers of qa extracted from all datasets
         time.sleep(2)
         print(f"\n{i}-th turn inference finished!\n")
-        execution_success_rate, accuracy_rate = Trajectory_extension(start=0 , end = 1,root_dir="Rollout/Counting")
+        execution_success_rate, accuracy_rate = Trajectory_extension(start=100 , end = 200,root_dir="Rollout/Counting")
         print(f"\n{i}-th execution finished, and starting next turn!\n execution_success_rate:{execution_success_rate}%, accuracy_rate:{accuracy_rate}%\n")
         #
     print("All steps done.")
