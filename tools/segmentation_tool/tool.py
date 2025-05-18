@@ -201,7 +201,7 @@ class Segmentation_Tool(BaseTool):
                 for masks, scores in zip(masks_batch,scores_batch):
                     final_masks.append(masks[range(len(masks)), np.argmax(scores, axis=-1)])
             for mask in final_masks:
-                print(mask.shape)        
+                print(mask.shape)
             return final_masks
         
     def get_metadata(self):
@@ -237,7 +237,7 @@ if __name__ == '__main__':
         plt.imsave(save_path, mask_image)
         print(f"Mask saved to: {save_path}")
 
-    segmentation_tool = SegmentationTool()
+    segmentation_tool = Segmentation_Tool()
     model_size = "small"
 ####################PASS single image + Input(points)######################## 
     # single_point_input = [
