@@ -51,7 +51,7 @@ class Segmenter_Tool(BaseTool):
                     "output_examples": (
                         "masks : [mask_image1, mask_image2]\n"
                         "# Example: mask_image1.shape -> (1, 0, H1, W1), mask_image2.shape -> (1, 0, H2, W2)\n"
-                        "# where each mask is a numpy array representing the segmentation result."
+                        "# where each mask is a numpy array representing the pixel-level locations (masks) of those objects specified with boxes."
                     )
                 }
             ],
