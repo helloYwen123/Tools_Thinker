@@ -114,7 +114,7 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
 
         return active_tool_names, filtered_metadata_dict
 ###################################################################################################################
-# Preparation Ending and Loading starts
+# Preparation ends and Loading starts
 ###################################################################################################################
     # Load the dataset
     confiuration_file = "prompt_configuration_file.yaml"
@@ -283,10 +283,10 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
                             prompt_kwargs[f"interpreter{i}"] = json_sample[interpreter_key]
                               
                 new_formatted = PROMPT_TEMPLATE.format(**prompt_kwargs)
-                if PROMPT_SHOW:
+                if PROMPT_SHOW: # for debug
                     print(f"new_formatted: {new_formatted}\n")
                     PROMPT_SHOW = False
-                # break
+
                 message_content = [*({'type': 'image'} for _ in range(len(json_sample["image"])))]
                 message_content.append({
                         "type": "text",
@@ -534,3 +534,4 @@ if __name__ == "__main__":
         #
     print("All steps done.")
     sys.stdout.log.close()
+

@@ -2,8 +2,8 @@ import os
 import json
 from tqdm import tqdm
 
-root_dir = '../Rollout/ViRL'
-output_file = 'success_traj.json'
+root_dir = '../Rollout-7B-(101,200)/Counting'
+output_file = '101-200.json'
 
 success_entries = []
 

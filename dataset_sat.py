@@ -31,7 +31,6 @@ from vllm import LLM, EngineArgs, SamplingParams
 from vllm.distributed import cleanup_dist_env_and_memory
 from dataclasses import asdict
 
-
 def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
     # for SAT Dataset
     def make_conversation_sat(example, prefix, conf):
@@ -138,7 +137,7 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
         enforce_eager=False,
         enable_prefix_caching=True,
         max_model_len = 8192,
-        tensor_parallel_size=1 # distributed inference
+        tensor_parallel_size=1  # distributed inference
     )
     llm = LLM(**asdict(engine_args))
 
@@ -512,3 +511,4 @@ if __name__ == "__main__":
         #
     print("All steps done.")
     sys.stdout.log.close()
+
