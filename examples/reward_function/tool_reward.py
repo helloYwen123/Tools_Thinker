@@ -52,7 +52,7 @@ def accuracy_reward(exec_result, step, solution, QAid, **kwargs):
         # symbolic calculation failed
         pass 
 
-    if exec_result == solution or exec_result == solution.lower():
+    if exec_result == solution or exec_result.lower() == solution.lower():
         reward = 1.0
         with open(acc_log_path, "a") as f:
             f.write(f"\n[QAid]{QAid}\n")
@@ -76,7 +76,6 @@ def execution_reward(predict_str, QAid, step):
             "q_aid": QAid or "unknown"
         }
         try:
-            
             resp = requests.post(REMOTE_URL, json=payload, timeout=timeout + 1)
             resp.raise_for_status()
             data = resp.json()
@@ -106,7 +105,6 @@ def execution_reward(predict_str, QAid, step):
                     else:
                         reward = 0.0
                         output = "Error: 'final_result' variable not found in output or not printed using the required format: print('final_result:', final_result).\n"
-                        
 
                 result.append((reward, output))
                 

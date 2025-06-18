@@ -4,18 +4,18 @@ data:
   prompt_key: problem
   answer_key: answer
   image_key: images
-  max_prompt_length: 2048
+  max_prompt_length: 4096
   max_response_length: 2048
-  rollout_batch_size: 4 # 512
-  val_batch_size: -1 # 1024
-  format_prompt: ./examples/format_prompt/tools_thinker_format.jinja
+  rollout_batch_size: 2 # 512 
+  val_batch_size: 512 # 1024
+  format_prompt: ./examples/format_prompt/tools_thinker_format_wo_think.jinja # tools_thinker_format_wo_think.jinja
   override_chat_template: null
   shuffle: true
-  seed: 1 # 42
+  seed: 42 # 42
   max_pixels: 4194304
   min_pixels: 262144
   filter_overlong_prompts: false
-  subtasks: ["Counting"]  # ["Counting","Art_Style"] # subtasks list or null
+  subtasks: # ["Counting"]  # ["Counting","Art_Style"] # subtasks list or null
   dataset_prefix: /home/stud/wxie # Dataset root path # BLINK:/home/stud/wxie # SAT:/nfs/data8/liao/wxie/SAT/
   tools_config: ./examples/tools_config/tools_configuration_file.yaml
 
@@ -30,7 +30,7 @@ worker:
   actor:
     global_batch_size: 2 # 128
     micro_batch_size_per_device_for_update: 2 # 4
-    micro_batch_size_per_device_for_experience: 4 # 16
+    micro_batch_size_per_device_for_experience: 2 # 16
     max_grad_norm: 1.0
     padding_free: true
     ulysses_sequence_parallel_size: 1
@@ -54,13 +54,13 @@ worker:
       offload_optimizer: true  # true: more CPU memory; false: more GPU memory
 
   rollout:
-    n: 5 # 5
+    n: 2 # 5
     temperature: 1.0
     top_p: 0.99
-    gpu_memory_utilization: 0.5 # 0.6
+    gpu_memory_utilization: 0.6 # 0.6
     enforce_eager: false
     enable_chunked_prefill: false
-    tensor_parallel_size: 2
+    tensor_parallel_size: 1 # 2
     limit_images: 0
     val_override_config:
       temperature: 0.5
@@ -93,7 +93,7 @@ trainer:
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 8
-  val_freq: -1  # -1 to disable default:5
+  val_freq: 10  # -1 to disable default:5
   val_before_train: false # true
   val_only: false
   val_generations_to_log: 3

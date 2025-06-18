@@ -159,7 +159,7 @@ def tool_usage_reward(predict_str, step, QAid):
                         execute_found = True
                         break # found execute() calling
         with open(tool_log_path, "a+") as f:
-            f.write(f"\n[QAid]{id}\n")
+            f.write(f"\n[QAid]{QAid}\n")
             if execute_found:
                 f.write("\n[Code Includes Tools Usage]\n")
             else:
@@ -168,7 +168,7 @@ def tool_usage_reward(predict_str, step, QAid):
             f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
     except Exception as e:
         with open(tool_log_path, "a+") as f:
-            f.write(f"\n[QAid]{id}\n")
+            f.write(f"\n[QAid]{QAid}\n")
             f.write("\n[Code Extraction Failed or Parse Failed]\n\n")
             f.write(str(e) + "\n")
             f.write(f"\nCompletion Content: \n{predict_str}")

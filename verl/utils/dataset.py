@@ -153,19 +153,30 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 self.dataset_prefix = dataset_prefix
 
             if "SAT" in data_path:
-                # TODO
+               
                 print(f"Loading dataset: {data_path}\n")
-
-                dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
-                full_path = os.path.join(dataset_prefix, dataset_json_path)
+                # #######################################################################################
+                # TODO
+                active_tool_names, filtered_metadata_dict = self._load_tool_data(self.configuration_file)
+                system_content_yaml = "/home/stud/wxie/EasyR1/examples/format_prompt/easyr1_tool_system.yaml"
+                with open(system_content_yaml, "r") as stream:
+                    conf = yaml.safe_load(stream)
+                SYSTEM_PROMPT_TEMPLATE = conf.get("prompt_template")
+                self.system_prompt = SYSTEM_PROMPT_TEMPLATE.format(available_tools=active_tool_names,
+                                                            toolbox_metadata=filtered_metadata_dict)
+                #########################################################################################
+                # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
+                # mixed sat format json is absolute path
+                dataset_json_path = "/home/stud/wxie/EasyR1/mixed_vqa.json"
+                full_path = os.path.join(dataset_json_path)
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)
-                self.dataset = raw_dataset  # json format in SAT
+                self.dataset = raw_dataset[:100]  # json format in SAT
                 self.dataset_prefix = dataset_prefix
 
             if "CV-Bench" in data_path:
                 pass # TODO
-
+        
         self.format_prompt = None
         if format_prompt:
             with open(format_prompt, encoding="utf-8") as f:
@@ -208,16 +219,15 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             format_prompt = Template(self.format_prompt.strip())
             prompt_str = format_prompt.render(question=prompt_str,
                                               image_paths=image_paths,
-                                              available_tools=active_tool_names,
-                                              toolbox_metadata=filtered_metadata_dict,
                                               )
             content_list = []
+            
             for i in range(len(image_paths)+1):
                 if i != len(image_paths):
                     content_list.append({"type": "image"})
                 else:
                     content_list.append({"type": "text", "text": prompt_str})
-            return [{"role": "user", "content": content_list}]
+            return [{"role": "system", "content": [{"type": "text", "text": self.system_prompt}]},{"role": "user", "content": content_list}]
         else:
             if self.format_prompt:
                 format_prompt = Template(self.format_prompt.strip())
@@ -269,7 +279,10 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             "image_paths": image_paths
         }
     def _sat_format(self, example):
-        image_paths = [os.path.join(self.dataset_prefix, path) for path in example["images"]]
+        # image_paths = [os.path.join(self.dataset_prefix, path) for path in example["images"]]
+        
+        # mixed sat dataset has absolute path for images
+        image_paths = [os.path.join(path) for path in example["images"]]
         images = [Image.open(path) for path in image_paths]
         full_prompt = example["messages"][0]["content"].strip()
         full_prompt = full_prompt.replace("<image> Answer in natural language. ", "")

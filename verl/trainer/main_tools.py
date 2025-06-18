@@ -90,7 +90,7 @@ class Runner:
         # import os
         # log_dir = "/home/stud/wxie/EasyR1/logs"
         # os.makedirs(log_dir, exist_ok=True)
-        # path = os.path.join(log_dir, "batchBLINK.txt")
+        # path = os.path.join(log_dir, "Mix_SAT.txt")
         
         # for batch in train_dataloader:
         #     if n > 0:
@@ -112,7 +112,7 @@ class Runner:
             resource_pool_manager=resource_pool_manager,
             ray_worker_group_cls=ray_worker_group_cls,
             reward_fn=reward_fn,
-            val_reward_fn= None, # None to disable validation
+            val_reward_fn=val_reward_fn, # None
         )
         trainer.init_workers()
         trainer.fit()
@@ -137,7 +137,7 @@ def main():
     ppo_config.deep_post_init()
     
     import os
-    ray_log_dir = f"/home/stud/wxie/EasyR1/ray" # ray absolute path
+    ray_log_dir = f"/nfs/data8/liao/ruotong/EasyR1/ray" # ray absolute path
     os.makedirs(ray_log_dir, exist_ok=True)
     
     os.environ["TOKENIZERS_PARALLELISM"] = "true"
