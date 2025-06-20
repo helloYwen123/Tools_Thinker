@@ -158,7 +158,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 # #######################################################################################
                 # TODO
                 active_tool_names, filtered_metadata_dict = self._load_tool_data(self.configuration_file)
-                system_content_yaml = "/home/stud/wxie/EasyR1/examples/format_prompt/easyr1_tool_system.yaml"
+                system_content_yaml = "/home/hpc/v100dd/v100dd23/wxie/Tools_Thinker/examples/format_prompt/easyr1_tool_system.yaml"
                 with open(system_content_yaml, "r") as stream:
                     conf = yaml.safe_load(stream)
                 SYSTEM_PROMPT_TEMPLATE = conf.get("prompt_template")
@@ -167,7 +167,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
-                dataset_json_path = "/home/stud/wxie/EasyR1/mixed_vqa.json"
+                dataset_json_path = "/home/hpc/v100dd/v100dd23/wxie/mixed_vqa.json"
                 full_path = os.path.join(dataset_json_path)
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)

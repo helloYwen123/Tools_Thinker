@@ -27,17 +27,17 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor , as_comp
 import requests
 from math_verify import parse, verify
 
-REMOTE_URL   = "http://10.153.51.195:8080/api/sandbox/execute"
+REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
 def accuracy_reward(exec_result, step, solution, QAid, **kwargs):
     """
     """
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_root_dir = os.path.join(f"{root_dir}/A+M_split_logs/Accuracy", f"step_{step}-{current_time}-logs")
+    log_root_dir = os.path.join(f"{root_dir}/Grpo_Tools_Logs/Accuracy", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     reward = 0.0
-    acc_log_path = os.path.join(log_root_dir, f"accuracy-{id}.log")
+    acc_log_path = os.path.join(log_root_dir, f"accuracy-{QAid}.log")
 
     try:
         # try to verify symbolic calculation
@@ -85,7 +85,6 @@ def execution_reward(predict_str, QAid, step):
             stderr_raw = data.get("stderr", "")
             output     = data.get("result", None)
             err_msg    = data.get("error_message")
-
             # 
             output_raw = stdout_raw.strip()
             stderr_raw = stderr_raw.strip()
@@ -101,13 +100,10 @@ def execution_reward(predict_str, QAid, step):
                     if m:
                         reward = 1.0
                         output = m.group(1).strip()
-                        
                     else:
                         reward = 0.0
                         output = "Error: 'final_result' variable not found in output or not printed using the required format: print('final_result:', final_result).\n"
-
-                result.append((reward, output))
-                
+                result = (reward, output)
                 success_log_path = os.path.join(log_path, "success_execution.log")
                 with open(success_log_path, "a+") as df:
                     df.write("\n" + "=" * 30 + " New Completed Execution " + "=" * 30 + "\n")
@@ -118,17 +114,18 @@ def execution_reward(predict_str, QAid, step):
                     df.write("[GENERATE VALID FINAL_RESULT]\n")
                     df.write(str(output) + "\n")
                     df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+                return result
             else:  # code executed with error
                 reward = 0.0
                 output = err_msg or stderr_raw or output_raw
                 debug_log_path = os.path.join(log_path, "bug_exec.log")
-                result.append((reward, output))
+                result = (reward, output)
                 with open(debug_log_path, "a+") as df:
                     df.write("\n[Execution Failed]\n")
                     df.write(output + "\n")
                     df.write(f"code: \n{code}\n")
                     df.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
-                
+                return result
 
         except Exception as e:
             with open(os.path.join(log_path, "bug_exec.log"), "a+") as lf:
@@ -136,7 +133,8 @@ def execution_reward(predict_str, QAid, step):
                 lf.write(f"[Sandbox Failed] {e}\n")
                 lf.write("CODE:\n" + code + "\n")
                 lf.write("=" * 30 + "\n\n")
-            result.append((0.0, None))
+            result = (0.0, None)
+            return result
             
     # CODE EXTRACTION #        
     def extract_code(completion):
@@ -158,8 +156,8 @@ def execution_reward(predict_str, QAid, step):
         return (0.0, None)
     
     # code extracted success
-    result = ()
-    time_out = 90
+    result = (0.0, None)
+    time_out = 120
     final_result = sandbox_execute(code, timeout=time_out, result=result, log_path=log_root_dir, QAid=QAid)
     with open(evaluation_log_path, "a+") as f:
         f.write(f"------------- {current_time} Execution reward: {final_result[0]} -------------\n")
@@ -202,7 +200,7 @@ def tool_usage_reward(predict_str, step, QAid):
                         execute_found = True
                         break # found execute() calling
         with open(tool_log_path, "a+") as f:
-            f.write(f"\n[QAid]{id}\n")
+            f.write(f"\n[QAid]{QAid}\n")
             if execute_found:
                 f.write("\n[Code Includes Tools Usage]\n")
             else:
@@ -211,7 +209,7 @@ def tool_usage_reward(predict_str, step, QAid):
             f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
     except Exception as e:
         with open(tool_log_path, "a+") as f:
-            f.write(f"\n[QAid]{id}\n")
+            f.write(f"\n[QAid]{QAid}\n")
             f.write("\n[Code Extraction Failed or Parse Failed]\n\n")
             f.write(str(e) + "\n")
             f.write(f"\nCompletion Content: \n{predict_str}")

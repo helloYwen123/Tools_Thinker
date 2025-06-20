@@ -31,6 +31,8 @@ class RewardScore(TypedDict):
     overall: float
     format: Optional[float]
     accuracy: Optional[float]
+    execution: Optional[float]
+    tool_usage: Optional[float]
     
 # 表示：  reward function type[key]: score[float]
 
@@ -103,7 +105,7 @@ class SequentialFunctionRewardManager(FunctionRewardManager):
 
 
 class BatchFunctionRewardManager(FunctionRewardManager):
-    reward_fn: BatchRewardFunction
+    reward_fn: BatchRewardFunction # 函数类型注解
 
     def compute_reward(self, data: DataProto, step: Optional[int] = None, tool: bool = False) -> Tuple[torch.Tensor, Dict[str, List[float]]]:
         response_str, ground_truth = [], []
@@ -122,7 +124,7 @@ class BatchFunctionRewardManager(FunctionRewardManager):
         else:
             scores = self.reward_fn(response_str, ground_truth) # calling reward function
         ###############################################    
-        # scores = self.reward_fn(response_str, ground_truth)
+       
         reward_tensor = torch.zeros_like(data.batch["responses"], dtype=torch.float32)
         reward_metrics = defaultdict(list)
         for i, score in enumerate(scores):

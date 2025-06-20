@@ -20,7 +20,6 @@ from omegaconf import OmegaConf
 from ..single_controller.ray import RayWorkerGroup
 from ..utils.tokenizer import get_processor, get_tokenizer
 from ..workers.fsdp_workers import FSDPWorker
-from ..workers.reward import FunctionRewardManager
 from ..workers.reward import BatchFunctionRewardManager, SequentialFunctionRewardManager
 from .config import PPOConfig
 from .data_loader import create_dataloader
@@ -67,8 +66,6 @@ class Runner:
         }
         resource_pool_manager = ResourcePoolManager(resource_pool_spec=resource_pool_spec, mapping=mapping)
 
-        # reward_fn = FunctionRewardManager(config=config.worker.reward, tokenizer=tokenizer)
-        # val_reward_fn = FunctionRewardManager(config=config.worker.reward, tokenizer=tokenizer)
         if config.worker.reward.reward_type == "sequential":
             RewardManager = SequentialFunctionRewardManager
         elif config.worker.reward.reward_type == "batch":
@@ -88,7 +85,7 @@ class Runner:
         ########################################
         # n = 0
         # import os
-        # log_dir = "/home/stud/wxie/EasyR1/logs"
+        # log_dir = "/home/hpc/v100dd/v100dd23/wxie/Tools_Thinker"
         # os.makedirs(log_dir, exist_ok=True)
         # path = os.path.join(log_dir, "Mix_SAT.txt")
         
@@ -137,7 +134,7 @@ def main():
     ppo_config.deep_post_init()
     
     import os
-    ray_log_dir = f"/nfs/data8/liao/ruotong/EasyR1/ray" # ray absolute path
+    ray_log_dir = f"/home/vault/v100dd/v100dd23/wxie/ray" # ray absolute path
     os.makedirs(ray_log_dir, exist_ok=True)
     
     os.environ["TOKENIZERS_PARALLELISM"] = "true"
@@ -146,19 +143,8 @@ def main():
     os.environ["TORCH_NCCL_AVOID_RECORD_STREAMS"] = "1"
     os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:False"
     if not ray.is_initialized():
-        ray.init(_temp_dir=ray_log_dir)
-        # runtime_env = {
-        #     "env_vars": {
-        #         "TOKENIZERS_PARALLELISM": "true",
-        #         "NCCL_DEBUG": "WARN",
-        #         "VLLM_LOGGING_LEVEL": "INFO",
-        #         "TORCH_NCCL_AVOID_RECORD_STREAMS": "1",
-        #         "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False",
-                
-        #     }
-        # }
-        # ray.init(runtime_env=runtime_env, _temp_dir=ray_log_dir)
-        
+        ray.init(_temp_dir=ray_log_dir,include_dashboard=False)
+
     runner = Runner.remote()
     ray.get(runner.run.remote(ppo_config))
 
