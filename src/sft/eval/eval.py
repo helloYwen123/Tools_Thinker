@@ -23,13 +23,14 @@ torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 print(f"Random Seed setting finished.")
 #---------------------------------
+from datetime import datetime
 
 model_name = "Qwen/Qwen2.5-VL-7B-Instruct"
 tokenizer = build_tokenizer(ModelParams(model_name=model_name))
 processor = build_processor(model_name, tokenizer, trust_remote_code=True)
 
 # Load the dataset
-evaluation_dataset = VLJsonlinesDataset(dataset_path="./oumi_eval_traj.jsonl",
+evaluation_dataset = VLJsonlinesDataset(dataset_path="./merged_test.jsonl",
                              tokenizer=tokenizer,
                              processor=processor)
 
@@ -98,11 +99,11 @@ def Counting_tools_evaluation(inference_engine, dataset):
         
         if (
             (case not in [3, 4])       
-            or (case == 3 and "KeyError:" in exec_result)
+            # or (case == 3 and "KeyError:" in exec_result)
             ):
             succss_exe += 1
             success = True
-        if exec_result == conversation.metadata["ground_truth"]:
+        if exec_result.lower() == conversation.metadata["ground_truth"].lower():
             acc_exe += 1
             correctness = True
         message = conversation.messages[1]  # role: "user"
@@ -124,7 +125,8 @@ def Counting_tools_evaluation(inference_engine, dataset):
         })
     exe_rate = succss_exe / len(conversations)
     acc_rate = acc_exe / len(conversations)
-    with open("./output/counting_tools_eval_log.json", "w", encoding="utf-8") as f_log:
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    with open(f"./output/eval_log-{timestamp}.json", "w", encoding="utf-8") as f_log:
         json.dump(logs, f_log, ensure_ascii=False, indent=2)
         
         

@@ -1,0 +1,97 @@
+{
+  "Object_Detector_Tool": {
+    "tool_module_name": "object_detector",
+    "tool_class_name": "Object_Detector_Tool",
+    "tool_description": "A tool that detects objects in an image.",
+    "input_types": {
+      "image": "str - The path to the image file.",
+      "labels": "list - A list of object labels to detect.",
+      "save_object": "bool - Whether to save the detected objects as `png` images (default: False).",
+      "saved_image_path": "str - The path to save the detected object `png` images (default: 'detected_objects').",
+      "save_json": "bool - Whether to save detection results as a JSON file (default: False).",
+      "json_path": "str - The file path to save the JSON results if `save_json` is True (default: 'detection_results.json')."
+    },
+    "output_types": "dict - Maps each detected label to a list of detection entries. Example: {'baseball': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_image_path': 'path/to/image.png', 'cropped_image': <PIL.Image.Image>}]}",
+    "demo_commands": {
+      "command": "object_detector_tool = Object_Detector_Tool()\ndetected_objects = object_detector_tool.execute(image='path/to/image', labels=['baseball', 'basket'], save_object=True, saved_image_path='detected_objects')",
+      "output_example": "detected_objects: {'baseball': [{'box':<tuple>, 'score':<float>, 'saved_image_path':<str>, 'cropped_image':<PIL.Image.Image>}], 'basket': [...]}"
+    },
+    "user_metadata": {
+      "potential_usage": "The bounding box obtained by tool can be used to determine precise object regions and pixel-level coordinates, enabling integration with downstream tasks such as depth estimation, object segmentation, or regions localization for sparse matching."
+    }
+  },
+  "Text_Detector_Tool": {
+    "tool_module_name": "text_detector",
+    "tool_class_name": "Text_Detector_Tool",
+    "tool_description": "A tool that detects text in an image.",
+    "input_types": {
+      "image": "str - The path to the image file.",
+      "languages": "list - A list of language codes for the OCR model.",
+      "detail": "int - The level of detail in the output. Set to 0 for simpler output, 1 for detailed output."
+    },
+    "output_types": "list - A list of detected text blocks, each as [[[x0, y0], ..., [x3, y3]], 'text', score].",
+    "demo_commands": {
+      "command": "text_detector_tool = Text_Detector_Tool()\nresult = text_detector_tool.execute(image='path/to/image', languages=['en', 'de'])",
+      "output_example": "result: [[[[x0,y0],[x1,y1],[x2,y2],[x3,y3]], 'Detected text', <float>], ...]"
+    },
+    "user_metadata": {
+      "frequently_used_language": {
+        "ch_sim": "Simplified Chinese",
+        "de": "German",
+        "en": "English",
+        "ja": "Japanese"
+      },
+      "important_note": "The text detector may return additional text beyond the correct result. Make sure to extract the required text according to your needs."
+    }
+  },
+  "Depth_Estimator_Tool": {
+    "tool_module_name": "depth_estimator",
+    "tool_class_name": "Depth_Estimator_Tool",
+    "tool_description": "A tool that estimates pixel-level depth from image.",
+    "input_types": {
+      "image_path": "list[str] - Paths to one or more input images.",
+      "output": "bool - If True, save the depth image (default: False).",
+      "outdir": "str - Output directory to save the depth images (default: './vis_depth')."
+    },
+    "output_types": "dict - Maps image path to {'depth_map': <np.ndarray>, 'output_image_path': <str>}",
+    "demo_commands": {
+      "command": "depth_estimator_tool = Depth_Estimator_Tool()\nimage_results = depth_estimator_tool.execute(image_path=['path/to/image1', 'path/to/image2'], output=True, outdir='./vis_depth')",
+      "output_example": "image_results: {'image1.jpg': {'depth_map': <np.ndarray>, 'output_image_path': <str>}, 'image2.jpg': {...}}"
+    }
+  },
+  "Segmenter_Tool": {
+    "tool_module_name": "segmenter",
+    "tool_class_name": "Segmenter_Tool",
+    "tool_description": "A segmentation tool capable of accurately localizing objects at the pixel level using prompts (e.g., points or boxes).",
+    "input_types": {
+      "prompt_type": "str: 'points' or 'boxes'.",
+      "input_prompts": "list[dict] - Each dict must contain `image_path` and the appropriate prompt key (`input_points` or `input_box`).",
+      "model_size": "str: SAM2 model size, e.g., 'base_plus' or 'small' (default: 'small')."
+    },
+    "output_types": "np.ndarray or list[np.ndarray] - Segmentation masks with shape (O, 1, H, W).",
+    "demo_commands": {
+      "command": "segmenter_tool = Segmenter_Tool()\nmasks = segmenter_tool.execute(prompt_type='boxes', input_prompts=[{'image_path': 'path/to/image1', 'input_box': [[100,150,400,500]]}, {'image_path': 'path/to/image2', 'input_box': [[50,80,300,350]]}], model_size='small')",
+      "output_example": "masks: list[np.ndarray] - [mask1, mask2] # Each with shape (O,1,H,W)"
+    },
+    "user_metadata": "Before using the segmentation tools, it is advisable to consider how to obtain the points and bounding box coordinates for the visual prompt."
+  },
+  "Matcher_Tool": {
+    "tool_module_name": "matcher",
+    "tool_class_name": "Matcher_Tool",
+    "tool_description": "A tool that computes global semantic similarity or local region matching between images.",
+    "input_types": {
+      "matching_type": "str - 'global_match' or 'local_match'.",
+      "ref_img": "list[str] - List of paths to reference images.",
+      "candidate_img": "list[str] - List of paths to candidate images.",
+      "ref_bbox": "list[list] - Required for 'local_match', defines region in ref image as [[xmin, ymin], [xmax, ymax]].",
+      "candidate_bbox": "list[list] - Required for 'local_match', bounding boxes in candidate image."
+    },
+    "output_types": "int - Index of best match (image or bbox) depending on match type.",
+    "demo_commands": {
+      "command(1)": "matcher_tool = Matcher_Tool()\nmatched_idx = matcher_tool.execute(matching_type='global_match', ref_img=['/path/to/ref.jpg'], candidate_img=['/path/to/candidate1.jpg', '/path/to/candidate2.jpg'])",
+      "output_example": "matched_idx = 1",
+      "command(2)": "matcher_tool = Matcher_Tool()\nmatched_idx = matcher_tool.execute(matching_type='local_match', ref_img=['/path/to/ref.jpg'], candidate_img=['/path/to/candidate.jpg'], ref_bbox=[[[xmin, ymin], [x2, y2]]], candidate_bbox=[[[xmin, ymin], [xmax, ymax]], ...])",
+      "output_example(2)": "matched_idx: 0"
+    }
+  }
+}

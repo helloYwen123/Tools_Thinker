@@ -46,7 +46,7 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
         idx = example["qid"]
         question=example["question"]
         question = question.replace("<image>", "") # discard `<image>` tags from text prompt
-        
+        question = question.lower()
         # get tools
         active_tools, filtered_meta = load_tool_data(conf)
         tools_list = ", ".join(active_tools)
@@ -534,4 +534,3 @@ if __name__ == "__main__":
         #
     print("All steps done.")
     sys.stdout.log.close()
-

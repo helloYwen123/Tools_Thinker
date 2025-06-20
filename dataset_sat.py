@@ -11,7 +11,8 @@ import torch.distributed as dist
 print(torch.cuda.is_available())
 print(torch.cuda.device_count())
 print(torch.cuda.get_device_name(0))
-#--- set random seed for reproduction ---
+
+# #--- set random seed for reproduction ---
 import transformers,random
 import numpy as np
 seed = 42
@@ -22,6 +23,7 @@ torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 print(f"Random Seed setting finished.")
 #---------------------------------
+
 # Import libraries
 import os
 from PIL import Image
@@ -31,19 +33,39 @@ from vllm import LLM, EngineArgs, SamplingParams
 from vllm.distributed import cleanup_dist_env_and_memory
 from dataclasses import asdict
 
-def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
+def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Counting", root_prefix = "/datasets", config_file="prompt_configuration_file.yaml"):
+    
+    # load selected tooldata from prompt yaml file        
+    def load_tool_data(conf):
+        # --- Tool Metadata Filtering Logic ---
+        active_tool_names = conf.get("available_tools", []) # Get the list from YAML
+        full_toolbox_metadata = conf.get("toolbox_metadata", {})
+
+        # Create a dictionary containing only the metadata for active tools
+        filtered_metadata_dict = {
+            tool_name: full_toolbox_metadata[tool_name]
+            for tool_name in active_tool_names
+            if tool_name in full_toolbox_metadata
+        }
+
+        # Warn for missing tools
+        for tool_name in active_tool_names:
+            if tool_name not in full_toolbox_metadata:
+                print(f"Warning: Tool '{tool_name}' listed in available_tools but not found in toolbox_metadata.")
+
+        return active_tool_names, filtered_metadata_dict
+    
     # for SAT Dataset
     def make_conversation_sat(example, prefix, conf):
         # get answer
         # here `prefix` is the prefix of the image path
         # `image_path` is from the dataset json file
-        answer = example["messages"][1]["content"].strip()
         image_paths = [os.path.join(prefix, img_path) for img_path in example["images"]]
         images = [Image.open(path) for path in image_paths]
-        idx = os.path.splitext(os.path.basename(example["images"][0]))[0]  # image name as index
+        idx = example["idx"]  # image name as index
         question=example["messages"][0]["content"].strip()
-        question = question.replace("<image> Answer in natural language. ", "")
-        
+        question = question.lower()
+        answer = example["messages"][1]["content"].strip()
         # get tools
         active_tools, filtered_meta = load_tool_data(conf)
         tools_list = ", ".join(active_tools)
@@ -76,6 +98,7 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
             "image": images, # images 
             "image_path": image_paths,
             "prompt": [
+                {"role": "system", "content":"You are a helpful assistant who is good at solving vision-based spatial problems with code."},
                 {
                     "role": "user",
                     "content": message_content,
@@ -86,46 +109,36 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
             "question": question,
             "kwargs": initial_kwargs,
         }
-    
-    # load selected tooldata from prompt yaml file        
-    def load_tool_data(conf):
-        # --- Tool Metadata Filtering Logic ---
-        active_tool_names = conf.get("available_tools", []) # Get the list from YAML
-        full_toolbox_metadata = conf.get("toolbox_metadata", {})
-
-        # Create a dictionary containing only the metadata for active tools
-        filtered_metadata_dict = {
-            tool_name: full_toolbox_metadata[tool_name]
-            for tool_name in active_tool_names
-            if tool_name in full_toolbox_metadata
-        }
-
-        # Warn for missing tools
-        for tool_name in active_tool_names:
-            if tool_name not in full_toolbox_metadata:
-                print(f"Warning: Tool '{tool_name}' listed in available_tools but not found in toolbox_metadata.")
-
-        return active_tool_names, filtered_metadata_dict
 ###################################################################################################################
+    # vLLM inference function for SAT-Format dataset
     # Load the dataset
-    confiuration_file = "prompt_configuration_file.yaml"
+    confiuration_file = config_file
     with open(confiuration_file, "r") as stream:
             conf = yaml.safe_load(stream)
     PROMPT_TEMPLATE = conf.get("prompt_template")
 
-    dataset_prefix = "/home/stud/wxie/SAT/"  # "/nfs/data8/liao/wxie/SAT/"  # "/home/stud/wxie/"
-    dataset_path = "SAT_subtasks/SAT_Counting.json" # "SAT_subtasks/SAT_Counting.json" BLINK_Dataset/Counting/val/Counting_val.json
+    SourcePrefix_Map = {
+            "RealWorld": "RealWorld",
+            "Clever":"CLEVER",
+            "DARE": "DARE",
+            "GQA": "GQA", 
+            "mm_visual7w": "mm_visual7w",
+            "whatsup":  "whatsup"
+        }
+    
+    root_prefix = root_prefix
 
+    # Load the dataset from the JSON file
     all_samples = []
 
-    full_path = os.path.join(dataset_prefix, dataset_path)
-    with open(full_path, 'r') as f:
-        raw_dataset = json.load(f)
-        for sample in raw_dataset[start:end]: # end-start contorlling the number of QA pairs
-            wrapped_data = make_conversation_sat(sample, dataset_prefix, conf) 
-            all_samples.append(wrapped_data)
+    spatial_samples_sub  = data_samples # only shuffled once in the outsides of function
     
-            
+    
+    for sample in spatial_samples_sub:
+        dataset_prefix = os.path.join(root_prefix, SourcePrefix_Map[sample["source"]])
+        wrapped_data = make_conversation_sat(sample, dataset_prefix, conf)
+        all_samples.append(wrapped_data)
+
     # print(f"\nThe first sample:\n {all_samples[0]}\n")
     # # Print the first sample for debugging
     # print(f"\nThe first sample image path:\n {all_samples[0]['image_path']}\n")
@@ -137,7 +150,8 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
         enforce_eager=False,
         enable_prefix_caching=True,
         max_model_len = 8192,
-        tensor_parallel_size=1  # distributed inference
+        tensor_parallel_size=1,  # distributed inference
+        gpu_memory_utilization = 0.7 # GPU memory utilization
     )
     llm = LLM(**asdict(engine_args))
 
@@ -149,9 +163,8 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
     processor = AutoProcessor.from_pretrained(
         "Qwen/Qwen2.5-VL-7B-Instruct", use_fast=True
     )
-    
+
     # 开始历遍所有samples data
-    os.makedirs(output_root, exist_ok=True)
     PROMPT_SHOW = True
     # genreate idx from `start` to `end`
     for sample_idx, sample in zip(range(start+1, end+1), all_samples):
@@ -162,6 +175,7 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
         text = processor.apply_chat_template(
             sample["prompt"], tokenize=False, add_generation_prompt=True
         )
+        
         images = sample["image"]
         
         # create multi-modal inputs for text-image pairs
@@ -200,7 +214,7 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
             print(f"\nDebug for message prompt:\n{prompt}")
             
             print(f"\n[Sample {sample_idx}] Phase 1: start initial rollouts\n")
-            for id in range(20):
+            for id in range(10):
                 # 开始创建轨迹trajectory n
                 # every sample(1 qa) rollout 20 times; 大循环下对单个QA进行读取； 小循环对这个qa用模型(vLLM)推理20轮
                 ###### here to control the number of rollouts, e.g. 20
@@ -223,24 +237,26 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
                 # Rollout ending
                 
         elif phase == 2:
-            max_idx = min(max_idx,3)
+            max_idx = min(max_idx, 3)
             # 开始延展轨迹`trajectory.json`
             prompt_kwargs = sample["kwargs"]
             for json_sample in json_samples: # here `json_samples` is from trajectory.json files
                 if "final_solution" in json_sample:
                     print(f"The Trajectory stops extension because of the correct answer.")
                     continue
-                codes = [k for k in json_sample.keys() if k.startswith("code_ex")] 
+                codes = [k for k in json_sample.keys() if k.startswith("code_ex")]
                 if max_idx != 3:
                     for k in codes:
                         # 从已有的json trajectory中更新prompt; 用新生成的code 更新prompt template
                         idx = int(k.replace("code_ex", ""))
                         #code_text = json_sample[k].replace("\n", "\\n") # TODO check whether is better
                         code_text = json_sample[k]
+                        if re.fullmatch(r"<code>.*?</code>", code_text.strip(), re.DOTALL):
+                            code_text = code_text.replace("<code>", "").replace("</code>", "").strip()
                         prompt_kwargs[f"code_example{idx}"] = code_text
 
                     # Note：
-                    # interpreter 的添加在code执行端也就是medeira端
+                    # interpreter 的添加在code执行端(medeira端)
                     interpreters = [k for k in json_sample.keys() if k.startswith("interpreter")] # here is from json files
                     # print(f"{interpreters} while {list(json_sample.keys())}")
                     for k in interpreters:
@@ -249,7 +265,7 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
                         # code_text = json_sample[k].replace("\n", "\\n") # TODO check whether is better
                         interpreter_text = json_sample[k]
                         prompt_kwargs[f"interpreter{idx}"] = interpreter_text
-                else: # 防止最后一次rollout时trajactory3存在情况的bug
+                else: # 防止最后一次rollout时`trajactory3`存在情况的bug
                     for i in [1, 2]:
                         code_key = f"code_ex{i}"
                         interpreter_key = f"interpreter{i}"
@@ -257,12 +273,13 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
                             prompt_kwargs[f"code_example{i}"] = json_sample[code_key]
                         if interpreter_key in json_sample:
                             prompt_kwargs[f"interpreter{i}"] = json_sample[interpreter_key]
-                              
+
                 new_formatted = PROMPT_TEMPLATE.format(**prompt_kwargs)
                 if PROMPT_SHOW:
                     print(f"new_formatted: {new_formatted}\n")
                     PROMPT_SHOW = False
-                # break
+                    # break
+
                 message_content = [*({'type': 'image'} for _ in range(len(json_sample["image"])))]
                 message_content.append({
                         "type": "text",
@@ -328,10 +345,11 @@ def vllm_inference(start=0, end=1, output_root = "Rollout/Counting"):
         print("Destroying distributed process group...")
         dist.destroy_process_group()
 
-def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 rollout 最新的名字进行 给 trajectory 命名
+def Trajectory_extension(start=0 , end = 1 , root_dir = "Rollout/Counting"): # 以 rollout 最新的名字进行 给 trajectory 命名
     def numerical_sort_key(name):
         match = re.search(r'(\d+)', name)
         return int(match.group(1)) if match else float('inf')
+    
     sample_names = sorted(os.listdir(root_dir), key=numerical_sort_key) # 文件名顺序
     
     sample_nums = []
@@ -339,6 +357,7 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
         m = re.match(r'sample_(\d+)$', name)
         if m:
             sample_nums.append(int(m.group(1)))
+            
     # 检查(start,end)内的sample_N是否全部存在
     for n in range(start+1, end+1):
         if n not in sample_nums:
@@ -348,7 +367,8 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
     selected_sample_names = [f"sample_{n}" for n in range(start+1, end+1)]
     
     total_samples = len(selected_sample_names)
-    
+    print(f"Total {total_samples} samples to process .\n")
+    # For server execution.
     def filter_result(result_data: dict):
         """
         Picks the final result on success or the traceback on error.
@@ -376,8 +396,8 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
     exe_success, exe_num = 0, 0
     acc_success, acc_num = 0, 0
     # iterate through files in folder default: "./Rollout/Counting"
-    for i, sample_name in enumerate(selected_sample_names,start=1):  # e.g. sample1,sample2 ...
-        print(f"processing {i}/{total_samples} for {sample_name}.\n")
+    for i, sample_name in enumerate(selected_sample_names, start=1):  # e.g. sample1,sample2 ...
+        print(f"####processing {i}/{total_samples} for {sample_name}####\n")
         sample_dir = os.path.join(root_dir, sample_name)
         if not os.path.isdir(sample_dir):
             print(f"The sample's file: {sample_dir} is not a folder! Please Check")
@@ -392,7 +412,7 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
         load_path = os.path.join(sample_dir, f"rollouts_{idx_rollout}.json")
         with open(load_path, 'r', encoding='utf-8') as f: # 加载最新的rollout json文件
             json_samples = json.load(f) 
-        
+
         total = len(json_samples)
         # get code from rollouts(n) json file for this sample
         for idx, json_sample in enumerate(json_samples,start=1): # here json_samples is from `rollouts_x.json` file 
@@ -403,14 +423,14 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
             if "final_solution" in json_sample:
                 exe_success += 1
                 acc_success += 1
-                print(f" The Trajectory stops extension because correct answer.\n")
+                print(f" The Trajectory stops extension due to correct answer.\n")
                 continue
             codes_keys = [k for k in json_sample.keys() if k.startswith("code_ex")]
             
             code_idx = -1
             for k in codes_keys:
                 idx = int(k.replace("code_ex", ""))
-                code_idx = max(code_idx, idx) 
+                code_idx = max(code_idx, idx)
             interpreter_key = INTERPRETOR_KEY + f"{code_idx}"    # the latest `interpreterid`` is consistent with `code_ex_id`
             code_text = json_sample[f"code_ex{code_idx}"]        # 获取最新的code text进行运行 从json文件中提取对应的 `code text`
             
@@ -422,7 +442,7 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
                     json_sample[interpreter_key] = (
                         "Error: Do not use markdown formatting like ```python```. "
                         "Only wrap your code in <code> </code> tags without any other formatting."
-                    ) 
+                    )
                     continue  # Skip execution # 为了避免 <code> ``` python ``` </code> 的情况
                 
                 payload = {
@@ -439,12 +459,12 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
                     if status == "success":
                         exe_success += 1 # execution rate + 1
                         if result_existing == True:
-                            if filtered == json_sample["GT"]:
+                            if filtered.lower() == json_sample["GT"].lower():
                                 acc_success += 1 # accuracy rate + 1
                                 json_sample["final_solution"] = filtered
                                 # print(f"The final result of code: {filtered}; and the Ground Truth: {json_sample['GT']}, current acc_success_num: {acc_success}")
                             else:
-                                json_sample[interpreter_key] = f"The code ran successfully, but the final result:{filtered} does not match the ground truth:{json_sample['GT']}. Adjust your solution and make some changes"
+                                json_sample[interpreter_key] = f"The code ran successfully, but the final result:{filtered} does not match the ground truth. Adjust your solution and make some changes"
                         else: #
                             json_sample[interpreter_key] = filtered
                     # print(f"final result of execution: {filtered}\n")
@@ -456,7 +476,7 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
                     print(f"[{idx}/{total}] Error during request or processing: {ex}")
                     json_sample[interpreter_key] = str(ex)
             else:
-                json_sample[interpreter_key] = "Error: Use <code> </code> tags only—do not include markdown (e.g., python), text, or explanations."
+                json_sample[interpreter_key] = "Error: Use <code> </code> tags only, do not include markdown (e.g., python), text, or explanations."
 
         print(f"up to current {i}-th sample, execution_rate:{exe_success}/{exe_num} and accuracy_rate:{acc_success}/{acc_num}.\n")    
         # save as new json file for rollouts
@@ -465,7 +485,7 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
         with open(new_json_path, 'w', encoding='utf-8') as f:
             json.dump(json_samples, f, ensure_ascii=False, indent=4)
 
-        print(f"finish: {sample_name}, generating: {new_json_path}")
+        print(f"finish: {sample_name}, generating: {new_json_path}\n")
         
     # calculate the execution result of all samples' trajectory(rollouts) for analysis
     execution_success_rate = round(exe_success / exe_num, 2) * 100
@@ -476,9 +496,33 @@ def Trajectory_extension(start=0 , end = 1 ,root_dir="Rollout/Counting"): # 以 
 if __name__ == "__main__":
     import sys
     from datetime import datetime
-
-    # 获取当前时间并格式化为字符串，例如 2025-05-14_15-30-22
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    
+    # --- Configuration ---
+    CODE_KEY_PREFIX = "code_ex" # e.g., code_ex01, code_ex02
+    MAX_CODE_EXECUTIONS_PER_ENTRY = 3 # Max number of code_exNN to check
+    EXECUTION_TIMEOUT_SECONDS = 120
+    INTERPRETOR_KEY = "interpreter"
+    DELAY_BETWEEN_REQUESTS = 0.5
+    MARAJO_SANDBOX_URL = "http://10.153.51.195:8080/api/sandbox/execute"
+    # --- End Configuration ---
+    
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--json_path", type=str, required=True, help="Path to dataset JSON file")
+    parser.add_argument("--output_root", type=str, required=True, help="Path to dataset root directory")
+    parser.add_argument("--dataset", type=str, default=10, help="")
+    parser.add_argument("--start", type=int, default=0, help="Start index")
+    parser.add_argument("--end", type=int, default=10, help="End index")
+    args = parser.parse_args()
+    
+    json_path = args.json_path
+    dataset = args.dataset
+    start = args.start
+    end = args.end
+    output_root = args.output_root
+    
+   
     class Logger(object):
         def __init__(self, filename="pipeline_log.txt"):
             self.terminal = sys.stdout
@@ -490,25 +534,70 @@ if __name__ == "__main__":
             self.terminal.flush()
             self.log.flush()
 
-    sys.stdout = Logger(f"pipeline_log-{timestamp}.txt")
-    sys.stderr = sys.stdout
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
     print("Start inference and execution loop...\n")
-    # --- Configuration ---
-    CODE_KEY_PREFIX = "code_ex" # e.g., code_ex01, code_ex02
-    MAX_CODE_EXECUTIONS_PER_ENTRY = 3 # Max number of code_exNN to check
-    EXECUTION_TIMEOUT_SECONDS = 120
-    INTERPRETOR_KEY = "interpreter"
-    DELAY_BETWEEN_REQUESTS = 0.5
-    MARAJO_SANDBOX_URL = "http://10.153.51.195:8080/api/sandbox/execute"
-    # --- End Configuration ---
+
+    prefix = "/nfs/data8/liao/wxie/datasets"
+    config_file = "prompt_configuration_file.yaml"
+    
+    # Load the dataset
+    with open(json_path, 'r') as f:
+        raw_dataset = json.load(f)
+        
+    output_indices_file = os.path.join(output_root, f"{output_root}_selected_indices.json")
+    # create output directory
+    if not os.path.exists(output_root):
+        os.makedirs(output_root)
+    
+    # LOGGING
+    print(f"Final output_root: {output_root}")
+    log_file = os.path.join(output_root, f"{dataset}_log-{timestamp}.txt")
+    sys.stdout = Logger(log_file)
+    sys.stderr = sys.stdout
+    print(f"Log file created at: {log_file}\n")
+    
+    # pick spatial reasoning samples from raw_dataset and save indices
+    if not os.path.exists(output_indices_file):
+        spatial_samples = []
+        selected_indices = []
+        for sample in raw_dataset:
+            if "spatial reasoning" not in sample["response"].lower():
+                print(f"Skip the sample {sample['idx']} because of general question.")
+            else:
+                spatial_samples.append(sample)
+        random.shuffle(spatial_samples)
+        print("Shuffle spatial_samples finished.\n")
+        
+        spatial_samples_sub = spatial_samples[start:end]
+        selected_indices = [sample["idx"] for sample in spatial_samples_sub]
+        with open(output_indices_file, "w", encoding="utf-8") as f_out:
+            json.dump(selected_indices, f_out, ensure_ascii=False, indent=4)
+        print(f"Save selected indices to {output_indices_file} finished.\n")
+    else:
+        with open(output_indices_file, "r", encoding="utf-8") as f_in:
+            selected_indices = json.load(f_in)
+            # 用selected_indices 重建spatial_samples保证顺序一致
+            id2sample = {sample["idx"]: sample for sample in raw_dataset}
+            spatial_samples_sub = [id2sample[idx] for idx in selected_indices]
+            print("Loaded spatial_samples from existing indices, order preserved.\n")
+    
+
+    
     for i in range(1, MAX_CODE_EXECUTIONS_PER_ENTRY+1):
-        vllm_inference(start=0, end =1, output_root="Rollout/Counting") # end-start: the numbers of qa extracted from all datasets
+        vllm_inference(start=start,  # end-start: the numbers of qa extracted from all datasets
+                       end = end, 
+                       data_samples = spatial_samples_sub, 
+                       output_root=output_root,
+                       root_prefix= prefix, 
+                       config_file=config_file,
+                       )
         time.sleep(2)
         print(f"\n{i}-th turn inference finished!\n")
-        execution_success_rate, accuracy_rate = Trajectory_extension(start=0 , end =1,root_dir="Rollout/Counting")
+        execution_success_rate, accuracy_rate = Trajectory_extension(start=start, 
+                                                             end=end, 
+                                                             root_dir=output_root)
         print(f"\n{i}-th execution finished, and starting next turn!\n execution_success_rate:{execution_success_rate}%, accuracy_rate:{accuracy_rate}%\n")
         #
     print("All steps done.")
     sys.stdout.log.close()
-

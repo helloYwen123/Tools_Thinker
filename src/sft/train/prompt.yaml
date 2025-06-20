@@ -1,0 +1,200 @@
+system_prompt_template: |
+   You are an expert code reviewer and vision reasoning assistant. Given a question about an image and the assistant's Python code,
+   determine whether that code — *without actually running it* — will arrive at the correct final answer, assuming all referenced tools work exactly as described in the metadata.
+   
+   Return **strictly valid JSON** with two keys:
+   is_correct: boolean   # true if the code fully solves the task
+   explanation: string   # one-sentence justification.
+
+prompt_tamplate: |
+  Visual Question based on the image:
+  Q: {question}
+
+prompt_tamplate_4_multi: |
+  Several visual questions based on the image:
+  Q: {question}
+
+# available_tools for usage
+available_tools:
+  - Object_Detector_Tool
+  - Text_Detector_Tool
+  - Letter_Detector_Tool
+  - Depth_Estimator_Tool
+  - Segmenter_Tool
+  - Matcher_Tool
+  # - Advanced_Object_Detector_Tool
+
+# metadata for available tools
+toolbox_metadata:
+  # Grounding DINO-1.0 base
+  Object_Detector_Tool:
+    tool_module_name: object_detector
+    tool_class_name: Object_Detector_Tool
+    tool_description: A tool that detects objects in an image.
+    input_types:
+      image: str - The path to the image file.
+      labels: list - A list of object labels to detect.
+      save_object: "bool - Whether to save the detected objects as `png` images (default: False)."
+      saved_image_path: "str - The path to save the detected object `png` images (default: 'detected_objects')."
+      save_json: "bool - Whether to save detection results as a JSON file (default: False)."
+      json_path: "str - The file path to save the JSON results if `save_json` is True (default: 'detection_results.json')."
+    output_types: >
+      a dictionary mapping each detected label to a list of detection entries
+      e.g. {'baseball': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png','cropped_image': <class 'PIL.Image.Image'> }, ...]}.
+      Note: the `box` is provided in `xyxy`(left-top, right-bottom) format and 'cropped_image' is object image in <class 'PIL.Image.Image'> format.
+    demo_commands:
+      command: |
+        object_detector_tool = Object_Detector_Tool()
+        detected_objects = object_detector_tool.execute(image='path/to/image', labels=['baseball', 'basket'] ,save_object=True, saved_image_path='detected_objects')
+      output_example: |
+        detected_objects : {
+        'baseball': [{'box':<class 'tuple'>,'score': <class 'float'>,'saved_image_path':<class 'str'>,'cropped_image':<class 'PIL.Image.Image'>}],
+        'basket': [{'box':<class 'tuple'>,'score': <class 'float'>,'saved_image_path':<class 'str'>,'cropped_image' <class 'PIL.Image.Image'>}]
+        }
+    user_metadata:
+      potential usage: >
+        The bounding box obtained by tool can be used to determine precise object regions and pixel-level coordinates, enabling integration
+        with downstream tasks such as depth estimation, object segmentation, or regions localization for sparse matching.
+  # Grounding DINO -1.5 Pro
+  Advanced_Object_Detector_Tool:
+    tool_module_name: advanced_object_detector
+    tool_class_name: Advanced_Object_Detector_Tool
+    tool_description: Advanced Object detector performs better than Object Detector. Supports single or multiple category prompts with optional cropping of detected objects.
+    input_types: 
+      image: "str: Path to the input image file."
+      labels: List of object categories to detect, e.g., ['person', 'tree']
+      threshold: Detection score threshold. Only objects above this score will be returned.
+      save_object: Whether to save cropped images of detected objects (bool).
+      saved_image_path: Directory to save cropped object `png` images as if `save_object` is True.
+    output_types:
+      results: >
+        A dictionary grouped by label, each containing list of detection entries with box, score, cropped object image in PIL format and optional saved image path.
+        e.g. {'person': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_path': 'path/to/saved/image.png', 'cropped_image': <class 'PIL.Image.Image'>}]}
+    demo_commands:
+      command: |
+        advanced_object_detector_tool = Advanced_Object_Detector_Tool()
+        result = advanced_object_detector_tool.execute(image='path/to/demo', labels=['person', 'bicycle'], threshold=0.4, save_object=False)
+      output_example: |
+        results: {'person':[{'box': <class 'tuple'>, 'score': <class 'float'>, 'saved_path': None, "cropped_image": <class 'PIL.Image.Image'>}],'bicycle':[{'box': <class 'tuple'>, 'score': <class 'float'>, 'saved_path': None, "cropped_image": <class 'PIL.Image.Image'>}]}
+    user_metadata:
+      potential_usage: >
+        The bounding box can be used to determine precise object regions and pixel-level coordinates, enabling integration
+        with downstream tasks such as depth estimation, object segmentation, or regions localization for sparse matching.
+  # Text Detector Tool(OCR)
+  Text_Detector_Tool:
+    tool_module_name: text_detector
+    tool_class_name: Text_Detector_Tool
+    tool_description: A tool that detects text in an image.
+    input_types:
+      image: "str - The path to the image file."
+      languages: "list - A list of language codes for the OCR model."
+      detail: "int - The level of detail in the output. Set to 0 for simpler output, 1 for detailed output."
+    output_types: >
+      list - A list of detected text blocks.
+      Each block contains the four anchor coordinates of the bounding box, the recognized text, and the confidence score (float).
+      e.g. [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], 'Detected text', score], ...].
+    demo_commands:
+      command: |
+        text_detector_tool = Text_Detector_Tool()
+        result = text_detector_tool.execute(image='path/to/image', languages=['en', 'de'])
+      output_example: "result: [<class 'list[list]'>, <class 'str'>, <class 'float'>], ...]"
+    user_metadata:
+      frequently_used_language: 
+        ch_sim: Simplified Chinese
+        de: German
+        en: English
+        ja: Japanese
+      important_note: >
+        The text detector may return additional text beyond the correct result.
+        Make sure to extract the required text according to your needs.
+  # Letter Detector Tool
+  Letter_Detector_Tool:
+    tool_module_name: letter_detector
+    tool_class_name: Letter_Detector_Tool
+    tool_description: A tool that detects letter(e.g. Aa,Bb) in an image.
+    input_types:
+      image: str - The path to the image file.
+    output_types: >
+      list - A list of detected letter blocks.
+      Each block contains the four anchor coordinates of the bounding box, the recognized text, and the confidence score (float).
+    demo_commands:
+      command: |
+        letter_detector_tool = Letter_Detector_Tool()
+        results = letter_detector_tool.execute(image='path/to/image')
+      output_example: "results: [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], 'A', 0.95], ...]."
+  # Depth Estimation Tool
+  Depth_Estimator_Tool:
+    tool_module_name: depth_estimator
+    tool_class_name:  Depth_Estimator_Tool
+    tool_description: A tool that estimates pixel-level depth from image.
+    input_types:
+      image_path: list[str] - The list of path to a single or several input images.
+      output: "bool - If True, save the depth image (default: False)."
+      outdir: "str - The output directory to save the depth images (default: './vis_depth')."
+    output_types: >
+      image_results: dict - A dictionary containing the depth maps for each input image.
+      Each key is the input `image_path`(str) and the corresponding value is a dictionary with keys:
+      e.g. 'assets/image1.jpg': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': 'path/to/saved/image.png'}
+      # Note that in the depth map, larger pixel values represent greater depth (i.e., further from the camera).
+    demo_commands:
+      command: |
+        depth_estimator_tool = Depth_Estimator_Tool()
+        image_results = depth_estimator_tool.execute(image_path=['path/to/image1', 'path/to/image2'], output=True, outdir= './vis_depth')
+      output_example: |
+        image_results: {'assets/image1.jpg': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>},
+        'assets/image2.jpg': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>}}
+  # Segmentation Tool     
+  Segmenter_Tool:
+    tool_module_name: segmenter
+    tool_class_name: Segmenter_Tool
+    tool_description: >
+      A segmentation tool is capable of accurately localizing specific objects at the pixel level using specific prompts(e.g., points or boxes).
+    input_types:
+      prompt_type: "str: 'points' or 'boxes'."
+      input_prompts: >
+        list[dict] - list of dicts each with an `image_path` key (str) and a prompt key based on the prompt_type.
+        For the 'points' prompt type, prompt key should be 'input_points', a list of [x, y] coordinates with at least two points.
+        For the 'boxes' prompt type, prompt key should be 'input_box', a list of bounding boxes in `xyxy` format (i.e., [xmin, ymin, xmax, ymax]).
+      model_size: "str: SAM2 model size, e.g., 'base_plus' or 'small' (default: 'small')."
+    output_types: >
+      masks: np.ndarray or list[np.ndarray] -
+      For a single image input, the output is a numpy array, each of shape (O, 1, H, W), where `O` denotes the number of objects to be segmented.
+      For batch input, the output is a list of length N (number of input images), where each element is a numpy array for the corresponding image, with each set having shape (O, 1, H, W), where `O` represents the number of objects to segment in the image.
+      # Note that in these output masks, pixels set to 1 represent the region of the segmented object.
+    demo_commands:
+      command: |
+        segmenter_tool = Segmenter_Tool()
+        masks = segmenter_tool.execute(prompt_type='boxes', input_prompts=[{'image_path': 'path/to/image1', 'input_box': [[100,150,400,500]]}, {'image_path': 'path/to/image2', 'input_box': [[50,80,300,350]]}], model_size='small')
+      output_example: >
+        masks: list[np.ndarray] - [mask_image1, mask_image2]
+        # Example: mask_image1.shape -> (1, 1, Height1, Width1), mask_image2.shape -> (1, 1, Height2, Width2), where each mask matches the original image in height and width.
+      user_metadata:
+        Before using the segmentation tools, it is advisable to consider how to obtain the points and bounding box coordinates for the visual prompt.
+  # Matching Tool
+  Matcher_Tool:
+   tool_module_name: matcher
+   tool_class_name: Matcher_Tool
+   tool_description: A tool that computes global semantic similarity and identifies corresponding local features among images.
+   input_types: 
+    matching_type: "str - 'global_match' or 'local_match'. (Default is 'global_match')"
+    ref_img: "list[str] - The list of paths to one reference image file."
+    candidate_img: list[str] - The list of paths to the candidate imagesfile.
+    ref_bbox: "list[list] - required for 'local_match' matching type, a list of 2 corner points of box representting a region in the reference image to be matched , in the format [[xmin, ymin], [xmax, ymax]]."
+    candidate_bbox: list[list] - required for 'local_match' matching type, a list of bounding boxes in the candidate image, each defined by 2 corner points coordinates [[xmin, ymin], [x2, y3]], the most similar box to the reference box will be selected.
+    output_types: >
+      int - if 'matching_type' is 'global_match', return the best matching image idx in list of `candidate_img`.
+      if 'matching_type' is 'local_match', return the best matching bounding box idx in `candidate_bbox`.
+    demo_commands:
+      command(1): |
+        matcher_tool = Matcher_Tool()
+        matched_idx = matcher_tool.execute(matching_type='global_match', ref_img=['/path/to/ref.jpg'], candidate_img=['/path/to/candidate1.jpg', '/path/to/candidate2.jpg', '/path/to/candidate3.jpg'])
+      output_example: "matched_idx = 1  # That means `candidate_img[1]` is the best matching image."
+      command(2): |
+        matcher_tool = Matcher_Tool()
+        matched_idx = matcher_tool.execute(matching_type='local_match', ref_img=['/path/to/ref.jpg'], candidate_img=['/path/to/candidate.jpg'], ref_bbox=[[[xmin, ymin], [x2, y2]]], candidate_bbox=[[[xmin, ymin], [xmax, ymax]],...])])
+      output_example(2):
+        "matched_idx: 0 # That means the `candidate_bbox[0]` is the best matching one."
+
+
+# If you think the listed tools are not sufficient, you can propose any necessary tool yourself, but you must also provide the tool's metadata in json format.
+# "filter geo/math ;tools ;source ;infer 3-turns"

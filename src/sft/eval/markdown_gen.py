@@ -27,6 +27,6 @@ def extract_incorrect_to_md(input_path, output_md_path):
 
 if __name__ == "__main__":
     # 替换为你的路径
-    input_json_path = "./output/counting_tools_eval_log_2000.json"
+    input_json_path = "./output/eval_log-2025-06-16_22-21.json"
     output_md_path = "case_showing_all.md"
     extract_incorrect_to_md(input_json_path, output_md_path)

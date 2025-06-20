@@ -22,6 +22,5 @@ def drop_assistant_turns(src_path: str, dst_path: str):
 
 
 if __name__ == "__main__":
-    # 
-    drop_assistant_turns("../train/test.jsonl", "oumi_test_eval.jsonl")
+    drop_assistant_turns("../train/merged_test.jsonl", "merged_test.jsonl")
     # drop_assistant_turns("train.jsonl", "train_eval.jsonl")

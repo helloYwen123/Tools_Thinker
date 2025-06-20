@@ -36,6 +36,7 @@ def convert_to_chat_format(input_json_path, output_json_path):
         for entry in data[:]:
             image_paths = entry['image_paths']
             question = entry['prompt']
+            question = question.lower()
             # question = question.replace("<image> Answer in natural language. ", "")
             # 拼接 image paths info 到文本中
             image_info_text = "The inputs image paths:\n" + "\n".join([f"`{data_prefix+p}`" for p in image_paths])
