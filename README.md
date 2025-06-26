@@ -1,3 +1,5 @@
+# This branch is for further developement and debug based on old version `EasyR1`
+###################################################################################################
 # EasyR1: An Efficient, Scalable, Multi-Modality RL Training Framework
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/hiyouga/EasyR1)](https://github.com/hiyouga/EasyR1/stargazers)
