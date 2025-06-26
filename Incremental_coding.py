@@ -129,8 +129,9 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
     
     for sample in spatial_samples_sub:
         dataset_prefix = os.path.join(root_prefix, SourcePrefix_Map[sample["source"]])
-        wrapped_data = make_conversation_sat(sample, dataset_prefix, conf)
-        all_samples.append(wrapped_data)
+        if "spatial reasoning question" in sample["response"]:
+            wrapped_data = make_conversation_sat(sample, dataset_prefix, conf)
+            all_samples.append(wrapped_data)
 
     engine_args = EngineArgs(
         model="Qwen/Qwen2.5-VL-7B-Instruct",
@@ -138,7 +139,7 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
         limit_mm_per_prompt={"image": 3},
         enforce_eager=False,
         enable_prefix_caching=True,
-        # max_model_len = 8192,
+        max_model_len = 8192,
         tensor_parallel_size=1,  # distributed inference
         gpu_memory_utilization = 0.9 # GPU memory utilization
     )
@@ -237,7 +238,7 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
                                     return (step_records, step_outputs, history_snaps,
                                            result_correct, exe_success, acc_success, exe_num)
                                 else:
-                                    result = f"WRONG RESULT: Though the code ran successfully, the final result: '{filtered.lower()}' does not match the ground truth: '{sample['solution'].lower()}'. Consider debugging and revising your implementation."
+                                    result = f"WRONG RESULT: Though the code ran successfully, the final result: '{filtered.lower()}' does not match the ground truth. Consider debugging and revising your implementation."
                             else:
                                 result = filtered
                         else: # problematic code case
@@ -292,7 +293,7 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
         print(f"\nDebug for message prompt:\n{prompt}")
         
         print(f"\n[Sample {sample_idx}]\n")
-        for id in range(1):
+        for id in range(1): # determine rollouts time for single sample
             # Rollout starting
             step_records,step_outputs,history_snaps,result_correct,exe_success,acc_success,exe_num = run_one_rollout(llm=llm, 
                                                                                                         images=images,
@@ -461,7 +462,7 @@ if __name__ == "__main__":
             spatial_samples_sub = [id2sample[idx] for idx in selected_indices]
             print("Loaded spatial_samples from existing indices, order preserved.\n")
 
-    vllm_inference(start=start,  # end-start: the numbers of qa extracted from all datasets
+    vllm_inference( start=start,  # end-start: the numbers of qa extracted from all datasets
                     end = end, 
                     data_samples = spatial_samples_sub, 
                     output_root=output_root,
