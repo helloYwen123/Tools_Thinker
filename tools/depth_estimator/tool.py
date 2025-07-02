@@ -95,7 +95,7 @@ class Depth_Estimator_Tool(BaseTool):
 
             # iterate over image_path
             for k, filename in enumerate(image_path):
-                print(f'Processing image {k+1}/{len(image_path)}: {filename}')
+                # print(f'Processing image {k+1}/{len(image_path)}: {filename}')
                 raw_image = cv2.imread(filename)
                 print(f"raw_image shape: {raw_image.shape}")
                 if raw_image is None:

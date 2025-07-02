@@ -40,6 +40,7 @@ prompt_template: |
   Now generate the code in a new round:
 # {question}；{available_tools}；{available_tools}；{image_paths}
 
+
 # available_tools for usage
 available_tools:
   - Object_Detector_Tool
@@ -49,6 +50,7 @@ available_tools:
   #- Advanced_Object_Detector_Tool
   - Segmenter_Tool
   - Matcher_Tool
+
 # metadata for available tools
 toolbox_metadata:
   # Grounding DINO-1.0 base
@@ -61,20 +63,18 @@ toolbox_metadata:
       labels: list - A list of object labels to detect.
       save_object: "bool - Whether to save the detected objects as `png` images (default: False)."
       saved_image_path: "str - The path to save the detected object `png` images (default: 'detected_objects')."
-      save_json: "bool - Whether to save detection results as a JSON file (default: False)."
-      json_path: "str - The file path to save the JSON results if `save_json` is True (default: 'detection_results.json')."
     output_types: >
       a dictionary mapping each detected label to a list of detection entries
-      e.g. {'baseball': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png','cropped_image': <PIL.Image.Image> }, ...]}.
-      Note: the `box` is provided in `xyxy`(left-top, right-bottom) format and 'cropped_image' is object image in <PIL.Image.Image> format.
+      e.g. {'baseball': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}, ...]}.
+      Note: the `box` is provided in `xyxy`(left-top, right-bottom) format.
     demo_commands:
       command: |
         object_detector_tool = Object_Detector_Tool()
         detected_objects = object_detector_tool.execute(image='path/to/image', labels=['baseball', 'basket'] ,save_object=True, saved_image_path='detected_objects')
       output_example: |
         detected_objects : {
-        'baseball': [{'box':<tuple>,'score': <float>,'saved_image_path':<str>,'cropped_image':<PIL.Image.Image>}],
-        'basket': [{'box':<tuple>,'score': <float>,'saved_image_path':<str>,'cropped_image' <PIL.Image.Image>}]
+        'baseball': [{'box':<tuple>,'score': <float>,'saved_image_path': <str>}],
+        'basket': [{'box':<tuple>,'score': <float>,'saved_image_path': <str>}]
         }
     user_metadata:
       potential usage: >
@@ -93,14 +93,14 @@ toolbox_metadata:
       saved_image_path: Directory to save cropped object `png` images as if `save_object` is True.
     output_types:
       results: >
-        A dictionary grouped by label, each containing list of detection entries with box, score, cropped object image in PIL format and optional saved image path.
-        e.g. {'person': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_path': 'path/to/saved/image.png', 'cropped_image': <PIL.Image.Image>}]}
+        A dictionary grouped by label, each containing list of detection entries with box, score, and optional saved image path.
+        e.g. {'person': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_path': 'path/to/saved/image.png'}]}
     demo_commands:
       command: |
         advanced_object_detector_tool = Advanced_Object_Detector_Tool()
         result = advanced_object_detector_tool.execute(image='path/to/demo', labels=['person', 'bicycle'], threshold=0.4, save_object=False)
       output_example: |
-        results: {'person':[{'box': <tuple>, 'score': <float>, 'saved_path': None, "cropped_image": <PIL.Image.Image>}],'bicycle':[{'box': <tuple>, 'score': <float>, 'saved_path': None, "cropped_image": <PIL.Image.Image>}]}
+        results: {'person':[{'box': <tuple>, 'score': <float>, 'saved_path': None}],'bicycle':[{'box': <tuple>, 'score': <float>, 'saved_path': None}]}
     user_metadata:
       potential_usage: >
         The bounding box can be used to determine precise object regions and pixel-level coordinates, enabling integration
@@ -151,16 +151,16 @@ toolbox_metadata:
   Depth_Estimator_Tool:
     tool_module_name: depth_estimator
     tool_class_name:  Depth_Estimator_Tool
-    tool_description: A tool that estimates pixel-level depth from image, saving depth map in `.npy` file.
+    tool_description: A tool that estimates pixel-level depth from image, saving depth map in `npy` file.
     input_types:
       image_path: list[str] - The list of path to a single or several input images.
       depth_estimation_type: 'str - The type of depth estimation to use. Can be one of ["relative", "metric_indoor","metric_outdoor"]. Default: "relative" '
-      output: "bool - If True, save the depth image (default: False)."
+      output: "bool - If True, save the `png` depth image in (default: False)."
       outdir: "str - The output directory to save the depth images (default: './vis_depth')."
     output_types: >
-      Dict - A dictionary containing the depth maps for each input image.
-      Each key is the path to a saved depth map `.npy` file (a string) and the corresponding value is a dictionary with keys:
-      e.g. 'demo01_depth.npy': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': 'path/to/saved/depth_image.png'}
+      Dict - A dictionary where: Each key is the path (string) to a saved depth map `npy` file (e.g., './image1_depth.npy'), 
+      Each value is a dictionary with: 'depth_map': a NumPy array of shape (H, W) containing the depth values, 'output_image_path': a string path to the saved visualization (a `png` image of the depth map)
+      e.g. {'/path/to/npy_file/': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': 'path/to/saved/depth_image.png'}}
       # Note that in "relative" estimation type, larger pixel values of `depth map` represent larger depth (i.e., further from the camera).
       # Note that in "metric_indoor" or "metric_outdoor" estimation type, the predicted `depth map` represents absolute depth in meters(m). 
     demo_commands:
@@ -168,8 +168,9 @@ toolbox_metadata:
         depth_estimator_tool = Depth_Estimator_Tool()
         image_results = depth_estimator_tool.execute(image_path=['path/to/image1', 'path/to/image2'], output=True, outdir= './vis_depth')
       output_example: |
-        image_results: {'demo01_depth.npy': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>},
-        'demo02_depth.npy': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>}}
+        image_results: Dict[Dict] - 
+        {'./image1_depth.npy': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>},
+        './image2_depth.npy': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>}}
     user_metadata:
       It's very important to use the correct metric estimation type (metric_indoor or metric_outdoor) depending on the input image.
   # Segmentation Tool
@@ -179,24 +180,23 @@ toolbox_metadata:
     tool_description: >
       A segmentation tool is capable of accurately localizing specific objects at the pixel level using specific prompts(e.g., points or boxes),saving segmented mask in `npy` file.
     input_types:
-      prompt_type: "str: 'points' or 'boxes'."
+      prompt_type: "str: 'points' or 'boxes'"
       input_prompts: >
-        list[dict] - list of dicts each with an `image_path` key(str) and a prompt key based on the prompt_type.
-        For the 'points' prompt type, prompt key should be 'input_points', a list of [x, y] coordinates with at least two points.
-        For the 'boxes' prompt type, prompt key should be 'input_box', a list of bounding boxes in `xyxy` format (i.e., [xmin, ymin, xmax, ymax]).
+        list[dict] - list of dicts each with an `image_path` key(str) and a prompt key(str) based on the prompt_type.
+        For the 'points' prompt type, prompt key should be 'input_points', value is a list of coordinates with at least two points (i.e., [[x1, y1],[x2, y2]]).
+        For the 'boxes' prompt type, prompt key should be 'input_box', value is a list of bounding boxes in `xyxy` format (i.e., [xmin, ymin, xmax, ymax]).
       model_size: "str: SAM2 model size, e.g., 'base_plus' or 'small' (default: 'small')."
     output_types: >
-      masks: Dict[np.ndarray] -
-      The output is a dictionary where each key is the path to a saved mask `.npy` file (a string), corresponding to an input image. 
-      Each value is a NumPy array of shape (O, 1, H, W), where O denotes the number of segmented objects.
+      masks: Dict[str, np.ndarray] - The output is a dictionary where each key is the path(string) to a saved mask `npy` file, corresponding to an input image. 
+      Each value is a NumPy array mask of shape (O, 1, H, W), where `O` denotes the number of segmented objects and it matches the original image in height and width.
+      e.g. {'/path/to/npy_file/': <numpy array with shape (O, 1, H, W)>}}
       # Note that in these output masks, pixels set to 1 represent the region of the segmented object.
     demo_commands:
       command: |
         segmenter_tool = Segmenter_Tool()
         masks = segmenter_tool.execute(prompt_type='boxes', input_prompts=[{'image_path': 'path/to/image1', 'input_box': [[100,150,400,500]]}, {'image_path': 'path/to/image2', 'input_box': [[50,80,300,350]]}], model_size='small')
       output_example: >
-        masks: Dict[np.ndarray] - {`./mask_0.npy`: np.ndarray, `./mask_1.npy`: np.ndarray}
-        # Example: np.ndarray.shape -> (O, 1, Height, Width), where each mask matches the original image in height and width.
+        masks: Dict[str, np.ndarray] - {`./image1_mask.npy`: <np.ndarray>, `./image2_mask.npy`: <np.ndarray>}
     user_metadata:
       Before using this tool, it is advisable to consider how to obtain the points and bounding box for the visual prompt input.
   # Matching Tool
@@ -223,4 +223,3 @@ toolbox_metadata:
         matched_idx = matcher_tool.execute(matching_type='local_match', ref_img=['/path/to/ref.jpg'], candidate_img=['/path/to/candidate.jpg'], ref_bbox=[[[xmin, ymin], [xmax, ymax]]], candidate_bbox=[[[xmin, ymin], [xmax, ymax]],...])
       output_example(2):
         "matched_idx: 0 # That means the `candidate_bbox[0]` is the best matching one."
-# TODO

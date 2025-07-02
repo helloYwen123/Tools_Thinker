@@ -33,7 +33,7 @@ from vllm import LLM, EngineArgs, SamplingParams
 from vllm.distributed import cleanup_dist_env_and_memory
 from dataclasses import asdict
 
-def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Counting", root_prefix = "/datasets", config_file="prompt_configuration_file.yaml"):
+def vllm_inference(start=0, data_samples = None, output_root="Rollout/Counting", root_prefix = "/datasets", config_file="prompt_configuration_file.yaml"):
     
     # load selected tooldata from prompt yaml file        
     def load_tool_data(conf):
@@ -64,7 +64,7 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
         images = [Image.open(path) for path in image_paths]
         idx = example["idx"]  # image name as index
         question=example["messages"][0]["content"].strip()
-        question = question.lower().replace("please answer directly with only the letter of the correct option and nothing else.", "please answer directly with only the letter of the correct option")
+        question = question.lower().replace("please answer directly with only the letter of the correct option and nothing else.", "")
         answer = example["messages"][1]["content"].strip()
         # get tools
         active_tools, filtered_meta = load_tool_data(conf)
@@ -90,7 +90,9 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
             "image": images,
             "image_path": image_paths,
             "prompt": [
-                {"role": "system", "content":"You are a helpful assistant who is good at solving vision-based spatial problems through coding."},
+                {"role": "system", "content":
+                "You are a helpful AI assistant who is good at solving vision-based spatial problems through coding.You can effectively analyze the execution results of code, identify potential issues, and refine the code accordingly to ensure it runs correctly"
+                },
                 {
                     "role": "user",
                     "content": message_content,
@@ -138,7 +140,7 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
         limit_mm_per_prompt={"image": 3},
         enforce_eager=False,
         enable_prefix_caching=True,
-        # max_model_len = 8192,
+        max_model_len = 8192,
         tensor_parallel_size=1,  # distributed inference
         gpu_memory_utilization = 0.9 # GPU memory utilization
     )
@@ -149,187 +151,148 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
     )
     
     sampler_pause = SamplingParams(
-        temperature=1.0,
+        temperature=0.5,
         stop=[TRIGGER_STR],
         include_stop_str_in_output=True,
-        max_tokens=1024,
+        max_tokens=512,
         # seed =42,
         )
 
-    def filter_result(result_data: dict):
+    def filter_result(result_data: dict, tool: str):
         """
         Picks the final result on success or the traceback on error.
         """
         status = result_data.get("status")
         if status == "success":
             if result_data.get("result") is not None:
-                if not isinstance(result_data.get("result"), str):
-                    result_str = str(result_data["result"])
+                result = result_data.get("result")
+                # here should identify: whether to pick path (segmentor or depth estimator)\original variable;
+                if tool == "others":
+                    result =  f"The full output for tool usage: {result}"
+                    return result
+                elif tool == "segment": 
+                    masks_paths = list(result.keys())
+                    result = f"The Paths to saved `npy` segmentation masks file: {masks_paths}"
+                    return result
+                elif tool == "depth":
+                    depth_paths = list(result.keys())
+                    result = f"The Paths to saved `npy` depth maps file: {depth_paths}"
+                    return result
                 else:
-                    result_str = result_data.get("result") # here
-                return result_str, True
-            stdout = result_data.get("stdout", "").strip()
-            m = re.search(r"final_result:?[ \t]*(.+)", stdout)
-            if m:
-                return m.group(1).strip(), True
+                    raise ValueError("Unknown Used Tool Names!\n")
             else:
-                no_result_finding = "OUTPUT VARIABLE MISSING: 'final_result' variable not found in code."
-                return no_result_finding, False
+                no_result_finding = "OUTPUT VARIABLE MISSING: 'final_result' variable not found in code. Please assign the output with it!"
+                return no_result_finding
         else:
             raw = result_data.get("error_message") or result_data.get("stderr") or result_data.get("stdout", "")
-            return raw.split("\n--- Sys Path")[0].strip(), False
+            return raw.split("\n--- Sys Path")[0].strip()
     
-    def run_one_rollout(llm, images, initial_prompt, sample, rolloutid, max_iters=100):
+    def run_one_rollout(llm, images, initial_prompt, sample, rolloutid, max_iters=5):
         """
         return assistant complete response, and ones for each step
         """
         history_strs = initial_prompt
+
         # initialize
-        step_outputs = [] # code
         step_records = [] # code + interpreter
         history_snaps = [] # prompts + code + interpreter
         result_correct = "False"
-        exe_num = 0
+        exe_num = 0 #
         acc_success, exe_success = 0, 0
-        
+        # exe_num: The total times of tool usage execution for current QA.
+        # acc_success:  whether the current QA answer correctly(bool: True/False)
+        # exe_success:  The times of successful tool usage execution for current QA
         for iter in range(max_iters):
             exe_num += 1
+
             request = {"prompt": history_strs, "multi_modal_data": {"image": [images]}}
             out_text = llm.generate(request, sampler_pause)[0].outputs[0].text
-            step_outputs.append(out_text)
             history_strs += out_text
             ori_out_text = out_text
+
             # <<< TODO: run code in Server: Madeira >>> #
-            m = re.search(r"<code>(.*?)</code>", out_text, flags=re.S)
-            if m:
-                out_text = m.group(1).strip()
-                # Check if code still contains markdown-style block
-                if out_text.strip().startswith("```"):
-                    result = (
-                        "FORMAT ERROR: Do not use markdown formatting like ```python  ``` code fence "
-                        "Only wrap your code in <code> </code> tags without any other formatting."
-                    ) 
-                else:
-                    payload = {
-                    "code": out_text,
-                    "timeout": EXECUTION_TIMEOUT_SECONDS,
-                    "q_aid": rolloutid
-                    }
-                    try:
-                        resp = requests.post(MARAJO_SANDBOX_URL, json=payload, timeout=EXECUTION_TIMEOUT_SECONDS)
-                        resp.raise_for_status()
-                        result_data = resp.json()
-                        status = result_data.get("status")
-                        filtered, result_existing = filter_result(result_data)
-                        if status == "success":
-                            exe_success += 1 # execution rate + 1
-                            if result_existing == True:
-                                if filtered.lower() == sample["solution"].lower():
-                                    acc_success += 1 # accuracy rate + 1
-                                    result = filtered
-                                    result_correct = "True"
-                                    interp_block = f"<interpreter>{result}</interpreter>"
-                                    history_snaps.append(history_strs)
-                                    step_records.append(
-                                        {"code": out_text,
-                                        "interpreter": result}
-                                    )
-                                    return (step_records, step_outputs, history_snaps,
-                                           result_correct, exe_success, acc_success, exe_num)
-                                else:
-                                    result = f"WRONG RESULT: Though the code ran successfully, the final result: '{filtered.lower()}' does not match the ground truth. Consider debugging and revising your implementation."
-                            else:
-                                result = filtered
-                        else: # problematic code case
-                            result = filtered
-                        #print(f"[{idx}/{total}] Received status={result_data.get('status')}, filtered result: {repr(filtered)}")
-                    except Exception as ex:
-                        print(f"[{iter+1}/{max_iters}] Error during request or processing: {ex}")
-                        result = str(ex)
+            code_match = re.search(r"<code>(.*?)</code>", out_text, flags=re.S)
+            ans_match = re.search(r"<answer>\s*\\boxed\{(.*?)\}.*?</answer>", out_text, flags=re.S)
+
+            matches = [m for m in [code_match, ans_match] if m is not None]
+            if len(matches) == 1:
+                if ans_match and not code_match: # outputting the final answer
+                    m = matches[0]
+                    out_text = m.group(1).strip() # here is the content extracted from \boxed{}
+                    if out_text.lower() == sample["solution"].lower() or out_text.strip("\"'") == sample["solution"].strip("\"'"):
+                        result_correct = "True"
+                        acc_success += 1
+                        history_snaps.append(history_strs)
+                        step_records.append(
+                            {"code": ori_out_text.strip(),
+                            "step": iter + 1,
+                            "interpreter": "Result matches the ground truth.",
+                            "correct answer": True}
+                        )
+                        return (step_records, history_snaps,
+                            result_correct, exe_success, acc_success, exe_num)
+                    else:
+                        result = f"WRONG RESULT: Though the code ran successfully, the final result: {out_text.lower()}, does not match the ground truth."
+                else:  # outputting code snippets
+                    m = matches[0]
+                    out_text = m.group(1).strip()
+                    # Check if code still contains markdown-style block
+                    if out_text.strip().startswith("```"):
+                        result = (
+                            "FORMAT ERROR: Do not use markdown formatting like ```python  ``` code fence "
+                            "Only wrap your code in <code> </code> tags without any other formatting."
+                        )
+                    else:
+                        segment = out_text.count("Segmenter_Tool") >= 2
+                        depth   = out_text.count("Depth_estimator") >= 2
+                        if segment:
+                            tool = "segment"
+                        elif depth:
+                            tool = "depth"      
+                        else:
+                            tool = "others"
+                        payload = {
+                        "code": out_text,
+                        "timeout": EXECUTION_TIMEOUT_SECONDS,
+                        "q_aid": rolloutid
+                        }
+                        try:
+                            resp = requests.post(MARAJO_SANDBOX_URL, json=payload, timeout=EXECUTION_TIMEOUT_SECONDS)
+                            resp.raise_for_status()
+                            result_data = resp.json()
+                            status = result_data.get("status")
+                            filtered= filter_result(result_data, tool)
+                            if status == "success":
+                                exe_success += 1
+                            result = filtered # includes successful execution and failed execution
+                            #print(f"[{idx}/{total}] Received status={result_data.get('status')}, filtered result: {repr(filtered)}")
+                        except Exception as ex:
+                            print(f"[{iter+1}/{max_iters}] Error during request or processing: {ex}")
+                            result = str(ex)
+            elif len(matches) == 2:
+                result = "FORMAT ERROR: Detected both <code> and <answer> in output. This is ambiguous. Remember to still include the <Think> tags."
             else:
-                result = "FORMAT ERROR: Your previous reply was not accepted, because you don't response with ONLY valid Python code wrapped in one pair of <code></code> tags."
+                result = "FORMAT ERROR: Failed to detect <code>...</code> tags, or <answer>\\boxed{...}</answer> Tags from your response. Remember to still include the <Think> tags."
 
             # add exectution result into <interpreter> tags
-            interp_block = f"<interpreter>{result}</interpreter>"
+            interp_block = f"<inter>{result}</inter>"
             step_records.append({
                 "code": ori_out_text.strip(),
-                "interpreter": result
+                "interpreter": result,
+                "step": iter + 1
             })
             history_strs += interp_block
             if iter != max_iters-1:
-                history_strs += "\n<|assistant|>\n"
+                history_strs += "\n<|im_start|>assistant\n"    
             history_snaps.append(history_strs)
                 
             time.sleep(DELAY_BETWEEN_REQUESTS)
             
-        return (step_records, step_outputs, history_snaps,
+        return (step_records, history_snaps,
                 result_correct, exe_success, acc_success, exe_num)
     
-    # initialization
-    total_times = 0
-    total_execution_times = 0
-    total_accuracy_times = 0
-    
-    from tqdm.auto import tqdm
-    # iterate all samples data
-    # genreate idx from `start` to `end`
-    for sample_idx, sample in enumerate(
-        tqdm(all_samples, desc="Samples", position=0),
-        start=start + 1):
-        sample_dir = os.path.join(output_root, f"sample_{sample_idx}")
-        os.makedirs(sample_dir, exist_ok=True)
-        
-        #Preparation for inference
-        text = processor.apply_chat_template(
-            sample["prompt"], tokenize=False, add_generation_prompt=True
-        )
-        images = sample["image"]
-
-        # multi-turn outputs
-        md_samples, json_samples = [], []
-        # For debug
-        prompt = all_samples[0]['prompt'][1]["content"][-1]["text"]
-        print(f"\nDebug for message prompt:\n{prompt}")
-        
-        print(f"\n[Sample {sample_idx}]\n")
-        for id in range(1):
-            # Rollout starting
-            step_records,step_outputs,history_snaps,result_correct,exe_success,acc_success,exe_num = run_one_rollout(llm=llm, 
-                                                                                                        images=images,
-                                                                                                        initial_prompt=text, 
-                                                                                                        sample=sample,
-                                                                                                        rolloutid = str(id+1))
-            total_times += exe_num
-            total_execution_times += exe_success
-            total_accuracy_times += acc_success
-            json_sample = {
-                "image": sample["image_path"],
-                "question": sample["question"],
-                "QAid": sample["QAid"],
-                "rolloutID": str(id+1),
-                "GT": sample["solution"],
-                "code_trace": step_outputs,
-                "step_records": step_records,
-                "result_correct": result_correct
-            }
-            # initialize trajectory file
-            json_samples.append(json_sample)
-            
-            # all_outputs.md
-            md_samples.append(
-                {
-                    "question": sample["question"],
-                    "gt": sample["solution"],
-                    "records": step_records,
-                    "prompts": history_snaps,
-                    "verdict": result_correct,
-                    "rollout_id": id + 1
-                }
-            )
-            
     def save_rollout_outputs(markdown_data, json_samples, sample_dir):
         # Save .md
-        
         for roll in markdown_data:
             md_path = os.path.join(sample_dir, f"all_rollouts_{roll['rollout_id']}.md")
             with open(md_path, "w", encoding="utf-8") as f:
@@ -361,8 +324,71 @@ def vllm_inference(start=0, end=1 , data_samples = None, output_root="Rollout/Co
         with open(json_path, "w", encoding="utf-8") as f_json:
             json.dump(json_samples, f_json, ensure_ascii=False, indent=4)
     
-    # save rollout result
-    save_rollout_outputs(md_samples, json_samples, sample_dir)
+    # initialization
+    total_times = 0
+    total_execution_times = 0
+    total_accuracy_times = 0
+    
+    from tqdm import tqdm 
+    # iterate all samples data
+    # genreate idx from `start` to `end`
+    for sample_idx, sample in enumerate(
+        tqdm(all_samples, desc="Samples", position=0),
+        start=start + 1):
+        sample_dir = os.path.join(output_root, f"sample_{sample_idx}")
+        os.makedirs(sample_dir, exist_ok=True)
+        
+        images = sample["image"]
+        text = processor.apply_chat_template(
+            sample["prompt"], tokenize=False, add_generation_prompt=True
+        )
+        # multi-turn outputs
+        md_samples, json_samples = [], []
+        # For debug
+        prompt = all_samples[0]['prompt'][1]["content"][-1]["text"]
+        print(f"\nDebug for message prompt:\n{prompt}")
+        
+        print(f"\n[Sample {sample_idx}]\n")
+        for id in range(1): # determine rollouts time for single sample
+            # Rollout starting
+            step_records,history_snaps,result_correct,exe_success,acc_success,exe_num = run_one_rollout(
+                                                                                                        llm=llm, 
+                                                                                                        images=images,
+                                                                                                        initial_prompt=text, 
+                                                                                                        sample=sample,
+                                                                                                        rolloutid = str(id+1))
+            total_times += exe_num
+            total_execution_times += exe_success
+            total_accuracy_times += acc_success
+            json_sample = {
+                "image": sample["image_path"],
+                "question": sample["question"],
+                "QAid": sample["QAid"],
+                "rolloutID": str(id+1),
+                "GT": sample["solution"],
+                "step_records": step_records,
+                "result_correct": result_correct
+            }
+            # initialize trajectory file
+            json_samples.append(json_sample)
+            
+            # all_outputs.md
+            md_samples.append(
+                {
+                    "question": sample["question"],
+                    "gt": sample["solution"],
+                    "records": step_records,
+                    "prompts": history_snaps,
+                    "verdict": result_correct,
+                    "rollout_id": id + 1
+                }
+            )
+            # save rollout result
+            save_rollout_outputs(md_samples, json_samples, sample_dir)
+            
+    
+    
+
 
     del llm
     cleanup_dist_env_and_memory()   # vLLM
@@ -392,7 +418,7 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, default=0, help="Start index")
     parser.add_argument("--end", type=int, default=10, help="End index")
     parser.add_argument("--prefix", type=str, default="/nfs/data8/liao/wxie/datasets", help="Start index")
-    parser.add_argument("--config_file", type=str, default="prompt_configuration_file_pause.yaml", help="End index")
+    parser.add_argument("--config_file", type=str, default="./config/prompt_configuration_file_incre.yaml", help="End index")
     args = parser.parse_args()
     
     json_path = args.json_path
@@ -424,7 +450,7 @@ if __name__ == "__main__":
     with open(json_path, 'r') as f:
         raw_dataset = json.load(f)
         
-    output_indices_file = os.path.join(output_root, f"{output_root}_selected_indices.json")
+    output_indices_file = os.path.join(output_root, f"selected_indices.json")
     # create output directory
     if not os.path.exists(output_root):
         os.makedirs(output_root)
@@ -461,13 +487,11 @@ if __name__ == "__main__":
             spatial_samples_sub = [id2sample[idx] for idx in selected_indices]
             print("Loaded spatial_samples from existing indices, order preserved.\n")
 
-    vllm_inference(start=start,  # end-start: the numbers of qa extracted from all datasets
-                    end = end, 
+    vllm_inference( start=start,  # end-start: the numbers of qa extracted from all datasets
                     data_samples = spatial_samples_sub, 
                     output_root=output_root,
                     root_prefix= prefix, 
                     config_file=config_file,
                     )
-    time.sleep(2)
     print("All steps done.")
     sys.stdout.log.close()

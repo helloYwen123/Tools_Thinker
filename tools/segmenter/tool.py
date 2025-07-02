@@ -110,14 +110,12 @@ class Segmenter_Tool(BaseTool):
                 
                 input_label = np.ones((input_point.shape[0]), dtype=int)
                 
-               
                 masks, scores, logits = predictor.predict(
                         point_coords=input_point,
                         point_labels=input_label,
                         multimask_output=True,
                     )
-                
-                
+                 
                 # here masks shape is (N, H, W) where N is the number of masks
                 sorted_ind = np.argsort(scores)[::-1] # sort in descending order
                 masks = masks[sorted_ind]  
@@ -145,7 +143,6 @@ class Segmenter_Tool(BaseTool):
                 
                 if "input_box" not in prompt or len(prompt["input_box"]) == 0:
                     raise ValueError("input_box is required.")
-                
                 # if only one box is provided
                 
                 input_boxes = np.array(prompt["input_box"])
@@ -167,7 +164,7 @@ class Segmenter_Tool(BaseTool):
             #### saved file path ####
             mask_arr = final_masks[0]
             base = os.path.splitext(os.path.basename(prompt["image_path"]))[0]
-            mask_path = os.path.join(save_dir, f"{base}_mask.npy")
+            mask_path = os.path.join(save_dir, f"{base}_mask_0.npy")
             np.save(mask_path, mask_arr)
             mask_dict[mask_path] = mask_arr
             #### saved file path ####
@@ -218,7 +215,7 @@ class Segmenter_Tool(BaseTool):
                     points_batch, labels_batch, box_batch=None, multimask_output=True
                     )
                 masks_batch = np.array(masks_batch)
-                # here masks_batch shape is (M ,O ,1 ,H ,W) 
+                # here masks_batch shape is (M ,O ,1 ,H ,W)
                 # where N is the number of masks, M is the number of images, O is the number of objects for corresponding image
                 for masks, scores in zip(masks_batch, scores_batch):
                     best_mask_idx = np.argmax(scores, axis=-1)
@@ -230,7 +227,7 @@ class Segmenter_Tool(BaseTool):
                 print(f"every{mask.shape}")
 
             for prompt, mask_arr in zip(input_prompts, final_masks):
-                base = os.path.splitext(os.path.basename(prompt["image_path"]))[0]
+                base = os.path.splitext(os.path.basename(prompt["image_path"]))[0] # extract images' base name for new `npy` file name
                 mask_path = os.path.join(save_dir, f"{base}_mask.npy")
                 np.save(mask_path, mask_arr)
                 mask_dict[mask_path] = mask_arr
