@@ -8,17 +8,16 @@ timestamp=$(date +"%m%d_%H%M%S")
 mkdir -p Debug_logs
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
-export HF_HOME=/home/vault/v100dd/v100dd23/hf_cache
 echo "huggingface cahce: $HF_HOME"
 export RAY_DISABLE_DASHBOARD=1
 # Blink: BLINK-Benchmark/BLINK
 # SAT: SAT
-# Mixed_SAT: /nfs/data8/liao/wxie/datasets/mixed_vqa.json
+# Mixed_SAT: /workspace/ywen_ws/datasets/Mix_VQAs.json
 
 
 
 PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
-    config=examples/config_tools.yaml \
+    config=examples/tools_config/config_tools.yaml \
     data.train_files=Mixed_SAT \
     data.val_files=Mixed_SAT \
     worker.actor.model.model_path=${MODEL_PATH} \
