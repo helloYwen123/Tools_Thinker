@@ -29,6 +29,13 @@ from math_verify import parse, verify
 
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
+def clean_string(val):
+    val = str(val).strip()
+    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+        val = val[1:-1].strip()
+    return val.lower()  #
+
+
 def accuracy_reward(exec_result, step, solution, QAid, **kwargs):
     """
     """
@@ -51,8 +58,8 @@ def accuracy_reward(exec_result, step, solution, QAid, **kwargs):
     except Exception:
         # symbolic calculation failed
         pass 
-
-    if exec_result == solution or exec_result.lower() == solution.lower():
+    
+    if clean_string(exec_result) == clean_string(solution):
         reward = 1.0
         with open(acc_log_path, "a") as f:
             f.write(f"\n[QAid]{QAid}\n")
@@ -102,7 +109,7 @@ def execution_reward(predict_str, QAid, step):
                         output = m.group(1).strip()
                     else:
                         reward = 0.0
-                        output = "Error: 'final_result' variable not found in output or not printed using the required format: print('final_result:', final_result).\n"
+                        output = "Error: 'final_result' variable not found in output or not printed using the required format\n"
                 result = (reward, output)
                 success_log_path = os.path.join(log_path, "success_execution.log")
                 with open(success_log_path, "a+") as df:
@@ -218,9 +225,11 @@ def tool_usage_reward(predict_str, step, QAid):
 
 def format_reward(predict_str, step, QAid):
     """Reward function that checks if the completion has a specific format."""
-    pattern1 = r"<code>(.*?)</code>" # no final_result but have correct tags
-    pattern2 = r"(?s)<code>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</code>"  # TODO - Done
-
+    pattern1 = r"<think>(.*?)</think>(\n*)<code>(.*?)</code>" # no final_result but have correct tags
+    # TODO - Done <code>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</code>
+    pattern2 = r"(?s)<think>.*?</think>\n*<code>.*?\bfinal_result\b\s*=.*?</code>"
+    
+     
     reward = 0.0
     if re.fullmatch(pattern2, predict_str, re.DOTALL):
         reward = 1.0    
