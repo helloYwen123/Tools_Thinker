@@ -5,7 +5,9 @@ MODEL_PATH=Qwen/Qwen2.5-VL-7B-Instruct #/home/stud/wxie/Dataset_Create/src/sft/t
 
 
 timestamp=$(date +"%m%d_%H%M%S")
+
 mkdir -p debug_logs
+
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 echo "huggingface cahce: $HF_HOME"
@@ -24,4 +26,8 @@ PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
     worker.rollout.tensor_parallel_size=1 \
     trainer.experiment_name=qwen2_5_vl_7b_grpo \
     trainer.n_gpus_per_node=2 \
+<<<<<<< HEAD
     2>&1 | tee "debug_logs/training_log_${timestamp}.txt"
+=======
+    2>&1 | tee "Debug_logs/training_log_${timestamp}.txt"
+>>>>>>> 923b00f8 (location)
