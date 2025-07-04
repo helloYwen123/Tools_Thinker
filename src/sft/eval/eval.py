@@ -30,7 +30,7 @@ tokenizer = build_tokenizer(ModelParams(model_name=model_name))
 processor = build_processor(model_name, tokenizer, trust_remote_code=True)
 
 # Load the dataset
-evaluation_dataset = VLJsonlinesDataset(dataset_path="./merged_test.jsonl",
+evaluation_dataset = VLJsonlinesDataset(dataset_path="/workspace/ywen_ws/mix_datasets/last_round_train.jsonl",
                              tokenizer=tokenizer,
                              processor=processor)
 
@@ -75,33 +75,42 @@ def Counting_tools_evaluation(inference_engine, dataset):
     # Run inference to generate the model responses.
     conversations = inference_engine.infer(dataset.conversations())
 
-    succss_exe = 0
+    success_exe = 0
     acc_exe = 0
     logs = []
+    
+    pattern = r"\s*<think>.*?</think>\s*<code>.*?</code>\s*"
     for conversation in tqdm(conversations, desc="Evaluating", unit="conv"):
         correctness = False
         success = False
         # Extract the assistant's (LLM's) response from the conversation.
         response: str = conversation.last_message().content
-        if re.fullmatch(r"<code>.*?</code>", response.strip(), re.DOTALL):
-            code = response.replace("<code>", "").replace("</code>", "").strip()
-            payload = {
-                "code": code,
-                "timeout": EXECUTION_TIMEOUT_SECONDS,
-                "q_aid": None
-                }
-            exec_result,case = server_api(payload)
+        
+        if re.fullmatch(pattern, response.strip(), re.DOTALL):
+            match = re.search(r"<code>(.*?)</code>", response, flags=re.DOTALL)
+            if match:
+                code = match.group(1).strip()
+                payload = {
+                    "code": code,
+                    "timeout": EXECUTION_TIMEOUT_SECONDS,
+                    "q_aid": None
+                    }
+                exec_result, case = server_api(payload)
+            else:
+                exec_result = "Code Extraction Error"
+                case = 5
         else:
             exec_result = "Format Error"
             case = 5
+        
         if not isinstance(exec_result, str):
             exec_result= str(exec_result)
         
         if (
-            (case not in [3, 4])       
+            (case not in [3, 4, 5])       
             # or (case == 3 and "KeyError:" in exec_result)
             ):
-            succss_exe += 1
+            success_exe += 1
             success = True
         if exec_result.lower() == conversation.metadata["ground_truth"].lower():
             acc_exe += 1
@@ -123,7 +132,7 @@ def Counting_tools_evaluation(inference_engine, dataset):
             "correctness": correctness,
             "success": success
         })
-    exe_rate = succss_exe / len(conversations)
+    exe_rate = success_exe / len(conversations)
     acc_rate = acc_exe / len(conversations)
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     with open(f"./output/eval_log-{timestamp}.json", "w", encoding="utf-8") as f_log:

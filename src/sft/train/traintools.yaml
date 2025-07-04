@@ -28,8 +28,8 @@ data:
     collator_name: "vision_language_with_padding"
     use_torchdata: True
     datasets:
-      - dataset_name: "vl_sft"
-        dataset_path: "./merged_train.jsonl"
+      - dataset_name: "vl_sft" # vl_sft_jsonl / vl_sft
+        dataset_path: /workspace/ywen_ws/mix_datasets/last_round_train.jsonl # "/workspace/ywen_ws/mix_datasets/last_round_train.jsonl"
         shuffle: True
         seed: 42
         transform_num_workers: "auto"
@@ -37,26 +37,15 @@ data:
           processor_name: "Qwen/Qwen2.5-VL-7B-Instruct"
           # limit: 4096 # Uncomment to limit dataset size!
           return_tensors: True
-      # Or, to use another dataset for training:
-      # - dataset_name: "HuggingFaceH4/llava-instruct-mix-vsft"
-      #   split: "train"
-      #   shuffle: True
-      #   seed: 42
-      #   transform_num_workers: "auto"
-      #   dataset_kwargs:
-      #     processor_name: "Qwen/Qwen2.5-VL-3B-Instruct"
-      #     return_tensors: True
-      # Note: If the images of the dataset are large they may cause OOM errors.
-      # Consider resizing the images or using GPUs with more memory.
 
 training:
-  output_dir: "output/vlm_finetuned"
+  output_dir: "saved_model/tool_thinker-0.1"
   trainer_type: "TRL_SFT"
   enable_gradient_checkpointing: True
   per_device_train_batch_size: 1 # Must be 1: the model generates variable-sized image features
-  gradient_accumulation_steps: 32
+  gradient_accumulation_steps: 4
   # max_steps: 20 # Uncomment if you want to limit the number of training steps.
-  num_train_epochs: 1
+  num_train_epochs: 5
   use_peft: False # disable lora
 
   gradient_checkpointing_kwargs:
@@ -72,8 +61,9 @@ training:
   weight_decay: 0.01
   lr_scheduler_type: "cosine"
 
-  logging_steps: 2
+  logging_steps: 1
   save_steps: 0
+  save_final_model: true
   dataloader_main_process_only: False
   dataloader_num_workers: "auto"
   dataloader_prefetch_factor: 8
