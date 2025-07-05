@@ -85,7 +85,7 @@ class Runner:
         ########################################
         # n = 0
         # import os
-        # log_dir = "/home/hpc/v100dd/v100dd23/wxie/Tools_Thinker"
+        # log_dir = "/workspace/ywen_ws/Tools_Thinker/logs"
         # os.makedirs(log_dir, exist_ok=True)
         # path = os.path.join(log_dir, "Mix_SAT.txt")
         
@@ -134,7 +134,7 @@ def main():
     ppo_config.deep_post_init()
     
     import os
-    ray_log_dir = f"/home/vault/v100dd/v100dd23/wxie/ray" # ray absolute path
+    ray_log_dir = f"/workspace/ywen_ws/ray" # ray absolute path
     os.makedirs(ray_log_dir, exist_ok=True)
     
     os.environ["TOKENIZERS_PARALLELISM"] = "true"

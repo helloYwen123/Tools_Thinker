@@ -1,7 +1,7 @@
 set -x
 
 export WANDB_API_KEY=2d883ab1037c7c4b261d54b523c3515fa87dde91
-MODEL_PATH=Qwen/Qwen2.5-VL-7B-Instruct #/home/stud/wxie/Dataset_Create/src/sft/train/output/vlm_finetuned #Qwen/Qwen2.5-VL-7B-Instruct  # replace it with your local file path
+MODEL_PATH=/workspace/ywen_ws/saved_model/tool_thinker-0.1 #/workspace/ywen_ws/saved_model/tool_thinker-0.1 #Qwen/Qwen2.5-VL-7B-Instruct  # replace it with your local file path
 
 
 timestamp=$(date +"%m%d_%H%M%S")
@@ -26,8 +26,5 @@ PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
     worker.rollout.tensor_parallel_size=1 \
     trainer.experiment_name=qwen2_5_vl_7b_grpo \
     trainer.n_gpus_per_node=2 \
-<<<<<<< HEAD
     2>&1 | tee "debug_logs/training_log_${timestamp}.txt"
-=======
-    2>&1 | tee "Debug_logs/training_log_${timestamp}.txt"
->>>>>>> 923b00f8 (location)
+

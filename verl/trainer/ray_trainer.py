@@ -306,7 +306,7 @@ class RayPPOTrainer:
             test_gen_batch, pad_size = pad_dataproto_to_divisor(test_gen_batch, self.actor_rollout_wg.world_size)
             test_output_gen_batch = self.actor_rollout_wg.generate_sequences(test_gen_batch)
             test_output_gen_batch = unpad_dataproto(test_output_gen_batch, pad_size=pad_size)
-
+    
             # Store generated outputs
             output_ids = test_output_gen_batch.batch["responses"]
             output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
@@ -315,14 +315,13 @@ class RayPPOTrainer:
             # test_batch: DataProto 对象;结合原先的 test_batch 和 test_output_gen_batch
             test_batch = test_batch.union(test_output_gen_batch)
             # 估计内容: 原始的 input_ids/mask, 生成的 responses/response_mask, non_tensor 的 ground_truth
-
             # evaluate using reward_function
             #########################################
             if self.tool_usage:
-                print(f"global_step in reward computation: {self.global_step}")
-                reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch, step = self.global_step))
+                print(f"validation reward computation")
+                reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch, step="validation"))
             else:
-                print(f"No tool usage! global_step in reward computation: {self.global_step}")
+                print(f"validation reward computation")
                 reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch))
             #########################################
             # reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch))

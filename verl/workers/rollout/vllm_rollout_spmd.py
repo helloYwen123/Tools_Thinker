@@ -46,7 +46,6 @@ def _get_logit_bias(model_path: str, trust_remote_code: bool) -> Optional[Dict[i
     else:
         return None
 
-
 class vLLMRollout(BaseRollout):
     def __init__(self, model_path: str, config: RolloutConfig, tokenizer: PreTrainedTokenizer):
         """A vLLM rollout. It requires the module is supported by the vllm.
@@ -62,7 +61,7 @@ class vLLMRollout(BaseRollout):
         self.pad_token_id = tokenizer.pad_token_id
         if config.tensor_parallel_size > torch.distributed.get_world_size():
             raise ValueError("Tensor parallelism size should be less than world size.")
-
+        # print( config.max_num_batched_tokens, config.prompt_length , config.response_length)
         if config.max_num_batched_tokens < config.prompt_length + config.response_length:
             raise ValueError("max_num_batched_tokens should be greater than prompt_length + response_length.")
 

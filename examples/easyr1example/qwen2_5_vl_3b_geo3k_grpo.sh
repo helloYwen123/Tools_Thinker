@@ -3,7 +3,7 @@
 set -x
 
 export PYTHONUNBUFFERED=1
-
+export WANDB_API_KEY=2d883ab1037c7c4b261d54b523c3515fa87dde91
 MODEL_PATH=Qwen/Qwen2.5-VL-3B-Instruct  # replace it with your local file path
 
 python3 -m verl.trainer.main \

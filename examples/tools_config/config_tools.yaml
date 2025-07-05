@@ -4,11 +4,11 @@ data:
   prompt_key: problem
   answer_key: answer
   image_key: images
-  max_prompt_length: 4096
+  max_prompt_length: 5120
   max_response_length: 2048
-  rollout_batch_size: 32 # 512 
-  val_batch_size: 512 # 1024
-  format_prompt: ./examples/format_prompt/tools_thinker_format_w_think.jinja # tools_thinker_format_wo_think.jinja
+  rollout_batch_size: 128 # 512 
+  val_batch_size: 1024 # 1024
+  format_prompt: ./examples/format_prompt/tools_thinker_format_w_think.jinja  # tools_thinker_format_wo_think.jinja
   override_chat_template: null
   shuffle: true
   seed: 42 # 42
@@ -28,9 +28,9 @@ algorithm:
 
 worker:
   actor:
-    global_batch_size: 2 # 128
-    micro_batch_size_per_device_for_update: 2 # 4
-    micro_batch_size_per_device_for_experience: 2 # 16
+    global_batch_size: 64 # 128
+    micro_batch_size_per_device_for_update: 4 # 4
+    micro_batch_size_per_device_for_experience: 16 # 16
     max_grad_norm: 1.0
     padding_free: true
     ulysses_sequence_parallel_size: 1
@@ -54,14 +54,15 @@ worker:
       offload_optimizer: true  # true: more CPU memory; false: more GPU memory
 
   rollout:
-    n: 6 # 5
+    n: 8 # 5
     temperature: 1.0
     top_p: 0.99
     gpu_memory_utilization: 0.6 # 0.6
     enforce_eager: false
     enable_chunked_prefill: false
-    tensor_parallel_size: 1 # 2
-    limit_images: 0
+    tensor_parallel_size: 2 # 2
+    limit_images: 3
+    max_model_len: 8192
     val_override_config:
       temperature: 0.5
       n: 1
@@ -94,11 +95,11 @@ trainer:
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 8
-  val_freq: 10  # -1 to disable default:5
-  val_before_train: false # true
+  val_freq: -1  # -1 to disable default:5
+  val_before_train: true # true
   val_only: false
   val_generations_to_log: 3
   save_freq: -1  # -1 to disable
   save_limit: 3  # -1 to disable
-  save_checkpoint_path: /home/hpc/v100dd/v100dd23/wxie/Tools_Thinker/saved_model
+  save_checkpoint_path: null
   load_checkpoint_path: null

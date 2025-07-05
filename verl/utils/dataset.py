@@ -134,7 +134,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                     blink_ds = load_dataset(f"{data_path}", f"{subtask}", split="val") # e.g. BLINK-Benchmark/BLINK val
                     blink_ds = blink_ds.map(lambda x: {"sub_task": subtask})
                     all_datasets.append(blink_ds)
-                    
+                
                 blink_ds = concatenate_datasets(all_datasets)
                 
                 all_subtasks_json = []
@@ -166,11 +166,11 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
-                dataset_json_path = "/workspace/ywen_ws/datasets/Mix_VQAs.json" 
+                dataset_json_path = "/workspace/ywen_ws/datasets/single_mixed_vqa.json" 
                 full_path = os.path.join(dataset_json_path)
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)
-                self.dataset = raw_dataset[:100]  # json format in SAT
+                self.dataset = raw_dataset[:512]  # json format in SAT
                 self.dataset_prefix = dataset_prefix
 
             if "CV-Bench" in data_path:
@@ -218,6 +218,8 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             format_prompt = Template(self.format_prompt.strip())
             prompt_str = format_prompt.render(question=prompt_str,
                                               image_paths=image_paths,
+                                              available_tools=active_tool_names,
+                                              toolbox_metadata=filtered_metadata_dict
                                               )
             content_list = []
             
@@ -225,8 +227,15 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 if i != len(image_paths):
                     content_list.append({"type": "image"})
                 else:
-                    content_list.append({"type": "text", "text": prompt_str})
-            return [{"role": "system", "content": [{"type": "text", "text": self.system_prompt}]},{"role": "user", "content": content_list}]
+                    content_list.append({"type": "text", "text": f"{prompt_str}"})
+            return [
+                    # {
+                    #     "role": "system", "content": [{"type": "text", "text": f"{self.system_prompt}"}],
+                    # },
+                    {   
+                        "role": "user", "content": content_list
+                    }
+                ]
         else:
             if self.format_prompt:
                 format_prompt = Template(self.format_prompt.strip())
@@ -299,7 +308,6 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         # TODO
         pass
 ######################################################################
-    
     def __getitem__(self, index):
         example: dict = self.dataset[index]
         
@@ -317,6 +325,8 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         
         if self.image_key in example:
             prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+            # import pdb; pdb.set_trace()
+            
             images = [self.process_image(image) for image in example.pop(self.image_key)]
             model_inputs = self.processor(images, [prompt], add_special_tokens=False, return_tensors="pt")
             input_ids = model_inputs.pop("input_ids")[0]

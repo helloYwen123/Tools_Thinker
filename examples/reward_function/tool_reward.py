@@ -41,7 +41,10 @@ def accuracy_reward(exec_result, step, solution, QAid, **kwargs):
     """
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
-    log_root_dir = os.path.join(f"{root_dir}/Grpo_Tools_Logs/Accuracy", f"step_{step}-{current_time}-logs")
+    if step == "validation":
+        log_root_dir = os.path.join(f"{root_dir}/grpo_tools_logs/validation/accuracy", f"step_{step}-{current_time}-logs")
+    else:
+        log_root_dir = os.path.join(f"{root_dir}/grpo_tools_logs/train/accuracy", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     reward = 0.0
     acc_log_path = os.path.join(log_root_dir, f"accuracy-{QAid}.log")
@@ -151,7 +154,10 @@ def execution_reward(predict_str, QAid, step):
     code = extract_code(predict_str)
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    log_root_dir = os.path.join(f"{root_dir}/Grpo_Tools_Logs/Execution", f"step_{step}-{current_time}-logs")
+    if step == "validation":
+        log_root_dir = os.path.join(f"{root_dir}/grpo_tools_logs/validation/execution", f"step_{step}-{current_time}-logs")
+    else:
+        log_root_dir = os.path.join(f"{root_dir}/grpo_tools_logs/train/execution", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     
     evaluation_log_path = os.path.join(log_root_dir, f"evaluation-{QAid}.log")
@@ -182,7 +188,10 @@ def tool_usage_reward(predict_str, step, QAid):
     """
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    log_root_dir = os.path.join(f"{root_dir}/Grpo_Tools_Logs/Tools_usage", f"step_{step}-{current_time}-logs")
+    if step == "validation":
+        log_root_dir = os.path.join(f"{root_dir}/grpo_tools_logs/validation/tools_usage", f"step_{step}-{current_time}-logs")
+    else:
+        log_root_dir = os.path.join(f"{root_dir}/grpo_tools_logs/train/tools_usage", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
         
     def extract_code(completion):
@@ -241,7 +250,10 @@ def format_reward(predict_str, step, QAid):
     current_time = datetime.now().strftime("%d-%H-%M-%S-%f")
     # create log file
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    log_root_dir = os.path.join(f"{root_dir}/Grpo_Tools_Logs/Format", f"step_{step}-{current_time}-logs")
+    if step == "validation":
+        log_root_dir = os.path.join(f"{root_dir}/grpo_tools_logs/validation/format", f"step_{step}-{current_time}-logs")
+    else:
+        log_root_dir = os.path.join(f"{root_dir}/grpo_tools_logs/train/format", f"step_{step}-{current_time}-logs")
     os.makedirs(log_root_dir, exist_ok=True)
     format_log_path = os.path.join(log_root_dir, f"format-{QAid}.log")
     with open(format_log_path, "a+") as f:
@@ -252,9 +264,7 @@ def format_reward(predict_str, step, QAid):
 
 def compute_score(predict_strs: List[str], ground_truths: List[str], format_weight: float = 0.2, 
                   usage_weight: float = 0.3, execution_weight: float = 0.2, accuracy_weight: float = 0.3,
-                  step: Optional[int] = None, QAid: Optional[str] = None) -> List[Dict[str, float]]:
-    if step is None:
-        print("step is None, please check the input parameters")
+                  step = None, QAid: Optional[str] = None) -> List[Dict[str, float]]:
     scores = []
     assert format_weight + usage_weight + execution_weight + accuracy_weight == 1.0, "The sum of weights must be equal to 1.0"
     
