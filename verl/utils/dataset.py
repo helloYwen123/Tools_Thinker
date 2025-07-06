@@ -170,7 +170,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 full_path = os.path.join(dataset_json_path)
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)
-                self.dataset = raw_dataset[:512]  # json format in SAT
+                self.dataset = raw_dataset[:1024]  # json format in SAT
                 self.dataset_prefix = dataset_prefix
 
             if "CV-Bench" in data_path:

@@ -25,6 +25,6 @@ PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
     worker.actor.model.model_path=${MODEL_PATH} \
     worker.rollout.tensor_parallel_size=1 \
     trainer.experiment_name=qwen2_5_vl_7b_grpo \
-    trainer.n_gpus_per_node=2 \
+    trainer.n_gpus_per_node=4 \
     2>&1 | tee "debug_logs/training_log_${timestamp}.txt"
 
