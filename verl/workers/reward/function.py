@@ -78,7 +78,7 @@ class FunctionRewardManager(ABC):
 class SequentialFunctionRewardManager(FunctionRewardManager):
     reward_fn: SequentialRewardFunction
 
-    def compute_reward(self, data: DataProto, step: Optional[int] = None, tool: bool = False) -> Tuple[torch.Tensor, Dict[str, List[float]]]:
+    def compute_reward(self, data: DataProto, step = None, tool: bool = False) -> Tuple[torch.Tensor, Dict[str, List[float]]]:
         reward_tensor = torch.zeros_like(data.batch["responses"], dtype=torch.float32)
         reward_metrics = defaultdict(list)
         response_ids = data.batch["responses"]
@@ -107,7 +107,7 @@ class SequentialFunctionRewardManager(FunctionRewardManager):
 class BatchFunctionRewardManager(FunctionRewardManager):
     reward_fn: BatchRewardFunction # 函数类型注解
 
-    def compute_reward(self, data: DataProto, step: Optional[int] = None, tool: bool = False) -> Tuple[torch.Tensor, Dict[str, List[float]]]:
+    def compute_reward(self, data: DataProto, step= None, tool: bool = False) -> Tuple[torch.Tensor, Dict[str, List[float]]]:
         response_str, ground_truth = [], []
         response_ids = data.batch["responses"]
         response_length = data.batch["response_mask"].sum(dim=-1)

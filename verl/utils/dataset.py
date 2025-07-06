@@ -295,7 +295,8 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         full_prompt = example["messages"][0]["content"].strip()
         full_prompt = full_prompt.replace("<image> Answer in natural language. ", "")
         answer = example["messages"][1]["content"].strip()
-        idx = os.path.splitext(os.path.basename(example["images"][0]))[0]  # image name as index
+        image_name = os.path.splitext(os.path.basename(example["images"][0]))[0]
+        idx = f"{image_name}"  # image name as index
         
         return {
             "images": images,

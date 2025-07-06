@@ -311,7 +311,7 @@ class RayPPOTrainer:
             output_ids = test_output_gen_batch.batch["responses"]
             output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
             sample_outputs.extend(output_texts)
-            sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())
+            sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())                                      
             # test_batch: DataProto 对象;结合原先的 test_batch 和 test_output_gen_batch
             test_batch = test_batch.union(test_output_gen_batch)
             # 估计内容: 原始的 input_ids/mask, 生成的 responses/response_mask, non_tensor 的 ground_truth
@@ -319,7 +319,7 @@ class RayPPOTrainer:
             #########################################
             if self.tool_usage:
                 print(f"validation reward computation")
-                reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch, step="validation"))
+                reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch,      step="validation",tool = self.tool_usage))
             else:
                 print(f"validation reward computation")
                 reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch))
