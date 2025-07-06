@@ -1,18 +1,3 @@
-# Qwen 2.5 VL 3B LoRA fine-tune training config.
-#
-# Requirements:
-#   - Log into WandB (`wandb login`) or disable `enable_wandb`
-#   - (optional) If you want to use flash attention, run `pip install -U flash-attn --no-build-isolation`
-#
-# Usage:
-#   oumi train -c configs/recipes/vision/qwen2_5_vl_3b/sft/lora/train.yaml
-#
-# See Also:
-#   - Documentation: https://oumi.ai/docs/en/latest/user_guides/train/train.html
-#   - Config class: oumi.core.configs.TrainingConfig
-#   - Config source: https://github.com/oumi-ai/oumi/blob/main/src/oumi/core/configs/training_config.py
-#   - Other training configs: configs/**/pretraining/, configs/**/sft/, configs/**/dpo/
-
 model:
   model_name: "Qwen/Qwen2.5-VL-7B-Instruct"
   torch_dtype_str: "bfloat16"
@@ -29,7 +14,7 @@ data:
     use_torchdata: True
     datasets:
       - dataset_name: "vl_sft" # vl_sft_jsonl / vl_sft
-        dataset_path: /workspace/ywen_ws/mix_datasets/last_round_train.jsonl # "/workspace/ywen_ws/mix_datasets/last_round_train.jsonl"
+        dataset_path: /workspace/ywen_ws/mix_datasets/train.jsonl # "/workspace/ywen_ws/mix_datasets/last_round_train.jsonl"
         shuffle: True
         seed: 42
         transform_num_workers: "auto"
@@ -57,7 +42,7 @@ training:
 
   optimizer: "adamw_torch_fused"
   learning_rate: 2e-5
-  warmup_ratio: 0.03
+  warmup_ratio: 0.03 # 0.2 # 0.03
   weight_decay: 0.01
   lr_scheduler_type: "cosine"
 

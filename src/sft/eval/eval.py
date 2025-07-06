@@ -30,7 +30,7 @@ tokenizer = build_tokenizer(ModelParams(model_name=model_name))
 processor = build_processor(model_name, tokenizer, trust_remote_code=True)
 
 # Load the dataset
-evaluation_dataset = VLJsonlinesDataset(dataset_path="/workspace/ywen_ws/mix_datasets/last_round_train.jsonl",
+evaluation_dataset = VLJsonlinesDataset(dataset_path="/workspace/ywen_ws/mix_datasets/train.jsonl",
                              tokenizer=tokenizer,
                              processor=processor)
 
