@@ -218,8 +218,8 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             format_prompt = Template(self.format_prompt.strip())
             prompt_str = format_prompt.render(question=prompt_str,
                                               image_paths=image_paths,
-                                              available_tools=active_tool_names,
-                                              toolbox_metadata=filtered_metadata_dict
+                                            #   available_tools=active_tool_names,
+                                            #   toolbox_metadata=filtered_metadata_dict
                                               )
             content_list = []
             
@@ -229,9 +229,9 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 else:
                     content_list.append({"type": "text", "text": f"{prompt_str}"})
             return [
-                    # {
-                    #     "role": "system", "content": [{"type": "text", "text": f"{self.system_prompt}"}],
-                    # },
+                    {
+                        "role": "system", "content": f"{self.system_prompt}"
+                    },
                     {   
                         "role": "user", "content": content_list
                     }
@@ -273,7 +273,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         images = [example[k] for k in ['image_1', 'image_2', 'image_3', 'image_4'] if example.get(k) is not None]
         num_images = len(images)
 
-        # add <image> tag into original prompts
+        
         full_prompt = example["prompt"]
         for sample in json_file:
             if sample["idx"] == example["idx"]:
@@ -311,7 +311,6 @@ class RLHFDataset(Dataset, ImageProcessMixin):
 ######################################################################
     def __getitem__(self, index):
         example: dict = self.dataset[index]
-        
         ###
         if "BLINK" in self.data_path:
             example = self._blink_format(example, self.all_subtasks_json)
@@ -326,6 +325,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         
         if self.image_key in example:
             prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+            # prompt = (prompt)
             # import pdb; pdb.set_trace()
             
             images = [self.process_image(image) for image in example.pop(self.image_key)]
