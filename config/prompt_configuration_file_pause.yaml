@@ -57,7 +57,7 @@ toolbox_metadata:
       saved_image_path: "str - The path to save the detected object `png` images (default: 'detected_objects')."
     output_types: >
       a dictionary mapping each detected label to a list of detection entries
-      e.g. {'baseball': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}, ...]}.
+      e.g. {'baseball': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}, ...], ...}.
       Note: the `box` is provided in `xyxy`(left-top, right-bottom) format.
     demo_commands:
       command: |
@@ -86,7 +86,7 @@ toolbox_metadata:
     output_types:
       results: >
         A dictionary grouped by label, each containing list of detection entries with box, score, and optional saved image path.
-        e.g. {'person': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_path': 'path/to/saved/image.png'}]}
+        e.g. {'person': [{'box': (xmin, ymin, xmax, ymax), 'score': 0.95, 'saved_path': 'path/to/saved/image.png'}, ...], ...}
     demo_commands:
       command: |
         advanced_object_detector_tool = Advanced_Object_Detector_Tool()
@@ -143,16 +143,17 @@ toolbox_metadata:
   Depth_Estimator_Tool:
     tool_module_name: depth_estimator
     tool_class_name:  Depth_Estimator_Tool
-    tool_description: A tool that estimates pixel-level depth from image, saving numpy array depth map in `npy` file.
+    tool_description: A tool that estimates pixel-level depth from image, saving numpy array depth map in 'npy' file.
     input_types:
       image_path: list[str] - The list of path to a single or several input images.
       depth_estimation_type: 'str - The type of depth estimation to use. Can be one of ["relative", "metric_indoor","metric_outdoor"]. Default: "relative" '
       output: "bool - If True, save the `png` depth image in (default: False)."
       outdir: "str - The output directory to save the depth images (default: './vis_depth')."
     output_types: >
-      Dict - A dictionary where: Each key is a string path to a `npy` file that stores a NumPy array representing the depth map. (e.g., './image1_depth.npy'), 
-      Each value is a dictionary with: 'depth_map': a NumPy array of shape (H, W) containing the depth values, 'output_image_path': a string path to the saved visualization (a `png` image of the depth map)
-      e.g. {'/path/to/npy_file/': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': 'path/to/saved/depth_image.png'}}
+      Dict[str ,Dict[str, np.ndarray]] - A dictionary where: Each key is a string path to image file , 
+      Each value is a dictionary with: 'depth_map': a NumPy array of shape (H, W) containing the depth values, 
+      'output_image_path': a string path to the saved visualization (a `png` image of the depth map), 'npy_path': a string path to the saved depth map in 'npy' file.
+      e.g. {'/path/to/image_file': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': 'path/to/saved/depth_image.png', 'npy_path': 'path/to/saved_depth_map_npy'},...}
       # Note that in "relative" estimation type, larger pixel values of `depth map` represent larger depth (i.e., further from the camera).
       # Note that in "metric_indoor" or "metric_outdoor" estimation type, the predicted `depth map` represents absolute depth in meters(m). 
     demo_commands:
@@ -160,9 +161,9 @@ toolbox_metadata:
         depth_estimator_tool = Depth_Estimator_Tool()
         image_results = depth_estimator_tool.execute(image_path=['path/to/image1', 'path/to/image2'], output=True, outdir= './vis_depth')
       output_example: |
-        image_results: Dict[Dict] - 
-        {'./image1_depth.npy': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>},
-        './image2_depth.npy': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>}}
+        image_results: 
+        {'./image1/path': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>. 'npy_path': <str>},
+        './image2/path': {'depth_map': <numpy array with shape (H, W)>, 'output_image_path': <str>}, 'npy_path': <str>}
     user_metadata:
       It's very important to use the correct metric estimation type (metric_indoor or metric_outdoor) depending on the input image.
   # Segmentation Tool
@@ -179,16 +180,18 @@ toolbox_metadata:
         For the 'boxes' prompt type, prompt key should be 'input_box', value is a list of bounding boxes in `xyxy` format (i.e., [xmin, ymin, xmax, ymax]).
       model_size: "str: SAM2 model size, e.g., 'base_plus' or 'small' (default: 'small')."
     output_types: >
-      masks: Dict[str, np.ndarray] - The output is a dictionary where each key is the path(string) to a saved mask `npy` file, corresponding to an input image. 
-      Each value is a NumPy array mask of shape (O, 1, H, W), where `O` denotes the number of objects segmented from the corresponding image, based on its visual prompt type. Each segmented object map matches the original image in height and width.
-      e.g. {'/path/to/npy_file/': <numpy array with shape (O, 1, H, W)>}}
+      masks: Dict[str ,Dict[str, np.ndarray]] - The output is a dictionary where each key is the path(string) to a input image file.
+      Each value is still a dictionary with: 
+      'mask': a NumPy array mask of shape (O, 1, H, W), where `O` denotes the number of objects segmented from the corresponding image, based on its visual prompt type. Each segmented object map matches the original image in height and width,
+      'npy_path': a string path to the saved mask in `npy` file.
+      e.g. {'/path/to/image_file': {'mask': <numpy array with shape (O, 1, H, W)>, 'npy_path': 'path/to/saved_mask_npy'},...}
       # Note that in these output masks, pixels set to 1 represent the region of the segmented object.
     demo_commands:
       command: |
         segmenter_tool = Segmenter_Tool()
         masks = segmenter_tool.execute(prompt_type='boxes', input_prompts=[{'image_path': 'path/to/image1', 'input_box': [[100,150,400,500],...]}, {'image_path': 'path/to/image2', 'input_box': [[50,80,300,350],...]}], model_size='small')
       output_example: >
-        masks: Dict[str, np.ndarray] - {`./image1_mask.npy`: <np.ndarray>, `./image2_mask.npy`: <np.ndarray>}
+        masks: {`./image1/path`: {'mask': <np.ndarray>, 'npy_path': <str>}, `./image2/path`: {'mask': <np.ndarray>, 'npy_path': <str>}}
     user_metadata:
       Before using this tool, it is advisable to consider how to obtain the points and bounding box for the visual prompt input.
   # Matching Tool
