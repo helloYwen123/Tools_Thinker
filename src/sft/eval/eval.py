@@ -67,7 +67,12 @@ def server_api(payload):
         print(f"Error during request or processing: {ex}")
         exec_result = "Error during request or processing"
         return exec_result,4
-    
+
+def clean_string(val):
+    val = str(val).strip()
+    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+        val = val[1:-1].strip()
+    return val.lower()  #   
 
 @register_evaluation_function("Counting_tools_evaluation")
 def Counting_tools_evaluation(inference_engine, dataset):
@@ -112,7 +117,8 @@ def Counting_tools_evaluation(inference_engine, dataset):
             ):
             success_exe += 1
             success = True
-        if exec_result.lower() == conversation.metadata["ground_truth"].lower():
+
+        if clean_string(exec_result) == clean_string(conversation.metadata["ground_truth"]):
             acc_exe += 1
             correctness = True
         message = conversation.messages[1]  # role: "user"
