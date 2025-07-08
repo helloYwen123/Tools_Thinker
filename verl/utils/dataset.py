@@ -161,8 +161,9 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 with open(system_content_yaml, "r") as stream:
                     conf = yaml.safe_load(stream)
                 SYSTEM_PROMPT_TEMPLATE = conf.get("prompt_template")
-                self.system_prompt = SYSTEM_PROMPT_TEMPLATE.format(available_tools=active_tool_names,
-                                                            toolbox_metadata=filtered_metadata_dict)
+                # self.system_prompt = SYSTEM_PROMPT_TEMPLATE.format(available_tools=active_tool_names,
+                #                                             toolbox_metadata=filtered_metadata_dict)
+                self.system_prompt = "You are a helpful expert in multimodal reasoning and tool-augmented programmatic problem solving."
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
@@ -217,10 +218,10 @@ class RLHFDataset(Dataset, ImageProcessMixin):
             active_tool_names, filtered_metadata_dict = self._load_tool_data(self.configuration_file)
             format_prompt = Template(self.format_prompt.strip())
             prompt_str = format_prompt.render(question=prompt_str,
-                                              image_paths=image_paths,
-                                            #   available_tools=active_tool_names,
-                                            #   toolbox_metadata=filtered_metadata_dict
-                                              )
+                                              input_images=image_paths,
+                                              available_tools=active_tool_names,
+                                              toolbox_metadata=filtered_metadata_dict
+                                            )
             content_list = []
             
             for i in range(len(image_paths)+1):
@@ -230,7 +231,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                     content_list.append({"type": "text", "text": f"{prompt_str}"})
             return [
                     {
-                        "role": "system", "content": f"{self.system_prompt}"
+                        "role": "system", "content": self.system_prompt
                     },
                     {   
                         "role": "user", "content": content_list
