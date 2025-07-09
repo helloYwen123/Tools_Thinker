@@ -120,7 +120,8 @@ class BatchFunctionRewardManager(FunctionRewardManager):
         ###############################################
         if tool:
             QAid = data.non_tensor_batch["idx"][i]
-            scores = self.reward_fn(response_str, ground_truth, step=step, QAid=QAid) # calling reward function
+            question = data.non_tensor_batch["problem"][i]
+            scores = self.reward_fn(response_str, ground_truth, step=step, QAid=QAid, question = question) # calling reward function
         else:
             scores = self.reward_fn(response_str, ground_truth) # calling reward function
         ###############################################    

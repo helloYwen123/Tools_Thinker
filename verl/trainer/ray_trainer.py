@@ -491,8 +491,8 @@ class RayPPOTrainer:
         # load checkpoint before doing anything
         self._load_checkpoint()
 
-        perform validation before training
-        currently, we only support validation using the reward_function.
+        # perform validation before training
+        # currently, we only support validation using the reward_function.
         if self.val_reward_fn is not None and self.config.trainer.val_before_train:
             val_metrics = self._validate()
             self.logger.log(data=val_metrics, step=self.global_step)
@@ -504,10 +504,8 @@ class RayPPOTrainer:
                 self.global_step += 1
                 if self.global_step > self.training_steps:
                     break
-
                 metrics, timing_raw = {}, {}
                 batch: DataProto = DataProto.from_single_dict(batch_dict)
-
                 # pop those keys for generation
                 if "multi_modal_data" in batch.non_tensor_batch.keys():
                     gen_batch = batch.pop(
