@@ -26,7 +26,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor , as_completed
 import requests
 from math_verify import parse, verify
-
+import time
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
 def clean_string(val):
@@ -43,7 +43,7 @@ def accuracy_reward(exec_result, response, step, solution, QAid, **kwargs):
     current_time = datetime.now().strftime("%d-%H-%M-%S")
     split = "validation" if step == "validation" else "train"
     step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
-    log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/accuracy/reward/{step_str}")
+    log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/accuracy/{step_str}")
     acc_log_path = os.path.join(log_root_dir, f"accuracy_{current_time}-{QAid}.log")
 
     reward = 0.0
@@ -101,7 +101,7 @@ def execution_reward(predict_str, QAid, step):
             stdout_raw = result_data.get("stdout", "")
             output_raw = stdout_raw
             output = result_data.get("result")
-
+            execution_time = result_data.get("execution_time")
             if status == "success":
                 if output is not None:
                     reward = 1.0
@@ -123,6 +123,7 @@ def execution_reward(predict_str, QAid, step):
                     df.write("[extracted code]\n" + code + "\n\n")
                     df.write("[raw output]\n" + output_raw + "\n\n")
                     df.write("[generated final result]\n" + str(output) + "\n\n")
+                    df.write(f"\n\nexecution time : {execution_time}\n")
                     df.write("=" * 30 + " end " + "=" * 30 + "\n\n")
                 return result
             else:
@@ -138,6 +139,7 @@ def execution_reward(predict_str, QAid, step):
                         df.write("\n[execution failed]\n")
                         df.write(output + "\n")
                         df.write(f"code: \n{code}\n")
+                        df.write(f"\n\nexecution time : {execution_time}\n\n")
                         df.write("=" * 30 + " END " + "=" * 30 + "\n\n")
                 return result
 
@@ -162,7 +164,7 @@ def execution_reward(predict_str, QAid, step):
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     split = "validation" if step == "validation" else "train"
     step_str = f"step_{step}"
-    log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/execution/reward/{step_str}")
+    log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/execution/{step_str}")
 
     evaluation_log_path = os.path.join(log_root_dir, f"evaluation_{current_time}-{QAid}.log")
 
@@ -182,6 +184,7 @@ def execution_reward(predict_str, QAid, step):
     final_result = sandbox_execute(code, timeout=timeout, result=result, log_path=log_root_dir, QAid=QAid)
 
     if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
+        
         os.makedirs(log_root_dir, exist_ok=True)
         with open(evaluation_log_path, "a+", encoding="utf-8") as f:
             f.write(f"------------- execution reward: {final_result[0]} -------------\n")
@@ -199,13 +202,14 @@ def tool_usage_reward(predict_str, step, QAid):
     - It must create an instance of a known tool class
     - It must call .execute()
     """
+    start_time = time.time()
     # Create root log directory path like: .../train/tools_usage/reward/step_2/
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     split = "validation" if step == "validation" else "train"
     step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
     current_time = datetime.now().strftime("%d-%H-%M-%S")
     if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
-        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/tools_usage/reward/{step_str}")
+        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/tools_usage/{step_str}")
         os.makedirs(log_root_dir, exist_ok=True)
 
         # Log file path
@@ -221,6 +225,7 @@ def tool_usage_reward(predict_str, step, QAid):
     }
 
     def extract_code(completion):
+        
         match = re.search(r"<code>(.*?)</code>", completion, re.DOTALL)
         if match:
             return match.group(1)
@@ -277,28 +282,33 @@ def tool_usage_reward(predict_str, step, QAid):
                     break
 
         if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
+            elapsed_time = time.time() - start_time
             with open(tool_log_path, "a+") as f:
                 f.write(f"\n[QAid]{QAid}\n")
                 if execute_found:
                     f.write("\n[Code Includes Tools Usage]\n")
                 else:
                     f.write("\n[Code does not include Tools Usage]\n")
-                f.write(f"code: \n{code}")
+                f.write(f"code: \n{code}\n")
+                f.write(f"\n[execution time] {elapsed_time:.2f}s\n")
                 f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
 
     except Exception as e:
         if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
+            elapsed_time = time.time() - start_time
             with open(tool_log_path, "a+") as f:
                 f.write(f"\nQAid:{QAid}\n")
                 f.write("\nCode Extraction Failed or Parse Failed\n\n")
                 f.write(str(e) + "\n")
                 f.write(f"\nCompletion Content: \n{predict_str}\n")
+                f.write(f"\n[execution time] {elapsed_time:.2f}s\n")
                 f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
 
     return reward
 
 def format_reward(predict_str, step, QAid):
     """Reward function that checks if the completion has a specific format."""
+    start_time = time.time()
     pattern1 = r"<think>(.*?)</think>(\n*)<code>(.*?)</code>" # no final_result but have correct tags
     # TODO - Done <code>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</code>
     pattern2 = r"(?s)<think>.*?</think>\n*<code>.*?\bfinal_result\b\s*=.*?</code>"
@@ -318,7 +328,8 @@ def format_reward(predict_str, step, QAid):
     step_str = f"step_{step}"
     
     if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
-        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/format/reward/{step_str}")
+        elapsed_time = time.time() - start_time
+        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/format/{step_str}")
         os.makedirs(log_root_dir, exist_ok=True)
         format_log_path = os.path.join(log_root_dir, f"format_{current_time}-{QAid}.log")
 
@@ -326,6 +337,7 @@ def format_reward(predict_str, step, QAid):
             f.write(f"--- Completion ---\n")
             f.write(predict_str + "\n")
             f.write(f"reward: {reward}\n\n")
+            f.write(f"[execution time] {elapsed_time:.2f}s\n")
     return reward
 
 def compute_score(predict_strs: List[str], ground_truths: List[str], format_weight: float = 0.2, 

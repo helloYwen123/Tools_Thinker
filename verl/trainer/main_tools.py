@@ -27,6 +27,7 @@ from .ray_trainer import RayPPOTrainer, ResourcePoolManager, Role
 
 import torch
 import gc
+
 # please make sure main_task is not scheduled on head
 @ray.remote(num_cpus=1)
 class Runner:
@@ -80,6 +81,7 @@ class Runner:
         train_dataloader, val_dataloader = create_dataloader(
             config=config.data, tokenizer=tokenizer, processor=processor
         )
+
         ########################################
         # check prompt loading and model inputs#
         ########################################

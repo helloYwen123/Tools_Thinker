@@ -319,13 +319,11 @@ class RayPPOTrainer:
             #########################################
             if self.tool_usage:
                 print(f"validation reward computation")
-                reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch,      step="validation",tool = self.tool_usage))
+                reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch, step="validation",tool = self.tool_usage))
             else:
                 print(f"validation reward computation")
                 reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch))
             #########################################
-            # reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch))
-
             # Store scores
             scores = reward_tensor.sum(-1).cpu().tolist()
             sample_scores.extend(scores)
@@ -485,6 +483,7 @@ class RayPPOTrainer:
         The driver process only need to call the compute functions of the worker group through RPC to construct the PPO dataflow.
         The light-weight advantage computation is done on the driver process.
         """
+
         self.logger = Tracker(loggers=self.config.trainer.logger, config=self.config.to_dict())
         self.global_step = 0
         val_metrics: Optional[Dict[str, Any]] = None
@@ -492,8 +491,8 @@ class RayPPOTrainer:
         # load checkpoint before doing anything
         self._load_checkpoint()
 
-        # perform validation before training
-        # currently, we only support validation using the reward_function.
+        perform validation before training
+        currently, we only support validation using the reward_function.
         if self.val_reward_fn is not None and self.config.trainer.val_before_train:
             val_metrics = self._validate()
             self.logger.log(data=val_metrics, step=self.global_step)
@@ -542,7 +541,6 @@ class RayPPOTrainer:
                                 print(f"No tool usage! global_step in reward computation: {self.global_step}")
                                 reward_baseline_tensor, _ = ray.get(self.reward_fn.compute_reward.remote(batch))
                             ######################################################################################
-                            # reward_baseline_tensor, _ = ray.get(self.reward_fn.compute_reward.remote(batch))
                             reward_baseline_tensor = reward_baseline_tensor.sum(dim=-1)
 
                             batch.pop(batch_keys=list(gen_baseline_output.batch.keys()))
@@ -574,7 +572,6 @@ class RayPPOTrainer:
                         else:
                             print(f"No tool usage! global_step in reward computation: {self.global_step}")
                             reward_ref = self.reward_fn.compute_reward.remote(batch) # here calling the setted reward functions
-                        # reward_ref = self.reward_fn.compute_reward.remote(batch)
                         ######################################################################################
                     
                     # recompute old_log_probs
