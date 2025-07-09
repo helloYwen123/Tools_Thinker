@@ -35,7 +35,6 @@ def clean_string(val):
         val = val[1:-1].strip()
     return val.lower()  #
 
-
 def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwargs):
     """
     """
@@ -76,7 +75,7 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
                 f.write("\n wrong result\n\n")
             f.write(f"exec_result: {exec_result}\n")
             f.write(f"expected:    {solution}\n")
-            df.write(f"question: \n{question}\n")
+            f.write(f"question: \n{question}\n")
             f.write(f"response:\n{response}\n")
             f.write("=" * 30 + "\n\n")
 
@@ -292,7 +291,7 @@ def tool_usage_reward(predict_str, step, QAid):
                     f.write("\n[Code Includes Tools Usage]\n")
                 else:
                     f.write("\n[Code does not include Tools Usage]\n")
-                f.write(f"code: \n{code}\n")
+                f.write(f"prediction: \n{predict_str}\n")
                 f.write(f"\n[execution time] {elapsed_time:.2f}s\n")
                 f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
 

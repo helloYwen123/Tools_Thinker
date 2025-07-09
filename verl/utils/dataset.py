@@ -167,12 +167,12 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
-                dataset_json_path = "/workspace/ywen_ws/datasets/single_mixed_vqa.json" 
+                dataset_json_path = "/workspace/ywen_ws/datasets/datasets_all_single_img.json" 
                 full_path = os.path.join(dataset_json_path)
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)
 
-                self.dataset = raw_dataset[640:1920]  # json format in SAT
+                self.dataset = raw_dataset[:1920]  # json format in SAT
 
                 self.dataset_prefix = dataset_prefix
 
