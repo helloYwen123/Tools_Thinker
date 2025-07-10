@@ -23,7 +23,8 @@ from io import StringIO
 import contextlib
 import multiprocessing
 import asyncio
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor , as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List, Tuple, Union
 import requests
 from math_verify import parse, verify
 import time
@@ -83,10 +84,44 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
 
 accuracy_reward.reward_type = "accuracy"
 
+def execution_reward(
+    predict_str, 
+    QAid, 
+    step, 
+    question,
+    log_root_dir=None,
+    timeout=60
+):
+    # CODE EXTRACTION
+    def extract_code(completion):
+        match = re.search(r"<code>(.*?)</code>", completion, re.DOTALL)
+        return match.group(1) if match else None
+    code = extract_code(predict_str)
+    current_time = datetime.now().strftime("%d-%H-%M-%S")
 
-def execution_reward(predict_str, QAid, step, question):
-    # SANDBOX EXECUTION #
-    def sandbox_execute(code, timeout, result, log_path, QAid):
+    # logs file setting
+    if log_root_dir is None:
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        split = "validation" if step == "validation" else "train"
+        step_str = f"step_{step}"
+        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/execution/{step_str}")
+
+    extraction_failed_log_path = os.path.join(
+        log_root_dir, f"code_extraction_failed_{current_time}-{QAid}.log"
+    )
+
+    if code is None:
+        # code extraction failed
+        if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
+            os.makedirs(log_root_dir, exist_ok=True)
+            with open(extraction_failed_log_path, "a+", encoding="utf-8") as f:
+                f.write(f"------------- code extraction failed: execution reward: 0.0\n -------------\n")
+                f.write(f"model's response:\n{predict_str}\n")
+                f.write(f"\nQAid: {QAid}\n")
+                f.write("=" * 30 + " end " + "=" * 30 + "\n\n")
+        return (0.0, None)
+
+    def sandbox_execute(code, timeout, log_path, QAid):
         current_time = datetime.now().strftime("%d-%H-%M-%S")
         payload = {
             "code": code,
@@ -115,7 +150,7 @@ def execution_reward(predict_str, QAid, step, question):
                         output = "Error: 'final_result' not found, through successful running"
                 result = (reward, output)
 
-                # Log success only if needed
+                # Log success only if
                 os.makedirs(log_path, exist_ok=True)
                 success_log_path = os.path.join(log_path, f"success_execution_{current_time}-{QAid}.log")
                 with open(success_log_path, "a+", encoding="utf-8") as df:
@@ -156,39 +191,36 @@ def execution_reward(predict_str, QAid, step, question):
                     lf.write("=" * 30 + "\n\n")
             return (0.0, None)
 
-    # CODE EXTRACTION #
-    def extract_code(completion):
-        match = re.search(r"<code>(.*?)</code>", completion, re.DOTALL)
-        return match.group(1) if match else None
-
-    code = extract_code(predict_str)
-    current_time = datetime.now().strftime("%d-%H-%M-%S")
-    # New target structure: reward/step_xx
-    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    split = "validation" if step == "validation" else "train"
-    step_str = f"step_{step}"
-    log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/execution/{step_str}")
-
-    extraction_failed_log_path = os.path.join(log_root_dir, f"code_extraction_failed_{current_time}-{QAid}.log")
-
-    if code is None:
-        if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
-            os.makedirs(log_root_dir, exist_ok=True)
-            with open(extraction_failed_log_path, "a+", encoding="utf-8") as f:
-                f.write(f"------------- code extraction failed: execution reward: 0.0\n -------------\n")
-                f.write(f"model's response:\n{predict_str}\n")
-                f.write(f"\nQAid: {QAid}\n")
-                f.write("=" * 30 + " end " + "=" * 30 + "\n\n")
-        return (0.0, None)
-
-    # Run in sandbox
-    timeout = 120
-    result = (0.0, None)
-    final_result = sandbox_execute(code, timeout=timeout, result=result, log_path=log_root_dir, QAid=QAid)
-
+    final_result = sandbox_execute(code, timeout=timeout, log_path=log_root_dir, QAid=QAid)
     return final_result
-
+    
 execution_reward.reward_type = "execution"
+
+### Concurrent Batch Execution Reward
+
+def batch_execution_reward(
+    predict_strs, QAids, steps, questions, max_workers=8, log_root_dir=None
+):
+    # need to loop n times
+    n = len(predict_strs)
+    assert len(QAids) == n and len(steps) == n and len(questions) == n
+
+    def task(i):
+        return execution_reward(
+            predict_str=predict_strs[i],
+            QAid=QAids[i],
+            step=steps[i],
+            question=questions[i],
+            log_root_dir=log_root_dir
+        )
+    results = [None] * n
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(task, i): i for i in range(n)}
+        for future in as_completed(futures):
+            idx = futures[future]
+            results[idx] = future.result()
+    return results
+
 
 def tool_usage_reward(predict_str, step, QAid):
     """
@@ -341,25 +373,31 @@ def compute_score(predict_strs: List[str], ground_truths: List[str], format_weig
     scores = []
     assert format_weight + usage_weight + execution_weight + accuracy_weight == 1.0, "The sum of weights must be equal to 1.0"
     
-    execution_score = execution_reward(predict_str, QAid, step, question, max_workers)
-
-    for predict_str, ground_truth, QAid, question in zip(predict_strs, ground_truths, QAids, questions):
+    execution_scores = batch_execution_reward(
+            predict_strs=predict_strs, QAids=QAids, steps=[step]*len(predict_strs), questions=questions, max_workers=8
+        )
+    for predict_str, ground_truth, QAid, question, exec_score in zip(
+        predict_strs, ground_truths, QAids, questions, execution_scores
+    ):
         format_score = format_reward(predict_str, step, QAid)
         tool_usage_score = tool_usage_reward(predict_str, step, QAid)
-        
+        exec_reward, exec_output = exec_score
         # execution_score[1] is the result of execution
-        if execution_score[0] != 0.0:
-            accuracy_score = accuracy_reward(execution_score[1], response=predict_str, step=step, solution=ground_truth, QAid=QAid, question=question)
+        if exec_reward != 0.0:
+            accuracy_score = accuracy_reward(
+                    exec_output, response=predict_str, step=step, solution=ground_truth, QAid=QAid, question=question
+            )
         else:
             accuracy_score = 0.0 # default: execution failed then accuracy is failed
-        overall_score =  format_weight * format_score + usage_weight * tool_usage_score + execution_weight * execution_score[0] + accuracy_weight * accuracy_score
-        
+
+        overall_score = format_weight * format_score + usage_weight * tool_usage_score + execution_weight * exec_reward + accuracy_weight * accuracy_score
+
         scores.append(
             {
                 "overall": overall_score,
                 "format": format_score,
                 "tool_usage": tool_usage_score,
-                "execution": execution_score[0],
+                "execution": exec_reward,
                 "accuracy": accuracy_score
             }
         )
