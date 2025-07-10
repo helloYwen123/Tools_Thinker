@@ -108,7 +108,7 @@ class BatchFunctionRewardManager(FunctionRewardManager):
     reward_fn: BatchRewardFunction # 函数类型注解
 
     def compute_reward(self, data: DataProto, step= None, tool: bool = False) -> Tuple[torch.Tensor, Dict[str, List[float]]]:
-        response_str, ground_truth = [], []
+        response_str, ground_truth, questions, QAids = [], [], [], []
         response_ids = data.batch["responses"]
         response_length = data.batch["response_mask"].sum(dim=-1)
         for i in range(len(data)):
@@ -117,11 +117,11 @@ class BatchFunctionRewardManager(FunctionRewardManager):
                 self.tokenizer.decode(valid_response_ids, skip_special_tokens=self.config.skip_special_tokens)
             )
             ground_truth.append(data.non_tensor_batch["ground_truth"][i])
+            questions.append(data.non_tensor_batch["problem"][i])
+            QAids.append(data.non_tensor_batch["idx"][i])
         ###############################################
         if tool:
-            QAid = data.non_tensor_batch["idx"][i]
-            question = data.non_tensor_batch["problem"][i]
-            scores = self.reward_fn(response_str, ground_truth, step=step, QAid=QAid, question = question) # calling reward function
+            scores = self.reward_fn(response_str, ground_truth, step=step, QAids=QAids, questions = questions) # calling reward function
         else:
             scores = self.reward_fn(response_str, ground_truth) # calling reward function
         ###############################################    

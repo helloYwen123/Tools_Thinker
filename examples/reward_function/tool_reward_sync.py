@@ -341,17 +341,17 @@ def compute_score(predict_strs: List[str], ground_truths: List[str], format_weig
     scores = []
     assert format_weight + usage_weight + execution_weight + accuracy_weight == 1.0, "The sum of weights must be equal to 1.0"
     
+    execution_score = execution_reward(predict_str, QAid, step, question, max_workers)
+
     for predict_str, ground_truth, QAid, question in zip(predict_strs, ground_truths, QAids, questions):
         format_score = format_reward(predict_str, step, QAid)
         tool_usage_score = tool_usage_reward(predict_str, step, QAid)
-        execution_score = execution_reward(predict_str, QAid, step, question)
         
         # execution_score[1] is the result of execution
         if execution_score[0] != 0.0:
             accuracy_score = accuracy_reward(execution_score[1], response=predict_str, step=step, solution=ground_truth, QAid=QAid, question=question)
         else:
             accuracy_score = 0.0 # default: execution failed then accuracy is failed
-            
         overall_score =  format_weight * format_score + usage_weight * tool_usage_score + execution_weight * execution_score[0] + accuracy_weight * accuracy_score
         
         scores.append(
