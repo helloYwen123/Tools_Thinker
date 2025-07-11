@@ -30,23 +30,22 @@ from math_verify import parse, verify
 import time
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
-
 def loose_match(a, b):
-    # 统一小写，去掉多余空格
+    # Convert both inputs to string, trim spaces, and lowercase
     a = str(a).strip().lower()
     b = str(b).strip().lower()
 
-    # 冠词去除
+    # Remove articles ('the', 'a', 'an')
     def remove_articles(s):
         return re.sub(r'\b(the|a|an)\b', '', s).strip()
 
     a = remove_articles(a)
     b = remove_articles(b)
-    # 去掉多余空格
+    # Remove extra whitespace
     a = re.sub(r'\s+', ' ', a)
     b = re.sub(r'\s+', ' ', b)
 
-    # 常见同义词归一
+    # Map common synonyms to standard values
     synonym_map = {
         "yes": "true",
         "no": "false",
