@@ -30,11 +30,35 @@ from math_verify import parse, verify
 import time
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
-def clean_string(val):
-    val = str(val).strip()
-    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
-        val = val[1:-1].strip()
-    return val.lower()  #
+
+def loose_match(a, b):
+    # 统一小写，去掉多余空格
+    a = a.strip().lower()
+    b = b.strip().lower()
+
+    # 冠词去除
+    def remove_articles(s):
+        return re.sub(r'\b(the|a|an)\b', '', s).strip()
+
+    a = remove_articles(a)
+    b = remove_articles(b)
+    # 去掉多余空格
+    a = re.sub(r'\s+', ' ', a)
+    b = re.sub(r'\s+', ' ', b)
+
+    # 常见同义词归一
+    synonym_map = {
+        "yes": "true",
+        "no": "false",
+        "correct": "true",
+        "incorrect": "false",
+        "right": "true",
+        "wrong": "false"
+    }
+    a = synonym_map.get(a, a)
+    b = synonym_map.get(b, b)
+
+    return a == b
 
 def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwargs):
     """
@@ -58,7 +82,7 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
         # symbolic calculation failed
         pass 
     
-    if clean_string(exec_result) == clean_string(solution):
+    if loose_match(exec_result, solution):
         reward = 1.0
     
     should_log = (

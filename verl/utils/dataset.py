@@ -172,7 +172,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)
 
-                self.dataset = raw_dataset[:1920]  # json format in SAT
+                self.dataset = raw_dataset[1920:]  # json format in `SAT`
 
                 self.dataset_prefix = dataset_prefix
 
