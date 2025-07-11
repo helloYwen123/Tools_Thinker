@@ -398,7 +398,7 @@ def compute_score(predict_strs: List[str], ground_truths: List[str], format_weig
     assert format_weight + usage_weight + execution_weight + accuracy_weight == 1.0, "The sum of weights must be equal to 1.0"
     
     execution_scores = batch_execution_reward(
-            predict_strs=predict_strs, QAids=QAids, steps=[step]*len(predict_strs), questions=questions, max_workers=16
+            predict_strs=predict_strs, QAids=QAids, steps=[step]*len(predict_strs), questions=questions, max_workers=12
         )
     for predict_str, ground_truth, QAid, question, exec_score in zip(
         predict_strs, ground_truths, QAids, questions, execution_scores
