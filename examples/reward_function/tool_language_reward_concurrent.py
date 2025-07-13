@@ -80,7 +80,7 @@ def loose_match(a, b):
 
 def extract_boxed_answer(completion: str) -> Optional[str]:
     m = re.search(r"<answer>.*?\\boxed\{(.*?)\}.*?</answer>", completion, re.S)
-    return m.group(1).strip() if m else None
+    return m.group(1).strip() if m and m.group(1) else None
 
 ###########################
 #### Accuracy Reward ######
@@ -95,10 +95,11 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
     split = "validation" if step == "validation" else "train"
     step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
     log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/accuracy/{step_str}")
-    acc_log_path = os.path.join(log_root_dir, f"accuracy_{current_time}-{QAid}.log")
+    
 
     reward = 0.0
     if mode == "code" and exec_result is not None:
+        acc_log_path = os.path.join(log_root_dir, f"code_accuracy_{current_time}-{QAid}.log")
         try:
             # try to verify symbolic calculation
             parsed_result = parse(exec_result)
@@ -113,6 +114,7 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
             reward = 1.0
 
     elif mode == "nl":
+        acc_log_path = os.path.join(log_root_dir, f"nl_accuracy_{current_time}-{QAid}.log")
         answer_pred = extract_boxed_answer(response)
         if answer_pred is not None:
             try:
@@ -166,7 +168,6 @@ def execution_reward(
         match = re.search(r"<code>(.*?)</code>", completion, re.DOTALL)
         return match.group(1) if match else None
 
-    code = extract_code(predict_str)
     current_time = datetime.now().strftime("%d-%H-%M-%S")
 
     # logs file setting
@@ -176,28 +177,31 @@ def execution_reward(
         step_str = f"step_{step}"
         log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/execution/{step_str}")
 
-    extraction_failed_log_path = os.path.join(
-        log_root_dir, f"code_extraction_failed_{current_time}-{QAid}.log"
-    )
-
     #########################################
     # Natural Language mode or invalid
     if mode != "code":
         if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
             os.makedirs(log_root_dir, exist_ok=True)
-            non_code_mode_log_path = os.path.join(
-                log_root_dir, f"non_codemode_{current_time}-{QAid}.log"
+            non_code_mode_log_path = (
+                os.path.join(log_root_dir, f"nl_{current_time}-{QAid}.log")
+                if mode == "nl"
+                else os.path.join(log_root_dir, f"invalid_{current_time}-{QAid}.log")
             )
 
             with open(non_code_mode_log_path, "a+", encoding="utf-8") as f:
                 f.write(f"------------- non code mode: execution reward: 0.0\n -------------\n")
+                f.write(f"question:\n{question}\n")
                 f.write(f"model's response:\n{predict_str}\n")
                 f.write(f"\nQAid: {QAid}\n")
                 f.write("=" * 30 + " end " + "=" * 30 + "\n\n")
 
         return (0.0, None)
     #########################################
+    code = extract_code(predict_str)
     if code is None:
+        extraction_failed_log_path = os.path.join(
+            log_root_dir, f"code_extraction_failed_{current_time}-{QAid}.log"
+        )
         # code extraction failed
         if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
             os.makedirs(log_root_dir, exist_ok=True)
@@ -448,8 +452,9 @@ def format_reward(predict_str, step, QAid):
     pattern_code_strict = r"(?s)<think>.*?</think>\s*<code>.*?\bfinal_result\b\s*=.*?</code>"
     # nl approach
     pattern_nl_loose    = r"(?s)<think>.*?</think>\s*<answer>.*?</answer>"
-    pattern_nl_strict   = r"(?s)<think>.*?</think>\s*<answer>.*?\\boxed\{{.*?\}}\s*</answer>"
+    pattern_nl_strict   = r"(?s)<think>.*?</think>\s*<answer>.*?\\boxed\{.*?\}.*?</answer>"
 
+    
     reward = 0.0
     if re.fullmatch(pattern_code_strict, predict_str, re.DOTALL) \
        or re.fullmatch(pattern_nl_strict, predict_str, re.DOTALL):
@@ -490,7 +495,6 @@ def compute_score(predict_strs: List[str], ground_truths: List[str], format_weig
     assert format_weight + usage_weight + execution_weight + accuracy_weight == 1.0, "The sum of weights must be equal to 1.0"
     modes = [detect_mode(p) for p in predict_strs]
     
-
     code_count = sum(m == "code" for m in modes)
     nl_count   = sum(m == "nl" for m in modes)
     invalid_count = sum(m == "invalid" for m in modes)
@@ -550,6 +554,7 @@ def compute_score(predict_strs: List[str], ground_truths: List[str], format_weig
                 "code_ratio": code_ratio,
                 "nl_ratio":   nl_ratio,
                 "invalid_ratio": invalid_ratio,
+                "mode": mode,
             }
         )
     return scores

@@ -128,9 +128,13 @@ class BatchFunctionRewardManager(FunctionRewardManager):
        
         reward_tensor = torch.zeros_like(data.batch["responses"], dtype=torch.float32)
         reward_metrics = defaultdict(list)
+        modes = [] # nl & code double modes
         for i, score in enumerate(scores):
             reward_tensor[i, response_length[i] - 1] = score["overall"]
             for key, value in score.items():
-                reward_metrics[key].append(value)
+                if key != "mode":
+                    # disgard mode entry here
+                    reward_metrics[key].append(value)
+            modes.append(score.get("mode"))
 
-        return reward_tensor, reward_metrics
+        return reward_tensor, reward_metrics, modes

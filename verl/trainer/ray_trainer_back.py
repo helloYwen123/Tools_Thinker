@@ -334,12 +334,8 @@ class RayPPOTrainer:
         # here reward_score is the `overall score`
         self._maybe_log_val_generations(sample_inputs, sample_outputs, sample_labels, sample_scores)
         reward_score = torch.cat(reward_tensor_lst, dim=0).sum(-1).mean().item()
-        ratios = ["code_ratio", "nl_ratio", "invalid_ratio"]
-
-        val_reward_metrics = {f"val/{key}_reward": value for key, value in reduce_metrics(reward_metrics_lst).items() if key not in ratios}
-        val_ratio_metrics = {f"val/{k}": value for key, value in reduce_metrics(reward_metrics_lst).items() if key in ratios}
-
-        return {"val/reward_score": reward_score, **val_reward_metrics, **val_ratio_metrics}
+        val_reward_metrics = {f"val/{key}_reward": value for key, value in reduce_metrics(reward_metrics_lst).items()}
+        return {"val/reward_score": reward_score, **val_reward_metrics}
 
     def init_workers(self) -> None:
         """Init resource pool and worker group"""
@@ -481,19 +477,6 @@ class RayPPOTrainer:
         )
         metrics.update(global_balance_stats)
 
-    def _split_metrics_by_mode(self ,metrics: dict, modes: list):
-        code_metrics = defaultdict(list)
-        nl_metrics = defaultdict(list)
-        for i, mode in enumerate(modes):
-            if mode == "code":
-                for k in metrics:
-                    code_metrics[k].append(metrics[k][i])
-            elif mode == "nl":
-                for k in metrics:
-                    nl_metrics[k].append(metrics[k][i])
-        return code_metrics, nl_metrics
-
-
     def fit(self):
         """
         The training loop of PPO.
@@ -608,26 +591,11 @@ class RayPPOTrainer:
 
                     with timer("adv", timing_raw):
                         # get token level scores
-                        reward_tensor, reward_metrics, modes = ray.get(reward_ref)
+                        reward_tensor, reward_metrics = ray.get(reward_ref)
                         batch.batch["token_level_scores"] = reward_tensor
+                        reward_metrics = {f"reward/{k}": v for k, v in reduce_metrics(reward_metrics).items()}
+                        metrics.update(reward_metrics)
 
-                        code_metrics, nl_metrics = self._split_metrics_by_mode(reward_metrics, modes)
-                        ratios = ["code_ratio", "nl_ratio", "invalid_ratio"]
-
-                        reduced_code_metrics = reduce_metrics(code_metrics)
-                        reduced_nl_metrics   = reduce_metrics(nl_metrics)
-
-                        code_metrics_dict =  {f"reward/code_{k}": v for k, v in reduced_code_metrics.items() if k not in ratios}
-                        nl_metrics_dict =  {f"reward/nl_{k}": v for k, v in reduced_nl_metrics.items() if k not in ratios}
-
-                        code_ratio = {f"mode/code_ratio": reduced_code_metrics.get("code_ratio", 0.0)}
-                        nl_ratio = {f"mode/nl_ratio": reduced_nl_metrics.get("nl_ratio", 0.0)}
-
-                        metrics.update(code_metrics_dict)
-                        metrics.update(nl_metrics_dict)
-                        metrics.update(code_ratio)
-                        metrics.update(nl_ratio)
-                        
                         # apply kl penalty if available
                         if not self.config.algorithm.use_kl_loss and self.use_reference_policy:
                             # apply kl penalty to reward

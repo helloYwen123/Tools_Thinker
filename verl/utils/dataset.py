@@ -163,7 +163,9 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 SYSTEM_PROMPT_TEMPLATE = conf.get("prompt_template")
                 # self.system_prompt = SYSTEM_PROMPT_TEMPLATE.format(available_tools=active_tool_names,
                 #                                             toolbox_metadata=filtered_metadata_dict)
-                self.system_prompt = "You are a helpful expert in multimodal reasoning and tool-augmented programmatic problem solving."
+                self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "
+                "Your primary goal is to accurately answer questions about images by choosing the most appropriate method: "
+                "programmatic analysis with Python tools or direct natural language reasoning.")
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
@@ -231,14 +233,12 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                     content_list.append({"type": "image"})
                 else:
                     content_list.append({"type": "text", "text": f"{prompt_str}"})
-            return [
-                    {
+            return [{
                         "role": "system", "content": self.system_prompt
                     },
                     {   
                         "role": "user", "content": content_list
-                    }
-                ]
+                    }]
         else:
             if self.format_prompt:
                 format_prompt = Template(self.format_prompt.strip())
