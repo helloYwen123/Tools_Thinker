@@ -8,7 +8,7 @@ data:
   max_response_length: 2048
   rollout_batch_size: 64 # 512
   val_batch_size: 1024 # 1024
-  format_prompt: ./examples/format_prompt/tools_thinker_format_w_think.jinja  # tools_thinker_format_wo_think.jinja
+  format_prompt: ./examples/format_prompt/tools_thinker_format_w_think_w_system_2.jinja # tools_thinker_format_wo_think.jinja
   override_chat_template: null
   shuffle: true
   seed: 42
@@ -81,10 +81,11 @@ worker:
     reward_type: batch
     reward_function: ./examples/reward_function/tool_reward_concurrent.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
     reward_function_kwargs:
-      format_weight: 0.2
+      format_weight: 0.1
       usage_weight: 0.2
       execution_weight: 0.2
-      accuracy_weight: 0.4
+      accuracy_weight: 0.5
+      nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight)
     num_gpus: 0
     num_cpus: 1
 
@@ -100,7 +101,7 @@ trainer:
   val_before_train: false # true
   val_only: false
   val_generations_to_log: 3
-  save_freq: 15  # -1 to disable
+  save_freq: 10  # -1 to disable
   save_limit: -1  # -1 to disable
   save_checkpoint_path: /workspace/models/
   load_checkpoint_path: null
