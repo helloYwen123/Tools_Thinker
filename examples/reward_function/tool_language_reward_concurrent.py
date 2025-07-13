@@ -30,6 +30,25 @@ from math_verify import parse, verify
 import time
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
+def detect_mode(completion: str) -> str:
+    """
+    1. <think>...</think>  <code>...</code>, without <answer>
+    2. <think>...</think>  <answer>...</answer>, without <code>
+    other cases are all invalid
+    """
+    s = completion.strip()
+    code_pattern = r'^<think>.*?</think>\s*<code>.*?</code>\s*$'
+    answer_pattern = r'^<think>.*?</think>\s*<answer>.*?</answer>\s*$'
+
+    if '<code>' in s and '<answer>' in s:
+        return 'invalid'
+    if re.fullmatch(code_pattern, s, re.DOTALL):
+        return 'code'
+    if re.fullmatch(answer_pattern, s, re.DOTALL):
+        return 'nl'
+    return 'invalid'
+
+
 def loose_match(a, b):
     # Convert both inputs to string, trim spaces, and lowercase
     a = str(a).strip().lower()
@@ -59,9 +78,18 @@ def loose_match(a, b):
 
     return a == b
 
+def extract_boxed_answer(completion: str) -> Optional[str]:
+    m = re.search(r"<answer>.*?\\boxed\{(.*?)\}.*?</answer>", completion, re.S)
+    return m.group(1).strip() if m else None
+
+###########################
+#### Accuracy Reward ######
+###########################
 def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwargs):
     """
     """
+    # detect output mode(code; nl; invalid)
+    mode = detect_mode(response)
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     current_time = datetime.now().strftime("%d-%H-%M-%S")
     split = "validation" if step == "validation" else "train"
@@ -70,20 +98,32 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
     acc_log_path = os.path.join(log_root_dir, f"accuracy_{current_time}-{QAid}.log")
 
     reward = 0.0
-
-    try:
-        # try to verify symbolic calculation
-        parsed_result = parse(exec_result)
-        parsed_solution = parse(solution)
-        if float(verify(parsed_result, parsed_solution)) > 0:
+    if mode == "code" and exec_result is not None:
+        try:
+            # try to verify symbolic calculation
+            parsed_result = parse(exec_result)
+            parsed_solution = parse(solution)
+            if float(verify(parsed_result, parsed_solution)) > 0:
+                reward = 1.0
+        except Exception:
+            # symbolic calculation failed
+            pass 
+        
+        if loose_match(exec_result, solution):
             reward = 1.0
-    except Exception:
-        # symbolic calculation failed
-        pass 
-    
-    if loose_match(exec_result, solution):
-        reward = 1.0
-    
+
+    elif mode == "nl":
+        answer_pred = extract_boxed_answer(response)
+        if answer_pred is not None:
+            try:
+                if float(verify(parse(answer_pred), parse(solution))) > 0:
+                    reward = 1.0
+            except Exception:
+                pass
+
+            if loose_match(answer_pred, solution):
+                reward = 1.0
+
     should_log = (
         (isinstance(step, str) and step == "validation") or
         (isinstance(step, int) and step % 2 == 0) or
@@ -107,18 +147,25 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
 
 accuracy_reward.reward_type = "accuracy"
 
+##########################
+#### Execution Reward ####
+##########################
 def execution_reward(
     predict_str, 
     QAid, 
     step, 
     question,
     log_root_dir=None,
-    timeout=60
+    timeout=120
 ):
+    # detect output mode(code; nl; invalid)
+    mode = detect_mode(predict_str)
+
     # CODE EXTRACTION
     def extract_code(completion):
         match = re.search(r"<code>(.*?)</code>", completion, re.DOTALL)
         return match.group(1) if match else None
+
     code = extract_code(predict_str)
     current_time = datetime.now().strftime("%d-%H-%M-%S")
 
@@ -133,6 +180,23 @@ def execution_reward(
         log_root_dir, f"code_extraction_failed_{current_time}-{QAid}.log"
     )
 
+    #########################################
+    # Natural Language mode or invalid
+    if mode != "code":
+        if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
+            os.makedirs(log_root_dir, exist_ok=True)
+            non_code_mode_log_path = os.path.join(
+                log_root_dir, f"non_codemode_{current_time}-{QAid}.log"
+            )
+
+            with open(non_code_mode_log_path, "a+", encoding="utf-8") as f:
+                f.write(f"------------- non code mode: execution reward: 0.0\n -------------\n")
+                f.write(f"model's response:\n{predict_str}\n")
+                f.write(f"\nQAid: {QAid}\n")
+                f.write("=" * 30 + " end " + "=" * 30 + "\n\n")
+
+        return (0.0, None)
+    #########################################
     if code is None:
         # code extraction failed
         if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
@@ -143,7 +207,7 @@ def execution_reward(
                 f.write(f"\nQAid: {QAid}\n")
                 f.write("=" * 30 + " end " + "=" * 30 + "\n\n")
         return (0.0, None)
-
+    #########################################
     def sandbox_execute(code, timeout, log_path, QAid):
         current_time = datetime.now().strftime("%d-%H-%M-%S")
         payload = {
@@ -244,7 +308,9 @@ def batch_execution_reward(
             results[idx] = future.result()
     return results
 
-
+###########################
+#### Tool Usage Reward ####
+###########################
 def tool_usage_reward(predict_str, step, QAid):
     """
     Check whether the generated code uses any registered tools:
@@ -252,6 +318,7 @@ def tool_usage_reward(predict_str, step, QAid):
     - It must create an instance of a known tool class
     - It must call .execute()
     """
+    mode = detect_mode(predict_str)
     start_time = time.time()
     # Create root log directory path like: .../train/tools_usage/reward/step_2/
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -265,6 +332,20 @@ def tool_usage_reward(predict_str, step, QAid):
         # Log file path
         tool_log_path = os.path.join(log_root_dir, f"toolusage_{current_time}-{QAid}.log")
     
+    # diasble tool usage reward when NL mode: return 0.0
+    if mode != "code":
+       # nl mode or invalid
+        reward = 0.0
+        if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
+            elapsed_time = time.time() - start_time
+            with open(tool_log_path, "a+") as f:
+                f.write(f"\nQAid:{QAid}\n")
+                f.write("\nnatural language mode or invalid response\n\n")
+                f.write(f"\ncompletion Content: \n{predict_str}\n")
+                f.write(f"\n[execution time] {elapsed_time:.2f}s\n")
+                f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+        return reward
+    
     # Define tool module and class mapping
     tool_modules = {
         'object_detector': 'Object_Detector_Tool',
@@ -275,7 +356,6 @@ def tool_usage_reward(predict_str, step, QAid):
     }
 
     def extract_code(completion):
-        
         match = re.search(r"<code>(.*?)</code>", completion, re.DOTALL)
         if match:
             return match.group(1)
@@ -356,18 +436,27 @@ def tool_usage_reward(predict_str, step, QAid):
 
     return reward
 
+#######################
+#### Format Reward ####
+#######################
+
 def format_reward(predict_str, step, QAid):
     """Reward function that checks if the completion has a specific format."""
     start_time = time.time()
-    pattern1 = r"<think>(.*?)</think>(\n*)<code>(.*?)</code>" # no final_result but have correct tags
-    # TODO - Done <code>(?!\s*\bfinal_result\b).*?\bfinal_result\b\s*=.*?</code>
-    pattern2 = r"(?s)<think>.*?</think>\n*<code>.*?\bfinal_result\b\s*=.*?</code>"
+    # code approach
+    pattern_code_loose  = r"(?s)<think>.*?</think>\s*<code>.*?</code>"
+    pattern_code_strict = r"(?s)<think>.*?</think>\s*<code>.*?\bfinal_result\b\s*=.*?</code>"
+    # nl approach
+    pattern_nl_loose    = r"(?s)<think>.*?</think>\s*<answer>.*?</answer>"
+    pattern_nl_strict   = r"(?s)<think>.*?</think>\s*<answer>.*?\\boxed\{{.*?\}}\s*</answer>"
 
     reward = 0.0
-    if re.fullmatch(pattern2, predict_str, re.DOTALL):
-        reward = 1.0    
-    elif re.fullmatch(pattern1, predict_str, re.DOTALL):
-        reward = 0.5  
+    if re.fullmatch(pattern_code_strict, predict_str, re.DOTALL) \
+       or re.fullmatch(pattern_nl_strict, predict_str, re.DOTALL):
+        reward = 1.0
+    elif re.fullmatch(pattern_code_loose, predict_str, re.DOTALL) \
+         or re.fullmatch(pattern_nl_loose, predict_str, re.DOTALL):
+        reward = 0.5
     else:
         reward = 0.0
     # create timepoints as part of log names
@@ -390,38 +479,77 @@ def format_reward(predict_str, step, QAid):
             f.write(f"[execution time] {elapsed_time:.2f}s\n")
     return reward
 
+#############################
+# Overall Score Computation #
+#############################
 def compute_score(predict_strs: List[str], ground_truths: List[str], format_weight: float = 0.2, 
-                  usage_weight: float = 0.3, execution_weight: float = 0.2, accuracy_weight: float = 0.3,
+                  usage_weight: float = 0.3, execution_weight: float = 0.2, accuracy_weight: float = 0.3, nl_accuracy_weight: float = 0.5, 
                   step = None, QAids = None, questions = None) -> List[Dict[str, float]]:
     scores = []
+    n = len(predict_strs)
     assert format_weight + usage_weight + execution_weight + accuracy_weight == 1.0, "The sum of weights must be equal to 1.0"
+    modes = [detect_mode(p) for p in predict_strs]
     
-    execution_scores = batch_execution_reward(
-            predict_strs=predict_strs, QAids=QAids, steps=[step]*len(predict_strs), questions=questions, max_workers=12
-        )
-    for predict_str, ground_truth, QAid, question, exec_score in zip(
-        predict_strs, ground_truths, QAids, questions, execution_scores
-    ):
-        format_score = format_reward(predict_str, step, QAid)
-        tool_usage_score = tool_usage_reward(predict_str, step, QAid)
-        exec_reward, exec_output = exec_score
-        # execution_score[1] is the result of execution
-        if exec_reward != 0.0:
-            accuracy_score = accuracy_reward(
-                    exec_output, response=predict_str, step=step, solution=ground_truth, QAid=QAid, question=question
-            )
-        else:
-            accuracy_score = 0.0 # default: execution failed then accuracy is failed
 
-        overall_score = format_weight * format_score + usage_weight * tool_usage_score + execution_weight * exec_reward + accuracy_weight * accuracy_score
+    code_count = sum(m == "code" for m in modes)
+    nl_count   = sum(m == "nl" for m in modes)
+    invalid_count = sum(m == "invalid" for m in modes)
+    code_ratio = code_count / n
+    nl_ratio   = nl_count / n
+    invalid_ratio = invalid_count / n
+
+    exec_reward = batch_execution_reward(
+        predict_strs=predict_strs,
+        QAids=QAids,
+        steps=[step]*n,
+        questions=questions,
+        max_workers=24
+    )
+
+    for i in range(n):
+        predict_str  = predict_strs[i]
+        ground_truth = ground_truths[i]
+        QAid         = QAids[i]
+        question     = questions[i]
+        mode         = modes[i]
+        # execution_scores[i]： (reward, exec_output or None)
+        exec_score, exec_output = exec_reward[i]
+
+        format_score     = format_reward(predict_str, step, QAid)
+        tool_usage_score = tool_usage_reward(predict_str, step, QAid)
+
+        # code mode: exec_output，nl / invalid mode: None
+        accuracy_score = accuracy_reward(
+            exec_output,            # exec_result
+            response   = predict_str,
+            step       = step,
+            solution   = ground_truth,
+            QAid       = QAid,
+            question   = question
+        )
+        if mode == "code":
+        # 3. overall
+            overall_score = (
+                format_weight   * format_score     +
+                usage_weight    * tool_usage_score +
+                execution_weight* exec_score      +
+                accuracy_weight * accuracy_score
+            )
+        elif mode == "nl":
+            overall_score = nl_accuracy_weight * accuracy_score + (1 - nl_accuracy_weight) * format_score
+        else:
+            overall_score = 0.0
 
         scores.append(
             {
-                "overall": overall_score,
-                "format": format_score,
-                "tool_usage": tool_usage_score,
-                "execution": exec_reward,
-                "accuracy": accuracy_score
+                "overall":    overall_score,
+                "format":     format_score,
+                "accuracy":   accuracy_score,
+                "tool_usage": tool_usage_score, # disabled in natural language
+                "execution":  exec_score, # disabled in natural language
+                "code_ratio": code_ratio,
+                "nl_ratio":   nl_ratio,
+                "invalid_ratio": invalid_ratio,
             }
         )
     return scores

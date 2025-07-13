@@ -593,9 +593,16 @@ class RayPPOTrainer:
                         # get token level scores
                         reward_tensor, reward_metrics = ray.get(reward_ref)
                         batch.batch["token_level_scores"] = reward_tensor
-                        reward_metrics = {f"reward/{k}": v for k, v in reduce_metrics(reward_metrics).items()}
-                        metrics.update(reward_metrics)
 
+                        reduced_metrics = reduce_metrics(reward_metrics)
+                        ratios = ["code_ratio", "nl_ratio", "invalid_ratio"]
+
+                        reward_metrics_dict = {f"reward/{k}": v for k, v in reduced_metrics.items() if k not in ratios}
+                        mode_metrics = {f"mode/{k}": v for k, v in reduced_metrics.items() if k in ratios}
+
+                        metrics.update(reward_metrics_dict)
+                        metrics.update(mode_metrics)
+                        
                         # apply kl penalty if available
                         if not self.config.algorithm.use_kl_loss and self.use_reference_policy:
                             # apply kl penalty to reward
