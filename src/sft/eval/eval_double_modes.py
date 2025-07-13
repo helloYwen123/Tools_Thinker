@@ -11,6 +11,7 @@ from oumi.core.registry import register_evaluation_function
 from oumi.core.evaluation import Evaluator
 from oumi.core.evaluation import Evaluator
 import re
+import os
 from tqdm import tqdm 
 #--- set random seed for reproduction ---
 import transformers,random
@@ -68,15 +69,37 @@ def server_api(payload):
         exec_result = "Error during request or processing"
         return exec_result,4
 
-def clean_string(val):
-    val = str(val).strip()
-    if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
-        val = val[1:-1].strip()
-    return val.lower()  #   
+def loose_match(a, b):
+    # Convert both inputs to string, trim spaces, and lowercase
+    a = str(a).strip().lower()
+    b = str(b).strip().lower()
 
-# ---------- 两个辅助函数，若已有可跳过 ----------
+    # Remove articles ('the', 'a', 'an')
+    def remove_articles(s):
+        return re.sub(r'\b(the|a|an)\b', '', s).strip()
+
+    a = remove_articles(a)
+    b = remove_articles(b)
+    # Remove extra whitespace
+    a = re.sub(r'\s+', ' ', a)
+    b = re.sub(r'\s+', ' ', b)
+
+    # Map common synonyms to standard values
+    synonym_map = {
+        "yes": "true",
+        "no": "false",
+        "correct": "true",
+        "incorrect": "false",
+        "right": "true",
+        "wrong": "false"
+    }
+    a = synonym_map.get(a, a)
+    b = synonym_map.get(b, b)
+
+    return a == b 
+
 def detect_mode(txt: str) -> str:
-    """判定输出模式: code / nl / invalid"""
+    """: code / nl / invalid"""
     txt = txt.strip()
     code_ok = re.fullmatch(r"<think>.*?</think>\s*<code>.*?</code>", txt, re.S)
     ans_ok  = re.fullmatch(r"<think>.*?</think>\s*<answer>.*?</answer>", txt, re.S)
@@ -89,16 +112,17 @@ def detect_mode(txt: str) -> str:
 def extract_boxed_answer(txt: str):
     m = re.search(r"<answer>.*?\\boxed\{(.*?)\}.*?</answer>", txt, re.S)
     return m.group(1).strip() if m else None
-# ------------------------------------------------
 
 @register_evaluation_function("Counting_tools_evaluation")
 def Counting_tools_evaluation(inference_engine, dataset):
-    """同时评估 code / nl 模式."""
+    """Custom evaluation that同时处理 code / nl 两种模式."""
     conversations = inference_engine.infer(dataset.conversations())
 
-    success_exe, acc_exe = 0, 0
-    mode_counter = {"code": 0, "nl": 0, "invalid": 0}
+    success_cnt, acc_cnt = 0, 0
     logs = []
+
+    # 统计三种模式数量
+    mode_counter = {"code": 0, "nl": 0, "invalid": 0}
 
     for conv in tqdm(conversations, desc="Evaluating", unit="conv"):
         response: str = conv.last_message().content.strip()
@@ -107,42 +131,43 @@ def Counting_tools_evaluation(inference_engine, dataset):
 
         correctness = False
         success = False
-        exec_result, case = "Format Error", 5   # 默认 invalid
+        exec_result, case = "N/A", 5      # 默认 case=5: 格式 / 其它错误
 
-        # ---------------- code 模式 ----------------
+        # -------- code 模式 --------
         if mode == "code":
-            match = re.search(r"<code>(.*?)</code>", response, re.S)
-            if match:
-                code = match.group(1).strip()
-                payload = {"code": code,
-                           "timeout": EXECUTION_TIMEOUT_SECONDS,
-                           "q_aid": None}
+            code_block = re.search(r"<code>(.*?)</code>", response, re.S)
+            if code_block:
+                code = code_block.group(1).strip()
+                payload = {"code": code, "timeout": EXECUTION_TIMEOUT_SECONDS, "q_aid": None}
                 exec_result, case = server_api(payload)
-            else:  # 理论上不会到
-                exec_result, case = "Code Extraction Error", 5
+            else:
+                exec_result = "Code Extraction Error"
+                case = 5
 
-            if case not in (3, 4, 5):      # 与旧逻辑一致：0/1/2 视为执行成功
+            # 成功判定：case 不在 3/4/5
+            if case not in (3, 4, 5):
                 success = True
-                success_exe += 1
+                success_cnt += 1
 
-        # ---------------- nl 模式 ----------------
+        # -------- nl 模式 --------
         elif mode == "nl":
             answer_pred = extract_boxed_answer(response)
             exec_result = answer_pred if answer_pred is not None else "Answer Extraction Error"
-            case = 0                         # 自定义：0 代表无执行但成功
-            success = True                   # NL 输出视为“执行成功”
-            success_exe += 1
+            success = True               # 无执行过程，一律成功
+            success_cnt += 1
 
-        # ---------------- invalid ----------------
-        # exec_result 已是 "Format Error"，success False
+        # -------- invalid --------
+        else:
+            exec_result = "Format Error"
+            # case=5 已保留，success=False
 
-        # --------- 计算正确率 ---------
-        if clean_string(exec_result) == clean_string(conv.metadata["ground_truth"]):
-            correctness = True
-            acc_exe += 1
+        # -------- accuracy 计算 --------
+        if exec_result is not None:
+            if loose_match(exec_result, conv.metadata["ground_truth"]):
+                correctness = True
+                acc_cnt += 1
 
-        # --------- 日志 ---------
-        user_msg = conv.messages[1]  # role=="user"
+        user_msg = conv.messages[1]
         question = user_msg.text_content_items[0].content if user_msg.text_content_items else None
 
         logs.append({
@@ -158,16 +183,19 @@ def Counting_tools_evaluation(inference_engine, dataset):
         })
 
     n = len(conversations)
-    exe_rate = success_exe / n
-    acc_rate = acc_exe / n
+    exe_rate = success_cnt / n
+    acc_rate = acc_cnt / n
+
+    # 比例统计
     ratios = {f"{m}_ratio": mode_counter[m] / n for m in mode_counter}
 
-    # 保存日志
+    # 写日志
     ts = datetime.now().strftime("%Y-%m-%d_%H-%M")
     os.makedirs("./output", exist_ok=True)
     with open(f"./output/eval_log-{ts}.json", "w", encoding="utf-8") as f:
         json.dump(logs, f, ensure_ascii=False, indent=2)
 
+    # 统一返回
     return {"exe_rate": exe_rate, "acc_rate": acc_rate, **ratios}
 
 
@@ -177,8 +205,11 @@ config = EvaluationConfig.from_yaml(yaml_path)
 evaluator = Evaluator()
 results = evaluator.evaluate(config, dataset=evaluation_dataset)
 
-custom_task_results: dict = results[0].get_results()
-
+custom_task_results = results[0].get_results()
 print("exe_rate:", custom_task_results["exe_rate"])
 print("acc_rate:", custom_task_results["acc_rate"])
+print("code_ratio:", custom_task_results["code_ratio"])
+print("nl_ratio:", custom_task_results["nl_ratio"])
+print("invalid_ratio:", custom_task_results["invalid_ratio"])
 print("Execution duration in sec:", results[0].elapsed_time_sec)
+
