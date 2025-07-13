@@ -612,21 +612,33 @@ class RayPPOTrainer:
                         batch.batch["token_level_scores"] = reward_tensor
 
                         code_metrics, nl_metrics = self._split_metrics_by_mode(reward_metrics, modes)
+                        
+                        # metrics names
                         ratios = ["code_ratio", "nl_ratio", "invalid_ratio"]
+                        overall = ["overall", "accuracy"]
+                        code_related = ["tool_usage", "execution"]
 
                         reduced_code_metrics = reduce_metrics(code_metrics)
                         reduced_nl_metrics   = reduce_metrics(nl_metrics)
+                        reduced_overall_metrics   = reduce_metrics(reward_metrics)
 
                         code_metrics_dict =  {f"reward/code_{k}": v for k, v in reduced_code_metrics.items() if k not in ratios}
-                        nl_metrics_dict =  {f"reward/nl_{k}": v for k, v in reduced_nl_metrics.items() if k not in ratios}
+                        nl_metrics_dict = {f"reward/nl_{k}": v
+                                           for k, v in reduced_nl_metrics.items()
+                                           if k not in ratios and k not in code_related}
+                        overall_metrics_dict =  {f"reward/overall_{k}": v for k, v in reduced_overall_metrics.items() if k in overall}
 
-                        code_ratio = {f"mode/code_ratio": reduced_code_metrics.get("code_ratio", 0.0)}
-                        nl_ratio = {f"mode/nl_ratio": reduced_nl_metrics.get("nl_ratio", 0.0)}
-
+                        code_ratio = {f"mode/code_ratio": reduced_overall_metrics.get("code_ratio", 0.0)}
+                        nl_ratio = {f"mode/nl_ratio": reduced_overall_metrics.get("nl_ratio", 0.0)}
+                        invalid_ratio = {f"mode/invalid_ratio": reduced_overall_metrics.get("invalid_ratio", 0.0)}
+                        
+                        # update
+                        metrics.update(overall_metrics_dict)
                         metrics.update(code_metrics_dict)
                         metrics.update(nl_metrics_dict)
                         metrics.update(code_ratio)
                         metrics.update(nl_ratio)
+                        metrics.update(invalid_ratio)
                         
                         # apply kl penalty if available
                         if not self.config.algorithm.use_kl_loss and self.use_reference_policy:
