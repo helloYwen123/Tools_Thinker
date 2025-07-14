@@ -96,8 +96,9 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
     step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
     log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/accuracy/{step_str}")
     
-
+    answer_pred = None
     reward = 0.0
+    acc_log_path = os.path.join(log_root_dir, f"invalid_accuracy_{current_time}-{QAid}.log")
     if mode == "code" and exec_result is not None:
         acc_log_path = os.path.join(log_root_dir, f"code_accuracy_{current_time}-{QAid}.log")
         try:
@@ -139,6 +140,7 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwa
                 f.write("\ncorrect result\n\n")
             else:
                 f.write("\n wrong result\n\n")
+            f.write(f"nl_result: {answer_pred}\n")
             f.write(f"exec_result: {exec_result}\n")
             f.write(f"expected:    {solution}\n")
             f.write(f"question: \n{question}\n")

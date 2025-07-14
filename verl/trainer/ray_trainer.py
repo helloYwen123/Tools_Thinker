@@ -283,6 +283,11 @@ class RayPPOTrainer:
         reward_tensor_lst = []
         # Lists to collect samples for the table
         sample_inputs, sample_outputs, sample_labels, sample_scores = [], [], [], []
+
+        overall_metrics_all = defaultdict(list)
+        code_metrics_all    = defaultdict(list)
+        nl_metrics_all      = defaultdict(list)
+
         reward_metrics_lst = defaultdict(list)
         for batch_dict in self.val_dataloader:
             test_batch = DataProto.from_single_dict(batch_dict)
@@ -319,27 +324,66 @@ class RayPPOTrainer:
             #########################################
             if self.tool_usage:
                 print(f"validation reward computation")
-                reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch, step="validation",tool = self.tool_usage))
+                reward_ref = self.val_reward_fn.compute_reward.remote(test_batch, step="validation",tool = self.tool_usage)
             else:
                 print(f"validation reward computation")
-                reward_tensor, reward_metrics = ray.get(self.val_reward_fn.compute_reward.remote(test_batch))
+                reward_ref = self.val_reward_fn.compute_reward.remote(test_batch)
             #########################################
+            reward_tensor, reward_metrics, modes = ray.get(reward_ref)   
+
             # Store scores
             scores = reward_tensor.sum(-1).cpu().tolist()
             sample_scores.extend(scores)
 
             reward_tensor_lst.append(reward_tensor)
-            for key, value in reward_metrics.items():
-                reward_metrics_lst[key].extend(value)
+
+            # new adding:
+            code_metrics, nl_metrics = self._split_metrics_by_mode(               # NEW
+                reward_metrics, modes
+            )
+            
+            for k, v in reward_metrics.items(): overall_metrics_all[k].extend(v)  # NEW
+            for k, v in code_metrics.items():    code_metrics_all[k].extend(v)    # NEW
+            for k, v in nl_metrics.items():      nl_metrics_all[k].extend(v)      # NEW
+        
         # here reward_score is the `overall score`
         self._maybe_log_val_generations(sample_inputs, sample_outputs, sample_labels, sample_scores)
         reward_score = torch.cat(reward_tensor_lst, dim=0).sum(-1).mean().item()
-        ratios = ["code_ratio", "nl_ratio", "invalid_ratio"]
+        # keys for different usage
+        ratios         = ["code_ratio", "nl_ratio", "invalid_ratio"]
+        overall_keys   = ["overall", "accuracy"]
+        code_related   = ["tool_usage", "execution"]
 
-        val_reward_metrics = {f"val/{key}_reward": value for key, value in reduce_metrics(reward_metrics_lst).items() if key not in ratios}
-        val_ratio_metrics = {f"val/{k}": value for key, value in reduce_metrics(reward_metrics_lst).items() if key in ratios}
+        reduced_overall = reduce_metrics(overall_metrics_all)
+        reduced_code    = reduce_metrics(code_metrics_all)
+        reduced_nl      = reduce_metrics(nl_metrics_all)
+        
+        overall_dict = {
+                f"val/overall_{k}": v for k, v in reduced_overall.items()
+                if k in overall_keys
+            }
+        # code mode
+        code_dict = {
+            f"val/code_{k}": v for k, v in reduced_code.items()
+            if k not in ratios
+        }
+        # nl mode
+        nl_dict = {
+            f"val/nl_{k}": v for k, v in reduced_nl.items()
+            if k not in ratios and k not in code_related
+        }
+        # ratios
+        ratio_dict = {
+            f"val/{k}": reduced_overall.get(k, 0.0) for k in ratios
+        }
 
-        return {"val/reward_score": reward_score, **val_reward_metrics, **val_ratio_metrics}
+        return {
+            "val/reward_score": reward_score,
+            **overall_dict,
+            **code_dict,
+            **nl_dict,
+            **ratio_dict,
+        }
 
     def init_workers(self) -> None:
         """Init resource pool and worker group"""
