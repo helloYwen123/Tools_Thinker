@@ -4,8 +4,8 @@ data:
   prompt_key: problem
   answer_key: answer
   image_key: images
-  max_prompt_length: 8192
-  max_response_length: 2048
+  max_prompt_length: 7680
+  max_response_length: 2560
   rollout_batch_size: 64 # 512
   val_batch_size: 1024 # 1024
   format_prompt: ./examples/format_prompt/tools_thinker_format_w_think_w_system_2.jinja # tools_thinker_format_wo_think.jinja
@@ -82,19 +82,20 @@ worker:
     reward_function: ./examples/reward_function/tool_language_reward_concurrent.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
     reward_function_kwargs:
       format_weight: 0.2
-      # usage_weight: 0.2
+      usage_weight: 0.1
       think_length_weight: 0.1
       execution_weight: 0.2
       accuracy_weight: 0.5
-      nl_accuracy_weight: 0.6 # automatically set format_weight = (1 - nl_accuracy_weight)
+      nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight - think_length_weight)
+      root_dir: /workspace/models/logs
     num_gpus: 0
     num_cpus: 1
 
 trainer:
   total_epochs: 1 # 15
-  max_steps: null
-  project_name: debug # easyr1
-  experiment_name: qwen2_5_7b_grpo
+  max_steps: 50
+  project_name: train # easyr1
+  experiment_name: qwen2_5_7b_grpo_50steps
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 8

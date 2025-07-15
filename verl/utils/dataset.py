@@ -157,10 +157,10 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 # #######################################################################################
                 # TODO
                 active_tool_names, filtered_metadata_dict = self._load_tool_data(self.configuration_file)
-                system_content_yaml = "/workspace/ywen_ws/Tools_Thinker/examples/format_prompt/easyr1_tool_system.yaml"
-                with open(system_content_yaml, "r") as stream:
-                    conf = yaml.safe_load(stream)
-                SYSTEM_PROMPT_TEMPLATE = conf.get("prompt_template")
+                # system_content_yaml = "/workspace/ywen_ws/Tools_Thinker/examples/format_prompt/easyr1_tool_system.yaml"
+                # with open(system_content_yaml, "r") as stream:
+                #     conf = yaml.safe_load(stream)
+                # SYSTEM_PROMPT_TEMPLATE = conf.get("prompt_template")
                 # self.system_prompt = SYSTEM_PROMPT_TEMPLATE.format(available_tools=active_tool_names,
                 #                                             toolbox_metadata=filtered_metadata_dict)
                 self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "

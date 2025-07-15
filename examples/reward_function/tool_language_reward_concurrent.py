@@ -85,12 +85,13 @@ def extract_boxed_answer(completion: str) -> Optional[str]:
 ###########################
 #### Accuracy Reward ######
 ###########################
-def accuracy_reward(exec_result, response, step, solution, QAid, question, **kwargs):
+def accuracy_reward(exec_result, response, step, solution, QAid, question, root_dir= "/workspace/models/logs", **kwargs):
     """
     """
     # detect output mode(code; nl; invalid)
     mode = detect_mode(response)
-    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if root_dir is None:
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     current_time = datetime.now().strftime("%d-%H-%M-%S")
     split = "validation" if step == "validation" else "train"
     step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
@@ -159,7 +160,7 @@ def execution_reward(
     QAid, 
     step, 
     question,
-    log_root_dir=None,
+    root_dir="/workspace/models/logs",
     timeout=120
 ):
     # detect output mode(code; nl; invalid)
@@ -173,11 +174,11 @@ def execution_reward(
     current_time = datetime.now().strftime("%d-%H-%M-%S")
 
     # logs file setting
-    if log_root_dir is None:
+    if root_dir is None:
         root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        split = "validation" if step == "validation" else "train"
-        step_str = f"step_{step}"
-        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/execution/{step_str}")
+    split = "validation" if step == "validation" else "train"
+    step_str = f"step_{step}"
+    log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/execution/{step_str}")
 
     #########################################
     # Natural Language mode or invalid
@@ -191,7 +192,7 @@ def execution_reward(
             )
 
             with open(non_code_mode_log_path, "a+", encoding="utf-8") as f:
-                f.write(f"------------- non code mode: execution reward: 0.0\n -------------\n")
+                f.write(f"------------- non code mode: execution reward: default is 0.0\n -------------\n")
                 f.write(f"question:\n{question}\n")
                 f.write(f"model's response:\n{predict_str}\n")
                 f.write(f"\nQAid: {QAid}\n")
@@ -292,7 +293,7 @@ execution_reward.reward_type = "execution"
 ### Concurrent Batch Execution Reward
 
 def batch_execution_reward(
-    predict_strs, QAids, steps, questions, max_workers=8, log_root_dir=None
+    predict_strs, QAids, steps, questions, max_workers=8, root_dir=None
 ):
     # need to loop n times
     n = len(predict_strs)
@@ -304,7 +305,7 @@ def batch_execution_reward(
             QAid=QAids[i],
             step=steps[i],
             question=questions[i],
-            log_root_dir=log_root_dir
+            root_dir=root_dir,
         )
     results = [None] * n
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -317,7 +318,7 @@ def batch_execution_reward(
 ###########################
 #### Tool Usage Reward ####
 ###########################
-def tool_usage_reward(predict_str, step, QAid):
+def tool_usage_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs"):
     """
     Check whether the generated code uses any registered tools:
     - It must import a tool module
@@ -327,7 +328,8 @@ def tool_usage_reward(predict_str, step, QAid):
     mode = detect_mode(predict_str)
     start_time = time.time()
     # Create root log directory path like: .../train/tools_usage/reward/step_2/
-    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if root_dir is None:
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     split = "validation" if step == "validation" else "train"
     step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
     current_time = datetime.now().strftime("%d-%H-%M-%S")
@@ -442,11 +444,41 @@ def tool_usage_reward(predict_str, step, QAid):
 
     return reward
 
+###############################
+#### Thinking Length Reward ###
+###############################
+def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs", max_length = 1024):
+    reward = 0.0
+    # create timepoints as part of log names
+    current_time = datetime.now().strftime("%d-%H-%M-%S")
+    # create log file
+    if root_dir is None:
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    split = "validation" if step == "validation" else "train"
+    step_str = f"step_{step}"
+    pattern1 = re.compile(r"(?s)\s*<think>.*?</think>\s*<answer>.*?\\boxed\{.*?\}.*?</answer>\s*")
+    pattern2 = re.compile(r"(?s)\s*<think>.*?</think>\s*<code>.*?\bfinal_result\b\s*=.*?</code>\s*")
+
+    if not (pattern1.fullmatch(predict_str) or pattern2.fullmatch(predict_str)):
+        return reward
+        
+    think_match = re.search(r"(?s)<think>(.*?)</think>", predict_str)
+    if think_match:
+        think_text = think_match.group(1).strip()
+        think_text_clean = re.sub(r"\s+", "", think_text)
+        think_len = len(think_text_clean)
+        reward = min(think_len, max_length) / max_length
+    else:
+        reward = 0.0
+
+    # TODO
+    # logging
+    return reward
+
 #######################
 #### Format Reward ####
 #######################
-
-def format_reward(predict_str, step, QAid):
+def format_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs"):
     """Reward function that checks if the completion has a specific format."""
     start_time = time.time()
     # code approach
@@ -469,7 +501,8 @@ def format_reward(predict_str, step, QAid):
     # create timepoints as part of log names
     current_time = datetime.now().strftime("%d-%H-%M-%S")
     # create log file
-    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if root_dir is None:
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     split = "validation" if step == "validation" else "train"
     step_str = f"step_{step}"
     
@@ -489,12 +522,24 @@ def format_reward(predict_str, step, QAid):
 #############################
 # Overall Score Computation #
 #############################
-def compute_score(predict_strs: List[str], ground_truths: List[str], format_weight: float = 0.2, 
-                  usage_weight: float = 0.3, execution_weight: float = 0.2, accuracy_weight: float = 0.3, nl_accuracy_weight: float = 0.5, 
-                  step = None, QAids = None, questions = None) -> List[Dict[str, float]]:
+def compute_score(
+    predict_strs: List[str],
+    ground_truths: List[str],
+    format_weight: float = 0.2, 
+    usage_weight: float = 0.1,
+    execution_weight: float = 0.2,
+    accuracy_weight: float = 0.5,
+    nl_accuracy_weight: float = 0.5,
+    think_length_weight: float = 0.0,
+    step = None,
+    QAids = None,
+    questions = None,
+    root_dir = None, 
+):
     scores = []
     n = len(predict_strs)
     assert format_weight + usage_weight + execution_weight + accuracy_weight == 1.0, "The sum of weights must be equal to 1.0"
+    # assert format_weight + think_length_weight + execution_weight + accuracy_weight == 1.0, "The sum of weights must be equal to 1.0"
     modes = [detect_mode(p) for p in predict_strs]
     
     code_count = sum(m == "code" for m in modes)
@@ -509,7 +554,8 @@ def compute_score(predict_strs: List[str], ground_truths: List[str], format_weig
         QAids=QAids,
         steps=[step]*n,
         questions=questions,
-        max_workers=24
+        max_workers=24,
+        root_dir=root_dir
     )
 
     for i in range(n):
@@ -521,28 +567,34 @@ def compute_score(predict_strs: List[str], ground_truths: List[str], format_weig
         # execution_scores[i]： (reward, exec_output or None)
         exec_score, exec_output = exec_reward[i]
 
-        format_score     = format_reward(predict_str, step, QAid)
-        tool_usage_score = tool_usage_reward(predict_str, step, QAid)
-
-        # code mode: exec_output，nl / invalid mode: None
+        format_score = format_reward(predict_str, step, QAid, root_dir=root_dir)
+        tool_usage_score = tool_usage_reward(predict_str, step, QAid, root_dir=root_dir)
+        # think_length_score = think_length_reward(predict_str, step, QAid, root_dir=root_dir) # 改
         accuracy_score = accuracy_reward(
-            exec_output,            # exec_result
-            response   = predict_str,
-            step       = step,
-            solution   = ground_truth,
-            QAid       = QAid,
-            question   = question
+            exec_output,
+            response=predict_str,
+            step=step,
+            solution=ground_truth,
+            QAid=QAid,
+            question=question,
+            root_dir=root_dir, 
         )
         if mode == "code":
         # 3. overall
             overall_score = (
                 format_weight   * format_score     +
-                usage_weight    * tool_usage_score +
-                execution_weight* exec_score      +
+                usage_weight    * tool_usage_score + # disable toolusage  # 改
+                execution_weight * exec_score      +
+                # think_length_weight * think_length_score +
                 accuracy_weight * accuracy_score
             )
         elif mode == "nl":
-            overall_score = nl_accuracy_weight * accuracy_score + (1 - nl_accuracy_weight) * format_score
+            overall_score = (
+                nl_accuracy_weight * accuracy_score + 
+                # think_length_weight * think_length_score + 
+                # (1 - nl_accuracy_weight - think_length_weight ) * format_score # 改
+                (1 - nl_accuracy_weight) * format_score
+                )
         else:
             overall_score = 0.0
 
@@ -551,7 +603,8 @@ def compute_score(predict_strs: List[str], ground_truths: List[str], format_weig
                 "overall":    overall_score,
                 "format":     format_score,
                 "accuracy":   accuracy_score,
-                "tool_usage": tool_usage_score, # disabled in natural language
+                "tool_usage": tool_usage_score, # disabled in natural language # 改
+                # "think_len": think_length_score,
                 "execution":  exec_score, # disabled in natural language
                 "code_ratio": code_ratio,
                 "nl_ratio":   nl_ratio,

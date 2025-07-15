@@ -349,6 +349,7 @@ class RayPPOTrainer:
         # here reward_score is the `overall score`
         self._maybe_log_val_generations(sample_inputs, sample_outputs, sample_labels, sample_scores)
         reward_score = torch.cat(reward_tensor_lst, dim=0).sum(-1).mean().item()
+        
         # keys for different usage
         ratios         = ["code_ratio", "nl_ratio", "invalid_ratio"]
         overall_keys   = ["overall", "accuracy"]
@@ -359,22 +360,22 @@ class RayPPOTrainer:
         reduced_nl      = reduce_metrics(nl_metrics_all)
         
         overall_dict = {
-                f"val/overall_{k}": v for k, v in reduced_overall.items()
+                f"val/overall_{k}_reward": v for k, v in reduced_overall.items()
                 if k in overall_keys
             }
         # code mode
         code_dict = {
-            f"val/code_{k}": v for k, v in reduced_code.items()
+            f"val/code_{k}_reward": v for k, v in reduced_code.items()
             if k not in ratios
         }
         # nl mode
         nl_dict = {
-            f"val/nl_{k}": v for k, v in reduced_nl.items()
+            f"val/nl_{k}_reward": v for k, v in reduced_nl.items()
             if k not in ratios and k not in code_related
         }
         # ratios
         ratio_dict = {
-            f"val/{k}": reduced_overall.get(k, 0.0) for k in ratios
+            f"val/{k}_reward": reduced_overall.get(k, 0.0) for k in ratios
         }
 
         return {
