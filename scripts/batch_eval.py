@@ -343,85 +343,134 @@ def vllm_inference(
 
     #     with open(os.path.join(output_root, "all_outputs.jsonl"), "a") as f:
     #         f.write(json.dumps({"QAid": sample["QAid"], "response": text}) + "\n")
-            
-    # ---------- 2️⃣ SECOND PASS: EVALUATION & LOGGING ----------
     print("\n*** Stage 2 — evaluation + logging ***")
-    def call_sandbox(code, qid):
-        payload = {"code": code, "timeout": EXECUTION_TIMEOUT_SECONDS, "q_aid": str(qid)}
+
+    def call_sandbox(sample, txt):
+        code = extract_code(txt) or ""
+        payload = {"code": code, "timeout": EXECUTION_TIMEOUT_SECONDS, "q_aid": str(sample["QAid"])}
         try:
             r = requests.post(MARAJO_SANDBOX_URL, json=payload, timeout=EXECUTION_TIMEOUT_SECONDS)
             r.raise_for_status()
             data = r.json()
-            return filter_result(data)             # -> (output_str, has_output_bool)
+            output_str, ok_flag = filter_result(data)
         except Exception as e:
-            return (f"sandbox error: {e}", False)
+            output_str, ok_flag = f"sandbox error: {e}", False
 
+        exe = 1
+        acc = 1 if ok_flag and loose_match(output_str, sample["solution"]) else 0
+        result = output_str
 
-    # split responses
-    code_jobs, nl_jobs = [], []                    # hold indices
-    for idx, (_, txt) in enumerate(gen_outputs):
-        (code_jobs if detect_mode(txt) == "code" else nl_jobs).append(idx)
-    tot = exe_ok = acc_ok = 0
-
-    results = [None] * len(gen_outputs)            # placeholder
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        future2idx = {}
-        for i in code_jobs:
-            code = extract_code(gen_outputs[i][1]) or ""
-            future2idx[pool.submit(call_sandbox, code, gen_outputs[i][0]["QAid"])] = i
-
-        for fut in as_completed(future2idx):
-            idx = future2idx[fut]
-            results[idx] = fut.result()            # (output_str, has_output)
-
-    # ---------- finish NL samples+logging ----------
-    tot = exe_ok = acc_ok = 0
-    for i, (sample, txt) in enumerate(gen_outputs):
-
-        mode = detect_mode(txt)
-        if mode == "code":
-            output, ok_flag = results[i]
-            exe  = 1                                # sandbox ran
-            acc  = 1 if ok_flag and loose_match(output, sample["solution"]) else 0
-            result = output
-        elif mode == "nl":
-            ans = extract_boxed_answer(txt)
-            exe  = 1 if ans else 0
-            acc  = 1 if ans and loose_match(ans, sample["solution"]) else 0
-            result = ans or "FORMAT ERROR: <answer> requires \\boxed{}"
-        else:
-            exe = acc = 0
-            result = "FORMAT ERROR"
-
-        tot += 1; exe_ok += exe; acc_ok += acc
-        exec_acc = (exe_ok / tot, acc_ok / tot)
-
+        # logging
         append_jsonl(
             jsonl_path,
             {
-                "image": sample["image_path"],
-                "question": sample["question"],
+                "image": sample.get("image_path", None),
+                "question": sample.get("question", None),
                 "response": txt,
-                "QAid": sample["QAid"],
-                "GT": sample["solution"],
+                "QAid": sample.get("QAid", None),
+                "GT": sample.get("solution", None),
                 "result": result,
-                "execution_accuracy": exec_acc,
             },
         )
-
         append_markdown(
             md_path,
             {
-                "QAid": sample["QAid"],
-                "question": sample["question"],
-                "gt": sample["solution"],
+                "QAid": sample.get("QAid", None),
+                "question": sample.get("question", None),
+                "gt": sample.get("solution", None),
                 "result": result,
                 "correctness": "True" if acc else "False",
-                "execution_accuracy": exec_acc,
             },
         )
+        return exe, acc
 
-    print("overall execution:", exe_ok / tot, "accuracy:", acc_ok / tot)
+    def call_nl(sample, txt):
+        ans = extract_boxed_answer(txt)
+        exe = 1 if ans else 0
+        acc = 1 if ans and loose_match(ans, sample["solution"]) else 0
+        result = ans or "FORMAT ERROR: <answer> requires \\boxed{}"
+
+        # logging
+        append_jsonl(
+            jsonl_path,
+            {
+                "image": sample.get("image_path", None),
+                "question": sample.get("question", None),
+                "response": txt,
+                "QAid": sample.get("QAid", None),
+                "GT": sample.get("solution", None),
+                "result": result,
+            },
+        )
+        append_markdown(
+            md_path,
+            {
+                "QAid": sample.get("QAid", None),
+                "question": sample.get("question", None),
+                "gt": sample.get("solution", None),
+                "result": result,
+                "correctness": "True" if acc else "False",
+            },
+        )
+        return exe, acc
+
+    def dummy_fail(sample, txt):
+        # invalid
+        result = "FORMAT ERROR"
+        append_jsonl(
+            jsonl_path,
+            {
+                "image": sample.get("image_path", None),
+                "question": sample.get("question", None),
+                "response": txt,
+                "QAid": sample.get("QAid", None),
+                "GT": sample.get("solution", None),
+                "result": result,
+            },
+        )
+        append_markdown(
+            md_path,
+            {
+                "QAid": sample.get("QAid", None),
+                "question": sample.get("question", None),
+                "gt": sample.get("solution", None),
+                "result": result,
+                "correctness": "False",
+            },
+        )
+        return 0, 0
+
+    tot = exe_ok = acc_ok = 0
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        future2idx = {}
+        for idx, (sample, txt) in enumerate(gen_outputs):
+            mode = detect_mode(txt)
+            if mode == "code":
+                future = pool.submit(call_sandbox, sample, txt)
+            elif mode == "nl":
+                future = pool.submit(call_nl, sample, txt)
+            else:
+                future = pool.submit(dummy_fail, sample, txt)
+            future2idx[future] = idx
+
+        for fut in as_completed(future2idx):
+            exe, acc = fut.result()
+            tot += 1
+            exe_ok += exe
+            acc_ok += acc
+
+    # 
+    exec_acc = exe_ok / tot if tot else 0
+    acc = acc_ok / tot if tot else 0
+    stats_path = os.path.join(output_root, "accuracy_log.txt")
+    with open(stats_path, "w") as f:
+        f.write(f"Total samples: {tot}\n")
+        f.write(f"Execution accuracy: {exec_acc:.4f}\n")
+        f.write(f"Final accuracy: {acc:.4f}\n")
+
+    print(f"overall execution: {exec_acc}, accuracy: {acc}")
+
+
 
     # ---------- cleanup ----------
     del llm
@@ -437,7 +486,7 @@ if __name__ == "__main__":
     from datetime import datetime
 
     DELAY_BETWEEN_REQUESTS = 1.0
-    EXECUTION_TIMEOUT_SECONDS = 120
+    EXECUTION_TIMEOUT_SECONDS = 300
     MARAJO_SANDBOX_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
     import argparse
