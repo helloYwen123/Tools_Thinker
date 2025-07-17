@@ -311,7 +311,7 @@ class RayPPOTrainer:
             test_gen_batch, pad_size = pad_dataproto_to_divisor(test_gen_batch, self.actor_rollout_wg.world_size)
             test_output_gen_batch = self.actor_rollout_wg.generate_sequences(test_gen_batch)
             test_output_gen_batch = unpad_dataproto(test_output_gen_batch, pad_size=pad_size)
-    
+
             # Store generated outputs
             output_ids = test_output_gen_batch.batch["responses"]
             output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
@@ -352,7 +352,7 @@ class RayPPOTrainer:
         
         # keys for different usage
         ratios         = ["code_ratio", "nl_ratio", "invalid_ratio"]
-        overall_keys   = ["overall", "accuracy"]
+        overall_keys   = ["accuracy"]
         code_related   = ["tool_usage", "execution"]
 
         reduced_overall = reduce_metrics(overall_metrics_all)
@@ -671,8 +671,11 @@ class RayPPOTrainer:
                         nl_metrics_dict = {f"reward/nl_{k}": v
                                            for k, v in reduced_nl_metrics.items()
                                            if k not in ratios and k not in code_related}
-                        overall_metrics_dict =  {f"reward/overall_{k}": v for k, v in reduced_overall_metrics.items() if k in overall}
-
+                        overall_metrics_dict = {
+                                                f"reward/overall_{k}" if k == "accuracy" else "reward/overall_score": v
+                                                for k, v in reduced_overall_metrics.items()
+                                                if k in overall
+                                            }
                         code_ratio = {f"mode/code_ratio": reduced_overall_metrics.get("code_ratio", 0.0)}
                         nl_ratio = {f"mode/nl_ratio": reduced_overall_metrics.get("nl_ratio", 0.0)}
                         invalid_ratio = {f"mode/invalid_ratio": reduced_overall_metrics.get("invalid_ratio", 0.0)}

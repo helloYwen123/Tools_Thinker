@@ -165,7 +165,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 #                                             toolbox_metadata=filtered_metadata_dict)
                 self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "
                 "Your primary goal is to accurately answer questions about images by choosing the most appropriate method: "
-                "programmatic analysis with Python tools or direct natural language reasoning.")
+                "code reasoning with Python tools or direct natural language reasoning.")
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path

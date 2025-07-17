@@ -105,12 +105,13 @@ class SequentialFunctionRewardManager(FunctionRewardManager):
 
 
 class BatchFunctionRewardManager(FunctionRewardManager):
-    reward_fn: BatchRewardFunction # 函数类型注解
+    reward_fn: BatchRewardFunction #
 
     def compute_reward(self, data: DataProto, step= None, tool: bool = False) -> Tuple[torch.Tensor, Dict[str, List[float]]]:
         response_str, ground_truth, questions, QAids = [], [], [], []
         response_ids = data.batch["responses"]
         response_length = data.batch["response_mask"].sum(dim=-1)
+        index = data.non_tensor_batch["uid"]
         for i in range(len(data)):
             valid_response_ids = response_ids[i][: response_length[i]]
             response_str.append(
@@ -119,9 +120,10 @@ class BatchFunctionRewardManager(FunctionRewardManager):
             ground_truth.append(data.non_tensor_batch["ground_truth"][i])
             questions.append(data.non_tensor_batch["problem"][i])
             QAids.append(data.non_tensor_batch["idx"][i])
+        
         ###############################################
         if tool:
-            scores = self.reward_fn(response_str, ground_truth, step=step, QAids=QAids, questions = questions) # calling reward function
+            scores = self.reward_fn(response_str, ground_truth, index=index ,step=step, QAids=QAids, questions = questions) # calling reward function
         else:
             scores = self.reward_fn(response_str, ground_truth) # calling reward function
         ###############################################    
