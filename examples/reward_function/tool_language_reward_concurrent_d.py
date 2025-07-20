@@ -19,6 +19,7 @@ from typing import Optional
 import faulthandler
 import ast
 import signal
+from collections import defaultdict
 from io import StringIO
 import contextlib
 import multiprocessing
@@ -293,7 +294,7 @@ execution_reward.reward_type = "execution"
 ### Concurrent Batch Execution Reward
 
 def batch_execution_reward(
-    predict_strs, QAids, steps, questions, max_workers=8, root_dir=None
+    predict_strs, QAids, steps, questions, max_workers=12, root_dir=None
 ):
     # need to loop n times
     n = len(predict_strs)
@@ -318,131 +319,124 @@ def batch_execution_reward(
 ###########################
 #### Tool Usage Reward ####
 ###########################
-def tool_usage_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs"):
+def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"):
     """
     Check whether the generated code uses any registered tools:
     - It must import a tool module
     - It must create an instance of a known tool class
     - It must call .execute()
+    Returns:
+        (tool_usage_reward, multi_tool_reward)
     """
+    start_time = time.time()  
     mode = detect_mode(predict_str)
-    start_time = time.time()
-    # Create root log directory path like: .../train/tools_usage/reward/step_2/
-    if root_dir is None:
-        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    split = "validation" if step == "validation" else "train"
-    step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
-    current_time = datetime.now().strftime("%d-%H-%M-%S")
-    if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
-        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/tools_usage/{step_str}")
-        os.makedirs(log_root_dir, exist_ok=True)
+    tool_usage_reward = 0.0
+    multi_tool_reward = 0.0
 
-        # Log file path
-        tool_log_path = os.path.join(log_root_dir, f"toolusage_{current_time}-{QAid}.log")
-    
-    # diasble tool usage reward when NL mode: return 0.0
-    if mode != "code":
-       # nl mode or invalid
-        reward = 0.0
-        if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
-            elapsed_time = time.time() - start_time
-            with open(tool_log_path, "a+") as f:
-                f.write(f"\nQAid:{QAid}\n")
-                f.write("\nnatural language mode or invalid response\n\n")
-                f.write(f"\ncompletion Content: \n{predict_str}\n")
-                f.write(f"\n[execution time] {elapsed_time:.2f}s\n")
-                f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
-        return reward
-    
-    # Define tool module and class mapping
+    # Tool registry
     tool_modules = {
         'object_detector': 'Object_Detector_Tool',
         'text_detector': 'Text_Detector_Tool',
         'depth_estimator': 'Depth_Estimator_Tool',
         'segmenter': 'Segmenter_Tool',
-        'matcher': 'Matcher_Tool'
+        'matcher': 'Matcher_Tool',
+        "advanced_detector": "Advanced_Object_Detector_Tool",
     }
 
     def extract_code(completion):
         match = re.search(r"<code>(.*?)</code>", completion, re.DOTALL)
-        if match:
-            return match.group(1)
-        else:
-            raise ValueError("No <code>...</code> block found in the completion.")
+        return match.group(1) if match else completion
 
-    reward = 0.0
+    current_time = datetime.now().strftime("%d-%H-%M-%S")
+    split = "validation" if step == "validation" else "train"
+    step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
+    log_root_dir = None
+    if root_dir and ((isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0)):
+        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/tools_usage/{step_str}")
+        os.makedirs(log_root_dir, exist_ok=True)
+        log_path = os.path.join(log_root_dir, f"rewardlog_{current_time}-{QAid}.log")
+
+    if mode != "code":
+        if log_root_dir:
+            with open(log_path, "a+") as f:
+                f.write(f"\nQAid: {QAid}\n")
+                f.write("[Mode]: Natural Language or Invalid\n")
+                f.write(f"\nCompletion:\n{predict_str}\n")
+                f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
+        return 0.0, 0.0
 
     try:
-        execute_found = False
-        imported_modules = set()
-        used_tool_classes = set()
-        
         code = extract_code(predict_str)
         tree = ast.parse(code)
 
+        imported_modules = set()
+        used_tool_classes = set()
+        execute_found = False
+        var_to_tool_class = {}
+        tools_used = set()
+
         for node in ast.walk(tree):
-            # import module
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     if alias.name in tool_modules:
                         imported_modules.add(alias.name)
 
-            # from module import ToolClass
             elif isinstance(node, ast.ImportFrom):
                 if node.module in tool_modules:
                     for alias in node.names:
                         if alias.name == tool_modules[node.module]:
                             imported_modules.add(node.module)
 
-            # tool class instantiation
-            elif isinstance(node, ast.Call):
-                if isinstance(node.func, ast.Name):
-                    if node.func.id in tool_modules.values():
-                        used_tool_classes.add(node.func.id)
+            elif isinstance(node, ast.Assign):
+                if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name):
+                    class_name = node.value.func.id
+                    if class_name in tool_modules.values():
+                        for target in node.targets:
+                            if isinstance(target, ast.Name):
+                                var_to_tool_class[target.id] = class_name
+                                used_tool_classes.add(class_name)
 
-                elif isinstance(node.func, ast.Attribute):
+            elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                if node.func.attr == "execute":
+                    execute_found = True
                     if isinstance(node.func.value, ast.Name):
-                        mod = node.func.value.id
-                        cls = node.func.attr
-                        if mod in tool_modules and tool_modules[mod] == cls:
-                            used_tool_classes.add(cls)
+                        var_name = node.func.value.id
+                        if var_name in var_to_tool_class:
+                            tools_used.add(var_to_tool_class[var_name])
 
-                    # check for .execute()
-                    if node.func.attr == "execute":
-                        execute_found = True
+        for mod, cls in tool_modules.items():
+            if mod in imported_modules and cls in used_tool_classes and execute_found:
+                tool_usage_reward = 1.0
+                break
 
-        # Reward only if all conditions are met
-        if execute_found and used_tool_classes and imported_modules:
-            # Match class usage with correct import
-            for mod, cls in tool_modules.items():
-                if mod in imported_modules and cls in used_tool_classes:
-                    reward = 1.0
-                    break
+        tool_count = len(tools_used)
+        if tool_count == 2:
+            multi_tool_reward = 0.1
+        elif tool_count >= 3:
+            multi_tool_reward = 0.3
 
-        if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
+        if log_root_dir:
             elapsed_time = time.time() - start_time
-            with open(tool_log_path, "a+") as f:
-                f.write(f"\n[QAid]{QAid}\n")
-                if execute_found:
-                    f.write("\n[Code Includes Tools Usage]\n")
-                else:
-                    f.write("\n[Code does not include Tools Usage]\n")
-                f.write(f"prediction: \n{predict_str}\n")
-                f.write(f"\n[execution time] {elapsed_time:.2f}s\n")
+            with open(log_path, "a+") as f:
+                f.write(f"\n[QAid]: {QAid}\n")
+                f.write(f"[tool_usage_reward]: {tool_usage_reward}\n")
+                f.write(f"[multi_tool_reward]: {multi_tool_reward}\n")
+                f.write(f"[Tools Used]: {list(tools_used)}\n")
+                f.write(f"[Execution Time]: {elapsed_time:.2f}s\n")
+                f.write(f"[Code]:\n{predict_str}\n")
                 f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
 
     except Exception as e:
-        if (isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0):
-            elapsed_time = time.time() - start_time
-            with open(tool_log_path, "a+") as f:
-                f.write(f"\nQAid:{QAid}\n")
-                f.write("\nCode Extraction Failed or Parse Failed\n\n")
+        if log_root_dir:
+            with open(log_path, "a+") as f:
+                f.write(f"\n[QAid]: {QAid}\n")
+                f.write("[Error]: Code parse failed\n")
                 f.write(str(e) + "\n")
-                f.write(f"\nCompletion Content: \n{predict_str}\n")
-                f.write(f"\n[execution time] {elapsed_time:.2f}s\n")
+                f.write(f"\n[Completion]:\n{predict_str}\n")
                 f.write("\n" + "=" * 30 + " END " + "=" * 30 + "\n\n")
 
-    return reward
+    return tool_usage_reward, multi_tool_reward
+
 
 ###############################
 #### Thinking Length Reward ###
@@ -478,26 +472,36 @@ def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/l
 #### diversity reward ####
 ##########################
 def diversity_scaling(modes: List[str], uid_list):
-    id2pos: dict[str, list[int]] = defaultdict(list)
+    id2pos: dict[str, List[int]] = defaultdict(list)
     for pos, uid in enumerate(uid_list):
         id2pos[uid].append(pos)
-
-    scales = [1.0e6] * len(modes)
-    for pos_list in id2pos.values(): # group position index
-        if len(pos_list) == 1:
-            continue
-        scale_step = 1.0 / ((len(pos_list) - 1.0) + 1.0e-6)
-        count = defaultdict(float)
+##########################
+    id2pos_log_path = "uid_logs.jsonl"
+    if id2pos_log_path:
+        with open(id2pos_log_path, "a") as f:
+            json.dump(id2pos, f)
+            f.write("\n")
+##########################P            
+    scales = [0.0] * len(modes)
+    for pos_list in id2pos.values():  # group position index
+        valid_pos = []
         for p in pos_list:
             if modes[p] != "invalid":
-                count[modes[p]] +=  scale_step
+                valid_pos.append(p)
+        code_count = sum(modes[p] == "code" for p in valid_pos)
+        nl_count   = sum(modes[p] == "nl"   for p in valid_pos)
+        if len(valid_pos) <= 4: # or abs(code_count - nl_count) < 4: # or abs(code_count - nl_count) == 8:
+             continue
+        
+        scale_step = 1.0 / ((len(valid_pos) - 1.0) + 1.0e-6)
+        count = defaultdict(float)
+        for p in valid_pos:
+            count[modes[p]] += scale_step
 
-        for p in pos_list:
-            mode = modes[p]
-            if mode != "invalid":
-                scales[p] = count[mode] - scale_step
+        for p in valid_pos:
+            scales[p] = count[modes[p]] - scale_step
 
-    return scales
+    return scales # (1, seq_len)
 #######################
 #### Format Reward ####
 #######################
@@ -590,11 +594,12 @@ def compute_score(
         QAid         = QAids[i]
         question     = questions[i]
         mode         = modes[i]
+        scale        = scales[i]
         # execution_scores[i]： (reward, exec_output or None)
         exec_score, exec_output = exec_reward[i]
 
         format_score = format_reward(predict_str, step, QAid, root_dir=root_dir)
-        tool_usage_score = tool_usage_reward(predict_str, step, QAid, root_dir=root_dir)
+        tool_usage_score, multi_tools_usage_score = tool_usage_reward(predict_str, step, QAid, root_dir=root_dir)
         # think_length_score = think_length_reward(predict_str, step, QAid, root_dir=root_dir) # 改
         accuracy_score = accuracy_reward(
             exec_output,
@@ -605,22 +610,23 @@ def compute_score(
             question=question,
             root_dir=root_dir, 
         )
-        if mode == "code":
         # 3. overall
+        if mode == "code":
             overall_score = (
                 format_weight   * format_score     +
                 usage_weight    * tool_usage_score + # disable toolusage  # 改
                 execution_weight * exec_score      +
                 # think_length_weight * think_length_score +
-                accuracy_weight * accuracy_score
-            ) / (1 + scales[i])
+                accuracy_weight * accuracy_score   +
+                multi_tools_usage_score
+            ) / (1 + scale)
         elif mode == "nl":
             overall_score = (
                 nl_accuracy_weight * accuracy_score + 
-                # think_length_weight * think_length_score + 
-                # (1 - nl_accuracy_weight - think_length_weight ) * format_score # 改
+                # think_length_weight * think_length_score +   # 改
+                # (1 - nl_accuracy_weight - think_length_weight ) * format_score 
                 (1 - nl_accuracy_weight) * format_score
-                ) / (1 + scales[i])
+                ) / (1 + scale)
         else:
             overall_score = 0.0
 
@@ -630,12 +636,14 @@ def compute_score(
                 "format":     format_score,
                 "accuracy":   accuracy_score,
                 "tool_usage": tool_usage_score, # disabled in natural language # 改
+                "multi_tools": multi_tools_usage_score,
                 # "think_len": think_length_score,
                 "execution":  exec_score, # disabled in natural language
                 "code_ratio": code_ratio,
                 "nl_ratio":   nl_ratio,
                 "invalid_ratio": invalid_ratio,
                 "mode": mode,
+                "diversity_scale" : scale,
             }
         )
     return scores

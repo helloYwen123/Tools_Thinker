@@ -1,7 +1,7 @@
 set -x
 
 export WANDB_API_KEY=2d883ab1037c7c4b261d54b523c3515fa87dde91
-MODEL_PATH=/workspace/models/sft/tools_nl_0.1 #/workspace/ywen_ws/saved_model/tool_thinker-0.1 #Qwen/Qwen2.5-VL-7B-Instruct 
+MODEL_PATH=/workspace/models/sft/tools_nl_0.2 #/workspace/ywen_ws/saved_model/tool_thinker-0.1 #Qwen/Qwen2.5-VL-7B-Instruct 
 # replace it with your local file path
 
 timestamp=$(date +"%m%d_%H%M%S")

@@ -351,7 +351,7 @@ class RayPPOTrainer:
         reward_score = torch.cat(reward_tensor_lst, dim=0).sum(-1).mean().item()
         
         # keys for different usage
-        ratios         = ["code_ratio", "nl_ratio", "invalid_ratio"]
+        ratios         = ["code_ratio", "nl_ratio", "invalid_ratio", "diversity_scale_dict"]
         overall_keys   = ["accuracy"]
         code_related   = ["tool_usage", "execution"]
 
@@ -375,15 +375,21 @@ class RayPPOTrainer:
         }
         # ratios
         ratio_dict = {
-            f"val/{k}_reward": reduced_overall.get(k, 0.0) for k in ratios
+            f"val/{k}": reduced_overall.get(k, 0.0) for k in ratios
         }
 
+        diversity_scale_dict = {
+            f"val/{k}": reduced_overall.get(k, 0.0)
+            for k in ratios
+            if k == "diversity_scale"
+        }
         return {
             "val/reward_score": reward_score,
             **overall_dict,
             **code_dict,
             **nl_dict,
             **ratio_dict,
+            **diversity_scale_dict,
         }
 
     def init_workers(self) -> None:
@@ -659,7 +665,7 @@ class RayPPOTrainer:
                         code_metrics, nl_metrics = self._split_metrics_by_mode(reward_metrics, modes)
                         
                         # metrics names
-                        ratios = ["code_ratio", "nl_ratio", "invalid_ratio"]
+                        ratios = ["code_ratio", "nl_ratio", "invalid_ratio","diversity_scale"]
                         overall = ["overall", "accuracy"]
                         code_related = ["tool_usage", "execution"]
 
@@ -676,10 +682,11 @@ class RayPPOTrainer:
                                                 for k, v in reduced_overall_metrics.items()
                                                 if k in overall
                                             }
+
                         code_ratio = {f"mode/code_ratio": reduced_overall_metrics.get("code_ratio", 0.0)}
                         nl_ratio = {f"mode/nl_ratio": reduced_overall_metrics.get("nl_ratio", 0.0)}
                         invalid_ratio = {f"mode/invalid_ratio": reduced_overall_metrics.get("invalid_ratio", 0.0)}
-                        
+                        diversity_scale = {f"mode/diversity_scale": reduced_overall_metrics.get("diversity_scale", 0.0)}
                         # update
                         metrics.update(overall_metrics_dict)
                         metrics.update(code_metrics_dict)
@@ -687,6 +694,7 @@ class RayPPOTrainer:
                         metrics.update(code_ratio)
                         metrics.update(nl_ratio)
                         metrics.update(invalid_ratio)
+                        metrics.update(diversity_scale)
                         
                         # apply kl penalty if available
                         if not self.config.algorithm.use_kl_loss and self.use_reference_policy:

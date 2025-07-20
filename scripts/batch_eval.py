@@ -441,7 +441,7 @@ def vllm_inference(
         return 0, 0
 
     tot = exe_ok = acc_ok = 0
-    with ThreadPoolExecutor(max_workers=6) as pool:
+    with ThreadPoolExecutor(max_workers=4) as pool:
         future2idx = {}
         for idx, (sample, txt) in enumerate(gen_outputs):
             mode = detect_mode(txt)
