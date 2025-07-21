@@ -103,7 +103,6 @@ class Text_Detector_Tool(BaseTool):
                 reader = self.build_tool(languages)
                 if reader is None:
                     raise ValueError("Failed to build the OCR tool.")
-                image = self.preprocess_image(image)
                 result = reader.readtext(image, **kwargs)
                 try:
                     # detail = 1: Convert numpy types to standard Python types
