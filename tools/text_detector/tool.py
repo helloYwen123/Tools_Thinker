@@ -69,6 +69,7 @@ class Text_Detector_Tool(BaseTool):
         except Exception as e:
             print(f"Error building the OCR tool: {e}")
             return None
+        
     def preprocess_image(self, image_path):
         img = cv2.imread(image_path)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -81,7 +82,7 @@ class Text_Detector_Tool(BaseTool):
         resized = cv2.resize(bin_img, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
         return resized
     
-    def execute(self, image, languages=None, max_retries=10, retry_delay=5, clear_cuda_cache=False, **kwargs):
+    def execute(self, image, languages=None, max_retries=10, preprocessing= False, retry_delay=5, clear_cuda_cache=False,**kwargs):
         """
         Executes the OCR tool to detect text in the provided image.
 
@@ -92,7 +93,6 @@ class Text_Detector_Tool(BaseTool):
             retry_delay (int): Delay in seconds between retry attempts.
             clear_cuda_cache (bool): Whether to clear CUDA cache on out-of-memory errors.
             **kwargs: Additional keyword arguments for the OCR reader.
-
         Returns:
             list: A list of detected text blocks.
         """
@@ -103,6 +103,10 @@ class Text_Detector_Tool(BaseTool):
                 reader = self.build_tool(languages)
                 if reader is None:
                     raise ValueError("Failed to build the OCR tool.")
+                if preprocessing:
+                    image = self.preprocess_image(image)
+                else:
+                    image = cv2.imread(image)
                 result = reader.readtext(image, **kwargs)
                 try:
                     # detail = 1: Convert numpy types to standard Python types
@@ -167,14 +171,14 @@ if __name__ == "__main__":
 
     # Construct the full path to the image using the script's directory
     # relative_image_path = "examples/chinese_tra.jpg"
-    # relative_image_path = "examples/chinese.jpg"
-    relative_image_path = "./examples/english.png"
+    relative_image_path = "examples/chinese.jpg"
+    # relative_image_path = "./examples/english.png"
     image_path = os.path.join(script_dir, relative_image_path)
 
     # Execute the tool
     try:
-        execution = tool.execute(image=image_path, languages=['en'], detail=0)
-        # execution = tool.execute(image=image_path, languages=["en", "ch_tra"])
+        # execution = tool.execute(image=image_path, languages=['en'],)
+        execution = tool.execute(image='/nfs/data8/liao/wxie/datasets/RealWorld/images/320.png', languages=["en"])
         # execution = tool.execute(image=image_path, languages=["ch_tra"])
         print(json.dumps(execution))
 

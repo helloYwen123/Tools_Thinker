@@ -95,7 +95,7 @@ class Depth_Estimator_Tool(BaseTool):
 
             # iterate over image_path
             for k, filename in enumerate(image_path):
-                print(f'Processing image {k+1}/{len(image_path)}: {filename}')
+                # print(f'Processing image {k+1}/{len(image_path)}: {filename}')
                 raw_image = cv2.imread(filename)
                 print(f"raw_image shape: {raw_image.shape}")
                 if raw_image is None:
@@ -119,9 +119,9 @@ class Depth_Estimator_Tool(BaseTool):
                     cv2.imwrite(output_filename, depth)
                     
                 image_results[filename] = {
-                    "depth_map": depth,
-                    "output_image_path": output_filename,
-                    "npy_path": npy_path
+                "depth_map": depth,
+                "output_image_path": output_filename,
+                "npy_path": npy_path
                 }
             # print(f"results: {list(image_results.values())[0].shape}")
             
@@ -161,7 +161,6 @@ class Depth_Estimator_Tool(BaseTool):
                 npy_path = os.path.join(outdir, f"{base_name}_depth.npy")
                 np.save(npy_path, depth_np)
                 
-
                 # Save depth image
                 output_filename = None
                 if output:
@@ -171,7 +170,7 @@ class Depth_Estimator_Tool(BaseTool):
                 image_results[filename] = {
                     "depth_map": depth_metric,
                     "output_image_path": output_filename,
-                    "npy_path": npy_path
+                    "npy_path": npy_path,
                 }
                 return image_results
             
@@ -216,6 +215,6 @@ if __name__ == '__main__':
         print(f"Image {key}: depth map shape: {depth_img['depth_map'].shape}")
         print("min/max:", depth_img['depth_map'].min(), depth_img['depth_map'].max())
         
-        depth_map = np.load(key)
+        depth_map = np.load(depth_img['npy_path'])
         print(f"depth map size: {depth_map.shape}.")
         

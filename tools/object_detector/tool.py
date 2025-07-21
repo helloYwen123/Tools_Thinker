@@ -25,21 +25,17 @@ class Object_Detector_Tool(BaseTool):
         super().__init__(
             tool_module_name="object_detector",
             tool_class_name="Object_Detector_Tool",
-            tool_description="A tool that detects objects in an image using the Grounding DINO model, optionally saves individual object images and exports detection outputs as a JSON file.",
-            tool_version="1.0.0",
+            tool_description="A tool that detects objects in an image, optionally saves individual object images and exports detection outputs as a JSON file.",
             input_types={
                 "image": "str - The path to the image file.",
                 "labels": "list[str] - A list of object labels to detect.",
-                "threshold": "float - The confidence threshold for detection (default: 0.35).",
-                "model_size": "str - The size of the model to use ('tiny' or 'base', default: 'tiny').",
                 "save_object": "bool - Whether to save the detected objects as images (default: False).",
                 "saved_image_path": "str - The path to save the detected object images (default: 'detected_objects').",
                 "save_json": "bool - Whether to save detection results as a JSON file (default: False).",
                 "json_path": "str - The file path to save the JSON results if `save_json` is True (default: 'detection_results.json')."
             },
             output_types = "dict - A dictionary mapping each detected label to a list of detection entries. \
-            (1) a dictionary mapping each detected label to a list of detection entries,\
-            e.g. {'baseball': [{'box': (x1, y1, x2, y2), 'score': 0.95, 'saved_image_path': 'path/to/saved/image.png'}, ...]} ",
+            a dictionary mapping each detected label to a list of detection entries containing bounding boxes(xyxy format),confidence score, saved image path, and cropped object images in PIL)",
             demo_commands = [
                 {
                     "command": """
@@ -48,14 +44,14 @@ class Object_Detector_Tool(BaseTool):
                     """,
                     "description": (
                         "Detects 'baseball' and 'basket' in the image. Returns a dictionary mapping each detected label to a list of detection entries.: "
-                        "(1) a dict mapping each label to a list of detection results (each with box, score, and optionally saved image path)"
+                        "(1) a dict mapping each label to a list of detection results (each with box, score, cropped object images, optionally saved image paths and json files)"
                         "If 'save_object' is True, detected objects are cropped and saved to the specified directory."
                         "If 'save_json' is True, detection results are saved as JSON to 'detected_objects/results.json'."
                     ),
                     "output_example": """
                         detected_objects: {
-                        'baseball': [{'box': (34, 50, 200, 220), 'score': 0.92, 'saved_image_path': 'detected_objects/image_baseball_1.png'}],
-                        'basket': [{'box': (220, 100, 400, 350), 'score': 0.85, 'saved_image_path': 'detected_objects/image_basket_1.png'}]
+                        'baseball': [{'box': (34, 50, 200, 220), 'score': float, 'saved_image_path': str}],
+                        'basket': [{'box': (220, 100, 400, 350), 'score': float, 'saved_image_path': str}]
                         }
                     """
                 }
@@ -95,7 +91,7 @@ class Object_Detector_Tool(BaseTool):
         padded_image.save(save_path)
         return save_path
 
-    def execute(self, image, labels, threshold=0.35, model_size='tiny', max_retries=10, retry_delay=2, 
+    def execute(self, image, labels,threshold = 0.35, model_size='base', max_retries=10, retry_delay=2, 
             clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images",
             save_json=False, json_path="./detection_results.json"):
         
@@ -133,14 +129,13 @@ class Object_Detector_Tool(BaseTool):
                     
                     if label not in grouped_results:
                         grouped_results[label] = []
-
+                       
                     grouped_results[label].append({
                         "box": box,
                         "score": score,
-                        "saved_image_path": save_path
+                        "saved_image_path": save_path,
                     })
 
-                # 新增保存 json 功能
                 if save_json:
                     os.makedirs(os.path.dirname(json_path), exist_ok=True)
                     grouped_results_for_json = {
@@ -175,7 +170,7 @@ class Object_Detector_Tool(BaseTool):
                 break
         
         print(f"Failed to detect objects after {max_retries} attempts.")
-        return []
+        return {} #  [] -> {} 改！
 
     def get_metadata(self):
         metadata = super().get_metadata()
@@ -203,20 +198,14 @@ if __name__ == "__main__":
     # Construct the full path to the image using the script's directory
     relative_image_path = "examples/baseball.png"
     image_path = os.path.join(script_dir, relative_image_path)
-
+    image_path = "/home/stud/wxie/SAT/SAT_images_train/45_0.png"
     # Execute the tool
     try:
-        objs = tool.execute(image=image_path, labels=["baseball"], save_object=True, save_json=True, saved_image_path="detected_objects",model_size='tiny')
+        detected_objects = tool.execute(image=image_path, labels=["painting"], save_object=True, save_json=False, saved_image_path="detected_objects",model_size='base')
         print("Detected Objects:")
-        for label, entries in objs.items():
-            print(f"Label: {label}")
-            for i, data in enumerate(entries):
-                print(f"  Detection {i + 1}:")
-                print(f"    Confidence: {data['score']}")
-                print(f"    Bounding box: {data['box']}")
-                print(f"    Saved image path: {data['saved_image_path']}")
-            # print(f"  Total detections for {label}: {labels_num[label]}")
-
+        for key, value in detected_objects.items():
+            print(f"key:{key}, num: {len(value)}\n")
+            print(str(value))
     except ValueError as e: 
         print(f"Execution failed: {e}")
 

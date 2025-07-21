@@ -159,17 +159,18 @@ class Segmenter_Tool(BaseTool):
                     box= input_boxes,
                     multimask_output=False,
                 )
-                print(f"final masks: {masks.shape}")
+                # print(f"final masks: {masks.shape}")
                 if len(masks.shape) == 3:
                     masks = masks[np.newaxis, ...]
                 final_masks = []
-                final_masks.append(masks)  # shape: (1, H, W)
+                final_masks.append(masks)  # shape: (1, 1, H, W)
             #### saved file path ####
-            mask_arr = final_masks[0]
-            base = os.path.splitext(os.path.basename(prompt["image_path"]))[0]
-            mask_path = os.path.join(save_dir, f"{base}_mask.npy")
-            np.save(mask_path, mask_arr)
-            mask_dict[mask_path] = mask_arr
+            for idx, single_mask in enumerate(final_masks):
+                base = os.path.splitext(os.path.basename(prompt["image_path"]))[0]
+                mask_name = f"{base}_mask_{idx}.npy"
+                mask_path = os.path.join(save_dir, mask_name)
+                np.save(mask_path, single_mask)
+                mask_dict[prompt["image_path"]] = {"mask": single_mask, 'npy_path': mask_path}
             #### saved file path ####
             return mask_dict
         else:
@@ -197,6 +198,7 @@ class Segmenter_Tool(BaseTool):
             predictor = self.build_tool(model_size=model_size)        
             # create a batch of images features   
             predictor.set_image_batch(image_batch)
+            
             if prompt_type == "boxes":
                 # create a batch of masks
                 masks, scores_batch, _ = predictor.predict_batch(
@@ -209,7 +211,7 @@ class Segmenter_Tool(BaseTool):
                     final_masks.append(mask)
                 # final_masks = np.array(final_masks)
                 # print(f"final_masks shape: {final_masks.shape}") # here can't not unify the shape of each layer mask
-            
+
             if prompt_type == "points":
                 # Select the best single mask per object
                 final_masks = []
@@ -217,7 +219,7 @@ class Segmenter_Tool(BaseTool):
                     points_batch, labels_batch, box_batch=None, multimask_output=True
                     )
                 masks_batch = np.array(masks_batch)
-                # here masks_batch shape is (M ,O ,1 ,H ,W) 
+                # here masks_batch shape is (M ,O ,1 ,H ,W)
                 # where N is the number of masks, M is the number of images, O is the number of objects for corresponding image
                 for masks, scores in zip(masks_batch, scores_batch):
                     best_mask_idx = np.argmax(scores, axis=-1)
@@ -225,24 +227,23 @@ class Segmenter_Tool(BaseTool):
                     if len(selected_mask.shape) == 3:
                         selected_mask = selected_mask[np.newaxis, ...]
                     final_masks.append(selected_mask)
-                    
             for mask in final_masks:
-                print(f"every{mask.shape}") # one mask for one image
-                
-            for prompt, mask_arr in zip(input_prompts, final_masks):
+                print(f"every{mask.shape}")
+
+            for idx, (prompt, final_mask) in enumerate(zip(input_prompts, final_masks)):
                 base = os.path.splitext(os.path.basename(prompt["image_path"]))[0]
-                mask_path = os.path.join(save_dir, f"{base}_mask.npy")
-                np.save(mask_path, mask_arr)
-                mask_dict[mask_path] = mask_arr
+                mask_name = f"{base}_mask_{idx}.npy"
+                mask_path = os.path.join(save_dir, mask_name)
+                np.save(mask_path, final_mask)
+                mask_dict[prompt["image_path"]] = {"mask": final_mask, 'npy_path': mask_path}
 
             return mask_dict
         
     def get_metadata(self):
         metadata = super().get_metadata()
-        return metadata   
+        return metadata
     
 if __name__ == '__main__':
-    import numpy as np
     np.random.seed(3)
     def save_mask(mask, save_path, random_color=False, borders=True):
         """
@@ -289,22 +290,20 @@ if __name__ == '__main__':
 
     #     print("Returned masks for point-based input:")
     #     for path, mask_arr in masks_points.items():
-    #         print(f"Result shape: {mask_arr.shape}")  # e.g. (N, 1, H, W)
+    #         print(f"Result shape: {mask_arr["mask"].shape}")  # e.g. (N, 1, H, W)
     #         print(f"Returned mask's type is {type(masks_points)}")
 
-    #         for obj_idx, obj_mask in enumerate(mask_arr):
+    #         for obj_idx, obj_mask in enumerate(mask_arr["mask"]):
     #             single = np.squeeze(obj_mask, axis=0)  # (1, H, W) → (H, W)
     #             save_path = f"./saved_masks/mask_point_{obj_idx}.png"
     #             os.makedirs(os.path.dirname(save_path), exist_ok=True)
     #             save_mask(single, save_path, borders=True)
     #             print(f"Saved: {save_path}")
-                
-    #         mask = np.load(path)
-    #         print(f"mask npy size:{mask.shape}.")
+
     # except Exception as e:
     #     print("Error in point-based segmentation for a single image:", e)
 
-###################PASS single image + Input(boxes)######################## 
+####################PASS single image + Input(boxes)######################## 
     # single_box_input = [
     #     {
     #         "image_path": "./examples/images/truck.jpg",
@@ -327,65 +326,60 @@ if __name__ == '__main__':
 
     #     print("Returned masks for box-based input:")
     #     for path, mask_arr in masks_boxes.items():
-    #         print(f"Result shape: {mask_arr.shape}")  # (N, 1, H, W)
+    #         print(f"Result shape: {mask_arr["mask"].shape}")  # (N, 1, H, W)
             
-    #         for obj_idx, obj_mask in enumerate(mask_arr):
+    #         for obj_idx, obj_mask in enumerate(mask_arr["mask"]):
     #             single = np.squeeze(obj_mask, axis=0)  # (H, W)
     #             save_path = f"./saved_masks/mask_box_{obj_idx}.png"
     #             os.makedirs(os.path.dirname(save_path), exist_ok=True)
     #             save_mask(single, save_path, borders=True)
-    #         mask = np.load(path)
-    #         print(f"mask npy size:{mask.shape}.")
+
     # except Exception as e:
     #     print("Error in box-based segmentation for a single image:", e)
 
-# ################## 
-#     # # Pass image batch , based on bbx
-#     multi_box_input = [
-#         {
-#             "image_path": "./examples/images/truck.jpg",
-#             "input_box": [
-#                 [75, 275, 1725, 850],
-#                 [425, 600, 700, 875],
-#                 [1375, 550, 1650, 800],
-#                 [1240, 675, 1400, 750],
-#             ]
-#         },
-#         {
-#             "image_path": "./examples/images/groceries.jpg",
-#             "input_box": [
-#                 [450, 170, 520, 350],
-#                 # [350, 190, 450, 350],
-#                 # [500, 170, 580, 350],
-#                 # [580, 170, 640, 350],
-#             ]
-#         }
-#     ]
-#     print("\nTesting multiple images with box-based input:")
-#     try:
-#         masks_multi_boxes = segmenter_tool.execute(
-#             prompt_type='boxes',
-#             input_prompts=multi_box_input,
-#             model_size=model_size
-#         )
-#         print("Returned masks for multiple images with box-based input:")
-#         print(masks_multi_boxes)
-#         print(f"Returned mask's type is {type(masks_multi_boxes)}")
+################## 
+    # Pass image batch , based on bbx
+    multi_box_input = [
+        {
+            "image_path": "./examples/images/truck.jpg",
+            "input_box": [
+                [75, 275, 1725, 850],
+                [425, 600, 700, 875],
+                [1375, 550, 1650, 800],
+                [1240, 675, 1400, 750],
+            ]
+        },
+        {
+            "image_path": "./examples/images/truck.jpg",
+            "input_box": [
+                [450, 170, 520, 350],
+                # [350, 190, 450, 350],
+                # [500, 170, 580, 350],
+                # [580, 170, 640, 350],
+            ]
+        }
+    ]
+    print("\nTesting multiple images with box-based input:")
+    try:
+        masks_multi_boxes = segmenter_tool.execute(
+            prompt_type='boxes',
+            input_prompts=multi_box_input,
+            model_size=model_size
+        )
+        print("Returned masks for multiple images with box-based input:")
+        print(masks_multi_boxes)
+        print(f"Returned mask's type is {type(masks_multi_boxes)}")
 
-#         # --- ---
-#         for idx, (mask_path, mask_arr) in enumerate(masks_multi_boxes.items()):
+        # --- ---
+        for idx, (image_path, mask_arr) in enumerate(masks_multi_boxes.items()):
+            # save_mask(mask, path, borders=True)
+            for obj_idx, obj_mask in enumerate(mask_arr["mask"]):
+                single = np.squeeze(obj_mask, axis=0)  # 去掉通道维 (1,H,W) → (H,W)
+                png_path =  save_path = "./saved_masks/mask_box" + f"_{obj_idx}.png" # save mask as `png`
+                save_mask(single, png_path, borders=True)
+            print(f"Saved visual mask to {png_path}")
 
-#             # save_mask(mask, path, borders=True)
-#             for obj_idx, obj_mask in enumerate(mask_arr):
-#                 single = np.squeeze(obj_mask, axis=0)  # 去掉通道维 (1,H,W) → (H,W)
-#                 png_path = f"./saved_masks/mask_box_{obj_idx}.png"
-#                 # save mask as `png`
-#                 os.makedirs(os.path.dirname(png_path), exist_ok=True)
-#                 save_mask(single, png_path, borders=True)
-#             print(f"Saved visual mask to {png_path}")
-#             mask = np.load(mask_path)
-#             print(f"mask npy size:{mask.shape}.")
-#     except Exception as e:
-#         print("Error in box-based segmentation for multiple images:", e)
+    except Exception as e:
+        print("Error in box-based segmentation for multiple images:", e)
 
     print("\nAll tests completed.")
