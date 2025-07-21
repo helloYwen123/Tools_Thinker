@@ -56,7 +56,7 @@ class Advanced_Object_Detector_Tool(BaseTool):
             }
         )
         # self.DINO_KEY = os.environ.get("DINO_KEY") # Replace with your actual API key
-        self.DINO_KEY = "5cf9118fa07590654271566b4599070f"
+        self.DINO_KEY = ""
         self.client = Client(Config(self.DINO_KEY))
         self.output_dir = None
 
@@ -94,7 +94,7 @@ class Advanced_Object_Detector_Tool(BaseTool):
         },
         "targets": ["bbox"],
         "bbox_threshold": threshold,
-        "iou_threshold": 0.8
+        "iou_threshold": 0.5
         })
         task.set_request_timeout(10)
 
@@ -152,7 +152,6 @@ class Advanced_Object_Detector_Tool(BaseTool):
         return metadata
 
 if __name__ == "__main__":
-
     tool = Advanced_Object_Detector_Tool()
     metadata = tool.get_metadata()
 
@@ -169,7 +168,6 @@ if __name__ == "__main__":
             print(f"    Bounding box: {entry['box']}")
             print(f"    Saved image path: {entry.get('saved_path', 'N/A')}")
         # print(f"  Total detections for {label}: {object_counts[label]}")
-
 
     # Save overlay visualizations
     # Save structured results to JSON (as string, quick version)
