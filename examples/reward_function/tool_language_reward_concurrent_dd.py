@@ -470,37 +470,50 @@ def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/l
 ##########################
 #### diversity reward ####
 ##########################
-def diversity_scaling(modes: List[str], uid_list):
+def diversity_scaling(
+    modes: List[str],
+    uid_list: List[str],
+    base_scores: List[float],
+    min_group_size: int = 2
+) -> List[float]:
+    """
+    对同一 UID 内部：
+    1. 先找 base_score 最大的 response,取其 mode 作为该 UID 的代表 mode。
+       - 多个并列最大时，保留最小索引(即第一个出现)的 mode。
+    2. 只对“代表 mode” 这一类 response 累积 scale:
+         0, step, 2*step, …，其中 step = 1 / (cnt-1)
+       其余 mode 不惩罚。
+    """
+    from collections import defaultdict
+
+    # 1. 建立 uid -> 位置索引列表
     id2pos: dict[str, List[int]] = defaultdict(list)
     for pos, uid in enumerate(uid_list):
         id2pos[uid].append(pos)
-##########################
-    id2pos_log_path = "uid_logs.jsonl"
-    if id2pos_log_path:
-        with open(id2pos_log_path, "a") as f:
-            json.dump(id2pos, f)
-            f.write("\n")
-##########################P            
+
     scales = [0.0] * len(modes)
-    for pos_list in id2pos.values():  # group position index
-        valid_pos = []
-        for p in pos_list:
-            if modes[p] != "invalid":
-                valid_pos.append(p)
-        code_count = sum(modes[p] == "code" for p in valid_pos)
-        nl_count   = sum(modes[p] == "nl"   for p in valid_pos)
-        if len(valid_pos) <= 4: # or abs(code_count - nl_count) < 4: # or abs(code_count - nl_count) == 8:
-             continue
-        
-        scale_step = 1.0 / ((len(valid_pos) - 1.0) + 1.0e-6)
-        count = defaultdict(float)
-        for p in valid_pos:
-            count[modes[p]] += scale_step
 
-        for p in valid_pos:
-            scales[p] = count[modes[p]] - scale_step
+    for pos_list in id2pos.values():
+        if len(pos_list) < min_group_size:
+            continue
 
-    return scales # (1, seq_len)
+        # 2. 找 base_score 最大、若并列取索引最小
+        best_pos = max(
+            pos_list,
+            key=lambda p: (base_scores[p], -p)  # (-p) 确保并列时选第一个出现
+        )
+        uid_mode = modes[best_pos]
+
+        # 3. 仅针对 uid_mode 做累积惩罚
+        target_positions = sorted([p for p in pos_list if modes[p] == uid_mode])
+        if len(target_positions) <= 1:
+            continue
+
+        step = 1.0 / ((len(target_positions) - 1.0) + 1e-6)
+        for i, p in enumerate(target_positions):
+            scales[p] = i * step        # 第一次出现 0，之后递增
+
+    return scales  # (1, seq_len)
 #######################
 #### Format Reward ####
 #######################
@@ -585,15 +598,14 @@ def compute_score(
         root_dir=root_dir
     )
 
-    scales  = diversity_scaling(modes, index)
-
+    base_scores = [0.0] * n
+    component_cache = {}
     for i in range(n):
         predict_str  = predict_strs[i]
         ground_truth = ground_truths[i]
         QAid         = QAids[i]
         question     = questions[i]
         mode         = modes[i]
-        scale        = scales[i]
         # execution_scores[i]： (reward, exec_output or None)
         exec_score, exec_output = exec_reward[i]
 
@@ -618,31 +630,38 @@ def compute_score(
                 # think_length_weight * think_length_score +
                 accuracy_weight * accuracy_score   +
                 multi_tools_usage_score
-            ) / (1 + scale)
+            )
         elif mode == "nl":
             overall_score = (
                 nl_accuracy_weight * accuracy_score + 
                 # think_length_weight * think_length_score +   # 改
                 # (1 - nl_accuracy_weight - think_length_weight ) * format_score 
                 (1 - nl_accuracy_weight) * format_score
-                ) / (1 + scale)
+                )
         else:
             overall_score = 0.0
+        base_scores[i] = overall_score
+        component_cache[i] = (format_score, accuracy_score, tool_usage_score,
+                        multi_tools_usage_score, exec_score, modes[i])
+    scales = diversity_scaling(modes, index, base_scores)
+    scores = []
+    for i in range(n):
+        format_score, accuracy_score, tool_usage_score, \
+        multi_tools_usage_score, exec_score, mode = component_cache[i]
+
+        overall_score = base_scores[i] / (1.0 + scales[i])
 
         scores.append(
             {
-                "overall":    overall_score,
-                "format":     format_score,
-                "accuracy":   accuracy_score,
+                "overall": overall_score,
+                "format": format_score,
+                "accuracy": accuracy_score,
                 "tool_usage": tool_usage_score, # disabled in natural language # 改
                 "multi_tools": multi_tools_usage_score,
                 # "think_len": think_length_score,
-                "execution":  exec_score, # disabled in natural language
-                "code_ratio": code_ratio,
-                "nl_ratio":   nl_ratio,
-                "invalid_ratio": invalid_ratio,
+                "execution": exec_score, # disabled in natural language
                 "mode": mode,
-                "diversity_scale" : scale,
+                "diversity_scale": scales[i],
             }
         )
     return scores
