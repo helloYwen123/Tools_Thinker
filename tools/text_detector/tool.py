@@ -107,7 +107,7 @@ class Text_Detector_Tool(BaseTool):
                     image = self.preprocess_image(image)
                 else:
                     image = cv2.imread(image)
-                result = reader.readtext(image,detail=1, **kwargs)
+                result = reader.readtext(image, detail=1, **kwargs)
                 try:
                     # detail = 1: Convert numpy types to standard Python types
                     cleaned_result = [

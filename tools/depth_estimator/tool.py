@@ -109,7 +109,7 @@ class Depth_Estimator_Tool(BaseTool):
                 
                 base_name = os.path.splitext(os.path.basename(filename))[0]
                 npy_path = os.path.join(outdir, f"{base_name}_depth.npy")
-                np.save(npy_path, depth)
+                np.save(npy_path, depth.astype(np.float32))
                 
                 # Save depth image
                 output_filename = None
