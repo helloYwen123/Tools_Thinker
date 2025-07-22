@@ -105,7 +105,7 @@ class Depth_Estimator_Tool(BaseTool):
                 # depth esetimation
                 depth_raw = depth_anything.infer_image(raw_image, input_size).astype(np.float32)
                 depth_vis = ((depth_raw - depth_raw.min()) /
-                (depth_raw.ptp() + 1e-8) * 255).astype(np.uint8)
+                (depth_raw.max() - depth_raw.min() + 1e-8) * 255).astype(np.uint8)
                 
                 base_name = os.path.splitext(os.path.basename(filename))[0]
                 npy_path = os.path.join(outdir, f"{base_name}_depth.npy")
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     print("Testing image mode...")
     # When testing image mode, the video_path parameter is not used.
     image_results = tool.execute(
-        depth_estimation_type='relative', # or metric_indoor relative
+        depth_estimation_type='metric_indoor', # or metric_indoor relative
         image_path=test_image_path,
         output=True,    # Enable saving of depth images.
         outdir=outdir
