@@ -166,10 +166,12 @@ class Segmenter_Tool(BaseTool):
                 final_masks.append(masks)  # shape: (1, 1, H, W)
             #### saved file path ####
             for idx, single_mask in enumerate(final_masks):
+                single_mask = single_mask.astype(np.uint8)
                 base = os.path.splitext(os.path.basename(prompt["image_path"]))[0]
                 mask_name = f"{base}_mask_{idx}.npy"
                 mask_path = os.path.join(save_dir, mask_name)
                 np.save(mask_path, single_mask)
+                # print(type(single_mask), np.unique(single_mask))
                 mask_dict[prompt["image_path"]] = {"mask": single_mask, 'npy_path': mask_path}
             #### saved file path ####
             return mask_dict
@@ -231,10 +233,12 @@ class Segmenter_Tool(BaseTool):
                 print(f"every{mask.shape}")
 
             for idx, (prompt, final_mask) in enumerate(zip(input_prompts, final_masks)):
+                final_mask = final_mask.astype(np.uint8)
                 base = os.path.splitext(os.path.basename(prompt["image_path"]))[0]
                 mask_name = f"{base}_mask_{idx}.npy"
                 mask_path = os.path.join(save_dir, mask_name)
                 np.save(mask_path, final_mask)
+                # print(type(final_mask), np.unique(final_mask))
                 mask_dict[prompt["image_path"]] = {"mask": final_mask, 'npy_path': mask_path}
 
             return mask_dict
@@ -273,35 +277,35 @@ if __name__ == '__main__':
     segmenter_tool = Segmenter_Tool()
     model_size = "small"
 ####################PASS single image + Input(points)######################## 
-    # single_point_input = [
-    #     {
-    #         "image_path": "./examples/images/truck.jpg",
-    #         "input_points": [[500, 375], [1125, 625]]
-    #     }
-    # ]
+    single_point_input = [
+        {
+            "image_path": "./examples/images/truck.jpg",
+            "input_points": [[500, 375], [1125, 625]]
+        }
+    ]
 
-    # print("Testing single image with point-based input:")
-    # try:
-    #     masks_points = segmenter_tool.execute(
-    #         prompt_type='points',
-    #         input_prompts=single_point_input,
-    #         model_size=model_size
-    #     )
+    print("Testing single image with point-based input:")
+    try:
+        masks_points = segmenter_tool.execute(
+            prompt_type='points',
+            input_prompts=single_point_input,
+            model_size=model_size
+        )
 
-    #     print("Returned masks for point-based input:")
-    #     for path, mask_arr in masks_points.items():
-    #         print(f"Result shape: {mask_arr["mask"].shape}")  # e.g. (N, 1, H, W)
-    #         print(f"Returned mask's type is {type(masks_points)}")
+        print("Returned masks for point-based input:")
+        for path, mask_arr in masks_points.items():
+            print(f"Result shape: {mask_arr['mask'].shape}")  # e.g. (N, 1, H, W)
+            print(f"Returned mask's type is {type(masks_points)}")
 
-    #         for obj_idx, obj_mask in enumerate(mask_arr["mask"]):
-    #             single = np.squeeze(obj_mask, axis=0)  # (1, H, W) → (H, W)
-    #             save_path = f"./saved_masks/mask_point_{obj_idx}.png"
-    #             os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    #             save_mask(single, save_path, borders=True)
-    #             print(f"Saved: {save_path}")
+            for obj_idx, obj_mask in enumerate(mask_arr["mask"]):
+                single = np.squeeze(obj_mask, axis=0)  # (1, H, W) → (H, W)
+                save_path = f"./saved_masks/mask_point_{obj_idx}.png"
+                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                save_mask(single, save_path, borders=True)
+                print(f"Saved: {save_path}")
 
-    # except Exception as e:
-    #     print("Error in point-based segmentation for a single image:", e)
+    except Exception as e:
+        print("Error in point-based segmentation for a single image:", e)
 
 ####################PASS single image + Input(boxes)######################## 
     # single_box_input = [
@@ -339,47 +343,47 @@ if __name__ == '__main__':
 
 ################## 
     # Pass image batch , based on bbx
-    multi_box_input = [
-        {
-            "image_path": "./examples/images/truck.jpg",
-            "input_box": [
-                [75, 275, 1725, 850],
-                [425, 600, 700, 875],
-                [1375, 550, 1650, 800],
-                [1240, 675, 1400, 750],
-            ]
-        },
-        {
-            "image_path": "./examples/images/truck.jpg",
-            "input_box": [
-                [450, 170, 520, 350],
-                # [350, 190, 450, 350],
-                # [500, 170, 580, 350],
-                # [580, 170, 640, 350],
-            ]
-        }
-    ]
-    print("\nTesting multiple images with box-based input:")
-    try:
-        masks_multi_boxes = segmenter_tool.execute(
-            prompt_type='boxes',
-            input_prompts=multi_box_input,
-            model_size=model_size
-        )
-        print("Returned masks for multiple images with box-based input:")
-        print(masks_multi_boxes)
-        print(f"Returned mask's type is {type(masks_multi_boxes)}")
+    # multi_box_input = [
+    #     {
+    #         "image_path": "./examples/images/truck.jpg",
+    #         "input_box": [
+    #             [75, 275, 1725, 850],
+    #             [425, 600, 700, 875],
+    #             [1375, 550, 1650, 800],
+    #             [1240, 675, 1400, 750],
+    #         ]
+    #     },
+    #     {
+    #         "image_path": "./examples/images/truck.jpg",
+    #         "input_box": [
+    #             [450, 170, 520, 350],
+    #             # [350, 190, 450, 350],
+    #             # [500, 170, 580, 350],
+    #             # [580, 170, 640, 350],
+    #         ]
+    #     }
+    # ]
+    # print("\nTesting multiple images with box-based input:")
+    # try:
+    #     masks_multi_boxes = segmenter_tool.execute(
+    #         prompt_type='boxes',
+    #         input_prompts=multi_box_input,
+    #         model_size=model_size
+    #     )
+    #     print("Returned masks for multiple images with box-based input:")
+    #     print(masks_multi_boxes)
+    #     print(f"Returned mask's type is {type(masks_multi_boxes)}")
 
-        # --- ---
-        for idx, (image_path, mask_arr) in enumerate(masks_multi_boxes.items()):
-            # save_mask(mask, path, borders=True)
-            for obj_idx, obj_mask in enumerate(mask_arr["mask"]):
-                single = np.squeeze(obj_mask, axis=0)  # 去掉通道维 (1,H,W) → (H,W)
-                png_path =  save_path = "./saved_masks/mask_box" + f"_{obj_idx}.png" # save mask as `png`
-                save_mask(single, png_path, borders=True)
-            print(f"Saved visual mask to {png_path}")
+    #     # --- ---
+    #     for idx, (image_path, mask_arr) in enumerate(masks_multi_boxes.items()):
+    #         # save_mask(mask, path, borders=True)
+    #         for obj_idx, obj_mask in enumerate(mask_arr["mask"]):
+    #             single = np.squeeze(obj_mask, axis=0)  # 去掉通道维 (1,H,W) → (H,W)
+    #             png_path =  save_path = "./saved_masks/mask_box" + f"_{obj_idx}.png" # save mask as `png`
+    #             save_mask(single, png_path, borders=True)
+    #         print(f"Saved visual mask to {png_path}")
 
-    except Exception as e:
-        print("Error in box-based segmentation for multiple images:", e)
+    # except Exception as e:
+    #     print("Error in box-based segmentation for multiple images:", e)
 
     print("\nAll tests completed.")

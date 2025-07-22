@@ -74,9 +74,9 @@ class Depth_Estimator_Tool(BaseTool):
         )
 
     def execute(self, image_path: list[str], depth_estimation_type: str = "relative", output=False, outdir='./vis_depth'):
-        if output:
-            os.makedirs(outdir, exist_ok=True)    
-            image_results = {}
+        # always create directory
+        os.makedirs(outdir, exist_ok=True)    
+        image_results = {}
         if depth_estimation_type == 'relative':
             input_size=518
             encoder='vitb'
@@ -103,7 +103,7 @@ class Depth_Estimator_Tool(BaseTool):
                     continue
                 
                 # depth esetimation
-                depth = depth_anything.infer_image(raw_image, input_size)
+                depth_float = depth_anything.infer_image(raw, input_size).astype(np.float32)
                 depth = (depth - depth.min()) / (depth.max() - depth.min()) * 255.0
                 depth = depth.astype(np.uint8)
                 
@@ -131,7 +131,6 @@ class Depth_Estimator_Tool(BaseTool):
             #         f.write(f"result : {np.array2string(results[i])}\n")
                 return image_results
         else:
-            image_results = {}
             if depth_estimation_type == 'metric_outdoor':                
                 # load pipe
                 pipe = pipeline(task="depth-estimation", model="depth-anything/Depth-Anything-V2-Metric-Outdoor-Large-hf")
@@ -168,7 +167,7 @@ class Depth_Estimator_Tool(BaseTool):
                     depth = np.repeat(depth_info, 3, axis=-1)
                     cv2.imwrite(output_filename, depth)
                 image_results[filename] = {
-                    "depth_map": depth_metric,
+                    "depth_map": depth_np,
                     "output_image_path": output_filename,
                     "npy_path": npy_path,
                 }
