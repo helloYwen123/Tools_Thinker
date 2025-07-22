@@ -82,7 +82,7 @@ class Text_Detector_Tool(BaseTool):
         resized = cv2.resize(bin_img, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
         return resized
     
-    def execute(self, image, languages=None, max_retries=10, preprocessing= False, retry_delay=5 ,clear_cuda_cache=False,**kwargs):
+    def execute(self, image, languages=None, max_retries=10, retry_delay=5 ,clear_cuda_cache=False,**kwargs):
         """
         Executes the OCR tool to detect text in the provided image.
 
@@ -103,10 +103,10 @@ class Text_Detector_Tool(BaseTool):
                 reader = self.build_tool(languages)
                 if reader is None:
                     raise ValueError("Failed to build the OCR tool.")
-                if preprocessing:
-                    image = self.preprocess_image(image)
-                else:
-                    image = cv2.imread(image)
+
+                image = cv2.imread(image)
+                if image is None:
+                    raise ValueError(f"Image at path {image} could not be loaded.")
                 result = reader.readtext(image, **kwargs)
                 try:
                     # detail = 1: Convert numpy types to standard Python types
