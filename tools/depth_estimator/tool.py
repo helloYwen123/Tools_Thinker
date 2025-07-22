@@ -103,23 +103,23 @@ class Depth_Estimator_Tool(BaseTool):
                     continue
                 
                 # depth esetimation
-                depth_float = depth_anything.infer_image(raw, input_size).astype(np.float32)
-                depth = (depth - depth.min()) / (depth.max() - depth.min()) * 255.0
-                depth = depth.astype(np.uint8)
+                depth_raw = depth_anything.infer_image(raw_image, input_size).astype(np.float32)
+                depth_vis = ((depth_raw - depth_raw.min()) /
+                (depth_raw.ptp() + 1e-8) * 255).astype(np.uint8)
                 
                 base_name = os.path.splitext(os.path.basename(filename))[0]
                 npy_path = os.path.join(outdir, f"{base_name}_depth.npy")
-                np.save(npy_path, depth.astype(np.float32))
+                np.save(npy_path, depth_raw)  
                 
                 # Save depth image
                 output_filename = None
                 if output:
                     output_filename = os.path.join(outdir, os.path.splitext(os.path.basename(filename))[0] + '.png')
-                    depth = np.repeat(depth[..., np.newaxis], 3, axis=-1)
+                    depth = np.repeat(depth_vis[..., np.newaxis], 3, axis=-1)
                     cv2.imwrite(output_filename, depth)
                     
                 image_results[filename] = {
-                "depth_map": depth,
+                "depth_map": depth_raw,
                 "output_image_path": output_filename,
                 "npy_path": npy_path
                 }
@@ -129,7 +129,7 @@ class Depth_Estimator_Tool(BaseTool):
             #     for i in range(len(results)):
             #         f.write(f'{image_path[i]}: {results[i].shape}\n')
             #         f.write(f"result : {np.array2string(results[i])}\n")
-                return image_results
+            return image_results
         else:
             if depth_estimation_type == 'metric_outdoor':                
                 # load pipe
@@ -139,8 +139,7 @@ class Depth_Estimator_Tool(BaseTool):
                 pipe = pipeline(task="depth-estimation", model="depth-anything/Depth-Anything-V2-Metric-Indoor-Large-hf")
             else:
                 raise ValueError("No valid 'depth estimation type' ! \n ")
-            if output:
-                os.makedirs(outdir, exist_ok=True)
+
             for k, filename in enumerate(image_path):
                 image = Image.open(filename).convert("RGB")
                 # inference
@@ -171,7 +170,7 @@ class Depth_Estimator_Tool(BaseTool):
                     "output_image_path": output_filename,
                     "npy_path": npy_path,
                 }
-                return image_results
+            return image_results
             
             
 if __name__ == '__main__':
