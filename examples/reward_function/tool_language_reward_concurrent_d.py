@@ -29,6 +29,8 @@ from typing import List, Tuple, Union
 import requests
 from math_verify import parse, verify
 import time
+import json
+
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
 def detect_mode(completion: str) -> str:
@@ -492,7 +494,7 @@ def diversity_scaling(modes: List[str], uid_list):
         if len(valid_pos) <= 4: # or abs(code_count - nl_count) < 4: # or abs(code_count - nl_count) == 8:
              continue
         
-        scale_step = 1.0 / ((len(valid_pos) - 1.0) + 1.0e-6)
+        scale_step = 2.0 / ((len(valid_pos) - 1.0) + 1.0e-6)
         count = defaultdict(float)
         for p in valid_pos:
             count[modes[p]] += scale_step

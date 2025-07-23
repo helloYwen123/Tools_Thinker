@@ -351,9 +351,9 @@ class RayPPOTrainer:
         reward_score = torch.cat(reward_tensor_lst, dim=0).sum(-1).mean().item()
         
         # keys for different usage
-        ratios         = ["code_ratio", "nl_ratio", "invalid_ratio", "diversity_scale_dict"]
+        ratios         = ["code_ratio", "nl_ratio", "invalid_ratio", "diversity_scale"]
         overall_keys   = ["accuracy"]
-        code_related   = ["tool_usage", "execution"]
+        code_related   = ["tool_usage", "execution","multi_tools"]
 
         reduced_overall = reduce_metrics(overall_metrics_all)
         reduced_code    = reduce_metrics(code_metrics_all)
@@ -665,9 +665,9 @@ class RayPPOTrainer:
                         code_metrics, nl_metrics = self._split_metrics_by_mode(reward_metrics, modes)
                         
                         # metrics names
-                        ratios = ["code_ratio", "nl_ratio", "invalid_ratio","diversity_scale"]
+                        ratios  = ["code_ratio", "nl_ratio", "invalid_ratio", "diversity_scale"]
                         overall = ["overall", "accuracy"]
-                        code_related = ["tool_usage", "execution"]
+                        code_related = ["tool_usage", "execution","multi_tools"]
 
                         reduced_code_metrics = reduce_metrics(code_metrics)
                         reduced_nl_metrics   = reduce_metrics(nl_metrics)

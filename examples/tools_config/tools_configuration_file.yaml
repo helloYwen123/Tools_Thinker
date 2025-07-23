@@ -5,12 +5,13 @@
 available_tools:
   - Object_Detector_Tool
   - Text_Detector_Tool
-  #- Letter_Detector_Tool
+  # #- Letter_Detector_Tool
   - Depth_Estimator_Tool
   #- Advanced_Object_Detector_Tool
   - Segmenter_Tool
   - Matcher_Tool
-
+  # - Pose_Estimator_Tool
+  
 # metadata for available tools
 toolbox_metadata:
   # Grounding DINO-1.0 base
@@ -19,7 +20,7 @@ toolbox_metadata:
     tool_class_name: Object_Detector_Tool
     tool_description: A tool that detects objects in an image.
     input_types:
-      image: str - The path to the image file.
+      image: str - a path(str) to the image file.
       labels: list - A list of object labels to detect.
       save_object: "bool - Whether to save the detected objects as `png` images (default: False)."
       saved_image_path: "str - The path to save the detected object `png` images (default: 'detected_objects')."
@@ -76,8 +77,11 @@ toolbox_metadata:
       detail: "int - The level of detail in the output. Set to 0 for simpler output, 1 for detailed output."
     output_types: >
       list - A list of detected text blocks.
-      Each block contains the four anchor coordinates of the bounding box, the recognized text, and the confidence score (float).
+      Detailed output: Each block contains the four anchor coordinates of the bounding box, the recognized text, and the confidence score (float).
       e.g. [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], 'Detected text', score], ...].
+      Simpler output: Each block contains only the recognized text.
+      e.g. ['text1', 'text2', ...].
+      Nothing detected: empty list [].
       # Note: The bounding box is defined as 4 coordinates of points: [top-left, top-right, bottom-right, bottom-left].
     demo_commands:
       command: |
@@ -107,6 +111,46 @@ toolbox_metadata:
         letter_detector_tool = Letter_Detector_Tool()
         results = letter_detector_tool.execute(image='path/to/image')
       output_example: "results: [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], 'A', 0.95], ...]. # Note: The bounding box is defined as 4 coordinates of points: [top-left, top-right, bottom-right, bottom-left]."
+   # Pose Estimator Tool (orientation)
+  Pose_Estimator_Tool:
+    tool_module_name: pose_estimator
+    tool_class_name: Pose_Estimator_Tool
+    tool_description: >
+      Estimate yaw, pitch, roll (degrees) and confidence of object(s) in images.
+      Object right-handed coordinate system:
+      +X points out of the image toward the camera,
+      +Y points to the right in the image,  
+      +Z points upward in the image.  
+    Returned Angle conventions: >
+      Yaw (around Z): positive for clockwise rotation (object turns to its right),
+      Pitch (around Y): positive for counter-clockwise rotation (object tilts downward),
+      Roll (around X): positive for clockwise in-plane rotation.
+    input_types:
+      image_boxes: >
+        Unified dict input -{image_path (str): list}.  
+        list is [] → the image contains a single object (whole-image inference).  
+        list is [[x0, y0, x1, y1], …] → the image contains multiple objects (per-box inference).
+    output_types: >
+      dict - {image_path (str): list of tuple(float, float, float, float)}.  
+      Each tuple is (yaw, pitch, roll, confidence).  
+      The list order strictly follows the input bounding-box order; for [] input it has exactly one tuple for the single object.
+    demo_commands:
+      command: |
+        pose_tool = Pose_Estimator_Tool()
+        # Mixed batch: single-object image uses [], multi-object image lists its boxes
+        image_boxes = {
+            '/path/to/image_single': [],
+            '/path/to/image_multi':  [[50, 30, 300, 280], [320, 40, 620, 330]]
+        }
+        results = pose_tool.execute(image_boxes)
+      output_example: |
+        results: {'/path/to/image_single': [(8.7, 0.5, -2.1, 0.89)],
+         '/path/to/image_multi':  [(12.3, -5.6, 0.2, 0.91), (-31.0, 3.4, -6.2, 0.88)]}
+    user_metadata:
+      note: >
+        All angles are in degrees; confidence ∈ [0, 1].  
+        The returned list is always aligned with the order of the input bounding boxes (or contains a single tuple when the box list is empty).
+        It is necessary to first run an `object detector` to obtain bounding boxes when dealing with images that contain multiple objects.
   # Depth Estimation Tool
   Depth_Estimator_Tool:
     tool_module_name: depth_estimator
@@ -143,7 +187,7 @@ toolbox_metadata:
     input_types:
       prompt_type: "str: 'points' or 'boxes'"
       input_prompts: >
-        list[dict] — each dict corresponds to one image.
+        list[dict] — each dict corresponds to one image, each image must have a unique name.
         It must include:
         - 'image_path': str — path to the image
         - A prompt key ('input_box' or 'input_points'), depending on the prompt_type:
@@ -162,7 +206,6 @@ toolbox_metadata:
       command: |
         segmenter_tool = Segmenter_Tool()
         masks = segmenter_tool.execute(prompt_type='boxes', input_prompts=[{'image_path': 'path/to/image1', 'input_box': [[100,150,400,500],...]}, {'image_path': 'path/to/image2', 'input_box': [[50,80,300,350],...]}], model_size='small')
-        # Note: Each image must have a unique name.
         # Each image can receive either one or more input boxes, or at least two points as visual prompts.
       output_example: >
         masks: {`./image1/path`: {'mask': <np.ndarray>, 'npy_path': <str>}, `./image2/path`: {'mask': <np.ndarray>, 'npy_path': <str>}} 

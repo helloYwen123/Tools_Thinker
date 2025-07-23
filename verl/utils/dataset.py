@@ -169,7 +169,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
-                dataset_json_path = "/workspace/ywen_ws/datasets/datasets_all_balanced_singImg.json" # "/workspace/ywen_ws/datasets/datasets_all_single_img.json"
+                dataset_json_path = "/workspace/ywen_ws/datasets/datasets_all_balanced_singleimg.json" # "/workspace/ywen_ws/datasets/datasets_all_single_img.json"
                 full_path = os.path.join(dataset_json_path)
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)
@@ -219,6 +219,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         if ("BLINK" in self.data_path or "SAT" in self.data_path or "CV-Bench" in self.data_path):
             image_paths = example["image_paths"]
             active_tool_names, filtered_metadata_dict = self._load_tool_data(self.configuration_file)
+            filtered_metadata_dict = json.dumps(filtered_metadata_dict, indent=2)
             active_tool_names = ",".join(active_tool_names)
             format_prompt = Template(self.format_prompt.strip())
             prompt_str = format_prompt.render(question=prompt_str,
