@@ -107,6 +107,44 @@ toolbox_metadata:
         letter_detector_tool = Letter_Detector_Tool()
         results = letter_detector_tool.execute(image='path/to/image')
       output_example: "results: [[[[x0, y0], [x1, y1], [x2, y2], [x3, y3]], 'A', 0.95], ...]. # Note: The bounding box is defined as 4 coordinates of points: [top-left, top-right, bottom-right, bottom-left]."
+ # Pose Estimator Tool (orientation)
+  Pose_Estimator_Tool:
+    tool_module_name: pose_estimator
+    tool_class_name: Pose_Estimator_Tool
+    tool_description: Estimate yaw, pitch, roll (degrees) and confidence of object(s) in images.
+    input_types:
+      image_boxes: >
+        For images that contain a single object only, provide a list of image paths:
+        [image_path1, image_path2, …].
+        For images that contain multiple objects, use a dict:
+        {image_path (str): list of bounding boxes [[x0, y0, x1, y1], …]}.
+        Each image must use the format that matches the number of objects it contains.
+    output_types: >
+      dict - {image_path (str): list of tuple(float, float, float, float)}.
+      Each tuple is (yaw, pitch, roll, confidence).
+      The list strictly preserves the order of the input bounding boxes; i.e.,
+      result[image_path][i] corresponds to the i-th box in the input list.
+      For single-object images, the list contains exactly one tuple.
+    demo_commands:
+      command: |
+        pose_tool = Pose_Estimator_Tool()
+        # image containing multiple objects
+        image_boxes = {
+            '/path/to/image_multi': [[50, 30, 300, 280], [320, 40, 620, 330]],
+            '/path/to/another_multi': [[60, 40, 280, 260]]
+        }
+        multi_res = pose_tool.execute(image_boxes)
+        # single-object image
+        single_res = pose_tool.execute(['/path/to/image_single'])
+      output_example: |
+        {'/path/to/image_multi': [(12.3, -5.6, 0.2, 0.91), (-31.0, 3.4, -6.2, 0.88)],
+         '/path/to/another_multi': [(15.2, 1.1, -0.4, 0.92)],
+         '/path/to/image_single': [(8.7, 0.5, -2.1, 0.89)]}
+    user_metadata:
+      note: >
+        All angles are in degrees; confidence ∈ [0, 1]. The returned list is always aligned with
+        the order of the input bounding boxes (or is a single-element list for single-object images).
+        When an image likely contains multiple objects, first localize each object with object detection.
   # Depth Estimation Tool
   Depth_Estimator_Tool:
     tool_module_name: depth_estimator
