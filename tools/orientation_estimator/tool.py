@@ -181,8 +181,8 @@ if __name__ == "__main__":
     import os
     import numpy as np
     from PIL import Image
-
-    tool = Pose_Estimator_Tool()
+    
+    tool = Orientation_Estimator_Tool()
     os.makedirs("./vis", exist_ok=True)
     # ----------- single-object (whole-image) inference -----------
     # single_image_dict = {
