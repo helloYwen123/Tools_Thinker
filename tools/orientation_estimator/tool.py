@@ -20,7 +20,7 @@ tools_dir   = os.path.dirname(current_dir)
 sys.path.insert(0, tools_dir)
 from basetool import BaseTool
 
-class Pose_Estimator_Tool(BaseTool):
+class Orientation_Estimator_Tool(BaseTool):
     """
     Estimate object orientation (yaw, pitch, roll, confidence) for single objects (whole image)
     or multiple objects (with bounding boxes) using Orient-Anything (DINOv2-MLP).
