@@ -618,6 +618,7 @@ class RayPPOTrainer:
                     )
                     # repeat to align with repeated responses in rollout
                     batch = batch.repeat(repeat_times=self.config.worker.rollout.n, interleave=True)
+
                     batch = batch.union(gen_batch_output)
                     batch.non_tensor_batch.pop("multi_modal_data", None)
 

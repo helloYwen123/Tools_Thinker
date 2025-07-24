@@ -19,7 +19,7 @@ from typing import Optional
 import faulthandler
 import ast
 import signal
-from collections import defaultdict
+from collections import defaultdict, Counter
 from io import StringIO
 import contextlib
 import multiprocessing
@@ -29,6 +29,7 @@ from typing import List, Tuple, Union
 import requests
 from math_verify import parse, verify
 import time
+import json
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
 def detect_mode(completion: str) -> str:
@@ -486,32 +487,40 @@ def diversity_scaling(
     """
     from collections import defaultdict
 
-    # 1. 建立 uid -> 位置索引列表
+    # 1. build uid -> posid
     id2pos: dict[str, List[int]] = defaultdict(list)
     for pos, uid in enumerate(uid_list):
         id2pos[uid].append(pos)
 
-    scales = [0.0] * len(modes)
-
-    for pos_list in id2pos.values():
+    # 2. build uid -> mode
+    uid2rep_mode = {}
+    for uid, pos_list in id2pos.items():
         if len(pos_list) < min_group_size:
             continue
-
-        # 2. 找 base_score 最大、若并列取索引最小
         best_pos = max(
             pos_list,
-            key=lambda p: (base_scores[p], -p)  # (-p) 确保并列时选第一个出现
+            key=lambda p: (base_scores[p], -p) # if same bast score then compare pos index
         )
-        uid_mode = modes[best_pos]
+        uid2rep_mode[uid] = modes[best_pos]
 
-        # 3. 仅针对 uid_mode 做累积惩罚
-        target_positions = sorted([p for p in pos_list if modes[p] == uid_mode])
-        if len(target_positions) <= 1:
+    rep_modes = list(uid2rep_mode.values())
+    mode_counts = Counter(rep_modes)
+
+    mode_counts_path = "mode_counts.jsonl"
+    with open(mode_counts_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(dict(mode_counts), ensure_ascii=False) + "\n")
+
+    scales = [0.0] * len(modes)
+
+    for uid, pos_list in id2pos.items():
+        rep_mode = uid2rep_mode.get(uid, None)
+        if rep_mode is None:
             continue
-
-        step = 1.0 / ((len(target_positions) - 1.0) + 1e-6)
-        for i, p in enumerate(target_positions):
-            scales[p] = i * step        # 第一次出现 0，之后递增
+        # 
+        overlap_cnt = mode_counts[rep_mode] - 1  # disgard itself
+        scale_value = overlap_cnt * 0.1 if overlap_cnt > 0 else 0.0
+        for p in pos_list:
+                scales[p] = scale_value
 
     return scales  # (1, seq_len)
 #######################
@@ -662,6 +671,9 @@ def compute_score(
                 "execution": exec_score, # disabled in natural language
                 "mode": mode,
                 "diversity_scale": scales[i],
+                "code_ratio": code_ratio,
+                "nl_ratio":   nl_ratio,
+                "invalid_ratio": invalid_ratio,
             }
         )
     return scores

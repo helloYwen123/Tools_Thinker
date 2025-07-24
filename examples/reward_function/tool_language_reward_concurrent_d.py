@@ -477,11 +477,11 @@ def diversity_scaling(modes: List[str], uid_list):
     for pos, uid in enumerate(uid_list):
         id2pos[uid].append(pos)
 ##########################
-    id2pos_log_path = "uid_logs.jsonl"
-    if id2pos_log_path:
-        with open(id2pos_log_path, "a") as f:
-            json.dump(id2pos, f)
-            f.write("\n")
+    # id2pos_log_path = "uid_logs.jsonl"
+    # if id2pos_log_path:
+    #     with open(id2pos_log_path, "a") as f:
+    #         json.dump(id2pos, f)
+    #         f.write("\n")
 ##########################P            
     scales = [0.0] * len(modes)
     for pos_list in id2pos.values():  # group position index
@@ -491,16 +491,16 @@ def diversity_scaling(modes: List[str], uid_list):
                 valid_pos.append(p)
         code_count = sum(modes[p] == "code" for p in valid_pos)
         nl_count   = sum(modes[p] == "nl"   for p in valid_pos)
-        if len(valid_pos) <= 4: # or abs(code_count - nl_count) < 4: # or abs(code_count - nl_count) == 8:
-             continue
+        # if len(valid_pos) <= 4: # or abs(code_count - nl_count) < 4: # or abs(code_count - nl_count) == 8:
+        #      continue
         
-        scale_step = 2.0 / ((len(valid_pos) - 1.0) + 1.0e-6)
+        # scale_step = 1.0 / ((len(valid_pos) - 1.0) + 1.0e-6)
         count = defaultdict(float)
         for p in valid_pos:
-            count[modes[p]] += scale_step
+            count[modes[p]] += 0.1
 
         for p in valid_pos:
-            scales[p] = count[modes[p]] - scale_step
+            scales[p] = count[modes[p]] - 0.1
 
     return scales # (1, seq_len)
 #######################
