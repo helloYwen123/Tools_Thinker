@@ -169,8 +169,7 @@ class Object_Detector_Tool(BaseTool):
                 print(f"Error detecting objects: {e}")
                 break
         
-        print(f"Failed to detect objects after {max_retries} attempts.")
-        return {} #  [] -> {} 改！
+        raise ValueError(f"Failed to detect objects after {max_retries} attempts.")
 
     def get_metadata(self):
         metadata = super().get_metadata()
