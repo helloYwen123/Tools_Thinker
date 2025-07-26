@@ -50,6 +50,13 @@ def detect_mode(completion: str) -> str:
         return 'nl'
     return 'invalid'
 
+def is_error_output(result) -> bool:
+    return isinstance(result, str) and (
+        "Traceback" in result
+        or "Error" in result
+        or "Exception" in result
+        or "Failed to" in result
+    )
 
 def loose_match(a, b):
     # Convert both inputs to string, trim spaces, and lowercase
@@ -104,18 +111,20 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, root_
     acc_log_path = os.path.join(log_root_dir, f"invalid_accuracy_{current_time}-{QAid}.log")
     if mode == "code" and exec_result is not None:
         acc_log_path = os.path.join(log_root_dir, f"code_accuracy_{current_time}-{QAid}.log")
-        try:
-            # try to verify symbolic calculation
-            parsed_result = parse(exec_result)
-            parsed_solution = parse(solution)
-            if float(verify(parsed_result, parsed_solution)) > 0:
-                reward = 1.0
-        except Exception:
-            # symbolic calculation failed
-            pass 
         
-        if loose_match(exec_result, solution):
-            reward = 1.0
+        if not is_error_output(exec_result):
+            try:
+                # try to verify symbolic calculation
+                parsed_result = parse(exec_result)
+                parsed_solution = parse(solution)
+                if float(verify(parsed_result, parsed_solution)) > 0:
+                    reward = 1.0
+            except Exception:
+                # symbolic calculation failed
+                pass 
+            if not is_error_output(exec_result):
+                if loose_match(exec_result, solution):
+                    reward = 1.0
 
     elif mode == "nl":
         acc_log_path = os.path.join(log_root_dir, f"nl_accuracy_{current_time}-{QAid}.log")
@@ -295,7 +304,7 @@ execution_reward.reward_type = "execution"
 ### Concurrent Batch Execution Reward
 
 def batch_execution_reward(
-    predict_strs, QAids, steps, questions, max_workers=12, root_dir=None
+    predict_strs, QAids, steps, questions, max_workers=8, root_dir=None
 ):
     # need to loop n times
     n = len(predict_strs)
@@ -603,7 +612,7 @@ def compute_score(
         QAids=QAids,
         steps=[step]*n,
         questions=questions,
-        max_workers=16,
+        max_workers=8,
         root_dir=root_dir
     )
 
@@ -621,6 +630,7 @@ def compute_score(
         format_score = format_reward(predict_str, step, QAid, root_dir=root_dir)
         tool_usage_score, multi_tools_usage_score = tool_usage_reward(predict_str, step, QAid, root_dir=root_dir)
         # think_length_score = think_length_reward(predict_str, step, QAid, root_dir=root_dir) # 改
+
         accuracy_score = accuracy_reward(
             exec_output,
             response=predict_str,
@@ -630,6 +640,7 @@ def compute_score(
             question=question,
             root_dir=root_dir, 
         )
+
         # 3. overall
         if mode == "code":
             overall_score = (

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --job-name=exp02
-#SBATCH --partition=mcml-hgx-h100-94x4
+#SBATCH --job-name=exp02ma2
+#SBATCH --partition=mcml-hgx-a100-80x4
 #SBATCH --gres=gpu:2
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -23,4 +23,4 @@ echo 'Activated conda env: vlm'
 
 cd /workspace/ywen_ws/Tools_Thinker
 
-bash examples/exp02.sh
+bash examples/exp02_2.sh
