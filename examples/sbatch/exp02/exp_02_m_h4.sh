@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --job-name=exp01la4
-#SBATCH --partition=lrz-hgx-a100-80x4
+#SBATCH --job-name=exp02mh4
+#SBATCH --partition=mcml-hgx-h100-94x4
 #SBATCH --gres=gpu:4
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1

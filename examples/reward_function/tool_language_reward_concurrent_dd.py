@@ -100,58 +100,53 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, root_
     # detect output mode(code; nl; invalid)
     mode = detect_mode(response)
     if root_dir is None:
-        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        root_dir = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     current_time = datetime.now().strftime("%d-%H-%M-%S")
-    split = "validation" if step == "validation" else "train"
-    step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
-    log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/accuracy/{step_str}")
+    split      = "validation" if step == "validation" else "train"
+    step_str   = f"step_{step}" if isinstance(step, int) else f"step_{step}"
+    log_root   = os.path.join(root_dir, f"grpo_tools_logs/{split}/accuracy/{step_str}")
     
     answer_pred = None
     reward = 0.0
-    acc_log_path = os.path.join(log_root_dir, f"invalid_accuracy_{current_time}-{QAid}.log")
     if mode == "code" and exec_result is not None:
-        acc_log_path = os.path.join(log_root_dir, f"code_accuracy_{current_time}-{QAid}.log")
-        
         if not is_error_output(exec_result):
             try:
-                # try to verify symbolic calculation
-                parsed_result = parse(exec_result)
-                parsed_solution = parse(solution)
-                if float(verify(parsed_result, parsed_solution)) > 0:
+                if float(verify(parse(exec_result), parse(solution))) > 0:
                     reward = 1.0
             except Exception:
-                # symbolic calculation failed
-                pass 
-            if not is_error_output(exec_result):
-                if loose_match(exec_result, solution):
-                    reward = 1.0
-
+                pass
+            if loose_match(exec_result, solution):
+                reward = 1.0
     elif mode == "nl":
-        acc_log_path = os.path.join(log_root_dir, f"nl_accuracy_{current_time}-{QAid}.log")
         answer_pred = extract_boxed_answer(response)
-        if answer_pred is not None:
+        if answer_pred:
             try:
                 if float(verify(parse(answer_pred), parse(solution))) > 0:
                     reward = 1.0
             except Exception:
                 pass
-
             if loose_match(answer_pred, solution):
                 reward = 1.0
 
+    result_tag = "correct" if reward == 1.0 else "wrong"
+    if mode in ("code", "nl"):
+        file_prefix = f"{mode}_{result_tag}_accuracy_{current_time}-{QAid}.log"
+    else:  # invalid
+        file_prefix = f"invalid_accuracy_{current_time}-{QAid}.log"
+    acc_log_path = os.path.join(log_root, file_prefix)
+
+    
     should_log = (
-        (isinstance(step, str) and step == "validation") or
-        (isinstance(step, int) and step % 2 == 0) or
-        reward == 1.0
-    )
+            (isinstance(step, str) and step == "validation") or
+            (isinstance(step, int) and step % 2 == 0) or
+            reward == 1.0
+        )
     if should_log:
-        os.makedirs(log_root_dir, exist_ok=True)
+        os.makedirs(log_root, exist_ok=True)
         with open(acc_log_path, "a", encoding="utf-8") as f:
             f.write(f"\nQAid: {QAid}\n")
-            if reward == 1.0:
-                f.write("\ncorrect result\n\n")
-            else:
-                f.write("\n wrong result\n\n")
+            f.write("\ncorrect result\n\n" if reward == 1.0 else "\nwrong result\n\n")
             f.write(f"nl_result: {answer_pred}\n")
             f.write(f"exec_result: {exec_result}\n")
             f.write(f"expected:    {solution}\n")
@@ -508,7 +503,7 @@ def diversity_scaling(
             continue
         best_pos = max(
             pos_list,
-            key=lambda p: (base_scores[p], -p) # if same bast score then compare pos index
+            key=lambda p: (base_scores[p], -p) # if same best score then compare pos index
         )
         uid2rep_mode[uid] = modes[best_pos]
 
