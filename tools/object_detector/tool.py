@@ -65,20 +65,19 @@ class Object_Detector_Tool(BaseTool):
         )
 
     def preprocess_caption(self, caption):
-        result = caption.lower().strip()
+        result = caption.replace("_", " ").lower().strip()
         if result.endswith("."):
             return result
         return result + "."
 
-    def build_tool(self, model_size='tiny'):
+    def build_tool(self, model_size='base'):
         model_name = f"IDEA-Research/grounding-dino-{model_size}"
         device = "cuda" if torch.cuda.is_available() else "cpu"
         try:
             pipe = pipeline(model=model_name, task="zero-shot-object-detection", device=device)
             return pipe
         except Exception as e:
-            print(f"Error building the Object Detection tool: {e}")
-            return None
+            raise RuntimeError(f"Failed to build GroundingDINO ({model_name}): {e}")
 
     def save_detected_object(self, image, box, image_name, label, index, padding):
         object_image = image.crop(box)
@@ -91,85 +90,74 @@ class Object_Detector_Tool(BaseTool):
         padded_image.save(save_path)
         return save_path
 
-    def execute(self, image, labels,threshold = 0.35, model_size='base', max_retries=10, retry_delay=2, 
-            clear_cuda_cache=False, save_object=False, saved_image_path="./objects_images",
-            save_json=False, json_path="./detection_results.json"):
-        
-        # default padding value
-        padding=20
-        for attempt in range(max_retries):
-            try:
-                self.output_dir = saved_image_path
+    def execute(
+        self,
+        image: str,
+        labels: list[str],
+        threshold: float = 0.35,
+        model_size: str = "base",
+        save_object: bool = False,
+        saved_image_path: str = "./objects_images",
+        save_json: bool = False,
+        json_path: str = "./detection_results.json",
+        padding: int = 20,
+    ):
+        # --------- 1. path and model check ----------
+        if not os.path.exists(image):
+            raise FileNotFoundError(f"Image not found: {image}")
 
-                pipe = self.build_tool(model_size)
-                if pipe is None:
-                    raise ValueError("Failed to build the Object Detection tool.")
-                
-                preprocessed_labels = [self.preprocess_caption(label) for label in labels]
-                results = pipe(image, candidate_labels=preprocessed_labels, threshold=threshold)
-                
-                original_image = Image.open(image)
-                image_name = os.path.splitext(os.path.basename(image))[0]
-                
-                object_counts = {}
-                grouped_results = {}
-                for result in results:
-                    box = tuple(result["box"].values())
-                    label = result["label"]
-                    score = round(result["score"], 2)
-                    if label.endswith("."):
-                        label = label[:-1]
-                    
-                    object_counts[label] = object_counts.get(label, 0) + 1
-                    index = object_counts[label]
-                    
-                    save_path = None
-                    if save_object:
-                        save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
-                    
-                    if label not in grouped_results:
-                        grouped_results[label] = []
-                       
-                    grouped_results[label].append({
-                        "box": box,
-                        "score": score,
-                        "saved_image_path": save_path,
-                    })
+        pipe = self.build_tool(model_size)
+        self.output_dir = saved_image_path
+        # --------- 2. inference ----------
+        prep_labels = [self.preprocess_caption(lab) for lab in labels]
+        results = pipe(image, candidate_labels=prep_labels, threshold=threshold)
 
-                if save_json:
-                    os.makedirs(os.path.dirname(json_path), exist_ok=True)
-                    grouped_results_for_json = {
-                        label: [
-                            {
-                                "box": list(obj["box"]),
-                                "score": obj["score"],
-                                "saved_image_path": obj["saved_image_path"]
-                            } for obj in objs
-                        ] for label, objs in grouped_results.items()
-                    }
-                    with open(json_path, "w", encoding="utf-8") as f:
-                        json.dump(grouped_results_for_json, f, ensure_ascii=False, indent=2)
-                
-                return grouped_results
+        if not results:
+            return {}
+
+        # --------- 3. pre-processing ----------
+        original_image = Image.open(image).convert("RGB")
+        image_name = os.path.splitext(os.path.basename(image))[0]
+        object_counts = {}
+        grouped_results = {}
+
+        for result in results:
+            box = tuple(result["box"].values())  # (x1, y1, x2, y2)
+            label = result["label"].rstrip(".")
+            score = round(result["score"], 2)
+
+            object_counts[label] = object_counts.get(label, 0) + 1
+            index = object_counts[label]
+                    
+            save_path = None
+            if save_object:
+                save_path = self.save_detected_object(original_image, box, image_name, label, index, padding)
             
-            except RuntimeError as e:
-                if "CUDA out of memory" in str(e):
-                    print(f"CUDA out of memory error on attempt {attempt + 1}.")
-                    if clear_cuda_cache:
-                        print("Clearing CUDA cache and retrying...")
-                        torch.cuda.empty_cache()
-                    else:
-                        print(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                    continue
-                else:
-                    print(f"Runtime error: {e}")
-                    break
-            except Exception as e:
-                print(f"Error detecting objects: {e}")
-                break
-        
-        raise ValueError(f"Failed to detect objects after {max_retries} attempts.")
+            if label not in grouped_results:
+                grouped_results[label] = []
+                
+            grouped_results[label].append({
+                "box": box,
+                "score": score,
+                "saved_image_path": save_path,
+            })
+
+        # --------- 4. writing JSON ----------
+        # if save_json:
+        #     os.makedirs(os.path.dirname(json_path), exist_ok=True)
+        #     grouped_results_for_json = {
+        #         label: [
+        #             {
+        #                 "box": list(obj["box"]),
+        #                 "score": obj["score"],
+        #                 "saved_image_path": obj["saved_image_path"]
+        #             } for obj in objs
+        #         ] for label, objs in grouped_results.items()
+        #     }
+        #     with open(json_path, "w", encoding="utf-8") as f:
+        #         json.dump(grouped_results_for_json, f, ensure_ascii=False, indent=2)
+
+        return grouped_results
 
     def get_metadata(self):
         metadata = super().get_metadata()
