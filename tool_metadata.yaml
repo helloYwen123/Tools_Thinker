@@ -193,9 +193,10 @@ toolbox_metadata:
           - 'input_points': list[list[int]] — a list of at least two points [x, y]
           model_size: "str: SAM2 model size, e.g., 'base_plus' or 'small' (default: 'small')."
     output_types: >
-      masks: Dict[str ,Dict[str, np.ndarray]] - The output is a dictionary where each key is the path(string) to a input image file.
+      Dict[str ,Dict[str, np.ndarray]] - The output is a dictionary where each key is the path(string) to a input image file.
       Each value is still a dictionary with: 
-      masks: NumPy array with shape (O,1,H,W), where `O` is the number of objects segmented from the image. The value of `O` depends on the visual-prompt type—typically, a single prompt produces one object mask.
+      masks: NumPy array with shape (O,1,H,W), where `O` is the number of oobject masks from the image. The value of `O` depends on the prompt key type—typically, 
+      for `box`, one box produces one object mask, for `points`, only generate one object mask.
       Each segmented object map matches the original image in height and width;
       'npy_path': a string path to the saved mask in `npy` file.
       e.g. {'/path/to/image_file': {'mask': <numpy array with shape (O, 1, H, W)>, 'npy_path': 'path/to/saved_mask_npy'},...}
@@ -204,7 +205,7 @@ toolbox_metadata:
       command: |
         segmenter_tool = Segmenter_Tool()
         masks = segmenter_tool.execute(prompt_type='boxes', input_prompts=[{'image_path': 'path/to/image1', 'input_box': [[100,150,400,500],...]}, {'image_path': 'path/to/image2', 'input_box': [[50,80,300,350],...]}], model_size='small')
-        # Note: Each image must have a unique name.
+        # Note: When you want to segment multiple objects, use multiple bounding boxes for a single image_path instead of repeating the image_path.
         # Each image can receive either one or more input boxes, or at least two points as visual prompts.
       output_example: >
         masks: {`./image1/path`: {'mask': <np.ndarray>, 'npy_path': <str>}, `./image2/path`: {'mask': <np.ndarray>, 'npy_path': <str>}} 
