@@ -73,6 +73,15 @@ class Depth_Estimator_Tool(BaseTool):
             }
         )
 
+    def _get_local_model(self, repo_id: str, cache_dir: str) -> str:
+        """
+        download model weights onto local
+        """
+        repo_dir = os.path.join(cache_dir, repo_id.replace("/", "__"))
+        local_path = snapshot_download(repo_id, cache_dir=repo_dir, local_files_only=False)
+        print(f"[DepthEstimator] Using local snapshot at {local_path}")
+        return local_path
+
     def execute(self, image_path: list[str], depth_estimation_type: str = "relative", output=False, outdir='./vis_depth'):
         # always create directory
         os.makedirs(outdir, exist_ok=True)    
@@ -96,14 +105,15 @@ class Depth_Estimator_Tool(BaseTool):
             # iterate over image_path
             for k, filename in enumerate(image_path):
                 # print(f'Processing image {k+1}/{len(image_path)}: {filename}')
+                if not os.path.exists(filename):
+                    raise FileNotFoundError(f"Image not found: {filename}")
+
                 raw_image = cv2.imread(filename)
                 print(f"raw_image shape: {raw_image.shape}")
-                if raw_image is None:
-                    print(f"Warning: Failed to load image {filename}")
-                    continue
                 
                 # depth esetimation
-                depth_raw = depth_anything.infer_image(raw_image, input_size).astype(np.float32)
+                with torch.no_grad():
+                    depth_raw = depth_anything.infer_image(raw_image, input_size).astype(np.float32)
                 depth_vis = ((depth_raw - depth_raw.min()) /
                 (depth_raw.max() - depth_raw.min() + 1e-8) * 255).astype(np.uint8)
                 
@@ -131,16 +141,31 @@ class Depth_Estimator_Tool(BaseTool):
             #         f.write(f"result : {np.array2string(results[i])}\n")
             return image_results
         else:
+            cache_dir = "./checkpoints"
+            os.makedirs(cache_dir, exist_ok=True)
             if depth_estimation_type == 'metric_outdoor':                
                 # load pipe
-                pipe = pipeline(task="depth-estimation", model="depth-anything/Depth-Anything-V2-Metric-Outdoor-Large-hf")
+                # pipe = pipeline(task="depth-estimation", model="depth-anything/Depth-Anything-V2-Metric-Outdoor-Large-hf")
+                repo_id = "depth-anything/Depth-Anything-V2-Metric-Outdoor-Large-hf"
             elif depth_estimation_type == 'metric_indoor':
                 # load pipe
-                pipe = pipeline(task="depth-estimation", model="depth-anything/Depth-Anything-V2-Metric-Indoor-Large-hf")
+                # pipe = pipeline(task="depth-estimation", model="depth-anything/Depth-Anything-V2-Metric-Indoor-Large-hf")
+                repo_id = "depth-anything/Depth-Anything-V2-Metric-Indoor-Large-hf"
             else:
                 raise ValueError("No valid 'depth estimation type' ! \n ")
 
+            # ensure offloading inference
+            local_repo_path = self._get_local_model(repo_id, cache_dir)
+            pipe = pipeline(
+                task="depth-estimation",
+                model=local_repo_path,
+                local_files_only=True
+            )
+
             for k, filename in enumerate(image_path):
+                if not os.path.exists(filename):
+                    raise FileNotFoundError(f"Image not found: {filename}")
+
                 image = Image.open(filename).convert("RGB")
                 # inference
                 # metric
