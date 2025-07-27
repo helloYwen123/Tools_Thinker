@@ -153,8 +153,9 @@ class Depth_Estimator_Tool(BaseTool):
                 depth_info = depth_info[..., None]
                 
                 # # transfer to NumPy
-                depth_np = depth_metric.cpu().numpy().astype(np.float32)
-                
+                depth_np = depth_metric.to(torch.float32).cpu().numpy()
+
+
                 base_name = os.path.splitext(os.path.basename(filename))[0]
                 npy_path = os.path.join(outdir, f"{base_name}_depth.npy")
                 np.save(npy_path, depth_np)
