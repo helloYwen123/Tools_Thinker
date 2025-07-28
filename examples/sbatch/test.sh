@@ -1,11 +1,12 @@
 #!/bin/bash
 
-#SBATCH --job-name=exp02la4
-#SBATCH --partition=lrz-dgx-a100-80x8
-#SBATCH --gres=gpu:4
+#SBATCH --job-name=exp01mh2
+#SBATCH --partition=mcml-hgx-h100-94x4
+#SBATCH --gres=gpu:2
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=512g
+#SBATCH --qos=mcml
 #SBATCH --time=1-00:00:00
 #SBATCH --output=/dss/dssmcmlfs01/pn39qo/pn39qo-dss-0000/di97cow/sbatch_logs/output_%j.log                   
 #SBATCH --error=/dss/dssmcmlfs01/pn39qo/pn39qo-dss-0000/di97cow/sbatch_logs/error_%j.log
@@ -22,4 +23,4 @@ echo 'Activated conda env: vlm'
 
 cd /workspace/ywen_ws/Tools_Thinker
 
-bash examples/exp02_4.sh
+bash examples/exp.sh

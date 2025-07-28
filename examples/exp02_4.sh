@@ -21,4 +21,4 @@ PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
     worker.actor.model.model_path=${MODEL_PATH} \
     worker.rollout.tensor_parallel_size=1 \
     trainer.experiment_name=qwen2_5_group_diver_wokl \
-    trainer.n_gpus_per_node=2
+    trainer.n_gpus_per_node=4

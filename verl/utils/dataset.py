@@ -166,10 +166,13 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "
                 "Your primary goal is to accurately answer questions about images by choosing the most appropriate method: "
                 "code reasoning with Python tools or direct natural language reasoning.")
+                
+                # self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "
+                # "Your primary goal is to accurately answer questions about images by code reasoning with Python tools.")
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
-                dataset_json_path = "/workspace/ywen_ws/datasets/datasets_all_balanced_singleimg.json" # "/workspace/ywen_ws/datasets/datasets_all_single_img.json"
+                dataset_json_path = "/workspace/ywen_ws/datasets/spatial457(23752).json" # datasets_all_balanced_singleimg.json"  "/workspace/ywen_ws/datasets/datasets_all_single_img.json"
                 full_path = os.path.join(dataset_json_path)
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)

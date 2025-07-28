@@ -111,7 +111,10 @@ class BatchFunctionRewardManager(FunctionRewardManager):
         response_str, ground_truth, questions, QAids = [], [], [], []
         response_ids = data.batch["responses"]
         response_length = data.batch["response_mask"].sum(dim=-1)
-        index = data.non_tensor_batch["uid"]
+        if step != "validation":
+            index = data.non_tensor_batch["uid"]
+        else:
+            index = None
         for i in range(len(data)):
             valid_response_ids = response_ids[i][: response_length[i]]
             response_str.append(

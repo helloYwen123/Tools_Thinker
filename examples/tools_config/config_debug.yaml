@@ -62,6 +62,7 @@ worker:
     enable_chunked_prefill: false
     tensor_parallel_size: 2 # 2
     limit_images: 3
+    max_num_batched_tokens: 16384
     val_override_config:
       temperature: 0.5
       n: 1
@@ -79,13 +80,13 @@ worker:
     reward_type: batch
     reward_function: ./examples/reward_function/tool_language_reward_concurrent_dd.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
     reward_function_kwargs:
-      format_weight: 0.1
+      format_weight: 0.2
       usage_weight: 0.2
       execution_weight: 0.2
-      accuracy_weight: 0.5
+      accuracy_weight: 0.4
       # think_length_weight: 0.1
       nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight - think_length_weight)
-      root_dir: /workspace/models/debug_logs_wo_kl
+      root_dir: /workspace/models/group_diversity_wo_kl_weight_logs
     num_gpus: 0
     num_cpus: 1
 
@@ -103,5 +104,5 @@ trainer:
   val_generations_to_log: 3
   save_freq: 10  # -1 to disable
   save_limit: -1  # -1 to disable
-  save_checkpoint_path: /workspace/models/debug_nl/
+  save_checkpoint_path: /workspace/models/ckpt/group_diversity_wokl_weight/
   load_checkpoint_path: null

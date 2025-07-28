@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=exp02la2
-#SBATCH --partition=lrz-hgx-a100-80x4
+#SBATCH --partition=lrz-dgx-a100-80x8
 #SBATCH --gres=gpu:2
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1

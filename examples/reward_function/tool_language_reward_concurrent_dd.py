@@ -658,7 +658,10 @@ def compute_score(
         base_scores[i] = overall_score
         component_cache[i] = (format_score, accuracy_score, tool_usage_score,
                         multi_tools_usage_score, exec_score, modes[i])
-    scales = diversity_scaling(modes, index, base_scores)
+    if step != "validation":
+        scales = diversity_scaling(modes, index, base_scores)
+    else:
+        scales = [0.0] * n
     scores = []
     for i in range(n):
         format_score, accuracy_score, tool_usage_score, \

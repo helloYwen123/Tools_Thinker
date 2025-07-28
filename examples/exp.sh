@@ -15,10 +15,10 @@ export RAY_DISABLE_DASHBOARD=1
 # Mixed_SAT: /workspace/ywen_ws/datasets/Mix_VQAs.json
 
 PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
-    config=examples/tools_config/config_group_1.yaml \
+    config=examples/tools_config/config_debug.yaml \
     data.train_files=Mixed_SAT \
     data.val_files=Mixed_SAT \
     worker.actor.model.model_path=${MODEL_PATH} \
     worker.rollout.tensor_parallel_size=1 \
-    trainer.experiment_name=qwen_spatial_diver_code_nl_wokl \
+    trainer.experiment_name=qwen2_5_group_diver_weight \
     trainer.n_gpus_per_node=2
