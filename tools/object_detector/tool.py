@@ -103,6 +103,9 @@ class Object_Detector_Tool(BaseTool):
         padding: int = 20,
     ):
         # --------- 1. path and model check ----------
+        if isinstance(image,list):
+            image = image[0]
+            
         if not os.path.exists(image):
             raise FileNotFoundError(f"Image not found: {image}")
 
