@@ -359,7 +359,7 @@ def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"
     if root_dir and ((isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0)):
         log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/tools_usage/{step_str}")
         os.makedirs(log_root_dir, exist_ok=True)
-        log_path = os.path.join(log_root_dir, f"rewardlog_{current_time}-{QAid}.log")
+        log_path = os.path.join(log_root_dir, f"toolusage_log_{current_time}-{QAid}.log")
 
     if mode != "code":
         if log_root_dir:

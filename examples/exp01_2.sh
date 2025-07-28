@@ -20,5 +20,5 @@ PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
     data.val_files=Mixed_SAT \
     worker.actor.model.model_path=${MODEL_PATH} \
     worker.rollout.tensor_parallel_size=1 \
-    trainer.experiment_name=qwen_spatial_diver_code_nl_wokl \
+    trainer.experiment_name=qwen_spatial_w_single_cn \
     trainer.n_gpus_per_node=2
