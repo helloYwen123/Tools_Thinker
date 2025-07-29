@@ -39,7 +39,8 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
         filter_overlong_prompts=config.filter_overlong_prompts,
         subtasks= config.subtasks, # specific for BLINK dataset and CV-Bench
         dataset_prefix = config.dataset_prefix, # specific for BLINK dataset and CV-Bench
-        tools_config= config.tools_config # specific for tools
+        tools_config= config.tools_config, # specific for tools
+        double_modes = config.double_modes, # specific for tools
     )
     # use sampler for better ckpt resume
     if config.shuffle:
@@ -74,7 +75,8 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
         filter_overlong_prompts=config.filter_overlong_prompts,
         subtasks= config.subtasks, # specific for BLINK dataset and CV-Bench
         dataset_prefix = config.dataset_prefix, # specific for BLINK dataset and CV-Bench
-        tools_config= config.tools_config # specific for tools
+        tools_config= config.tools_config, # specific for tools
+        double_modes = config.double_modes,
     )
     val_dataloader = StatefulDataLoader(
         dataset=val_dataset,

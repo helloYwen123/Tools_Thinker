@@ -58,6 +58,29 @@ def is_error_output(result) -> bool:
         or "Failed to" in result
     )
 
+def extract_options(text: str) -> dict:
+    # Match patterns like A. xxx, A) xxx, A: xxx, A xxx, etc., supporting multiple options in one line
+    # Avoid matching cases like 'AA'
+    # Option letters are recognized if they appear alone and are followed by a separator (., :, etc.)
+    # Supports both multiple options per line (e.g., A. North, B. South, ...) and one option per line
+    # Output format: {"A": "North", ...}
+    option_pattern = r"([A-Za-z])\s*[\.．:：\)）、】\]]?\s*([^A-Za-z0-9\n,;，；。]{0,10}[A-Za-z0-9\u4e00-\u9fa5 \-]+)"
+
+    # Find all matches (each option can contain spaces, Chinese characters, digits, hyphens)
+    matches = re.findall(option_pattern, text)
+    # print(matches) # Uncomment for debugging if needed
+
+    # Clean up trailing punctuation from content
+    option_dict = {}
+    for label, content in matches:
+        label = label.upper()
+        content = content.strip(" ,;，；。)")
+        # Only add to the dictionary if the content is not empty (to avoid false matches)
+        if content:
+            option_dict[label] = content
+
+    return option_dict
+
 def loose_match(a, b):
     # Convert both inputs to string, trim spaces, and lowercase
     a = str(a).strip().lower()
@@ -106,7 +129,10 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, root_
     split      = "validation" if step == "validation" else "train"
     step_str   = f"step_{step}" if isinstance(step, int) else f"step_{step}"
     log_root   = os.path.join(root_dir, f"grpo_tools_logs/{split}/accuracy/{step_str}")
-    
+
+    # get options map
+    options_map = extract_options(question)
+
     answer_pred = None
     reward = 0.0
     if mode == "code" and exec_result is not None:
@@ -116,8 +142,19 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, root_
                     reward = 1.0
             except Exception:
                 pass
+            
             if loose_match(exec_result, solution):
                 reward = 1.0
+
+            # If solution looks like a single letter and is in options_map, check its mapped content
+            if (
+                isinstance(solution, str)
+                and len(solution) == 1
+                and solution.upper() in options_map
+            ):
+                correct_option_content = options_map[solution.upper()]
+                if loose_match(exec_result, correct_option_content):
+                    reward = 1.0
     elif mode == "nl":
         answer_pred = extract_boxed_answer(response)
         if answer_pred:
@@ -662,6 +699,10 @@ def compute_score(
         scales = diversity_scaling(modes, index, base_scores)
     else:
         scales = [0.0] * n
+        
+    ################ disable scaling###############
+    scales = [0.0] * n
+    ###############
     scores = []
     for i in range(n):
         format_score, accuracy_score, tool_usage_score, \

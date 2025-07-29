@@ -52,6 +52,7 @@ class DataConfig:
     subtasks: Optional[list[str]] = None # specific for BLINK dataset and CV-Bench
     dataset_prefix: Optional[str] = None # specifc for BLINK and CV-Bench
     tools_config: Optional[str] = None # Tool Thinker
+    double_modes: bool = False # specific for tools
 
     def post_init(self):
         if self.format_prompt is not None:

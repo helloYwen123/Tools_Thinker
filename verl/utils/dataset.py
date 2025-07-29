@@ -99,6 +99,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         subtasks: Optional[list[str]] = None, # specific for BLINK dataset and CV-Bench
         dataset_prefix: Optional[str] = None, # specific for BLINK and CV-Bench
         tools_config: Optional[str] = None, # specific for tools
+        double_modes: bool = False,
     ):
         self.tokenizer = tokenizer
         self.processor = processor
@@ -112,6 +113,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         self.filter_overlong_prompts = filter_overlong_prompts
         self.data_path = data_path ####
         self.configuration_file = tools_config ####
+        self.double_modes = double_modes
         
         if "@" in data_path:
             data_path, data_split = data_path.split("@")
@@ -163,16 +165,19 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 # SYSTEM_PROMPT_TEMPLATE = conf.get("prompt_template")
                 # self.system_prompt = SYSTEM_PROMPT_TEMPLATE.format(available_tools=active_tool_names,
                 #                                             toolbox_metadata=filtered_metadata_dict)
-                self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "
-                "Your primary goal is to accurately answer questions about images by choosing the most appropriate method: "
-                "code reasoning with Python tools or direct natural language reasoning.")
-                
-                # self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "
-                # "Your primary goal is to accurately answer questions about images by code reasoning with Python tools.")
+                if self.double_modes:
+                    self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "
+                    "Your primary goal is to accurately answer questions about images by choosing the most appropriate method: "
+                    "code reasoning with Python tools or direct natural language reasoning.")
+                else:
+                    self.system_prompt = """
+You are a helpful AI assistant specializing in code-based visual reasoning. Your primary goal is to accurately answer questions about images by writing Python code using available tools.
+You should analyze visual content through code reasoning, not just by observation. Always aim to solve visual problems programmatically using Python.
+"""
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
-                dataset_json_path = "/workspace/ywen_ws/datasets/spatial457(23752).json" # datasets_all_balanced_singleimg.json"  "/workspace/ywen_ws/datasets/datasets_all_single_img.json"
+                dataset_json_path = "/workspace/ywen_ws/datasets/datasets_all_balanced_singleimg.json" # spatial457_wo_L5(8670).json" # datasets_all_balanced_singleimg.json"
                 full_path = os.path.join(dataset_json_path)
                 with open(full_path, 'r') as f:
                     raw_dataset = json.load(f)
