@@ -41,6 +41,7 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
         dataset_prefix = config.dataset_prefix, # specific for BLINK dataset and CV-Bench
         tools_config= config.tools_config, # specific for tools
         double_modes = config.double_modes, # specific for tools
+        dataset_json = config.dataset_json,
     )
     # use sampler for better ckpt resume
     if config.shuffle:
@@ -77,6 +78,7 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
         dataset_prefix = config.dataset_prefix, # specific for BLINK dataset and CV-Bench
         tools_config= config.tools_config, # specific for tools
         double_modes = config.double_modes,
+        dataset_json = config.dataset_json,
     )
     val_dataloader = StatefulDataLoader(
         dataset=val_dataset,

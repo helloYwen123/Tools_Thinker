@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=exp03la2
+#SBATCH --job-name=exp03lh
 #SBATCH --partition=lrz-hgx-h100-94x4
 #SBATCH --gres=gpu:2
 #SBATCH --nodes=1

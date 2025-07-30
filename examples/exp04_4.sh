@@ -1,7 +1,7 @@
 set -x
 # group diversity scaling
 export WANDB_API_KEY=2d883ab1037c7c4b261d54b523c3515fa87dde91
-MODEL_PATH=/workspace/models/sft/tools_nl_0.3_wo_orien  # /workspace/ywen_ws/saved_model/tool_thinker-0.1 #Qwen/Qwen2.5-VL-7B-Instruct  # replace it with your local file path
+MODEL_PATH=/workspace/models/sft/tools_thinker_multitools_sft #/workspace/ywen_ws/saved_model/tool_thinker-0.1 #Qwen/Qwen2.5-VL-7B-Instruct  # replace it with your local file path
 
 timestamp=$(date +"%m%d_%H%M%S")
 mkdir -p debug_logs
@@ -15,10 +15,10 @@ export RAY_DISABLE_DASHBOARD=1
 # Mixed_SAT: /workspace/ywen_ws/datasets/Mix_VQAs.json
 
 PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
-    config=examples/tools_config/config_debug.yaml \
+    config=examples/tools_config/config_group_4.yaml \
     data.train_files=Mixed_SAT \
     data.val_files=Mixed_SAT \
     worker.actor.model.model_path=${MODEL_PATH} \
     worker.rollout.tensor_parallel_size=1 \
-    trainer.experiment_name=qwen2_5_group_diver_weight \
-    trainer.n_gpus_per_node=2
+    trainer.experiment_name=tools_pure_code——457_multitools_sft \
+    trainer.n_gpus_per_node=4

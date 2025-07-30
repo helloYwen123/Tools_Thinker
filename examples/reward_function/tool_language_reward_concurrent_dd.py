@@ -614,7 +614,7 @@ def format_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs"):
 def compute_score(
     predict_strs: List[str],
     ground_truths: List[str],
-    format_weight: float = 0.2, 
+    format_weight: float = 0.2,
     usage_weight: float = 0.1,
     execution_weight: float = 0.2,
     accuracy_weight: float = 0.5,
@@ -625,6 +625,7 @@ def compute_score(
     questions = None,
     root_dir = None,
     index = None,
+    diversity_scale = False,
 ):
     scores = []
     n = len(predict_strs)
@@ -695,13 +696,10 @@ def compute_score(
         base_scores[i] = overall_score
         component_cache[i] = (format_score, accuracy_score, tool_usage_score,
                         multi_tools_usage_score, exec_score, modes[i])
-    if step != "validation":
+    if step != "validation" and diversity_scale:
         scales = diversity_scaling(modes, index, base_scores)
     else:
         scales = [0.0] * n
-        
-    ################ disable scaling###############
-    scales = [0.0] * n
     ###############
     scores = []
     for i in range(n):
