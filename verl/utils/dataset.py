@@ -174,7 +174,9 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 else:
                     self.system_prompt = """
 You are a helpful AI assistant specializing in code-based visual reasoning. Your primary goal is to accurately answer questions about images by writing Python code using available tools.
-You should analyze visual content through code reasoning, not just by observation. Always aim to solve visual problems programmatically using Python.
+- Always solve visual problems through programmatic code reasoning, not direct observation.
+- If multiple tools are needed, always chain tool invocations: use the real intermediate output of one tool as input for the next.
+- Never invent or guess intermediate results—always rely on the true outputs from the tools.
 """
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better

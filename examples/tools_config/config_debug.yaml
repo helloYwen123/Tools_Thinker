@@ -4,11 +4,11 @@ data:
   prompt_key: problem
   answer_key: answer
   image_key: images
-  max_prompt_length: 8192
-  max_response_length: 2048
+  max_prompt_length: 6656
+  max_response_length: 1536
   rollout_batch_size: 32 # 512
   val_batch_size: 1024 # 1024
-  format_prompt: ./examples/format_prompt/tools_thinker_format_w_think_wo_system_2.jinja # tools_thinker_format_wo_think.jinja
+  format_prompt: ./examples/format_prompt/tools_thinker_double_w_think_wo_system.jinja # tools_thinker_format_wo_think.jinja
   override_chat_template: null
   shuffle: true
   seed: 42
@@ -18,6 +18,8 @@ data:
   subtasks: # ["Counting"]  # ["Counting","Art_Style"] # subtasks list or null
   dataset_prefix:  # Dataset root path # BLINK:/home/stud/wxie # SAT:/nfs/data8/liao/wxie/SAT/
   tools_config: ./examples/tools_config/tools_configuration_file.yaml
+  double_modes: false # True
+  dataset_json: "/workspace/ywen_ws/datasets/spatial457_wo_L5(8670).json" # spatial457_wo_L5(8670).json" "/workspace/ywen_ws/datasets/datasets_all_balanced_singleimg.json" "datasets_all_balancde_mode(6691).json"
 
 algorithm:
   adv_estimator: grpo
@@ -86,7 +88,8 @@ worker:
       accuracy_weight: 0.4
       # think_length_weight: 0.1
       nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight - think_length_weight)
-      root_dir: /workspace/models/group_diversity_wo_kl_weight_logs
+      root_dir: /workspace/models/debug
+      diversity_scale: false
     num_gpus: 0
     num_cpus: 1
 
@@ -104,5 +107,5 @@ trainer:
   val_generations_to_log: 3
   save_freq: 10  # -1 to disable
   save_limit: -1  # -1 to disable
-  save_checkpoint_path: /workspace/models/ckpt/group_diversity_wokl_weight/
+  save_checkpoint_path: /workspace/models/ckpt/debug/
   load_checkpoint_path: null

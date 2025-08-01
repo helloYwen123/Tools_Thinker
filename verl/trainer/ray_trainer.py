@@ -187,7 +187,6 @@ class RayPPOTrainer:
         self.config = config
         self.reward_fn = reward_fn
         self.val_reward_fn = val_reward_fn
-
         #######################################################
         self.tool_usage = False
         if ("BLINK" in config.data.train_files or "SAT" in config.data.train_files or "CV-Bench" in config.data.train_files):

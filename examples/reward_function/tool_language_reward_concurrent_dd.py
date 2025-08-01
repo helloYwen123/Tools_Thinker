@@ -103,7 +103,7 @@ def loose_match(a, b):
         "correct": "true",
         "incorrect": "false",
         "right": "true",
-        "wrong": "false"
+        "wrong": "false",
     }
     a = synonym_map.get(a, a)
     b = synonym_map.get(b, b)
@@ -336,7 +336,7 @@ execution_reward.reward_type = "execution"
 ### Concurrent Batch Execution Reward
 
 def batch_execution_reward(
-    predict_strs, QAids, steps, questions, max_workers=8, root_dir=None
+    predict_strs, QAids, steps, questions, max_workers=4, root_dir=None
 ):
     # need to loop n times
     n = len(predict_strs)
@@ -383,6 +383,7 @@ def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"
         'segmenter': 'Segmenter_Tool',
         'matcher': 'Matcher_Tool',
         "advanced_detector": "Advanced_Object_Detector_Tool",
+        "orientation_estimator": "Orientation_Estimator_Tool",
     }
 
     def extract_code(completion):
@@ -482,7 +483,7 @@ def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"
 ###############################
 #### Thinking Length Reward ###
 ###############################
-def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs", max_length = 1024):
+def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs", max_length = 768):
     reward = 0.0
     # create timepoints as part of log names
     current_time = datetime.now().strftime("%d-%H-%M-%S")
@@ -503,6 +504,17 @@ def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/l
         think_text_clean = re.sub(r"\s+", "", think_text)
         think_len = len(think_text_clean)
         reward = min(think_len, max_length) / max_length
+
+        if think_len > 512:
+            log_root_dir = os.path.join(root_dir, "long_think_logs")
+            os.makedirs(log_root_dir, exist_ok=True)
+            log_path = os.path.join(log_root_dir, f"long_think_{current_time}-{QAid}.log")
+            with open(log_path, "a+") as f:
+                f.write(f"--- Long <think> Detected ---\n")
+                f.write(f"think length: {think_len}\n")
+                f.write(f"response:\n{predict_str}\n\n")
+                f.write(f"reward: {reward}\n\n")
+
     else:
         reward = 0.0
 
@@ -678,7 +690,7 @@ def compute_score(
         if mode == "code":
             overall_score = (
                 format_weight   * format_score     +
-                usage_weight    * tool_usage_score + # disable toolusage  # 改
+                usage_weight    * tool_usage_score + # disable toolusage  #
                 execution_weight * exec_score      +
                 # think_length_weight * think_length_score +
                 accuracy_weight * accuracy_score   +

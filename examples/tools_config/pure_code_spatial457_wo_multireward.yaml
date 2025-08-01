@@ -19,7 +19,7 @@ data:
   dataset_prefix:  # Dataset root path # BLINK:/home/stud/wxie # SAT:/nfs/data8/liao/wxie/SAT/
   tools_config: ./examples/tools_config/tools_configuration_file.yaml
   double_modes: false # True
-  dataset_json: "/workspace/ywen_ws/datasets/spatial457_wo_L5(8670).json" # spatial457_wo_L5(8670).json"
+  dataset_json: "/workspace/ywen_ws/datasets/spatial457_wo_L5(8670)_random.json" # spatial457_wo_L5(8670).json"
 
 algorithm:
   adv_estimator: grpo
@@ -80,7 +80,7 @@ worker:
 
   reward:
     reward_type: batch
-    reward_function: ./examples/reward_function/tool_language_reward_concurrent_dd.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
+    reward_function: ./examples/reward_function/tool_language_reward_concurrent_dd_wo_multi_reward.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
     reward_function_kwargs:
       format_weight: 0.1
       usage_weight: 0.2
@@ -88,8 +88,8 @@ worker:
       accuracy_weight: 0.5
       # think_length_weight: 0.1
       nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight - think_length_weight)
-      root_dir: /workspace/models/pure_code_spatial457_wo_kl_multi_log
-      diversity_scale: true
+      root_dir: /workspace/models/pure_code_spatial457_wo_multireward_log
+      diversity_scale: false
     num_gpus: 0
     num_cpus: 1
 
@@ -101,11 +101,11 @@ trainer:
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 8
-  val_freq: 50  # -1 to disable default:5
+  val_freq: 100  # -1 to disable default:5
   val_before_train: false # true
   val_only: false
   val_generations_to_log: 3
   save_freq: 10  # -1 to disable
   save_limit: -1  # -1 to disable
-  save_checkpoint_path: /workspace/models/ckpt/pure_code_spatial457_wo_kl_multi/
+  save_checkpoint_path: /workspace/models/ckpt/pure_code_spatial457_wo_multireward/
   load_checkpoint_path: null

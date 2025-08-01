@@ -343,6 +343,7 @@ def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"
         'segmenter': 'Segmenter_Tool',
         'matcher': 'Matcher_Tool',
         "advanced_detector": "Advanced_Object_Detector_Tool",
+        "orientation_estimator": "Orientation_Estimator_Tool",
     }
 
     def extract_code(completion):
