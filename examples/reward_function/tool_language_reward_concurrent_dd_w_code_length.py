@@ -362,7 +362,7 @@ def batch_execution_reward(
 ###########################
 #### Tool Usage Reward ####
 ###########################
-def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs", max_chars=256):
+def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs", max_chars=2024):
     """
     Check whether the generated code uses any registered tools:
     - It must import a tool module
@@ -541,7 +541,7 @@ def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"
 ###############################
 #### Thinking Length Reward ###
 ###############################
-def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs", max_length = 2048):
+def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs", max_length = 1024):
     reward = 0.0
     # create timepoints as part of log names
     current_time = datetime.now().strftime("%d-%H-%M-%S")
@@ -563,8 +563,8 @@ def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/l
         think_len = len(think_text_clean)
         reward = min(think_len, max_length) / max_length
 
-        if think_len > 1024:
-            log_root_dir = os.path.join(root_dir, "long_think_logs")
+        if think_len > 800 and (step == "validation" or (isinstance(step, int) and step % 2 == 0)):
+            log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/think_length/{step_str}")
             os.makedirs(log_root_dir, exist_ok=True)
             log_path = os.path.join(log_root_dir, f"long_think_{current_time}-{QAid}.log")
             with open(log_path, "a+") as f:
@@ -733,7 +733,7 @@ def compute_score(
 
         format_score = format_reward(predict_str, step, QAid, root_dir=root_dir)
         tool_usage_score, multi_tools_usage_score, code_length_reward = tool_usage_reward(predict_str, step, QAid, root_dir=root_dir) # 改
-        # think_length_score = think_length_reward(predict_str, step, QAid, root_dir=root_dir) # 改
+        think_length_score = think_length_reward(predict_str, step, QAid, root_dir=root_dir) # 改
 
         accuracy_score = accuracy_reward(
             exec_output,
@@ -766,7 +766,7 @@ def compute_score(
         else:
             overall_score = 0.0
         base_scores[i] = overall_score
-        component_cache[i] = (format_score, accuracy_score, tool_usage_score,
+        component_cache[i] = (format_score, accuracy_score, tool_usage_score, code_length_reward, think_length_score,  # 改
                         multi_tools_usage_score, exec_score, modes[i])
     if step != "validation" and diversity_scale:
         scales = diversity_scaling(modes, index, base_scores)
@@ -776,7 +776,7 @@ def compute_score(
     scores = []
     for i in range(n):
         format_score, accuracy_score, tool_usage_score, \
-        multi_tools_usage_score, exec_score, mode = component_cache[i]
+        code_length_reward, think_length_score, multi_tools_usage_score, exec_score, mode = component_cache[i] #  改
 
         overall_score = base_scores[i] / (1.0 + scales[i])
 

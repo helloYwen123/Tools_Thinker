@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
+import json,os
 
 import ray
 from omegaconf import OmegaConf
@@ -36,6 +36,12 @@ class Runner:
     def run(self, config: PPOConfig):
         # print config
         print(json.dumps(config.to_dict(), indent=2))
+        config_logs_path = config.trainer.config_logs_path
+        os.makedirs(os.path.dirname(config_logs_path), exist_ok=True)
+
+        with open(config_logs_path, "w", encoding="utf-8") as f:
+            json.dump(config.to_dict(), f, ensure_ascii=False, indent=2)
+
 
         # instantiate tokenizer
         tokenizer = get_tokenizer(

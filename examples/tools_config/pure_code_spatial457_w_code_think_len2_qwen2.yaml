@@ -5,7 +5,7 @@ data:
   answer_key: answer
   image_key: images
   max_prompt_length: 6656
-  max_response_length: 1536 #2048
+  max_response_length: 2048 #2048
   rollout_batch_size: 64 # 512
   val_batch_size: 1024 # 1024
   format_prompt: ./examples/format_prompt/tools_thinker_pure_w_think_wo_system.jinja
@@ -19,7 +19,7 @@ data:
   dataset_prefix:  # Dataset root path # BLINK:/home/stud/wxie # SAT:/nfs/data8/liao/wxie/SAT/
   tools_config: ./examples/tools_config/tools_configuration_file.yaml
   double_modes: false # True
-  dataset_json: "/workspace/ywen_ws/datasets/spatial457_wo_L5(8670).json" # spatial457_wo_L5(8670).json"
+  dataset_json: "/workspace/ywen_ws/datasets/spatial457_wo_L5(8400)_random.json" # spatial457_wo_L5(8670).json"
 
 algorithm:
   adv_estimator: grpo
@@ -59,7 +59,7 @@ worker:
     n: 8 # 5
     temperature: 1.0
     top_p: 0.99
-    gpu_memory_utilization: 0.6 # 0.6
+    gpu_memory_utilization: 0.8 # 0.6
     enforce_eager: false
     enable_chunked_prefill: false
     tensor_parallel_size: 2
@@ -80,16 +80,17 @@ worker:
 
   reward:
     reward_type: batch
-    reward_function: ./examples/reward_function/tool_language_reward_concurrent_dd.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
+    reward_function: ./examples/reward_function/tool_language_reward_concurrent_dd_w_think_code_length2_qwen2.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
     reward_function_kwargs:
+      think_length_weight: 0.25
+      code_think_length_weight: 0.25
       format_weight: 0.1
       usage_weight: 0.2
       execution_weight: 0.2
       accuracy_weight: 0.5
-      # think_length_weight: 0.1
       nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight - think_length_weight)
-      root_dir: /workspace/models/pure_code_spatial_wo_kl_multi_log
-      diversity_scale: true
+      root_dir: /workspace/models/exp_pure_code_spatial457_w_code_think_len2_qwen2_logs
+      diversity_scale: false
     num_gpus: 0
     num_cpus: 1
 
@@ -101,11 +102,11 @@ trainer:
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 8
-  val_freq: 50  # -1 to disable default:5
+  val_freq: 100  # -1 to disable default:5
   val_before_train: false # true
   val_only: false
   val_generations_to_log: 3
   save_freq: 10  # -1 to disable
   save_limit: -1  # -1 to disable
-  save_checkpoint_path: /workspace/models/ckpt/pure_code_spatial_wo_kl_multi/
+  save_checkpoint_path: /workspace/models/ckpt/exp_pure_code_spatial457_w_code_think_len2_qwen2/
   load_checkpoint_path: null

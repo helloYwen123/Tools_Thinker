@@ -318,7 +318,7 @@ class RayPPOTrainer:
             sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())                                      
             # test_batch: DataProto 对象;结合原先的 test_batch 和 test_output_gen_batch
             test_batch = test_batch.union(test_output_gen_batch)
-            # 估计内容: 原始的 input_ids/mask, 生成的 responses/response_mask, non_tensor 的 ground_truth
+            # 估计内容: original: input_ids/mask, generated: responses/response_mask, non_tensor: ground_truth
             # evaluate using reward_function
             #########################################
             if self.tool_usage:
@@ -394,7 +394,7 @@ class RayPPOTrainer:
     def init_workers(self) -> None:
         """Init resource pool and worker group"""
         self.resource_pool_manager.create_resource_pool()
-        # 定义哪个资源池 上需要运行哪些类型 的 Worker
+        # which worker in which resource pools
         self.resource_pool_to_cls = {pool: {} for pool in self.resource_pool_manager.resource_pool_dict.values()}
 
         # create actor and rollout
@@ -440,7 +440,7 @@ class RayPPOTrainer:
         self.wg_dicts = []
         # resource_pool: 当前处理的 RayResourcePool 对象。
         # class_dict: 一个字典，包含了所有需要在这个 resource_pool 上运行的 Worker 的打包配置。例如，如果 ActorRollout 和 Critic 被配置在同一个资源池，
-        # class_dict 可能就是 {"actor_rollout": actor_rollout_cls, "critic": critic_cls}
+        # class_dict: {"actor_rollout": actor_rollout_cls, "critic": critic_cls}
         for resource_pool, class_dict in self.resource_pool_to_cls.items():
             worker_dict_cls = create_colocated_worker_cls(class_dict=class_dict)
             wg_dict = self.ray_worker_group_cls(resource_pool=resource_pool, ray_cls_with_init=worker_dict_cls)

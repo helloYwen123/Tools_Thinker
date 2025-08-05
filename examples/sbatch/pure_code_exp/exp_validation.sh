@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=spa_c
+#SBATCH --job-name=valid
 #SBATCH --partition=lrz-hgx-a100-80x4,lrz-dgx-a100-80x8,lrz-hgx-h100-94x4
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:4
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=512g
@@ -21,4 +21,4 @@ conda activate vlm
 echo 'Activated conda env: vlm'
 cd /workspace/ywen_ws/Tools_Thinker
 
-bash examples/exp_purecode_spatial457_w_code_length.sh
+bash examples/validation.sh

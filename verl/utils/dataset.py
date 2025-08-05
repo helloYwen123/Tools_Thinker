@@ -168,9 +168,10 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                 # self.system_prompt = SYSTEM_PROMPT_TEMPLATE.format(available_tools=active_tool_names,
                 #                                             toolbox_metadata=filtered_metadata_dict)
                 if self.double_modes:
-                    self.system_prompt = ("You are an expert AI assistant specializing in visual problem-solving. "
-                    "Your primary goal is to accurately answer questions about images by choosing the most appropriate method: "
-                    "code reasoning with Python tools or direct natural language reasoning.")
+                    self.system_prompt = \
+("You are an expert AI assistant specializing in visual problem-solving. "
+"Your primary goal is to accurately answer questions about images by choosing the most appropriate method: "
+"code reasoning with Python tools or direct natural language reasoning.")
                 else:
                     self.system_prompt = """
 You are a helpful AI assistant specializing in code-based visual reasoning. Your primary goal is to accurately answer questions about images by writing Python code using available tools.
@@ -311,8 +312,9 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
         full_prompt = example["messages"][0]["content"].strip()
         full_prompt = full_prompt.replace("<image> Answer in natural language. ", "")
         answer = example["messages"][1]["content"].strip()
-        image_name = os.path.splitext(os.path.basename(example["images"][0]))[0]
-        idx = f"{image_name}"  # image name as index
+        # image_name = os.path.splitext(os.path.basename(example["images"][0]))[0]
+        # idx = f"{image_name}"  # image name as index
+        idx = f"{example['idx']}"
         
         return {
             "images": images,

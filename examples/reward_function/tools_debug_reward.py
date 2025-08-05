@@ -32,6 +32,7 @@ import time
 import json
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
 
+
 def detect_mode(completion: str) -> str:
     """
     1. <think>...</think>  <code>...</code>, without <answer>
@@ -191,6 +192,17 @@ def accuracy_reward(exec_result, response, step, solution, QAid, question, root_
             f.write(f"response:\n{response}\n")
             f.write("=" * 30 + "\n\n")
 
+    if isinstance(step, int) and step < 20 and reward == 1.0:
+        correct_jsonl_path = os.path.join(root_dir, f"grpo_tools_logs/{split}/correct_samples_step.jsonl")
+        os.makedirs(os.path.dirname(correct_jsonl_path), exist_ok=True)
+        with open(correct_jsonl_path, "a", encoding="utf-8") as fout:
+            json.dump({
+                "QAid": QAid,
+                "question": question,
+                "solution": solution,
+                "predicted_str": predicted_str
+            }, fout, ensure_ascii=False)
+            fout.write("\n")
     return reward
 
 accuracy_reward.reward_type = "accuracy"
@@ -370,7 +382,7 @@ def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"
     Returns:
         (tool_usage_reward, multi_tool_reward, code_length_reward)
     """
-    start_time = time.time()
+    start_time = time.time()  
     mode = detect_mode(predict_str)
     tool_usage_reward = 0.0
     multi_tool_reward = 0.0
@@ -575,6 +587,8 @@ def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/l
     else:
         reward = 0.0
 
+    # TODO
+    # logging
     return reward
 ##########################
 #### diversity reward ####
@@ -749,10 +763,10 @@ def compute_score(
                 usage_weight    * tool_usage_score + # disable toolusage  #
                 execution_weight * exec_score      +
                 think_length_weight * think_length_score +
-                accuracy_weight * accuracy_score
-                # code_think_length_weight * code_length_reward
+                accuracy_weight * accuracy_score +
+                code_think_length_weight * code_length_reward
                 # multi_tools_usage_score
-            ) # 记得 取掉末尾 + 号
+            )
         elif mode == "nl":
             overall_score = (
                 nl_accuracy_weight * accuracy_score + 
@@ -784,8 +798,8 @@ def compute_score(
                 "accuracy": accuracy_score,
                 "tool_usage": tool_usage_score, # disabled in natural language # 改
                 # "multi_tools": multi_tools_usage_score,
-                # "non_tool_code_len": code_length_reward,  # discarding tool invocation part
-                "think_len": think_length_score,
+                "non_tool_code_len": code_length_reward,  # discarding tool invocation part
+                "think_length": think_length_score,
                 "execution": exec_score, # disabled in natural language
                 "mode": mode,
                 "diversity_scale": scales[i],

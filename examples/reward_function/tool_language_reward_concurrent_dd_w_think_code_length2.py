@@ -370,7 +370,7 @@ def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"
     Returns:
         (tool_usage_reward, multi_tool_reward, code_length_reward)
     """
-    start_time = time.time()
+    start_time = time.time()  
     mode = detect_mode(predict_str)
     tool_usage_reward = 0.0
     multi_tool_reward = 0.0
@@ -575,6 +575,8 @@ def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/l
     else:
         reward = 0.0
 
+    # TODO
+    # logging
     return reward
 ##########################
 #### diversity reward ####
@@ -749,10 +751,10 @@ def compute_score(
                 usage_weight    * tool_usage_score + # disable toolusage  #
                 execution_weight * exec_score      +
                 think_length_weight * think_length_score +
-                accuracy_weight * accuracy_score
-                # code_think_length_weight * code_length_reward
+                accuracy_weight * accuracy_score +
+                code_think_length_weight * code_length_reward
                 # multi_tools_usage_score
-            ) # 记得 取掉末尾 + 号
+            )
         elif mode == "nl":
             overall_score = (
                 nl_accuracy_weight * accuracy_score + 
@@ -763,8 +765,8 @@ def compute_score(
         else:
             overall_score = 0.0
         base_scores[i] = overall_score
-        component_cache[i] = (format_score, accuracy_score, tool_usage_score, code_length_reward, think_length_score,  # 改
-                        multi_tools_usage_score, exec_score, modes[i])
+        component_cache[i] = (format_score, accuracy_score, tool_usage_score, code_length_reward, think_length_score,
+                        multi_tools_usage_score, exec_score, modes[i]) # 改
     if step != "validation" and diversity_scale:
         scales = diversity_scaling(modes, index, base_scores)
     else:
@@ -773,7 +775,7 @@ def compute_score(
     scores = []
     for i in range(n):
         format_score, accuracy_score, tool_usage_score, \
-        code_length_reward, think_length_score, multi_tools_usage_score, exec_score, mode = component_cache[i] # 改
+        code_length_reward, think_length_score, multi_tools_usage_score, exec_score, mode = component_cache[i]
 
         overall_score = base_scores[i] / (1.0 + scales[i])
 
@@ -784,8 +786,8 @@ def compute_score(
                 "accuracy": accuracy_score,
                 "tool_usage": tool_usage_score, # disabled in natural language # 改
                 # "multi_tools": multi_tools_usage_score,
-                # "non_tool_code_len": code_length_reward,  # discarding tool invocation part
-                "think_len": think_length_score,
+                "non_tool_code_len": code_length_reward,  # discarding tool invocation part
+                "think_length": think_length_score,
                 "execution": exec_score, # disabled in natural language
                 "mode": mode,
                 "diversity_scale": scales[i],

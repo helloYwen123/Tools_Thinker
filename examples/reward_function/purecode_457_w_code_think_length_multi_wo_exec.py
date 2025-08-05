@@ -361,27 +361,40 @@ def batch_execution_reward(
 ###########################
 #### Tool Usage Reward ####
 ###########################
-def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs", max_chars=1536):
+def tool_usage_reward(
+    predict_str: str,
+    step,
+    QAid,
+    root_dir: str = "/workspace/models/logs",
+    max_chars: int = 2048,
+):
     """
-    Check whether the generated code uses any registered tools:
-    - It must import a tool module
-    - It must create an instance of a known tool class
-    - It must call .execute()
+    Evaluate a generated completion for proper tool usage.
+
+    The completion must:
+    1. import a registered tool module
+    2. instantiate a known tool class
+    3. call .execute() on that instance
+
     Returns:
         (tool_usage_reward, multi_tool_reward, code_length_reward)
     """
     start_time = time.time()
+
+    # Detect whether the completion is code (user-provided helper)
     mode = detect_mode(predict_str)
+
+    # Default rewards
     tool_usage_reward = 0.0
     multi_tool_reward = 0.0
     code_length_reward = 0.0
-    tool_code_len = 0
 
-    # record
+    # Track the set of line numbers that belong to tool-related code
     tool_code_lines = set()
-    #
 
-    # Tool registry
+    # ------------------------------------------------------------------
+    # Registry of valid tool modules   {module_name: class_name}
+    # ------------------------------------------------------------------
     tool_modules = {
         "object_detector":       "Object_Detector_Tool",
         "text_detector":         "Text_Detector_Tool",
@@ -392,155 +405,205 @@ def tool_usage_reward(predict_str, step, QAid, root_dir="/workspace/models/logs"
         "orientation_estimator": "Orientation_Estimator_Tool",
     }
 
-    def extract_code(completion):
+    # -------- helpers --------------------------------------------------
+
+    def extract_code(completion: str) -> str:
+        """Return the contents inside <code>...</code> tags if present."""
         match = re.search(r"<code>(.*?)</code>", completion, re.DOTALL)
         return match.group(1) if match else completion
 
+    def mark_node_lines(node: ast.AST) -> None:
+        """Add all line numbers spanned by an AST node to tool_code_lines."""
+        start = node.lineno
+        end = getattr(node, "end_lineno", start)
+        tool_code_lines.update(range(start, end + 1))
+
+    # -------- logging setup -------------------------------------------
+
     current_time = datetime.now().strftime("%d-%H-%M-%S")
     split = "validation" if step == "validation" else "train"
-    step_str = f"step_{step}" if isinstance(step, int) else f"step_{step}"
+    step_str = f"step_{step}"
     log_root_dir = None
-    if root_dir and ((isinstance(step, str) and step == "validation") or (isinstance(step, int) and step % 2 == 0)):
-        log_root_dir = os.path.join(root_dir, f"grpo_tools_logs/{split}/tools_usage/{step_str}")
-        os.makedirs(log_root_dir, exist_ok=True)
-        log_path = os.path.join(log_root_dir, f"toolusage_log_{current_time}-{QAid}.log")
 
+    if root_dir and (
+        (isinstance(step, str) and step == "validation")
+        or (isinstance(step, int) and step % 2 == 0)
+    ):
+        log_root_dir = os.path.join(
+            root_dir, f"grpo_tools_logs/{split}/tools_usage/{step_str}"
+        )
+        os.makedirs(log_root_dir, exist_ok=True)
+        log_path = os.path.join(
+            log_root_dir, f"toolusage_log_{current_time}-{QAid}.log"
+        )
+
+    # If the completion is not code, short-circuit
     if mode != "code":
         if log_root_dir:
             with open(log_path, "a+") as f:
-                f.write(f"\nQAid: {QAid}\n[Mode]: NL / Invalid\n"
-                        f"\nCompletion:\n{predict_str}\n"
-                        + "=" * 62 + "\n\n")
+                f.write(
+                    f"\nQAid: {QAid}\n[Mode]: NL / Invalid\n"
+                    f"\nCompletion:\n{predict_str}\n"
+                    + "=" * 62 + "\n\n"
+                )
         return 0.0, 0.0, 0.0
 
+    # ------------------------------------------------------------------
+    # Main analysis block
+    # ------------------------------------------------------------------
     try:
         code = extract_code(predict_str)
         lines = code.splitlines()
-        non_tool_lines = []
-        non_tool_char_len = 0
-        tree = ast.parse(code)
+        tree = ast.parse(code, type_comments=True)
 
-        imported_modules      = set()   # 真正导入的模块名
-        imported_aliases      = set()   # import 时的别名（od 之类）
-        class_aliases         = dict()  # from A import B as C  → C → B
-        used_tool_classes     = set()   # 实例化过的工具类名
-        executed_tool_classes = set()   # 调用过 execute() 的工具类名
-        var_to_tool_class     = dict()  # 变量名 → 工具类名
+        # Tracking sets / maps
+        imported_modules = set()      # true module names that were imported
+        imported_aliases = set()      # aliases used in 'import ... as ...'
+        class_aliases = dict()        # alias   -> canonical class name
+        used_tool_classes = set()     # classes instantiated
+        executed_tool_classes = set() # classes whose .execute() was called
+        var_to_tool_class = dict()    # variable -> class name
 
+        # Walk the AST
         for node in ast.walk(tree):
 
-            # -------- import xxx as alias --------
+            # ----------------------------------------------------------
+            # 1. import xxx as alias
+            # ----------------------------------------------------------
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     if alias.name in tool_modules:
                         imported_modules.add(alias.name)
                         imported_aliases.add(alias.asname or alias.name)
-                        tool_code_lines.add(node.lineno)
+                        mark_node_lines(node)
 
-            # -------- from xxx import yyy / * / yyy as alias --------
+            # ----------------------------------------------------------
+            # 2. from xxx import yyy / * / yyy as alias
+            # ----------------------------------------------------------
             elif isinstance(node, ast.ImportFrom) and node.module in tool_modules:
                 for alias in node.names:
-                    # 通配 *：认为导入了整个模块
-                    if alias.name == "*":
+                    if alias.name == "*":  # wildcard import
                         imported_modules.add(node.module)
                         imported_aliases.add(node.module)
-                        tool_code_lines.add(node.lineno)
-                    # 精确类导入
-                    elif alias.name == tool_modules[node.module]:
+                        mark_node_lines(node)
+                    elif alias.name == tool_modules[node.module]:  # class import
                         imported_modules.add(node.module)
                         imported_aliases.add(alias.asname or alias.name)
-                        class_aliases[alias.asname or alias.name] \
-                            = tool_modules[node.module]
-                        tool_code_lines.add(node.lineno)
+                        class_aliases[alias.asname or alias.name] = tool_modules[
+                            node.module
+                        ]
+                        mark_node_lines(node)
 
-            # -------- 处理实例化 --------
+            # ----------------------------------------------------------
+            # 3. variable = ClassName(...)  or  variable = alias.ClassName(...)
+            # ----------------------------------------------------------
             elif isinstance(node, ast.Assign):
                 call_node = node.value
-                # 1) 形式：ClassName()
-                if isinstance(call_node, ast.Call) and isinstance(call_node.func, ast.Name):
+
+                # Case 3-a: direct ClassName()
+                if isinstance(call_node, ast.Call) and isinstance(
+                    call_node.func, ast.Name
+                ):
                     class_name = class_aliases.get(
-                        call_node.func.id, call_node.func.id)
+                        call_node.func.id, call_node.func.id
+                    )
                     if class_name in tool_modules.values():
-                        tool_code_lines.add(node.lineno)
+                        mark_node_lines(node)
                         for target in node.targets:
                             if isinstance(target, ast.Name):
                                 var_to_tool_class[target.id] = class_name
                                 used_tool_classes.add(class_name)
 
-                # 2) 形式：alias.ClassName()
-                elif (isinstance(call_node, ast.Call)
-                        and isinstance(call_node.func, ast.Attribute)
-                        and isinstance(call_node.func.value, ast.Name)):
+                # Case 3-b: alias.ClassName()
+                elif (
+                    isinstance(call_node, ast.Call)
+                    and isinstance(call_node.func, ast.Attribute)
+                    and isinstance(call_node.func.value, ast.Name)
+                ):
                     base_mod = call_node.func.value.id
                     class_name = call_node.func.attr
-                    if (base_mod in imported_aliases
-                            and class_name in tool_modules.values()):
-                        tool_code_lines.add(node.lineno)
+                    if base_mod in imported_aliases and class_name in tool_modules.values():
+                        mark_node_lines(node)
                         for target in node.targets:
                             if isinstance(target, ast.Name):
                                 var_to_tool_class[target.id] = class_name
                                 used_tool_classes.add(class_name)
 
-            # -------- 捕获 .execute() 调用 --------
-            elif (isinstance(node, ast.Call)
-                    and isinstance(node.func, ast.Attribute)
-                    and node.func.attr == "execute"
-                    and isinstance(node.func.value, ast.Name)):
+            # ----------------------------------------------------------
+            # 4. variable.execute(...)
+            # ----------------------------------------------------------
+            elif (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "execute"
+                and isinstance(node.func.value, ast.Name)
+            ):
                 var_name = node.func.value.id
                 if var_name in var_to_tool_class:
-                    cls_name = var_to_tool_class[var_name]
-                    executed_tool_classes.add(cls_name)
-                    tool_code_lines.add(node.lineno)
+                    executed_tool_classes.add(var_to_tool_class[var_name])
+                    # No need to mark lines here; Assign already covered them
 
-        # ---------- 评分 ----------
+        # ------------------------------------------------------------------
+        # Reward calculation
+        # ------------------------------------------------------------------
+        # Tool usage reward: import + instantiate + execute (all satisfied)
         if imported_modules and used_tool_classes.issubset(executed_tool_classes):
             tool_usage_reward = 1.0
 
-        # ---------- 代码长度奖励（按非空行数） ----------
+        # Code length reward: count characters *not* in tool-related lines
         if tool_usage_reward == 1.0:
-            all_line_idx = set(range(1, len(lines)+1))
-            non_tool_lines = sorted(all_line_idx - tool_code_lines)
-            non_tool_code_str = "".join(lines[i-1].strip() for i in non_tool_lines)
-            non_tool_char_len = len(non_tool_code_str)
+            all_lines = set(range(1, len(lines) + 1))
+            non_tool_lines = sorted(all_lines - tool_code_lines)
+            non_tool_char_len = sum(len(lines[i - 1].strip()) for i in non_tool_lines)
             code_length_reward = min(non_tool_char_len, max_chars) / max_chars
+        else:
+            non_tool_lines = []
+            non_tool_char_len = 0
 
-        # ---------- 多工具加分 ----------
-        tool_cnt = len(executed_tool_classes)
-        if tool_cnt == 2:
-            multi_tool_reward = 0.1
-        elif tool_cnt >= 3:
-            multi_tool_reward = 0.3
+        # Bonus for using >1 tool (excluding Object_Detector_Tool)
+        executed_other_tools = {
+            t for t in executed_tool_classes if t != "Object_Detector_Tool"
+        }
+        multi_tool_reward = min(0.05 * len(executed_other_tools), 0.1)
 
-        # ---------- 日志 ----------
+        # ------------------------------------------------------------------
+        # Logging
+        # ------------------------------------------------------------------
         if log_root_dir:
             elapsed = time.time() - start_time
             with open(log_path, "a+") as f:
                 f.write(
                     f"\n[QAid]: {QAid}\n"
-                    f"[non_tool_lines]: {sorted(non_tool_lines)}\n"
+                    f"[non_tool_lines]: {non_tool_lines}\n"
                     f"[non_tool_char_len]: {non_tool_char_len}\n"
                     f"[tool_usage_reward]: {tool_usage_reward}\n"
                     f"[multi_tool_reward]: {multi_tool_reward}\n"
                     f"[code_length_reward]: {code_length_reward}\n"
-                    f"[Executed Tools]: {list(executed_tool_classes)}\n"
-                    f"[Execution Time]: {elapsed:.2f}s\n"
-                    f"[Original Completion]:\n{predict_str}\n"
-                    + "=" * 62 + "\n\n")
+                    f"[executed_tools]: {sorted(executed_tool_classes)}\n"
+                    f"[execution_time]: {elapsed:.2f}s\n"
+                    f"[original_completion]:\n{predict_str}\n"
+                    + "=" * 62 + "\n\n"
+                )
 
+    # ----------------------------------------------------------------------
+    # Error handling
+    # ----------------------------------------------------------------------
     except Exception as e:
         if log_root_dir:
             with open(log_path, "a+") as f:
                 f.write(
                     f"\n[QAid]: {QAid}\n[Error]: {repr(e)}\n"
                     f"[Completion]:\n{predict_str}\n"
-                    + "=" * 62 + "\n\n")
+                    + "=" * 62 + "\n\n"
+                )
 
     return tool_usage_reward, multi_tool_reward, code_length_reward
 
 ###############################
 #### Thinking Length Reward ###
 ###############################
-def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs", max_length = 1024):
+def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/logs", max_length = 512):
+    # 
     reward = 0.0
     # create timepoints as part of log names
     current_time = datetime.now().strftime("%d-%H-%M-%S")
@@ -571,7 +634,6 @@ def think_length_reward(predict_str, step, QAid, root_dir = "/workspace/models/l
                 f.write(f"think length: {think_len}\n")
                 f.write(f"response:\n{predict_str}\n\n")
                 f.write(f"reward: {reward}\n\n")
-
     else:
         reward = 0.0
 
@@ -749,10 +811,10 @@ def compute_score(
                 usage_weight    * tool_usage_score + # disable toolusage  #
                 execution_weight * exec_score      +
                 think_length_weight * think_length_score +
-                accuracy_weight * accuracy_score
-                # code_think_length_weight * code_length_reward
-                # multi_tools_usage_score
-            ) # 记得 取掉末尾 + 号
+                accuracy_weight * accuracy_score +
+                code_think_length_weight * code_length_reward +
+                multi_tools_usage_score
+            )
         elif mode == "nl":
             overall_score = (
                 nl_accuracy_weight * accuracy_score + 
@@ -763,8 +825,8 @@ def compute_score(
         else:
             overall_score = 0.0
         base_scores[i] = overall_score
-        component_cache[i] = (format_score, accuracy_score, tool_usage_score, code_length_reward, think_length_score,  # 改
-                        multi_tools_usage_score, exec_score, modes[i])
+        component_cache[i] = (format_score, accuracy_score, tool_usage_score, code_length_reward, think_length_score,
+                        multi_tools_usage_score, exec_score, modes[i]) # 改
     if step != "validation" and diversity_scale:
         scales = diversity_scaling(modes, index, base_scores)
     else:
@@ -783,9 +845,9 @@ def compute_score(
                 "format": format_score,
                 "accuracy": accuracy_score,
                 "tool_usage": tool_usage_score, # disabled in natural language # 改
-                # "multi_tools": multi_tools_usage_score,
-                # "non_tool_code_len": code_length_reward,  # discarding tool invocation part
-                "think_len": think_length_score,
+                "multi_tools": multi_tools_usage_score,
+                "non_tool_code_len": code_length_reward,  # discarding tool invocation part
+                "think_length": think_length_score,
                 "execution": exec_score, # disabled in natural language
                 "mode": mode,
                 "diversity_scale": scales[i],

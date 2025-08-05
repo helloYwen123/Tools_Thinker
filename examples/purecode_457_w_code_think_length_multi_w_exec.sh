@@ -15,10 +15,10 @@ export RAY_DISABLE_DASHBOARD=1
 # Mixed_SAT: /workspace/ywen_ws/datasets/Mix_VQAs.json
 
 PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
-    config=examples/tools_config/config_group_3.yaml \
+    config=examples/tools_config/purecode_457_w_code_think_length_multi_w_exec.yaml \
     data.train_files=Mixed_SAT \
     data.val_files=Mixed_SAT \
     worker.actor.model.model_path=${MODEL_PATH} \
-    worker.rollout.tensor_parallel_size=1 \
-    trainer.experiment_name=tools_pure_code_mixed_multitools_sft \
+    worker.rollout.tensor_parallel_size=2 \
+    trainer.experiment_name=purecode_457_w_code_think_length_multi_w_exec \
     trainer.n_gpus_per_node=2
