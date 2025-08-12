@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=wo_ex_cur
+#SBATCH --job-name=wo_ex_cri
 #SBATCH --partition=mcml-hgx-a100-80x4,mcml-hgx-h100-94x4
 #SBATCH --gres=gpu:2
 #SBATCH --nodes=1
@@ -22,4 +22,4 @@ conda activate vlm
 echo 'Activated conda env: vlm'
 cd /workspace/ywen_ws/Tools_Thinker
 
-bash examples/purecode_457_w_code_think_length_multi_wo_exec_curri.sh
+bash examples/purecode_457_w_code_think_length_wo_exec_w_multi_curri.sh

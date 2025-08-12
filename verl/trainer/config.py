@@ -54,7 +54,9 @@ class DataConfig:
     tools_config: Optional[str] = None # Tool Thinker
     double_modes: bool = False # specific for tools
     dataset_json: str = ""
-
+    semi: bool = False
+    spatial_457: bool = False
+    
     def post_init(self):
         if self.format_prompt is not None:
             if os.path.exists(self.format_prompt):  # ray job uses absolute path
@@ -96,6 +98,7 @@ class TrainerConfig:
     save_checkpoint_path: Optional[str] = None
     load_checkpoint_path: Optional[str] = None
     config_logs_path: Optional[str] = None
+    log_each_val_batch: bool = False
 
     def post_init(self):
         if self.save_checkpoint_path is None:

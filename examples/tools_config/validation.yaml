@@ -7,7 +7,7 @@ data:
   max_prompt_length: 6656
   max_response_length: 2048 #2048
   rollout_batch_size: 64 # 512
-  val_batch_size: 1024 # 1024
+  val_batch_size: 100 # 1024
   format_prompt: ./examples/format_prompt/tools_thinker_pure_w_think_wo_system.jinja
   override_chat_template: null
   shuffle: true
@@ -19,7 +19,7 @@ data:
   dataset_prefix:  # Dataset root path # BLINK:/home/stud/wxie # SAT:/nfs/data8/liao/wxie/SAT/
   tools_config: ./examples/tools_config/tools_configuration_file.yaml
   double_modes: false # True
-  dataset_json: "/workspace/ywen_ws/datasets/spatial457_wo_L5(8400)_random.json" # spatial457_wo_L5(8670).json"
+  dataset_json: "/workspace/ywen_ws/datasets/validation(700).json" # spatial457_wo_L5(8670).json"
 
 algorithm:
   adv_estimator: grpo
@@ -89,25 +89,26 @@ worker:
       execution_weight: 0.0
       accuracy_weight: 0.7
       nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight - think_length_weight)
-      root_dir: /workspace/models/validation_logs
+      root_dir: /workspace/models/validation/validation_tools180steps
       diversity_scale: false
     num_gpus: 0
     num_cpus: 1
 
 trainer:
   total_epochs: 1 # 15
-  config_logs_path: /workspace/models/validation.json
+  config_logs_path: /workspace/models/validation_tools180steps/validation_tools180steps.json
   # max_steps: 50
   project_name: Debug # easyr1
   experiment_name: qwen2_5_debug
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 8
-  val_freq: 100  # -1 to disable default:5
+  log_each_val_batch: true
+  val_freq: 120  # -1 to disable default:5
   val_before_train: true # true
   val_only: true
-  val_generations_to_log: 1
+  val_generations_to_log: 5
   save_freq: 5  # -1 to disable
   save_limit: -1  # -1 to disable
-  save_checkpoint_path: /workspace/models/ckpt/validation/
+  save_checkpoint_path: null
   load_checkpoint_path: null

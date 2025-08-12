@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json,os
-
+import json
+import os
 import ray
 from omegaconf import OmegaConf
 
@@ -92,7 +92,6 @@ class Runner:
         # check prompt loading and model inputs#
         ########################################
         # n = 0
-        # import os
         # log_dir = "/workspace/ywen_ws/Tools_Thinker/logs"
         # os.makedirs(log_dir, exist_ok=True)
         # path = os.path.join(log_dir, "Mix_SAT.txt")

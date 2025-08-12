@@ -812,8 +812,7 @@ def compute_score(
                 execution_weight * exec_score      +
                 think_length_weight * think_length_score +
                 accuracy_weight * accuracy_score +
-                code_think_length_weight * code_length_reward +
-                multi_tools_usage_score
+                code_think_length_weight * code_length_reward
             )
         elif mode == "nl":
             overall_score = (
@@ -845,7 +844,7 @@ def compute_score(
                 "format": format_score,
                 "accuracy": accuracy_score,
                 "tool_usage": tool_usage_score, # disabled in natural language # 改
-                "multi_tools": multi_tools_usage_score,
+                # "multi_tools": multi_tools_usage_score,
                 "non_tool_code_len": code_length_reward,  # discarding tool invocation part
                 "think_length": think_length_score,
                 "execution": exec_score, # disabled in natural language

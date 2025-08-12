@@ -187,6 +187,7 @@ class RayPPOTrainer:
         self.config = config
         self.reward_fn = reward_fn
         self.val_reward_fn = val_reward_fn
+        self.log_each_val_batch = config.trainer.log_each_val_batch
         #######################################################
         self.tool_usage = False
         if ("BLINK" in config.data.train_files or "SAT" in config.data.train_files or "CV-Bench" in config.data.train_files):
@@ -288,7 +289,9 @@ class RayPPOTrainer:
         nl_metrics_all      = defaultdict(list)
 
         reward_metrics_lst = defaultdict(list)
-        for batch_dict in self.val_dataloader:
+        num_val_batches    = len(self.val_dataloader)
+
+        for batch_idx, batch_dict in enumerate(self.val_dataloader):
             test_batch = DataProto.from_single_dict(batch_dict)
             # Store original inputs
             input_ids = test_batch.batch["input_ids"]
@@ -315,7 +318,7 @@ class RayPPOTrainer:
             output_ids = test_output_gen_batch.batch["responses"]
             output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
             sample_outputs.extend(output_texts)
-            sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())                                      
+            sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())                                    
             # test_batch: DataProto 对象;结合原先的 test_batch 和 test_output_gen_batch
             test_batch = test_batch.union(test_output_gen_batch)
             # 估计内容: original: input_ids/mask, generated: responses/response_mask, non_tensor: ground_truth
@@ -341,10 +344,40 @@ class RayPPOTrainer:
                 reward_metrics, modes
             )
             
-            for k, v in reward_metrics.items(): overall_metrics_all[k].extend(v)  # NEW
+            for k, v in reward_metrics.items():  overall_metrics_all[k].extend(v)  # NEW
             for k, v in code_metrics.items():    code_metrics_all[k].extend(v)    # NEW
             for k, v in nl_metrics.items():      nl_metrics_all[k].extend(v)      # NEW
-        
+            
+            if self.log_each_val_batch:
+                step_val = self.global_step * num_val_batches + batch_idx
+                # TODO
+                ######################################################
+                # batch accuracy  ⇒  reward_metrics["accuracy"] list
+                batch_overall = float(np.mean(scores))
+                batch_accuracy = (
+                    float(np.mean(reward_metrics["accuracy"]))
+                    if "accuracy" in reward_metrics and len(reward_metrics["accuracy"]) > 0
+                    else None
+                )
+
+                #
+                batch_metrics = {}
+
+                # --- overall & accuracy ---
+                overall_dict_this_batch = {
+                    "val/batch_overall":  batch_overall,
+                    "val/batch_accuracy": batch_accuracy,
+                }
+                batch_metrics.update(overall_dict_this_batch)
+
+                # 
+                # ratio_this_batch = {"val/batch_code_ratio": ...}
+                # batch_metrics.update(ratio_this_batch)
+
+                # WandB
+                if batch_metrics:
+                    self.logger.log(data=batch_metrics,step=step_val)
+                ######################################################
         # here reward_score is the `overall score`
         self._maybe_log_val_generations(sample_inputs, sample_outputs, sample_labels, sample_scores)
         reward_score = torch.cat(reward_tensor_lst, dim=0).sum(-1).mean().item()

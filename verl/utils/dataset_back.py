@@ -101,8 +101,6 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         tools_config: Optional[str] = None, # specific for tools
         double_modes: bool = False,
         dataset_json: str = "",
-        semi: bool = False,
-        spatial_457: bool = False,
     ):
         self.tokenizer = tokenizer
         self.processor = processor
@@ -118,10 +116,6 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         self.configuration_file = tools_config ####
         self.double_modes = double_modes
         self.dataset_json = dataset_json
-        self.semi = semi
-
-        self.spatial_457 = spatial_457
-        
         if "@" in data_path:
             data_path, data_split = data_path.split("@")
         else:
@@ -231,134 +225,10 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
 
         return active_tool_names, filtered_metadata_dict
     ###################################################################
-
+    
     def _build_messages(self, example: Dict[str, Any]) -> List[Dict[str, Any]]:
         prompt_str: str = example[self.prompt_key]
-        if ("BLINK" in self.data_path or "SAT" in self.data_path or "CV-Bench" in self.data_path) and self.semi:
-            image_paths = example["image_paths"]
-
-            active_tool_names, filtered_metadata_dict = self._load_tool_data(self.configuration_file)
-            filtered_metadata_dict = json.dumps(filtered_metadata_dict, indent=2)
-            active_tool_names = ",".join(active_tool_names)
-
-            format_prompt = Template(self.format_prompt.strip())
-
-            task_map = {
-                "L1_single": (
-                    "Please analyze the images, identify attributes of the objects, "
-                    "and then determine the answer to the question.\n"
-                ),
-                "L2_objects": (
-                    "Please analyze the images, identify attributes of multiple objects, "
-                    "and then determine the answer to the question.\n"
-                ),
-                "L3_2D_spatial": (
-                    "Please analyze the images, identify attributes of multiple objects and their spatial relationship from 2D "
-                    "projected camera view, and then determine the answer to the question.\n"
-                ),
-                "L4_occ": (
-                    "Please analyze the images, identify attributes of multiple objects and their occlusion relationships, and "
-                    "then determine the answer to the question.\n"
-                ),
-                "L4_pose": (
-                    "Please analyze the images, identify attributes of multiple objects and their facing direction in 3D space "
-                    "from the camera view, and then determine the answer to the question.\n"
-                ),
-                "L5_6d_spatial": (
-                    "Please analyze the images, identify attributes of multiple objects and their spatial relationship from "
-                    "objects’ perspective in 3D space, and then determine the answer to the question.\n"
-                ),
-                "L5_collision": (
-                    "Please analyze the images, identify attributes of multiple objects and their potential collision given the "
-                    "assumption of moving direction in 3D space, and then determine the answer to the question.\n"
-                ),
-            }
-
-            def all_answers():
-                all_attributes = {
-                "size": ["small", "large"],
-                "shape": [
-                    "airliner",
-                    "dirtbike",
-                    "road bike",
-                    "tandem bike",
-                    "suv",
-                    "wagon",
-                    "scooter",
-                    "mountain bike",
-                    "minivan",
-                    "sedan",
-                    "school bus",
-                    "fighter",
-                    "chopper",
-                    "double bus",
-                    "truck",
-                    "articulated bus",
-                    "cruiser",
-                    "jet",
-                    "utility bike",
-                    "regular bus",
-                    "biplane",
-                ],
-                "color": [
-                    "gray",
-                    "blue",
-                    "purple",
-                    "brown",
-                    "green",
-                    "cyan",
-                    "red",
-                    "yellow",
-                ],
-                "direction": ["left", "right", "front", "back"],
-                }
-
-                all_answers = ""
-                for key, value in all_attributes.items():
-                    capital_value = [x.capitalize() for x in value]
-                    all_answers += ", ".join(capital_value) + ", "
-                return all_answers.strip(", ")
-
-            # spatial 457 semi-open questions prompt
-            all_options_str = all_answers()
-            
-            instruction_1 = (
-"\nHint 1: Each object in the image has a "
-"shape (e.g., 'airliner'), a size (only can be 'small' or 'large'), a color (e.g. 'blue'). The size of "
-"the object is either 'small' or 'large'. The color of the object is one of the following: 'gray', "
-"'blue', 'purple', 'brown', 'green', 'cyan', 'red', 'yellow'. The direction of the object is one of the "
-"following: 'left', 'right', 'front', 'back'.\n\n"
-"Hint 2: The answer to this question should only be (1) a phrase chosen "
-"from the following options: {}, or (2) an integer [0-10] when asked for 'How many' or 'What is the "
-"number of', or (3) 'Yes' or 'No' when asked for 'Is there'. If you think there are no possible answers "
-"or the question is not clear, choose the best answer that fits the question.\n\n"
-            ).format(all_options_str)
-
-            instruction_2 = task_map[example["source"]]
-
-            prompt_str = format_prompt.render(question=prompt_str,
-                                              instruction1=instruction_1,
-                                              instruction2=instruction_2,
-                                              input_images=image_paths,
-                                              available_tools=active_tool_names,
-                                              toolbox_metadata=filtered_metadata_dict
-                                            )
-            content_list = []
-            
-            for i in range(len(image_paths)+1):
-                if i != len(image_paths):
-                    content_list.append({"type": "image"})
-                else:
-                    content_list.append({"type": "text", "text": f"{prompt_str}"})
-
-            return [{
-                        "role": "system", "content": self.system_prompt
-                    },
-                    {   
-                        "role": "user", "content": content_list
-                    }]
-
-        elif ("BLINK" in self.data_path or "SAT" in self.data_path or "CV-Bench" in self.data_path) and not self.semi:
+        if ("BLINK" in self.data_path or "SAT" in self.data_path or "CV-Bench" in self.data_path):
             image_paths = example["image_paths"]
             active_tool_names, filtered_metadata_dict = self._load_tool_data(self.configuration_file)
             filtered_metadata_dict = json.dumps(filtered_metadata_dict, indent=2)
@@ -382,7 +252,6 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
                     {   
                         "role": "user", "content": content_list
                     }]
-
         else:
             if self.format_prompt:
                 format_prompt = Template(self.format_prompt.strip())
@@ -443,38 +312,19 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
         full_prompt = full_prompt.replace("<image> Answer in natural language. ", "")
         answer = example["messages"][1]["content"].strip()
 
+        
         image_name = os.path.splitext(os.path.basename(example["images"][0]))[0]
         idx = f"{image_name}"  # image name as index
 
-        if self.spatial_457: 
-            idx = f"{example['idx']}"
-            
+        # if self.spatial_457: 
+        #     idx = f"{example['idx']}"
+
         return {
             "images": images,
             "problem": full_prompt,
             "answer": answer,
             "idx": idx,
             "image_paths" : image_paths
-        }
-    def _sat_format_semi(self, example):
-        # image_paths = [os.path.join(self.dataset_prefix, path) for path in example["images"]]
-        
-        # mixed sat dataset has absolute path for images
-        image_paths = [os.path.join(path) for path in example["image"]]
-        images = [Image.open(path) for path in image_paths]
-        full_prompt = example["question"].strip()
-        answer = f"{example['answer']}"
-        # image_name = os.path.splitext(os.path.basename(example["images"][0]))[0]
-        # idx = f"{image_name}"  # image name as index
-        idx = f"{example['idx']}"
-        source = example["source"]
-        return {
-            "images": images,
-            "problem": full_prompt,
-            "answer": answer,
-            "idx": idx,
-            "image_paths" : image_paths,
-            "source": source,
         }
     def _cv_bench_format(self, example):
         # TODO
@@ -485,13 +335,8 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
         ###
         if "BLINK" in self.data_path:
             example = self._blink_format(example, self.all_subtasks_json)
-
-        if "SAT" in self.data_path and not self.semi:
+        if "SAT" in self.data_path:
             example = self._sat_format(example)
-        # for semi-open question
-        if "SAT" in self.data_path and self.semi:
-            example = self._sat_format_semi(example)
-
         if "CV-Bench" in self.data_path:
             pass #TODO
         ###

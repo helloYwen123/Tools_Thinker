@@ -30,7 +30,163 @@ import requests
 from math_verify import parse, verify
 import time
 import json
+import sys
+
+
 REMOTE_URL = "http://10.153.51.195:8080/api/sandbox/execute"
+###########################################################################
+##############################is_correct###################################
+###########################################################################
+SUPERCLRVER_sub_shape = {
+    "car": ["suv", "wagon", "minivan", "sedan", "truck", "addi", "car"],
+    "bus": ["articulated", "regular", "double", "school", "bus"],
+    "motorbike": ["chopper", "dirtbike", "scooter", "cruiser", "motorbike"],
+    "aeroplane": ["jet", "fighter", "biplane", "airliner", "aeroplane"],
+    "bicycle": ["road", "utility", "mountain", "tandem", "bicycle"],
+}
+
+inverse_shape = {}
+for key, value in SUPERCLRVER_sub_shape.items():
+    for v in value:
+        inverse_shape[v] = key
+
+class Spatial457_utils:
+    def __init__(self):
+
+        return
+
+    def get_random_answer(self, gt):
+        import random
+
+        all_attributes = {
+            "size": ["small", "large"],
+            "shape": [
+                "airliner",
+                "dirtbike",
+                "road bike",
+                "tandem bike",
+                "suv",
+                "wagon",
+                "scooter",
+                "mountain bike",
+                "minivan",
+                "sedan",
+                "school bus",
+                "fighter",
+                "chopper",
+                "double bus",
+                "truck",
+                "articulated bus",
+                "cruiser",
+                "jet",
+                "utility bike",
+                "regular bus",
+                "biplane",
+            ],
+            "color": [
+                "gray",
+                "blue",
+                "purple",
+                "brown",
+                "green",
+                "cyan",
+                "red",
+                "yellow",
+            ],
+            "direction": ["left", "right", "front", "back"],
+        }
+
+        gt = gt.lower()
+        if gt in ["yes", "no"]:
+            return random.choice(["yes", "no"])
+        if gt in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]:
+            return str(random.randint(0, 9))
+        for key, value in all_attributes.items():
+            if gt in value:
+                return random.choice(value)
+    
+    def loose_match(self, a, b):
+        a = str(a).strip().lower()
+        b = str(b).strip().lower()
+
+        def remove_articles(s):
+            return re.sub(r'\b(the|a|an)\b', '', s, flags=re.I).strip()
+
+        a = remove_articles(a)
+        b = remove_articles(b)
+
+        a = re.sub(r'\s+', ' ', a)
+        b = re.sub(r'\s+', ' ', b)
+
+        synonym_map = {
+            "yes": "true", "no": "false",
+            "correct": "true", "incorrect": "false",
+            "right": "true", "wrong": "false"
+        }
+        a = synonym_map.get(a, a)
+        b = synonym_map.get(b, b)
+
+        return a == b
+
+    def all_answers(self):
+        all_attributes = {
+            "size": ["small", "large"],
+            "shape": ["airliner", "dirtbike", "road bike", "tandem bike", "suv",
+                      "wagon", "scooter", "mountain bike", "minivan", "sedan",
+                      "school bus", "fighter", "chopper", "double bus", "truck",
+                      "articulated bus", "cruiser", "jet", "utility bike",
+                      "regular bus", "biplane"],
+            "color": ["gray", "blue", "purple", "brown", "green", "cyan", "red", "yellow"],
+            "direction": ["left", "right", "front", "back"],
+        }
+
+        all_answers = []
+        for value in all_attributes.values():
+            all_answers.extend([v.capitalize() for v in value])
+        return ", ".join(all_answers)
+
+    def is_correct(self, answer, predict):
+        text2num = {
+            "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
+            "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9", "ten": "10",
+        }
+
+        predict = str(predict).strip()
+        answer  = str(answer).strip()
+
+        if predict.lower() == "none":
+            predict = "no"
+
+        # 
+        if self.loose_match(predict, answer):
+            return True
+
+        # 
+        if predict == "0" and answer.lower() == "no":
+            return True
+        if predict.lower() in text2num and text2num[predict.lower()] == answer.lower():
+            return True
+        if answer.lower() == "yes" and predict in [str(i) for i in range(1, 10)]:
+            return True
+
+        # 
+        if self.category_correct(predict, answer):
+            return True
+
+        return False
+
+    def category_correct(self, answer, gt_answer):
+        answer = str(answer).lower().split(" ")[0]
+        gt_answer = str(gt_answer).lower().split(" ")[0]
+
+        if (
+            answer in inverse_shape
+            and gt_answer in inverse_shape
+            and inverse_shape[answer] == inverse_shape[gt_answer]
+        ):
+            return True
+
+        return False
 
 def detect_mode(completion: str) -> str:
     """
@@ -81,35 +237,6 @@ def extract_options(text: str) -> dict:
 
     return option_dict
 
-def loose_match(a, b):
-    # Convert both inputs to string, trim spaces, and lowercase
-    a = str(a).strip().lower()
-    b = str(b).strip().lower()
-
-    # Remove articles ('the', 'a', 'an')
-    def remove_articles(s):
-        return re.sub(r'\b(the|a|an)\b', '', s).strip()
-
-    a = remove_articles(a)
-    b = remove_articles(b)
-    # Remove extra whitespace
-    a = re.sub(r'\s+', ' ', a).strip()
-    b = re.sub(r'\s+', ' ', b).strip()
-
-    # Map common synonyms to standard values
-    synonym_map = {
-        "yes": "true",
-        "no": "false",
-        "correct": "true",
-        "incorrect": "false",
-        "right": "true",
-        "wrong": "false"
-    }
-    a = synonym_map.get(a, a)
-    b = synonym_map.get(b, b)
-
-    return a == b
-
 def extract_boxed_answer(completion: str) -> Optional[str]:
     m = re.search(r"<answer>.*?\\boxed\{(.*?)\}.*?</answer>", completion, re.S)
     return m.group(1).strip() if m and m.group(1) else None
@@ -117,76 +244,79 @@ def extract_boxed_answer(completion: str) -> Optional[str]:
 ###########################
 #### Accuracy Reward ######
 ###########################
-def accuracy_reward(exec_result, response, step, solution, QAid, question, root_dir= "/workspace/models/logs", **kwargs):
+
+utils = Spatial457_utils()
+
+def accuracy_reward(exec_result,
+                    response,
+                    step,
+                    solution,
+                    QAid,
+                    question,
+                    root_dir="/workspace/models/logs",
+                    **kwargs):
     """
+    
     """
-    # detect output mode(code; nl; invalid)
     mode = detect_mode(response)
-    if root_dir is None:
-        root_dir = os.path.dirname(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    current_time = datetime.now().strftime("%d-%H-%M-%S")
-    split      = "validation" if step == "validation" else "train"
-    step_str   = f"step_{step}" if isinstance(step, int) else f"step_{step}"
-    log_root   = os.path.join(root_dir, f"grpo_tools_logs/{split}/accuracy/{step_str}")
-
-    # get options map
-    options_map = extract_options(question)
-
-    answer_pred = None
     reward = 0.0
-    if mode == "code" and exec_result is not None:
-        if not is_error_output(exec_result):
-            try:
-                if float(verify(parse(exec_result), parse(solution))) > 0:
-                    reward = 1.0
-            except Exception:
-                pass
-            
-            if loose_match(exec_result, solution):
-                reward = 1.0
+    # ----------- 1. 提取模型给出的答案文本 -----------------
+    pred_str, answer_pred = None, None
+    options_map = extract_options(question)
+    if mode == "code":
+        pred_str = str(exec_result).strip() if exec_result is not None else ""
 
-            # If solution looks like a single letter and is in options_map, check its mapped content
-            if (
-                isinstance(solution, str)
-                and len(solution) == 1
-                and solution.upper() in options_map
-            ):
-                correct_option_content = options_map[solution.upper()]
-                if loose_match(exec_result, correct_option_content):
-                    reward = 1.0
     elif mode == "nl":
+        # 优先抓 boxed 格式；否则直接取最后一个 <answer> … </answer> 块的内容
         answer_pred = extract_boxed_answer(response)
         if answer_pred:
-            try:
-                if float(verify(parse(answer_pred), parse(solution))) > 0:
-                    reward = 1.0
-            except Exception:
-                pass
-            if loose_match(answer_pred, solution):
+            pred_str = answer_pred
+    else:  # invalid
+        pred_str = ""
+
+    if not is_error_output(exec_result):
+        # ----------- 2. 计算 reward ---------------------------
+        if utils.is_correct(solution, pred_str):
+            reward = 1.0
+        
+        # If solution looks like a single letter and is in options_map, check its mapped content
+        if (
+            isinstance(solution, str)
+            and len(solution) == 1
+            and solution.upper() in options_map
+        ):
+            correct_option_content = options_map[solution.upper()]
+            if utils.is_correct(exec_result, correct_option_content):
                 reward = 1.0
 
+    # ----------- 3. 日志条件 & 路径 -----------------------
+    if root_dir is None:
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    current_time = datetime.now().strftime("%d-%H-%M-%S")
+    split = "validation" if step == "validation" else "train"
+    step_str = f"step_{step}"
+    log_root = os.path.join(root_dir,
+                            f"grpo_tools_logs/{split}/accuracy/{step_str}")
+
     result_tag = "correct" if reward == 1.0 else "wrong"
-    if mode in ("code", "nl"):
-        file_prefix = f"{mode}_{result_tag}_accuracy_{current_time}-{QAid}.log"
-    else:  # invalid
-        file_prefix = f"invalid_accuracy_{current_time}-{QAid}.log"
+    file_prefix = f"{mode}_{result_tag}_accuracy_{current_time}-{QAid}.log" \
+                  if mode in ("code", "nl") else \
+                  f"invalid_accuracy_{current_time}-{QAid}.log"
     acc_log_path = os.path.join(log_root, file_prefix)
 
-    
+    # ----------- 4. 是否落盘 ------------------------------
     should_log = (
-            (isinstance(step, str) and step == "validation") or
-            (isinstance(step, int) and step % 2 == 0) or
-            reward == 1.0
-        )
+        (isinstance(step, str) and step == "validation") or
+        (isinstance(step, int) and step % 2 == 0) or
+        reward == 1.0
+    )
     if should_log:
         os.makedirs(log_root, exist_ok=True)
         with open(acc_log_path, "a", encoding="utf-8") as f:
             f.write(f"\nQAid: {QAid}\n")
             f.write("\ncorrect result\n\n" if reward == 1.0 else "\nwrong result\n\n")
-            f.write(f"nl_result: {answer_pred}\n")
-            f.write(f"exec_result: {exec_result}\n")
-            f.write(f"expected:    {solution}\n")
+            f.write(f"predicted: {pred_str}\n")
+            f.write(f"expected:  {solution}\n")
             f.write(f"question: \n{question}\n")
             f.write(f"response:\n{response}\n")
             f.write("=" * 30 + "\n\n")

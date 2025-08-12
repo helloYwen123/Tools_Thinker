@@ -42,6 +42,8 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
         tools_config= config.tools_config, # specific for tools
         double_modes = config.double_modes, # specific for tools
         dataset_json = config.dataset_json,
+        semi = config.semi,
+        spatial_457= config.spatial_457,
     )
     # use sampler for better ckpt resume
     if config.shuffle:
@@ -79,6 +81,8 @@ def create_dataloader(config: DataConfig, tokenizer: PreTrainedTokenizer, proces
         tools_config= config.tools_config, # specific for tools
         double_modes = config.double_modes,
         dataset_json = config.dataset_json,
+        semi = config.semi,
+        spatial_457= config.spatial_457,
     )
     val_dataloader = StatefulDataLoader(
         dataset=val_dataset,

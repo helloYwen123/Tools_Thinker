@@ -564,7 +564,9 @@ def tool_usage_reward(
         executed_other_tools = {
             t for t in executed_tool_classes if t != "Object_Detector_Tool"
         }
-        multi_tool_reward = min(0.05 * len(executed_other_tools), 0.1)
+        # hot 1
+        if len(executed_other_tools) >0:
+            multi_tool_reward= 0.05
 
         # ------------------------------------------------------------------
         # Logging

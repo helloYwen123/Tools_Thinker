@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --job-name=spa457_curri
-#SBATCH --partition=lrz-hgx-a100-80x4,lrz-dgx-a100-80x8,lrz-hgx-h100-94x4
+#SBATCH --job-name=valid
+#SBATCH --partition=lrz-hgx-h100-94x4,lrz-hgx-a100-80x4,lrz-dgx-a100-80x8
 #SBATCH --gres=gpu:2
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -21,4 +21,4 @@ conda activate vlm
 echo 'Activated conda env: vlm'
 cd /workspace/ywen_ws/Tools_Thinker
 
-bash examples/exp_purecode_spatial457_curri.sh
+bash examples/validation_tools180steps.sh
