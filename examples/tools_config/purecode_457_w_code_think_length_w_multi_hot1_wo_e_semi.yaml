@@ -5,7 +5,7 @@ data:
   answer_key: answer
   image_key: images
   max_prompt_length: 6656
-  max_response_length: 4096 #2048
+  max_response_length: 2048 #2048
   rollout_batch_size: 64 # 512
   val_batch_size: 1024 # 1024
   format_prompt: ./examples/format_prompt/tools_thinker_pure_w_think_wo_system_semi_open.jinja
@@ -32,8 +32,8 @@ algorithm:
 worker:
   actor:
     global_batch_size: 32 # 128 for update glable_batch size * n // num_gpu
-    micro_batch_size_per_device_for_update: 1 # 4
-    micro_batch_size_per_device_for_experience: 4 # 16
+    micro_batch_size_per_device_for_update: 2 # 4
+    micro_batch_size_per_device_for_experience: 8 # 16
     max_grad_norm: 1.0
     padding_free: true
     ulysses_sequence_parallel_size: 1
@@ -60,7 +60,7 @@ worker:
     n: 8 # 5
     temperature: 1.0
     top_p: 0.99
-    gpu_memory_utilization: 0.9 # 0.6
+    gpu_memory_utilization: 0.8 # 0.6
     enforce_eager: false
     enable_chunked_prefill: false
     tensor_parallel_size: 2
@@ -90,14 +90,14 @@ worker:
       execution_weight: 0
       accuracy_weight: 0.7
       nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight - think_length_weight)
-      root_dir: /workspace/models/purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi_logs
+      root_dir: /workspace/models/purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi_2k_logs
       diversity_scale: false
     num_gpus: 0
     num_cpus: 1
 
 trainer:
   total_epochs: 1 # 15
-  config_logs_path: /workspace/models/purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi_logs/purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi.json
+  config_logs_path: /workspace/models/purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi_2k_logs/purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi_2k.json
   # max_steps: 50
   project_name: Debug # easyr1
   experiment_name: qwen2_5_debug
@@ -110,5 +110,5 @@ trainer:
   val_generations_to_log: 3
   save_freq: 5  # -1 to disable
   save_limit: -1  # -1 to disable
-  save_checkpoint_path: /workspace/models/ckpt/purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi/
+  save_checkpoint_path: /workspace/models/ckpt/purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi_2k/
   load_checkpoint_path: null

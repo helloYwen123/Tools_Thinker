@@ -20,5 +20,5 @@ PYTHONUNBUFFERED=1 python -m verl.trainer.main_tools \
     data.val_files=Mixed_SAT \
     worker.actor.model.model_path=${MODEL_PATH} \
     worker.rollout.tensor_parallel_size=2 \
-    trainer.experiment_name=purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi \
+    trainer.experiment_name=purecode_457_w_code_think_length_w_multi_hot1_wo_e_semi_2k \
     trainer.n_gpus_per_node=2

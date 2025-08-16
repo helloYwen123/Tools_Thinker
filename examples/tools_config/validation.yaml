@@ -8,7 +8,7 @@ data:
   max_response_length: 2048 #2048
   rollout_batch_size: 64 # 512
   val_batch_size: 100 # 1024
-  format_prompt: ./examples/format_prompt/tools_thinker_pure_w_think_wo_system.jinja
+  format_prompt: ./examples/format_prompt/baseline_val.jinja
   override_chat_template: null
   shuffle: true
   seed: 42
@@ -20,6 +20,7 @@ data:
   tools_config: ./examples/tools_config/tools_configuration_file.yaml
   double_modes: false # True
   dataset_json: "/workspace/ywen_ws/datasets/validation(700).json" # spatial457_wo_L5(8670).json"
+  straight_output: true
 
 algorithm:
   adv_estimator: grpo
@@ -80,7 +81,7 @@ worker:
 
   reward:
     reward_type: batch
-    reward_function: ./examples/reward_function/purecode_457_w_code_think_length_multi_wo_exec.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
+    reward_function: ./examples/reward_function/baseline_val.py:compute_score # ./examples/reward_function/tool_reward.py:compute_score
     reward_function_kwargs:
       think_length_weight: 0.25
       code_think_length_weight: 0.25
@@ -88,15 +89,14 @@ worker:
       usage_weight: 0.2
       execution_weight: 0.0
       accuracy_weight: 0.7
-      nl_accuracy_weight: 0.5 # automatically set format_weight = (1 - nl_accuracy_weight - think_length_weight)
-      root_dir: /workspace/models/validation/validation_tools180steps
+      root_dir: /workspace/models/validation/validation_baseline
       diversity_scale: false
     num_gpus: 0
     num_cpus: 1
 
 trainer:
   total_epochs: 1 # 15
-  config_logs_path: /workspace/models/validation_tools180steps/validation_tools180steps.json
+  config_logs_path: /workspace/models/validation_baseline/validation_baseline.json
   # max_steps: 50
   project_name: Debug # easyr1
   experiment_name: qwen2_5_debug

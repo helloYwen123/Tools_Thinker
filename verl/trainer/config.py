@@ -56,6 +56,7 @@ class DataConfig:
     dataset_json: str = ""
     semi: bool = False
     spatial_457: bool = False
+    straight_output: bool = False
     
     def post_init(self):
         if self.format_prompt is not None:

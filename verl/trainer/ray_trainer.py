@@ -318,7 +318,7 @@ class RayPPOTrainer:
             output_ids = test_output_gen_batch.batch["responses"]
             output_texts = [self.tokenizer.decode(ids, skip_special_tokens=True) for ids in output_ids]
             sample_outputs.extend(output_texts)
-            sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())                                    
+            sample_labels.extend(test_batch.non_tensor_batch["ground_truth"].tolist())       
             # test_batch: DataProto 对象;结合原先的 test_batch 和 test_output_gen_batch
             test_batch = test_batch.union(test_output_gen_batch)
             # 估计内容: original: input_ids/mask, generated: responses/response_mask, non_tensor: ground_truth

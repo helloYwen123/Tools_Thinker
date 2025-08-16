@@ -1,12 +1,11 @@
 #!/bin/bash
 
 #SBATCH --job-name=w_m1_woe
-#SBATCH --partition=mcml-hgx-a100-80x4,mcml-hgx-h100-94x4
+#SBATCH --partition=lrz-hgx-a100-80x4,lrz-dgx-a100-80x8,lrz-hgx-h100-94x4
 #SBATCH --gres=gpu:2
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=512g
-#SBATCH --qos=mcml
 #SBATCH --time=2-00:00:00
 #SBATCH --output=/dss/dssmcmlfs01/pn39qo/pn39qo-dss-0000/di97cow/sbatch_logs/output_%j.log                   
 #SBATCH --error=/dss/dssmcmlfs01/pn39qo/pn39qo-dss-0000/di97cow/sbatch_logs/error_%j.log

@@ -103,6 +103,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         dataset_json: str = "",
         semi: bool = False,
         spatial_457: bool = False,
+        straight_output: bool = False,
     ):
         self.tokenizer = tokenizer
         self.processor = processor
@@ -119,6 +120,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
         self.double_modes = double_modes
         self.dataset_json = dataset_json
         self.semi = semi
+        self.straight_output = straight_output
 
         self.spatial_457 = spatial_457
         
@@ -152,7 +154,7 @@ class RLHFDataset(Dataset, ImageProcessMixin):
                     subtask_json_path = os.path.join(dataset_prefix, subtask_json_path)
                     
                     with open(subtask_json_path, 'r') as f: # to obtain the image paths for each QA(saved in json file) 
-                        raw_dataset = json.load(f) 
+                        raw_dataset = json.load(f)
                         subtask_json  = [sample for sample in raw_dataset]
                         
                     all_subtasks_json.extend(subtask_json)
@@ -184,6 +186,7 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
 - If multiple tools are needed, always chain tool invocations: use the real intermediate output of one tool as input for the next.
 - Never invent or guess intermediate results—always rely on the true outputs from the tools.
 """
+
                 #########################################################################################
                 # dataset_json_path = "SAT_subtasks/SAT_Counting.json" # TODO Better
                 # mixed sat format json is absolute path
@@ -234,7 +237,19 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
 
     def _build_messages(self, example: Dict[str, Any]) -> List[Dict[str, Any]]:
         prompt_str: str = example[self.prompt_key]
-        if ("BLINK" in self.data_path or "SAT" in self.data_path or "CV-Bench" in self.data_path) and self.semi:
+        if self.straight_output and ("BLINK" in self.data_path or "SAT" in self.data_path or "CV-Bench" in self.data_path):
+            prompt_str = format_prompt.render(question=prompt_str)
+            content_list = []
+            
+            for i in range(len(image_paths)+1):
+                if i != len(image_paths):
+                    content_list.append({"type": "image"})
+                else:
+                    content_list.append({"type": "text", "text": f"{prompt_str}"})
+            return [{   
+                        "role": "user", "content": content_list 
+                    }]
+        elif ("BLINK" in self.data_path or "SAT" in self.data_path or "CV-Bench" in self.data_path) and self.semi:
             image_paths = example["image_paths"]
 
             active_tool_names, filtered_metadata_dict = self._load_tool_data(self.configuration_file)
@@ -354,7 +369,7 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
             return [{
                         "role": "system", "content": self.system_prompt
                     },
-                    {   
+                    {
                         "role": "user", "content": content_list
                     }]
 
@@ -382,7 +397,6 @@ You are a helpful AI assistant specializing in code-based visual reasoning. Your
                     {   
                         "role": "user", "content": content_list
                     }]
-
         else:
             if self.format_prompt:
                 format_prompt = Template(self.format_prompt.strip())
